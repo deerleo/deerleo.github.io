@@ -1,0 +1,142 @@
+# Site
+repository: deerleo/jekyll-resume-theme
+favicon: images/favicon.ico
+
+# Content configuration version
+version: 2
+
+# Personal info
+name: Leo Lu
+title: Tech Lead
+email: dearsuley[at]gmail.com
+website: leolu.me 
+
+# Dark Mode (true/false/never)
+darkmode: false
+
+# Social links
+#twitter_username: facespics
+github_username:  deerleo
+# stackoverflow_username: "00000001"
+# dribbble_username: jekyll
+# facebook_username: jekyll
+# flickr_username: jekyll
+# instagram_username: jameswgrant
+# linkedin_username: jameswgrant
+# xing_username: jekyll
+# pinterest_username: jekyll
+# youtube_username: globalmtb
+# googleplus_username: +jekyll
+# orcid_username: 0000-0000-0000-0000
+
+# Additional icon links
+additional_links:
+- title: Weibo 
+  icon: fas fa-weibo
+  url: https://weibo.com/hisuley
+# - title: another link
+#   icon: font awesome brand icon name (eg. fab fa-twitter) (https://fontawesome.com/icons?d=gallery&m=free)
+#   url: Link url (eg. https://google.com)
+
+# Google Analytics and Tag Manager
+# Using more than one of these may cause issues with reporting
+# gtm: "GTM-0000000"
+# gtag: "UA-00000000-0"
+# google_analytics: "UA-00000000-0"
+
+# About Section
+# about_title: About Me
+about_profile_image: images/profile.jpg
+about_content: | # this will include new lines to allow paragraphs
+  Hi, my name's Leo and I have been in the tech industry for 10 years. I worked in Baidu, Huimor, Fengchuan and GSData. And I've some experience in startups.
+  I have managed teams of 30+ engineers, and built products used by millions of users. The products I built including search engine, social media marketing tools, and AI products.
+  The language I used most is Java, but I also have experience in PHP, golang, C/C++, and JavaScript.
+  The framework I used most is Spring Cloud / Spring Boot, Vue.js, and Express(Node.js).
+  Since 2014, I have been working in the tech industry, I joined Baidu in 2014 as a senior software engineer, and quit in 2015 to co-found a startup name "Huimor". I worked as a tech director in software development team.Huimor later became a vertical unicorn company in China Custom Information Systems.
+  I co-founded a startup name "Fengchuan" in 2016, as a tech lead, I managed about 15 software engineers, building apps, websites and tools. Fengchuan is building an APP mainly used to help people making money by forwarding business ads to their timelines in Social Media.
+
+content:
+  - title: Projects # Title for the section
+    layout: list # Type of content section (list/text)
+    content:
+      - layout: top-middle
+        title: Huimor Smart 
+        link: github.com/sproogen
+        # link_text: Project Website
+        additional_links:
+          - title:  sproogen/modern-resume-theme
+            icon: fab fa-github
+            url: github.com/sproogen/modern-resume-theme
+          # - title:  Github page for project (eg. sproogen/modern-resume-theme)
+          #   icon: fab fa-github
+          #   url: Link to project (eg. sproogen.github.io/modern-resume-theme)
+        quote: >
+          This is probably one of the greatest apps ever created, if you don't agree you're probably wrong.
+        description: | # this will include new lines to allow paragraphs
+          I started this project as a way if learning <mark>React</mark> and it has since grown into a fully fledged app. I have learned many skills through this and been I'm very proud of having this in my portfolio. If you don't have a project as awesome as this I would advise you make one.
+
+  - title: Experience # Title for the section
+    layout: list # Type of content section (list/text)
+    content:
+      - layout: left
+        title: Huimor | 慧摩尔 
+        link: huimor.com
+        # link_text: boringcompany.com
+        sub_title: Tech Lead | 技术经理
+        caption: 2015.06 - 2016.06
+        quote: >
+            摩尔智能关务系统：专注于为进出口企业提供一站式关务申报系统，使通关更合规更智慧与快捷。涵盖AEO智慧关务系统，智能报关机器人，进出口跨境电子商务申报平台，金关二期管理系统
+        description: | # this will include new lines to allow paragraphs
+            Develop multiple B2B trading platforms, 
+            在慧摩尔期间开发了煤炭B2B交易平台、AI共享财务系统等平台. 
+      - layout: left
+        title: Huimor | 慧摩尔 
+        link: huimor.com
+        # link_text: boringcompany.com
+        sub_title: Tech Lead | 技术经理
+        caption: 2015.06 - 2016.06
+        quote: >
+            摩尔智能关务系统：专注于为进出口企业提供一站式关务申报系统，使通关更合规更智慧与快捷。涵盖AEO智慧关务系统，智能报关机器人，进出口跨境电子商务申报平台，金关二期管理系统
+        description: | # this will include new lines to allow paragraphs
+            Develop multiple B2B trading platforms, 
+            在慧摩尔期间开发了煤炭B2B交易平台、AI共享财务系统等平台. 
+
+  - title: Education # Title for the section
+    layout: list # Type of content section (list/text)
+    content:
+      - layout: left
+        title: 北京科技大学 | University of Science and Technology Beijing
+        caption: 2010 - 2014
+        sub_title: BSc Computer Science | 计算机科学与技术学士
+        quote: >
+          Established in 1636, Harvard is the oldest higher education institution in the United States, and is widely regarded in terms of its influence, reputation, and academic pedigree as a leading university in not just the US but also the world.
+        description: | # this will include new lines to allow paragraphs
+          During my time at Harvard I learnt most of my key skills that have I have taken through my career such as teamwork and working to tight deadlines. I thouroughly enjoyed my time as university and learnt a lot about a healthy work life balance.
+
+          I spent a lot of my free time as a committee member of the *Harvard Mountaineering Club* taking on roles such as *Trip Secretary* and *Vice-President*.
+
+  - title: A Little More About Me
+    layout: text
+    content: | # this will include new lines to allow paragraphs
+      Alongside my interests in networks and software engineering some of my other interests and hobbies are:
+      - Rock climbing
+      - Gaming
+      - Knitting
+      - [Becoming a ninja](https://www.youtube.com/watch?v=vtg4o__aRMg)
+
+      Look at this cool image  
+      ![Trees](/modern-resume-theme/images/landscape-trees.jpg "Trees")
+
+# Footer
+footer_show_references: true
+# references_title: References on request (Override references text)
+
+# Build settings
+remote_theme: sproogen/resume-theme
+
+sass:
+  sass_dir: _sass
+  style: compressed
+
+plugins:
+ - jekyll-seo-tag
