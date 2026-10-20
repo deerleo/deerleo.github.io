@@ -8,7 +8,7 @@
   --ink: #1d2a23;
   --muted: #62736a;
   --line: rgba(23, 59, 44, .13);
-  --container: 1680px;
+  --container: 1440px;
   --gutter: max(24px, calc((100vw - var(--container)) / 2));
 }
 
@@ -151,7 +151,7 @@ body {
 
 .hero {
   display: grid;
-  grid-template-columns: minmax(0, 1.08fr) minmax(430px, 560px);
+  grid-template-columns: minmax(0, 1fr) minmax(400px, 500px);
   gap: clamp(30px, 4vw, 56px);
   align-items: stretch;
   min-height: min(720px, calc(100vh - 66px));
@@ -376,7 +376,7 @@ body {
 }
 
 .projects-grid {
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
 .creation-card {
@@ -451,7 +451,7 @@ body {
 
 .tutorial-grid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 15px;
 }
 
@@ -688,24 +688,14 @@ body {
   font-size: 12px;
 }
 
-@media (min-width: 1600px) {
-  .projects-grid {
-    grid-template-columns: repeat(6, minmax(0, 1fr));
-  }
-
-  .tutorial-grid {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-  }
-}
-
 @media (max-width: 1280px) {
   .hero {
     grid-template-columns: minmax(0, 1fr) minmax(390px, 500px);
     gap: 30px;
   }
 
-  .projects-grid {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+  .tutorial-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
