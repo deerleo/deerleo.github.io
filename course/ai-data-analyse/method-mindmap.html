@@ -421,7 +421,7 @@ function applySelection() {
     el.classList.toggle('selected', id === selected);
     const searchHit = !q || normalText(node).includes(q);
     const pathHit = !keep || keep.has(id);
-    el.classList.toggle('dim', !searchHit || !pathHit);
+    el.classList.toggle('dim', q ? !searchHit : Boolean(keep) && !pathHit);
   });
   document.querySelectorAll('.edge').forEach(edge => {
     const isPath = highlightPaths && selectedPath.has(edge.dataset.parent) && (edge.dataset.child === selected || pathIds(edge.dataset.child).has(selected));
@@ -585,7 +585,10 @@ scenarios.forEach(btn => btn.addEventListener('click', () => selectNode(btn.data
 document.getElementById('zoomIn').addEventListener('click', () => zoomAt(1.12));
 document.getElementById('zoomOut').addEventListener('click', () => zoomAt(.9));
 document.getElementById('zoomReset').addEventListener('click', fitOverview);
-document.getElementById('resetMap').addEventListener('click', focusRoot);
+document.getElementById('resetMap').addEventListener('click', () => {
+  selected='root';activeTab='understand';query='';
+  search.value='';focusRoot();applySelection();
+});
 togglePathsBtn.addEventListener('click', () => {
   highlightPaths = !highlightPaths;
   togglePathsBtn.classList.toggle('active', highlightPaths);
