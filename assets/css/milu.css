@@ -83,9 +83,9 @@ body {
   top: 0;
   z-index: 100;
   padding-block: 12px;
-  background: rgba(246, 244, 238, .88);
-  backdrop-filter: blur(18px);
-  border-bottom: 1px solid var(--line);
+  background: transparent;
+  backdrop-filter: none;
+  border-bottom: 0;
 }
 
 .nav-inner {
