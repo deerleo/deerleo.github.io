@@ -1,0 +1,22 @@
+{% assign item = include.item %}
+{% if item.link %}
+  <a class="creation-card" href="{{ item.link }}">
+    <span class="card-tags">
+      {% if include.category %}<span class="card-category">{{ include.category }}</span>{% endif %}
+      {% if item.tag %}<span class="creation-tag">{{ item.tag }}</span>{% endif %}
+    </span>
+    <h4>{{ item.title }}</h4>
+    <p>{{ item.text }}</p>
+    <span class="card-cta">查看</span>
+  </a>
+{% else %}
+  <article class="creation-card muted">
+    <span class="card-tags">
+      {% if include.category %}<span class="card-category">{{ include.category }}</span>{% endif %}
+      {% if item.tag %}<span class="creation-tag">{{ item.tag }}</span>{% endif %}
+    </span>
+    <h4>{{ item.title }}</h4>
+    <p>{{ item.text }}</p>
+    <span class="card-cta">待更新</span>
+  </article>
+{% endif %}

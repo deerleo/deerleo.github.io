@@ -24,83 +24,82 @@ css: milu
   </header>
 
   <main id="top">
-    <section class="hero">
+    <section class="hero" id="about" aria-labelledby="hero-title">
       <div class="hero-copy">
-        <p class="eyebrow">
-          <span>AI</span><span>Product</span><span>Engineering</span><span>Media</span>
-        </p>
-        <h1>迷鹿 MiLu</h1>
+        <p class="section-kicker">About</p>
+        <h1 id="hero-title">迷鹿 MiLu</h1>
         <p class="role-line">AI 技术实践者 · 产品创业者 · 科技内容创作者</p>
         <p class="hero-summary">
           我把 AI、产品和内容放在同一个真实工作流里持续实践：让 AI 不止于技术，让普通人真正用起来，让企业真正创造价值。
         </p>
         <div class="hero-actions">
           <a class="button primary" href="#projects">看项目</a>
-          <a class="button ghost" href="#blog">看 Blog</a>
-          <a class="button ghost" href="#tutorials">看教程</a>
-          <a class="button ghost" href="#contact">联系我</a>
+          <a class="button ghost" href="#blog">Blog</a>
+          <a class="button ghost" href="#tutorials">教程</a>
+          <a class="button ghost" href="#contact">联系</a>
         </div>
         <dl class="hero-stats">
-          <div><dt>10+</dt><dd>年技术与产品实践</dd></div>
-          <div><dt>5</dt><dd>类长期内容板块</dd></div>
-          <div><dt>3</dt><dd>类核心服务对象</dd></div>
+          <div><dt>10+</dt><dd>年实践</dd></div>
+          <div><dt>5</dt><dd>内容板块</dd></div>
+          <div><dt>3</dt><dd>服务对象</dd></div>
         </dl>
       </div>
 
-      <div class="profile-card">
+      <aside class="profile-card" aria-labelledby="about-title">
         <div class="profile-photo">
-          <img src="{{ '/assets/images/avatar.jpg' | relative_url }}" width="360" height="360" alt="迷鹿 MiLu 的头像">
+          <img src="{{ '/assets/images/avatar.jpg' | relative_url }}" width="320" height="320" alt="迷鹿 MiLu 的头像">
         </div>
-      </div>
+        <div class="about-panel">
+          <h2 id="about-title">我在做什么</h2>
+          <p>懂技术、懂产品、懂商业，并愿意亲自下场实践。</p>
+          <div class="about-list">
+            {% for card in site.data.milu.about.cards %}
+            <article>
+              <h3>{{ card.title }}</h3>
+              <p>{{ card.text }}</p>
+            </article>
+            {% endfor %}
+          </div>
+        </div>
+      </aside>
     </section>
 
-    <section class="section" id="about" aria-labelledby="about-title">
-      <div class="section-head">
-        <p class="section-kicker">About</p>
-        <h2 id="about-title">我在做什么</h2>
-        <p class="section-lead">懂技术、懂产品、懂商业，并愿意亲自下场实践。</p>
-      </div>
-      <div class="about-grid">
-        {% for card in site.data.milu.about.cards %}
-        <article class="about-card">
-          <h3>{{ card.title }}</h3>
-          <p>{{ card.text }}</p>
-        </article>
-        {% endfor %}
-      </div>
-    </section>
-
-    <section class="section section-muted" id="projects" aria-labelledby="projects-title">
+    <section class="section" id="projects" aria-labelledby="projects-title">
       <div class="section-head">
         <p class="section-kicker">Projects</p>
         <h2 id="projects-title">项目</h2>
         <p class="section-lead">完整作品、产品化尝试和 AI / Agent 实验项目。</p>
       </div>
-
-      {% for group in site.data.milu.projects %}
-      {% include card-group.html group=group %}
-      {% endfor %}
+      <div class="creation-grid projects-grid">
+        {% for group in site.data.milu.projects %}
+          {% for item in group.items %}
+            {% include card-item.html item=item category=group.title %}
+          {% endfor %}
+        {% endfor %}
+      </div>
     </section>
 
-    <section class="section" id="blog" aria-labelledby="blog-title">
+    <section class="section section-alt" id="blog" aria-labelledby="blog-title">
       <div class="section-head">
         <p class="section-kicker">Blog</p>
         <h2 id="blog-title">Blog</h2>
         <p class="section-lead">实践复盘、产品判断、创业思考与技术边界分析。</p>
       </div>
-
-      {% for group in site.data.milu.blog %}
-      {% include card-group.html group=group %}
-      {% endfor %}
+      <div class="creation-grid trio-grid">
+        {% for group in site.data.milu.blog %}
+          {% for item in group.items %}
+            {% include card-item.html item=item category=group.title %}
+          {% endfor %}
+        {% endfor %}
+      </div>
     </section>
 
-    <section class="section section-muted" id="tutorials" aria-labelledby="tutorials-title">
+    <section class="section" id="tutorials" aria-labelledby="tutorials-title">
       <div class="section-head">
         <p class="section-kicker">Tutorials</p>
         <h2 id="tutorials-title">教程</h2>
-        <p class="section-lead">支持单篇教程和系列教程：单篇解决一个具体问题，系列沉淀完整学习路径。</p>
+        <p class="section-lead">单篇教程解决具体问题，系列教程沉淀完整学习路径。</p>
       </div>
-
       <div class="tutorial-grid">
         {% for item in site.data.milu.tutorials %}
           {% include tutorial-card.html item=item %}
@@ -108,16 +107,19 @@ css: milu
       </div>
     </section>
 
-    <section class="section section-muted" id="media" aria-labelledby="media-title">
+    <section class="section section-alt" id="media" aria-labelledby="media-title">
       <div class="section-head">
         <p class="section-kicker">Media</p>
         <h2 id="media-title">自媒体</h2>
         <p class="section-lead">长期更新的内容平台与账号入口。</p>
       </div>
-
-      {% for group in site.data.milu.media %}
-      {% include card-group.html group=group %}
-      {% endfor %}
+      <div class="creation-grid trio-grid">
+        {% for group in site.data.milu.media %}
+          {% for item in group.items %}
+            {% include card-item.html item=item category=group.title %}
+          {% endfor %}
+        {% endfor %}
+      </div>
     </section>
 
     <section class="contact" id="contact" aria-labelledby="contact-title">
