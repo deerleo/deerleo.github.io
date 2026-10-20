@@ -25,14 +25,28 @@
 .task{border-left:2px solid var(--gold);padding:4px 0 4px 7px;margin:7px 0;font-size:11.5px}.prompt{background:#0b1120;border:1px solid var(--line);border-radius:8px;padding:8px;margin:7px 0}.prompt h4{margin:0 0 4px;color:#bae6fd;font-size:11.5px}.prompt textarea{width:100%;height:68px;background:#08101d;color:#a9c3d9;border:1px solid var(--line);border-radius:7px;padding:6px;font:10px/1.4 ui-monospace,monospace}.source{font-size:9.5px;color:#748196}
 body.focus #app{grid-template-columns:minmax(0,1fr);grid-template-rows:58px minmax(0,1fr)}body.focus .nav,body.focus .bottom,body.focus .info,body.focus .callout,body.focus .readout{display:none!important}body.focus .stage{grid-area:2/1/3/2}
 @media(max-width:1000px){#app{grid-template-columns:210px 1fr 300px}.bottom{grid-template-columns:1fr}.module+.module{border-left:0;border-top:1px solid var(--line)}}
+
+@media (max-width:920px){
+  body{overflow:auto!important}
+  #app{position:static;display:block;height:auto;min-height:100vh}
+  .top{position:sticky;top:0;z-index:40;height:auto;min-height:56px;flex-wrap:wrap;padding:10px 12px}
+  .nav,.stage,.bottom,.info{position:relative;display:block;width:auto;height:auto;min-height:0;border:0}
+  .nav{max-height:none;padding:14px 12px}
+  .stage{height:58vh;min-height:360px}
+  #canvas{position:relative;inset:auto;width:100%;height:100%}
+  .bottom{display:block;border-top:1px solid var(--line)}
+  .module{border:0!important;border-bottom:1px solid var(--line)!important}
+  .controls{grid-template-columns:1fr!important}
+  .info{padding:14px 12px}
+}
 </style></head>
 <body><div id="app">
 <header class="top"><div class="brand"><small>DIAGNOSIS / CLASSIFICATION</small><b>SCREENING LAB</b></div><div class="bar"><i id="progress"></i></div><button class="chip" id="focus">🎯 聚焦图面</button><button class="chip" id="reset">⟲ 重置</button></header>
 <nav class="nav"><p class="label">CHAPTERS · 章节</p><div id="nav"></div></nav>
 <main class="stage"><svg id="canvas" viewBox="0 0 940 500" preserveAspectRatio="xMidYMid meet"></svg><div class="overlay title"><div class="kicker" id="kicker"></div><h1 id="heading"></h1><p id="subtitle"></p></div><div class="overlay hud" id="hud"></div><div class="overlay callout" id="callout"><h4>CHAPTER ACTION</h4><p></p></div><div class="overlay readout" id="readout"></div></main>
 <section class="bottom"><div class="module" id="miniModule"><div class="mhead"><span>MINI CONFUSION</span><button data-collapse="miniBody">−</button></div><div id="miniBody"><p class='mapnote'>中央图显示四类结果和阈值交换。</p></div></div><div class="module" id="controlModule"><div class="mhead"><span>VIEW SETTINGS · 显示设置</span><button data-collapse="controlBody">−</button></div><div id="controlBody"><div class="controls">
-<div><label>患病率%<span id="prevLabel">5.0</span></label><input id="prevalence" type="range" min="1" max="500" value="50"></div>
-<div><label>阈值<span id="thresholdLabel">42</span></label><input id="threshold" type="range" min="0" max="100" value="42"></div>
+<div><label for="prevalence">患病率%<span id="prevLabel">5.0</span></label><input id="prevalence" type="range" min="1" max="500" value="50"></div>
+<div><label for="threshold">阈值<span id="thresholdLabel">42</span></label><input id="threshold" type="range" min="0" max="100" value="42"></div>
 </div></div></div></section>
 <aside class="info"><div class="mhead"><span>EVIDENCE · 证据层</span><button data-collapse="infoBody">−</button></div><div id="infoBody"><div class="body" id="body"></div><div class="tabs" id="tabs"><button data-tab='read' class='active'>读图</button><button data-tab='stat'>统计</button><button data-tab='diag'>诊断</button><button data-tab='method'>方法</button><button data-tab='task'>任务</button><button data-tab='ai'>AI</button></div><div class="panel active" id="panel-read"><div id="readPanel"></div></div><div class="panel" id="panel-stat"><div id="statPanel"></div></div><div class="panel" id="panel-diag"><div id="diagPanel"></div></div><div class="panel" id="panel-method"><div id="methodPanel"></div></div><div class="panel" id="panel-task"><div id="taskPanel"></div></div><div class="panel" id="panel-ai"><div id="aiPanel"></div></div><p class="source">参数化分类教学模拟，不是真实临床证据。</p></div></aside>
 </div>
@@ -42,13 +56,13 @@ const $=id=>document.getElementById(id);const F=(v,n=2)=>Number(v).toLocaleStrin
 const state=Object.assign({chapter:0},C.initialState);
 function setTab(name){[...document.querySelectorAll('#tabs button')].forEach(b=>b.classList.toggle('active',b.dataset.tab===name));['read','stat','diag','method','task','ai'].forEach(x=>document.getElementById('panel-'+x).classList.toggle('active',x===name));Renderer.panel(name)}
 function setChapter(i){state.chapter=i;const c=C.chapters[i];[...document.querySelectorAll('.chapter')].forEach((n,j)=>n.classList.toggle('active',i===j));document.querySelector('#progress').style.width=((i+1)/C.chapters.length*100)+'%';document.querySelector('#kicker').textContent=c.kicker;document.querySelector('#heading').textContent=c.heading;document.querySelector('#subtitle').textContent=c.sub;document.querySelector('#callout p').textContent=c.action;Object.assign(state,c.state||{});syncControls();Renderer.chart();Renderer.read();setTab(c.tab||'read')}
-function renderStatic(){document.querySelector('#body').innerHTML=C.intro.map(p=>`<p>${p}</p>`).join('');document.querySelector('#readPanel').innerHTML=C.readHtml;document.querySelector('#statPanel').innerHTML=C.statHtml;document.querySelector('#diagPanel').innerHTML=C.diagHtml;document.querySelector('#taskPanel').innerHTML=C.tasks.map((x,i)=>`<div class="task"><b>任务${i+1}：</b>${x}</div>`).join('');document.querySelector('#aiPanel').innerHTML=C.prompts.map(p=>`<div class="prompt"><h4>${p.title}</h4><textarea>${p.text}</textarea></div>`).join('');document.querySelector('#methodPanel').innerHTML=`<p class="label">METHOD ROUTER · 从问题到方法</p><div class="fact"><h4>主方法</h4><p>${C.method.primary}</p></div><div class="fact"><h4>前提检查</h4><p>${C.method.checks}</p></div><div class="fact"><h4>稳健替代</h4><p>${C.method.robust}</p></div><div class="fact"><h4>失效场景</h4><p>${C.method.invalid}</p></div><div class="fact"><h4>当前结果</h4><p>${C.method.result}</p></div><div class="fact"><h4>PYTHON</h4><div class="code">${C.method.code}</div></div>`}
+function renderStatic(){document.querySelector('#body').innerHTML=C.intro.map(p=>`<p>${p}</p>`).join('');document.querySelector('#readPanel').innerHTML=C.readHtml;document.querySelector('#statPanel').innerHTML=C.statHtml;document.querySelector('#diagPanel').innerHTML=C.diagHtml;document.querySelector('#taskPanel').innerHTML=C.tasks.map((x,i)=>`<div class="task"><b>任务${i+1}：</b>${x}</div>`).join('');document.querySelector('#aiPanel').innerHTML=C.prompts.map(p=>`<div class="prompt"><h4>${p.title}</h4><textarea aria-label="${p.title || 'AI提示词'}">${p.text}</textarea></div>`).join('');document.querySelector('#methodPanel').innerHTML=`<p class="label">METHOD ROUTER · 从问题到方法</p><div class="fact"><h4>主方法</h4><p>${C.method.primary}</p></div><div class="fact"><h4>前提检查</h4><p>${C.method.checks}</p></div><div class="fact"><h4>稳健替代</h4><p>${C.method.robust}</p></div><div class="fact"><h4>失效场景</h4><p>${C.method.invalid}</p></div><div class="fact"><h4>当前结果</h4><p>${C.method.result}</p></div><div class="fact"><h4>PYTHON</h4><div class="code">${C.method.code}</div></div>`}
 function buildNav(){document.querySelector('#nav').innerHTML=C.chapters.map((c,i)=>`<div class="chapter${i?'':' active'}" data-i="${i}"><i>${c.num}</i><div><b>${c.name}</b><small>${c.en}</small></div></div>`).join('');document.querySelector('#nav').addEventListener('click',e=>{const n=e.target.closest('.chapter');if(n)setChapter(+n.dataset.i)})}
 function buildTabs(){document.querySelector('#tabs').innerHTML=[['read','读图'],['stat','统计'],['diag','诊断'],['method','方法'],['task','任务'],['ai','AI']].map(([v,l])=>`<button data-tab="${v}"${v==='read'?' class="active"':''}>${l}</button>`).join('');document.querySelector('#tabs').addEventListener('click',e=>{if(e.target.dataset.tab)setTab(e.target.dataset.tab)})}
 function syncControls(){Object.entries(C.controlSync||{}).forEach(([id,key])=>{const el=document.getElementById(id);if(el)el.value=state[key]})}
 document.addEventListener('click',e=>{const collapse=e.target.closest('[data-collapse]');if(collapse){const target=document.getElementById(collapse.dataset.collapse);target.classList.toggle('hidden')}});
 document.querySelector('#focus').addEventListener('click',()=>{const on=document.body.classList.toggle('focus');document.querySelector('#focus').textContent=on?'◻ 显示模块':'🎯 聚焦图面'});
-document.querySelector('#reset').addEventListener('click',()=>{Object.assign(state,C.initialState);syncControls();setChapter(0)});
+document.querySelector('#reset').addEventListener('click',()=>{Object.assign(state,C.initialState);syncControls();setChapter(0);document.querySelector('#prevalence').value=Math.round(state.prevalence*100);document.querySelector('#prevLabel').textContent=F(state.prevalence*100,1);document.querySelector('#threshold').value=state.threshold;document.querySelector('#thresholdLabel').textContent=state.threshold;});
 function startApp(){buildNav();buildTabs();renderStatic();syncControls();if(window.Renderer)Renderer.init();setChapter(0)}
 window.addEventListener('resize',()=>Renderer.chart());
 </script>
