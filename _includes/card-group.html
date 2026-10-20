@@ -1,0 +1,34 @@
+<section class="creation-group" id="{{ include.group.id }}" aria-labelledby="{{ include.group.id }}-title">
+  <div class="group-head">
+    <div class="group-title">
+      <span class="group-icon">
+        <svg class="icon" aria-hidden="true" focusable="false"><use href="#icon-{{ include.group.icon }}"></use></svg>
+      </span>
+      <div>
+        <p class="section-kicker">{{ include.group.kicker }}</p>
+        <h3 id="{{ include.group.id }}-title">{{ include.group.title }}</h3>
+      </div>
+    </div>
+    <p>{{ include.group.description }}</p>
+  </div>
+
+  <div class="creation-grid">
+    {% for item in include.group.items %}
+      {% if item.link %}
+      <a class="creation-card" href="{{ item.link }}">
+        <span class="creation-tag">{{ item.tag }}</span>
+        <h4>{{ item.title }}</h4>
+        <p>{{ item.text }}</p>
+        <span class="card-cta">查看</span>
+      </a>
+      {% else %}
+      <article class="creation-card muted">
+        <span class="creation-tag">{{ item.tag }}</span>
+        <h4>{{ item.title }}</h4>
+        <p>{{ item.text }}</p>
+        <span class="card-cta">待更新</span>
+      </article>
+      {% endif %}
+    {% endfor %}
+  </div>
+</section>

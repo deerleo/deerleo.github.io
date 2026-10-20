@@ -1,0 +1,139 @@
+about:
+  cards:
+    - title: AI 技术实践者
+      text: 关注智能体、AI 编程、自动化工作流与企业级 AI 应用，强调能力边界和真实可用性。
+    - title: 产品创业者
+      text: 从需求、设计、交付到商业闭环，判断技术如何变成可持续的业务。
+    - title: 科技内容创作者
+      text: 把复杂技术讲清楚，帮助普通人用起来，帮助开发者做出来，帮助企业用得好。
+
+projects:
+  - id: works
+    kicker: Works
+    title: 个人作品
+    icon: work
+    description: 做过的完整作品、产品化尝试和可交付的交互式工具。
+    items:
+      - title: 化学烧杯混合互动模拟
+        text: 教学 / 交互式网页实验
+        link: /beaker-mixer-standalone.html
+        tag: Demo
+      - title: 企业级 AI 应用原型
+        text: Agent / 业务流程 / 交付设计
+        tag: 整理中
+      - title: 个人知识库系统
+        text: 内容沉淀 / 检索 / 工作流
+        tag: 规划中
+
+  - id: experiments
+    kicker: Experiments
+    title: 实验项目
+    icon: experiment
+    description: 围绕 AI、Agent 和新工作流的探索实验，记录判断与踩坑。
+    items:
+      - title: AI FDE / Agent 工作流
+        text: 任务编排 / 工具调用 / 可靠性
+        tag: 探索中
+      - title: AI 审计实验
+        text: 风险识别 / 过程留痕 / 结果解释
+        tag: 探索中
+      - title: 自动化内容流水线
+        text: 选题 / 初稿 / 多平台适配
+        tag: 规划中
+
+blog:
+  - id: articles
+    kicker: Writing
+    title: 文章与观点
+    icon: tutorial
+    description: 实践复盘、产品判断、创业思考与技术边界分析。
+    items:
+      - title: AI 工作流复盘
+        text: 从单次提问到稳定业务流程的演进过程
+        tag: 写作中
+      - title: 产品创业笔记
+        text: 需求验证、交付成本与商业模式判断
+        tag: 规划中
+      - title: 技术边界分析
+        text: Agent 能力、可靠性限制与适用场景
+        tag: 规划中
+
+tutorials:
+  - id: ai-tools-setup
+    mode: single
+    title: AI 工具上手
+    kicker: Single
+    description: 从安装、配置到常见报错排查，适合第一次搭建自己的 AI 工作环境。
+    duration: 15 min
+    level: 入门
+    link:
+    tag: 写作中
+
+  - id: mcp-configuration
+    mode: single
+    title: MCP 配置与调用
+    kicker: Single
+    description: 理解 MCP 的基本概念，配置第一个工具调用，并验证调用链路。
+    duration: 20 min
+    level: 进阶
+    link:
+    tag: 规划中
+
+  - id: agent-architecture
+    mode: series
+    title: Agent 架构入门
+    kicker: Series
+    description: 从单轮调用到任务编排、工具选择、评测与可靠性设计的完整学习路径。
+    level: 系统课
+    progress:
+      done: 1
+      total: 6
+    link:
+    episodes:
+      - title: 01 · 为什么需要 Agent
+        text: 任务拆解、上下文组织与基础执行模型
+        status: 已发布
+      - title: 02 · 工具调用与 MCP
+        text: 工具选择、参数设计与安全边界
+        status: 写作中
+      - title: 03 · 任务编排与状态管理
+        text: 多步骤任务、失败重试与可观测性
+        status: 规划中
+
+  - id: ai-workflow-delivery
+    mode: series
+    title: AI 工作流落地
+    kicker: Series
+    description: 把 AI 从个人效率工具推进到团队可复用、可交付的业务流程。
+    level: 实战
+    progress:
+      done: 0
+      total: 4
+    link:
+    episodes:
+      - title: 01 · 从场景到流程
+        text: 识别高价值环节、拆解输入输出与验收标准
+        status: 规划中
+      - title: 02 · 原型与最小交付
+        text: 快速验证可行性，避免过早平台化
+        status: 规划中
+      - title: 03 · 团队协作与培训
+        text: 降低使用门槛，建立复盘与反馈机制
+        status: 规划中
+
+media:
+  - id: accounts
+    kicker: Media
+    title: 自媒体账号
+    icon: media
+    description: 长期更新的内容入口，后续会集中放置可关注的平台。
+    items:
+      - title: 微信公众号
+        text: AI 实践 / 产品判断 / 创业复盘
+        tag: 规划中
+      - title: 视频号 / B站
+        text: 工具演示 / 项目讲解 / 教程片段
+        tag: 规划中
+      - title: X / GitHub
+        text: 技术笔记 / 开源实验 / 更新动态
+        tag: 整理中

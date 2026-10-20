@@ -1,0 +1,63 @@
+{% assign item = include.item %}
+{% if item.mode == 'series' %}
+  <article class="tutorial-card series" id="{{ item.id }}">
+    <div class="mode-row">
+      <span class="mode-badge">系列教程</span>
+      {% if item.tag %}<span class="creation-tag">{{ item.tag }}</span>{% endif %}
+    </div>
+
+    <h3>{% if item.link %}<a href="{{ item.link }}">{{ item.title }}</a>{% else %}{{ item.title }}{% endif %}</h3>
+    <p class="tutorial-summary">{{ item.description }}</p>
+
+    {% if item.progress %}
+      {% assign percent = item.progress.done | times: 100 | divided_by: item.progress.total %}
+      <div class="tutorial-progress">
+        <div class="progress-head">
+          <span>更新进度</span>
+          <span>{{ item.progress.done }} / {{ item.progress.total }}</span>
+        </div>
+        <div class="progress-track" role="progressbar" aria-valuemin="0" aria-valuemax="{{ item.progress.total }}" aria-valuenow="{{ item.progress.done }}" aria-label="更新进度">
+          <span style="width: {{ percent }}%;"></span>
+        </div>
+      </div>
+    {% endif %}
+
+    {% if item.episodes %}
+      <ol class="episode-list">
+        {% for episode in item.episodes %}
+          <li>
+            <div class="episode-head">
+              {% if episode.link %}<a class="episode-title" href="{{ episode.link }}">{{ episode.title }}</a>{% else %}<span class="episode-title">{{ episode.title }}</span>{% endif %}
+              <span class="episode-status">{{ episode.status }}</span>
+            </div>
+            <p>{{ episode.text }}</p>
+          </li>
+        {% endfor %}
+      </ol>
+    {% endif %}
+
+    <div class="tutorial-footer">
+      {% if item.level %}<span>{{ item.level }}</span>{% endif %}
+      <span class="card-cta">连载中</span>
+    </div>
+  </article>
+{% else %}
+  <article class="tutorial-card single" id="{{ item.id }}">
+    <div class="mode-row">
+      <span class="mode-badge">单篇教程</span>
+      {% if item.tag %}<span class="creation-tag">{{ item.tag }}</span>{% endif %}
+    </div>
+
+    <h3>{% if item.link %}<a href="{{ item.link }}">{{ item.title }}</a>{% else %}{{ item.title }}{% endif %}</h3>
+    <p class="tutorial-summary">{{ item.description }}</p>
+
+    <dl class="tutorial-meta">
+      {% if item.duration %}<div><dt>预计时长</dt><dd>{{ item.duration }}</dd></div>{% endif %}
+      {% if item.level %}<div><dt>难度</dt><dd>{{ item.level }}</dd></div>{% endif %}
+    </dl>
+
+    <div class="tutorial-footer">
+      {% if item.link %}<a class="card-cta" href="{{ item.link }}">查看</a>{% else %}<span class="card-cta">待更新</span>{% endif %}
+    </div>
+  </article>
+{% endif %}

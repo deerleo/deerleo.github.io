@@ -1,23 +1,156 @@
 ---
-layout: default
+layout: brand
+css: milu
 ---
+{% include icons.html %}
+<div class="milu">
+  <header class="site-nav">
+    <div class="nav-inner">
+      <a class="brand" href="#top" aria-label="迷鹿 MiLu 首页">
+        <span class="brand-mark">
+          <svg class="icon" aria-hidden="true" focusable="false"><use href="#icon-deer"></use></svg>
+        </span>
+        <span class="brand-copy">AI 有鹿</span>
+      </a>
+      <nav class="nav-links" aria-label="页面导航">
+        <a href="#about">关于</a>
+        <a href="#projects">项目</a>
+        <a href="#blog">Blog</a>
+        <a href="#tutorials">教程</a>
+        <a href="#media">自媒体</a>
+        <a href="#contact">联系</a>
+      </nav>
+    </div>
+  </header>
 
+  <main id="top">
+    <section class="hero">
+      <div class="hero-copy">
+        <p class="eyebrow">
+          <span>AI</span><span>Product</span><span>Engineering</span><span>Media</span>
+        </p>
+        <h1>迷鹿 MiLu</h1>
+        <p class="role-line">AI 技术实践者 · 产品创业者 · 科技内容创作者</p>
+        <p class="hero-summary">
+          我把 AI、产品和内容放在同一个真实工作流里持续实践：让 AI 不止于技术，让普通人真正用起来，让企业真正创造价值。
+        </p>
+        <div class="hero-actions">
+          <a class="button primary" href="#projects">看项目</a>
+          <a class="button ghost" href="#blog">看 Blog</a>
+          <a class="button ghost" href="#tutorials">看教程</a>
+          <a class="button ghost" href="#contact">联系我</a>
+        </div>
+        <dl class="hero-stats">
+          <div><dt>10+</dt><dd>年技术与产品实践</dd></div>
+          <div><dt>5</dt><dd>类长期内容板块</dd></div>
+          <div><dt>3</dt><dd>类核心服务对象</dd></div>
+        </dl>
+      </div>
 
-{% include career-profile.html %}
+      <div class="profile-card">
+        <div class="profile-photo">
+          <img src="{{ '/assets/images/avatar.jpg' | relative_url }}" width="360" height="360" alt="迷鹿 MiLu 的头像">
+        </div>
+      </div>
+    </section>
 
-{% unless site.data.data.sidebar.education %}
-  {% include education.html %}
-{% endunless %}
+    <section class="section" id="about" aria-labelledby="about-title">
+      <div class="section-head">
+        <p class="section-kicker">About</p>
+        <h2 id="about-title">我在做什么</h2>
+        <p class="section-lead">懂技术、懂产品、懂商业，并愿意亲自下场实践。</p>
+      </div>
+      <div class="about-grid">
+        {% for card in site.data.milu.about.cards %}
+        <article class="about-card">
+          <h3>{{ card.title }}</h3>
+          <p>{{ card.text }}</p>
+        </article>
+        {% endfor %}
+      </div>
+    </section>
 
-{% include experiences.html %}
+    <section class="section section-muted" id="projects" aria-labelledby="projects-title">
+      <div class="section-head">
+        <p class="section-kicker">Projects</p>
+        <h2 id="projects-title">项目</h2>
+        <p class="section-lead">完整作品、产品化尝试和 AI / Agent 实验项目。</p>
+      </div>
 
-{% include certifications.html %}
+      {% for group in site.data.milu.projects %}
+      {% include card-group.html group=group %}
+      {% endfor %}
+    </section>
 
-{% include projects.html %}
+    <section class="section" id="blog" aria-labelledby="blog-title">
+      <div class="section-head">
+        <p class="section-kicker">Blog</p>
+        <h2 id="blog-title">Blog</h2>
+        <p class="section-lead">实践复盘、产品判断、创业思考与技术边界分析。</p>
+      </div>
 
-{% include oss-contributions.html %}
+      {% for group in site.data.milu.blog %}
+      {% include card-group.html group=group %}
+      {% endfor %}
+    </section>
 
-{% include publications.html %}
+    <section class="section section-muted" id="tutorials" aria-labelledby="tutorials-title">
+      <div class="section-head">
+        <p class="section-kicker">Tutorials</p>
+        <h2 id="tutorials-title">教程</h2>
+        <p class="section-lead">支持单篇教程和系列教程：单篇解决一个具体问题，系列沉淀完整学习路径。</p>
+      </div>
 
-{% include skills.html %}
+      <div class="tutorial-grid">
+        {% for item in site.data.milu.tutorials %}
+          {% include tutorial-card.html item=item %}
+        {% endfor %}
+      </div>
+    </section>
 
+    <section class="section section-muted" id="media" aria-labelledby="media-title">
+      <div class="section-head">
+        <p class="section-kicker">Media</p>
+        <h2 id="media-title">自媒体</h2>
+        <p class="section-lead">长期更新的内容平台与账号入口。</p>
+      </div>
+
+      {% for group in site.data.milu.media %}
+      {% include card-group.html group=group %}
+      {% endfor %}
+    </section>
+
+    <section class="contact" id="contact" aria-labelledby="contact-title">
+      <div class="contact-copy">
+        <p class="section-kicker light">Contact</p>
+        <h2 id="contact-title">如果你也在把 AI 做成真实能力</h2>
+        <p>
+          欢迎交流 AI 工作流落地、智能体工程、企业级应用、产品构建、培训合作或内容共创。
+          请在邮件里简单说明你的场景、目标和当前卡点，我会尽量给出有针对性的回复。
+        </p>
+        <div class="contact-actions">
+          <a class="button primary" href="mailto:dearsuley@gmail.com">dearsuley@gmail.com</a>
+          <a class="button ghost" href="https://github.com/deerleo" target="_blank" rel="noopener">GitHub</a>
+        </div>
+      </div>
+      <div class="contact-card" aria-label="合作方向">
+        <h3>开放交流方向</h3>
+        <ul>
+          <li>AI 工作流设计与团队落地</li>
+          <li>Agent 架构与应用交付</li>
+          <li>AI 产品原型与需求梳理</li>
+          <li>课程、工作坊与内容共创</li>
+        </ul>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <p>© <span id="year">2026</span> 迷鹿 MiLu · AI 有鹿</p>
+    <p class="footer-line">AI, Made Human. 让 AI 更容易理解，更容易使用，更能创造价值。</p>
+  </footer>
+</div>
+
+<script>
+  document.getElementById('year').textContent = new Date().getFullYear();
+</script>
