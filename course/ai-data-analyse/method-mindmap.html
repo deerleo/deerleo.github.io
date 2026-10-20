@@ -1,0 +1,610 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AI辅助统计分析与结果解释 · 交互思维导图</title>
+<meta name="description" content="面向初学者的AI辅助统计思维导图：从问题识别、变量判断、方法选择到效应量、置信区间、p值解读和报告生成。">
+<meta name="robots" content="index,follow">
+<style>
+:root {
+  --bg:#05070f; --panel:rgba(7,13,23,.96); --panel-2:rgba(11,19,32,.94);
+  --line:rgba(148,163,184,.22); --muted:#96a3b5; --text:#eef3fa;
+  --blue:#38bdf8; --cyan:#67e8f9; --lime:#a3e635; --gold:#fbbf24;
+  --pink:#f472b6; --violet:#a78bfa; --rose:#fb7185; --emerald:#34d399;
+  --radius:14px; --topbar:64px; --sidebar:390px;
+}
+* { box-sizing:border-box; }
+html,body { height:100%; }
+body {
+  margin:0; overflow:hidden; color:var(--text); background:var(--bg);
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+  font-size:14px; line-height:1.55;
+}
+#app { position:fixed; inset:0; display:grid; grid-template-rows:var(--topbar) minmax(0,1fr); }
+.top {
+  display:flex; align-items:center; gap:16px; padding:0 16px;
+  border-bottom:1px solid var(--line); background:rgba(5,8,15,.94); z-index:30;
+}
+.brand { display:flex; align-items:center; gap:11px; min-width:0; }
+.brand-mark { width:38px; height:38px; flex:0 0 auto; border-radius:11px; display:grid; place-items:center; background:linear-gradient(135deg,var(--blue),#6366f1); }
+.brand small { display:block; color:var(--gold); font-size:10px; letter-spacing:.22em; }
+.brand b { font-size:16px; letter-spacing:-.02em; }
+.top-actions { margin-left:auto; display:flex; align-items:center; gap:8px; }
+.search { position:relative; width:min(260px,32vw); }
+.search input {
+  width:100%; height:36px; border:1px solid var(--line); border-radius:9px;
+  background:#0b1220; color:#fff; padding:0 11px 0 34px; font:inherit; outline:none;
+}
+.search input:focus { border-color:var(--blue); box-shadow:0 0 0 3px rgba(56,189,248,.12); }
+.search::before { content:"🔍"; position:absolute; left:10px; top:8px; opacity:.6; font-size:13px; }
+.tool {
+  height:36px; min-width:36px; padding:0 10px; border:1px solid var(--line); border-radius:9px;
+  color:#d5e1ef; background:#101a2b; font:inherit; font-size:12px; font-weight:700; cursor:pointer;
+}
+.tool:hover,.tool:focus-visible,.tool.active { border-color:var(--blue); color:#fff; background:rgba(56,189,248,.13); }
+.back {
+  height:36px; padding:0 12px; border-radius:9px; text-decoration:none; color:#dbeafe;
+  background:#0b1220; border:1px solid var(--line); font-size:12px; font-weight:750; display:grid; place-items:center;
+}
+.back:hover { border-color:var(--blue); color:#fff; }
+.layout { display:grid; grid-template-columns:minmax(0,1fr) var(--sidebar); min-height:0; }
+.map-wrap { position:relative; overflow:hidden; background:
+  radial-gradient(900px 520px at 50% 35%, rgba(56,189,248,.10), transparent),
+  radial-gradient(800px 500px at 80% 80%, rgba(167,139,250,.09), transparent),
+  linear-gradient(145deg,#060b16,#04070e);
+}
+#viewport { position:absolute; inset:0; cursor:grab; touch-action:none; }
+#viewport.dragging { cursor:grabbing; }
+#canvas { position:absolute; left:0; top:0; width:1650px; height:3110px; transform-origin:0 0; will-change:transform; }
+#wires { position:absolute; inset:0; width:1650px; height:3110px; overflow:visible; }
+.edge { fill:none; stroke:rgba(148,163,184,.24); stroke-width:2; transition:stroke .2s,stroke-width .2s,opacity .2s; }
+.edge.active { stroke:var(--edge,var(--blue)); stroke-width:4; opacity:.95; filter:drop-shadow(0 0 7px color-mix(in srgb,var(--edge,var(--blue)) 42%,transparent)); }
+.node {
+  position:absolute; border:0; padding:12px 13px; text-align:left; color:inherit; font:inherit;
+  background:var(--panel); border:1px solid rgba(148,163,184,.20); border-radius:var(--radius);
+  box-shadow:0 10px 24px rgba(0,0,0,.20); cursor:pointer; overflow:hidden;
+  transition:border-color .2s,transform .2s,box-shadow .2s,opacity .2s,background .2s;
+}
+.node::before {
+  content:""; position:absolute; left:0; top:0; bottom:0; width:4px;
+  background:var(--accent,var(--blue)); box-shadow:0 0 14px var(--accent,var(--blue));
+}
+.node:hover,.node:focus-visible { transform:translateY(-2px); border-color:color-mix(in srgb,var(--accent,var(--blue)) 65%,transparent); outline:none; }
+.node.selected {
+  border-color:var(--accent,var(--blue));
+  background:linear-gradient(145deg,color-mix(in srgb,var(--accent,var(--blue)) 17%,#0a1220),#070d18);
+  box-shadow:0 0 0 2px color-mix(in srgb,var(--accent,var(--blue)) 28%,transparent),0 16px 32px rgba(0,0,0,.32);
+  transform:translateY(-2px) scale(1.02);
+}
+.node.dim { opacity:.30; filter:saturate(.55); }
+.node .kicker { display:flex; align-items:center; justify-content:space-between; gap:6px; color:var(--accent,var(--blue)); font-size:10px; font-weight:850; letter-spacing:.14em; text-transform:uppercase; }
+.node h3 { margin:4px 0 4px; font-size:14.5px; line-height:1.25; letter-spacing:-.01em; }
+.node p { margin:0; color:#b6c4d5; font-size:11.5px; line-height:1.38; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+.node.root { border-width:1px; border-radius:20px; background:linear-gradient(145deg,#0f2436,#070d18); }
+.node.root h3 { font-size:19px; margin-top:6px; }
+.node.root p { -webkit-line-clamp:4; font-size:12px; }
+.node .hint { position:absolute; right:8px; bottom:7px; font-size:10px; color:var(--muted); opacity:.7; }
+.onboard {
+  position:absolute; left:16px; bottom:16px; width:min(390px,calc(100% - 32px)); z-index:12;
+  border:1px solid rgba(56,189,248,.34); border-radius:16px; padding:14px;
+  background:rgba(6,13,24,.92); box-shadow:0 16px 40px rgba(0,0,0,.28); backdrop-filter:blur(16px);
+}
+.onboard h2 { margin:0 0 7px; font-size:15px; }
+.onboard p { margin:0 0 10px; color:#b8c8d9; font-size:12px; }
+.scenarios { display:grid; grid-template-columns:1fr 1fr; gap:6px; }
+.scenario {
+  border:1px solid var(--line); background:#0b1424; color:#c9d8e8; border-radius:9px; padding:8px 9px;
+  font:inherit; font-size:11.5px; font-weight:700; text-align:left; cursor:pointer;
+}
+.scenario:hover,.scenario.active { border-color:var(--blue); color:#fff; background:rgba(56,189,248,.13); }
+.zoom { position:absolute; right:16px; bottom:16px; z-index:12; display:grid; gap:6px; }
+.zoom button { width:38px; height:38px; border-radius:10px; border:1px solid var(--line); background:rgba(8,14,25,.9); color:#d9e5f2; font-size:17px; cursor:pointer; }
+.zoom button:hover { border-color:var(--blue); color:#fff; }
+.legend { position:absolute; left:16px; top:14px; z-index:11; display:flex; flex-wrap:wrap; gap:5px; max-width:min(780px,calc(100% - 32px)); }
+.pill {
+  display:inline-flex; align-items:center; gap:5px; padding:5px 8px; border-radius:999px;
+  border:1px solid var(--line); background:rgba(7,13,24,.82); color:#bfcee0; font-size:10.5px; font-weight:800;
+}
+.pill i { width:7px; height:7px; border-radius:50%; background:var(--accent,var(--blue)); box-shadow:0 0 8px var(--accent,var(--blue)); }
+.side { min-width:0; overflow:auto; border-left:1px solid var(--line); background:var(--panel); padding:18px 18px 34px; }
+.side-head { position:sticky; top:-18px; z-index:5; margin:-18px -18px 16px; padding:16px 18px 12px; background:rgba(7,13,23,.97); border-bottom:1px solid var(--line); backdrop-filter:blur(10px); }
+.side-head .badge { display:inline-flex; align-items:center; gap:6px; margin-bottom:8px; padding:4px 8px; border-radius:999px; font-size:10px; font-weight:850; letter-spacing:.12em; text-transform:uppercase; color:var(--accent,var(--blue)); background:color-mix(in srgb,var(--accent,var(--blue)) 13%,transparent); border:1px solid color-mix(in srgb,var(--accent,var(--blue)) 30%,transparent); }
+.side-head h1 { margin:0; font-size:22px; line-height:1.25; letter-spacing:-.02em; }
+.side-head p { margin:8px 0 0; color:#b8c8d9; font-size:13px; }
+.tabs { display:grid; grid-template-columns:repeat(4,1fr); gap:3px; margin:16px 0; padding:4px; border-radius:11px; background:#0a1220; }
+.tabs button { border:0; min-height:30px; border-radius:8px; background:transparent; color:var(--muted); font:inherit; font-size:11px; font-weight:800; cursor:pointer; }
+.tabs button.active { background:#1a2b42; color:#fff; }
+.panel { display:none; }
+.panel.active { display:block; animation:fade .24s ease; }
+@keyframes fade { from { opacity:0; transform:translateY(5px); } to { opacity:1; transform:none; } }
+.intro { margin:0 0 12px; padding:12px; border-radius:12px; background:rgba(56,189,248,.10); border:1px solid rgba(56,189,248,.26); }
+.intro strong { color:#e0f2fe; }
+.checklist,.simple-list { margin:0; padding-left:20px; color:#c5d3e2; font-size:12.5px; }
+.checklist li,.simple-list li { margin:7px 0; }
+.checklist li::marker { color:var(--lime); }
+.simple-list li::marker { color:var(--blue); }
+.info-card { margin:11px 0; border:1px solid rgba(148,163,184,.18); background:#081020; border-radius:12px; padding:11px 12px; }
+.info-card h4 { margin:0 0 5px; color:#dceaf8; font-size:13px; }
+.info-card p,.info-card ul { margin:0; color:#b7c6d7; font-size:12.5px; }
+.info-card.accent { border-color:color-mix(in srgb,var(--accent,var(--blue)) 40%,transparent); background:color-mix(in srgb,var(--accent,var(--blue)) 8%,#081020); }
+.form { display:grid; gap:9px; }
+.field label { display:flex; justify-content:space-between; gap:6px; margin-bottom:4px; color:#c8d6e5; font-size:11.5px; font-weight:800; }
+.field input,.field textarea,.field select {
+  width:100%; border:1px solid var(--line); border-radius:9px; background:#0a1220; color:#fff;
+  padding:8px 10px; font:inherit; font-size:12.5px; outline:none; resize:vertical;
+}
+.field input:focus,.field textarea:focus,.field select:focus { border-color:var(--blue); box-shadow:0 0 0 3px rgba(56,189,248,.10); }
+.form-row { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+.actions { display:flex; gap:7px; flex-wrap:wrap; margin-top:12px; }
+.action {
+  min-height:36px; padding:0 13px; border-radius:9px; border:1px solid var(--blue); background:var(--blue);
+  color:#04121d; font:inherit; font-size:12px; font-weight:850; cursor:pointer;
+}
+.action.ghost { background:transparent; color:#bfe5f8; }
+.action:hover { filter:brightness(1.1); }
+.output { margin-top:12px; border:1px solid rgba(163,230,53,.32); background:rgba(163,230,53,.08); border-radius:12px; padding:12px; }
+.output h4 { margin:0 0 6px; color:#d9f99d; font-size:12px; letter-spacing:.08em; }
+.output pre { margin:0; white-space:pre-wrap; word-break:break-word; color:#dcfce7; font:12px/1.6 ui-monospace,SFMono-Regular,Menlo,monospace; }
+.tip { margin:0 0 10px; color:#a8b8ca; font-size:12px; }
+.glossary dt { color:#e2edf8; font-weight:800; font-size:13px; margin-top:12px; }
+.glossary dd { margin:3px 0 0; color:#b7c6d7; font-size:12.5px; }
+.next { margin-top:16px; border:1px solid var(--line); border-radius:12px; padding:12px; background:#070f1c; }
+.next h4 { margin:0 0 7px; color:#dbeafe; font-size:13px; }
+.next a { display:flex; justify-content:space-between; gap:8px; padding:8px 0; color:#8fd7f8; font-size:12.5px; font-weight:750; text-decoration:none; }
+.next a:hover { color:#fff; }
+.kbd { display:inline-block; min-width:20px; padding:2px 5px; border:1px solid var(--line); border-bottom-width:2px; border-radius:4px; background:#0a1220; color:#d3e2f0; font-size:10px; text-align:center; }
+@media (max-width:1020px) {
+  :root { --sidebar:340px; }
+  .brand small { display:none; }
+  .search { width:min(190px,28vw); }
+  .top-actions .label { display:none; }
+}
+@media (max-width:760px) {
+  #app { grid-template-rows:auto minmax(0,1fr); }
+  .top { height:auto; min-height:58px; padding:9px 10px; flex-wrap:wrap; gap:8px; }
+  .layout { grid-template-columns:1fr; grid-template-rows:minmax(0,1fr) minmax(240px,43vh); }
+  .side { border-left:0; border-top:1px solid var(--line); padding:14px 14px 28px; }
+  .side-head { margin:-14px -14px 12px; padding:12px 14px 10px; }
+  .search { order:5; width:100%; }
+  .onboard { left:10px; right:10px; bottom:10px; width:auto; padding:10px; }
+  .onboard p { display:none; }
+  .scenarios { grid-template-columns:1fr 1fr 1fr; gap:4px; }
+  .scenario { padding:7px 6px; font-size:10.5px; }
+  .legend { display:none; }
+  .zoom { bottom:calc(46vh + 10px); }
+}
+</style>
+</head>
+<body>
+<div id="app">
+  <header class="top">
+    <a class="back" href="./index.html" aria-label="返回AI数据分析导航">← 导航</a>
+    <div class="brand">
+      <span class="brand-mark">🧭</span>
+      <span><b>统计方法思维导图</b><small>AI DATA ANALYSE</small></span>
+    </div>
+    <div class="top-actions">
+      <label class="search" for="search"><input id="search" type="search" placeholder="搜索：p值、回归、阈值" autocomplete="off"></label>
+      <button class="tool" id="resetMap" title="重置视图">重置视图</button>
+      <button class="tool active" id="togglePaths" title="高亮当前路径" aria-pressed="true">高亮路径</button>
+    </div>
+  </header>
+
+  <div class="layout">
+    <section class="map-wrap" aria-label="交互思维导图">
+      <div class="legend" aria-hidden="true">
+        <span class="pill" style="--accent:#38bdf8"><i></i>先问问题</span>
+        <span class="pill" style="--accent:#34d399"><i></i>认识变量</span>
+        <span class="pill" style="--accent:#a78bfa"><i></i>选择方法</span>
+        <span class="pill" style="--accent:#fbbf24"><i></i>读懂证据</span>
+        <span class="pill" style="--accent:#fb7185"><i></i>检查风险</span>
+        <span class="pill" style="--accent:#f472b6"><i></i>生成报告</span>
+        <span class="pill"><i style="background:#94a3b8;box-shadow:none"></i>拖动画布 / 缩放</span>
+      </div>
+
+      <div id="viewport">
+        <div id="canvas">
+          <svg id="wires" viewBox="0 0 1650 3110" aria-hidden="true"></svg>
+          <div id="nodes"></div>
+        </div>
+      </div>
+
+      <aside class="onboard" aria-labelledby="onboard-title">
+        <h2 id="onboard-title">外行入门：先选一个很像你的问题</h2>
+        <p>不用先记公式。第一步只要说清你想回答什么；系统会带你跳到对应方法，并解释怎么看结果。</p>
+        <div class="scenarios" id="scenarios">
+          <button class="scenario" data-target="m_distribution">描述一组情况</button>
+          <button class="scenario" data-target="m_two">比较两组</button>
+          <button class="scenario" data-target="m_numeric">找数量关系</button>
+          <button class="scenario" data-target="m_categories">看类别关联</button>
+          <button class="scenario" data-target="m_paired">前后对比</button>
+          <button class="scenario" data-target="m_logistic">预测是/否</button>
+          <button class="scenario" data-target="m_time">看时间趋势</button>
+          <button class="scenario" data-target="m_threshold">做阈值决策</button>
+        </div>
+      </aside>
+
+      <div class="zoom">
+        <button id="zoomIn" title="放大">＋</button>
+        <button id="zoomOut" title="缩小">－</button>
+        <button id="zoomReset" title="适应屏幕">⤢</button>
+      </div>
+    </section>
+
+    <aside class="side" id="detail" aria-live="polite"></aside>
+  </div>
+</div>
+
+<script>
+const NODES = [
+  {id:'root', branch:'root', x:40, y:1360, w:280, h:164, kicker:'START HERE', title:'我该怎么分析？', text:'先不要急着跑模型。把问题说清楚，再判断变量、方法、证据和限制。', color:'#67e8f9'},
+  {id:'b_question', branch:'question', x:390, y:150, w:250, h:118, kicker:'STEP 1', title:'先问研究问题', text:'你在描述、比较、找关系、预测，还是要做决策？', color:'#38bdf8'},
+  {id:'q_describe', branch:'question', x:700, y:20, w:280, h:116, kicker:'QUESTION', title:'一组数据怎么样？', text:'例如：学员完成率、体检指标、门店销售额的整体情况。', color:'#38bdf8'},
+  {id:'q_compare', branch:'question', x:700, y:150, w:280, h:116, kicker:'QUESTION', title:'两组/多组有差异吗？', text:'例如：两种教学方法、男性和女性、三个城市的满意度。', color:'#38bdf8'},
+  {id:'q_rel', branch:'question', x:700, y:280, w:280, h:116, kicker:'QUESTION', title:'两个变量有关系吗？', text:'例如：学习时长与成绩、收入与消费、温度与用电量。', color:'#38bdf8'},
+  {id:'q_predict', branch:'question', x:700, y:410, w:280, h:116, kicker:'QUESTION', title:'能预测一个结果吗？', text:'例如：是否流失、是否及格、是否复购，或估计一个数值。', color:'#38bdf8'},
+
+  {id:'b_variables', branch:'variables', x:390, y:690, w:250, h:118, kicker:'STEP 2', title:'认识变量与设计', text:'判断结果变量、解释变量和数据之间是否独立。', color:'#34d399'},
+  {id:'v_outcome', branch:'variables', x:700, y:560, w:280, h:112, kicker:'VARIABLE', title:'结果变量是什么？', text:'数值、有序、无序类别、是/否，还是时间到事件。', color:'#34d399'},
+  {id:'v_explanatory', branch:'variables', x:700, y:690, w:280, h:112, kicker:'VARIABLE', title:'解释变量是什么？', text:'分组、数值、比例，还是多个因素同时存在。', color:'#34d399'},
+  {id:'v_design', branch:'variables', x:700, y:820, w:280, h:112, kicker:'DESIGN', title:'数据怎么来的？', text:'随机实验、观察数据、配对前后测、重复测量或面板数据。', color:'#34d399'},
+  {id:'v_missing', branch:'variables', x:700, y:950, w:280, h:112, kicker:'DATA', title:'缺失和样本够吗？', text:'先看缺失比例、原因、极端值和样本是否能支持结论。', color:'#34d399'},
+
+  {id:'b_methods', branch:'methods', x:390, y:1245, w:250, h:118, kicker:'STEP 3', title:'匹配统计方法', text:'方法由问题、变量类型和研究设计共同决定。', color:'#a78bfa'},
+  {id:'m_distribution', branch:'methods', x:700, y:1030, w:280, h:118, kicker:'METHOD', title:'分布概览', text:'直方图/箱线图 + 中位数、均值、标准差或四分位距。', color:'#a78bfa'},
+  {id:'m_two', branch:'methods', x:990, y:1030, w:280, h:118, kicker:'METHOD', title:'独立两组比较', text:'数值结果常用独立样本 t 检验；偏态可用 Mann-Whitney U。', color:'#a78bfa'},
+  {id:'m_more', branch:'methods', x:1280, y:1030, w:280, h:118, kicker:'METHOD', title:'三组及以上比较', text:'单因素 ANOVA 检验整体差异，事后比较找具体差异。', color:'#a78bfa'},
+  {id:'m_categories', branch:'methods', x:700, y:1160, w:280, h:118, kicker:'METHOD', title:'类别关联', text:'交叉表 + 卡方/Fisher，并报告比例差或风险比。', color:'#a78bfa'},
+  {id:'m_numeric', branch:'methods', x:990, y:1160, w:280, h:118, kicker:'METHOD', title:'两个数值变量', text:'散点图 + Pearson/Spearman相关，必要时做线性回归。', color:'#a78bfa'},
+  {id:'m_paired', branch:'methods', x:1280, y:1160, w:280, h:118, kicker:'METHOD', title:'配对 / 前后测', text:'同一人两次测量用配对 t 检验；偏态可用 Wilcoxon。', color:'#a78bfa'},
+  {id:'m_multiple', branch:'methods', x:700, y:1290, w:280, h:118, kicker:'METHOD', title:'多个解释因素', text:'多元回归同时调整多个变量，但不能自动证明因果。', color:'#a78bfa'},
+  {id:'m_logistic', branch:'methods', x:990, y:1290, w:280, h:118, kicker:'METHOD', title:'是/否结果预测', text:'逻辑回归估计概率，用优势比和分类指标解释。', color:'#a78bfa'},
+  {id:'m_experiment', branch:'methods', x:1280, y:1290, w:280, h:118, kicker:'METHOD', title:'因子实验', text:'两个以上因素用因子ANOVA，重点看主效应和交互效应。', color:'#a78bfa'},
+  {id:'m_time', branch:'methods', x:700, y:1420, w:280, h:118, kicker:'METHOD', title:'时间趋势/季节', text:'时间序列分解趋势和季节项，不要只比较两个端点。', color:'#a78bfa'},
+  {id:'m_threshold', branch:'methods', x:990, y:1420, w:280, h:118, kicker:'METHOD', title:'分类阈值决策', text:'混淆矩阵 + 敏感性、特异性、精确率，结合误判代价。', color:'#a78bfa'},
+  {id:'m_uncertainty', branch:'methods', x:1280, y:1420, w:280, h:118, kicker:'METHOD', title:'不确定性模拟', text:'蒙特卡洛/Bootstrap展示多种可能路径和分位区间。', color:'#a78bfa'},
+
+  {id:'b_evidence', branch:'evidence', x:390, y:1770, w:250, h:118, kicker:'STEP 4', title:'读懂统计证据', text:'显著不是全部；要看大小、精度、方向和不确定性。', color:'#fbbf24'},
+  {id:'e_effect', branch:'evidence', x:700, y:1650, w:300, h:112, kicker:'EVIDENCE', title:'效应量：差多少？', text:'如 d、η²、r、R²、比例差或优势比。', color:'#fbbf24'},
+  {id:'e_ci', branch:'evidence', x:700, y:1770, w:300, h:112, kicker:'EVIDENCE', title:'置信区间：多精确？', text:'区间越窄，估计越精确；看它是否包含实际重要值。', color:'#fbbf24'},
+  {id:'e_p', branch:'evidence', x:700, y:1890, w:300, h:112, kicker:'EVIDENCE', title:'p值：证据有多意外？', text:'p值不是效应大小，也不能证明原假设为真。', color:'#fbbf24'},
+  {id:'e_uncertain', branch:'evidence', x:700, y:2010, w:300, h:112, kicker:'EVIDENCE', title:'不确定性：可能范围', text:'用分位带、模拟路径或Bootstrap区间表达风险。', color:'#fbbf24'},
+
+  {id:'b_checks', branch:'checks', x:390, y:2250, w:250, h:118, kicker:'STEP 5', title:'检查前提与风险', text:'方法用错，p值再小也不能救回结论。', color:'#fb7185'},
+  {id:'c_assumptions', branch:'checks', x:700, y:2130, w:280, h:112, kicker:'CHECK', title:'模型前提', text:'线性、正态、方差齐性、独立性和连接函数是否合理。', color:'#fb7185'},
+  {id:'c_independence', branch:'checks', x:700, y:2250, w:280, h:112, kicker:'CHECK', title:'独立性', text:'同一个班级、同一人多次测量或时间序列常违反独立。', color:'#fb7185'},
+  {id:'c_outliers', branch:'checks', x:700, y:2370, w:280, h:112, kicker:'CHECK', title:'极端值与缺失', text:'看离群点是否驱动结果；报告缺失原因和敏感性分析。', color:'#fb7185'},
+  {id:'c_causality', branch:'checks', x:700, y:2490, w:280, h:112, kicker:'CHECK', title:'相关≠因果', text:'只有随机分组或强设计才更接近因果解释。', color:'#fb7185'},
+
+  {id:'b_report', branch:'report', x:390, y:2730, w:250, h:118, kicker:'STEP 6', title:'生成可解释报告', text:'把统计结果翻译成读者能行动、能复核的结论。', color:'#f472b6'},
+  {id:'r_structure', branch:'report', x:700, y:2610, w:280, h:112, kicker:'REPORT', title:'报告骨架', text:'问题→数据→方法→结果→限制→下一步。', color:'#f472b6'},
+  {id:'r_plain', branch:'report', x:700, y:2730, w:280, h:112, kicker:'REPORT', title:'人话结论', text:'一句话说方向和大小，再说明不确定性和适用范围。', color:'#f472b6'},
+  {id:'r_ai', branch:'report', x:700, y:2850, w:280, h:112, kicker:'AI', title:'AI辅助复核', text:'让AI检查逻辑漏洞、术语解释和报告是否过度承诺。', color:'#f472b6'},
+  {id:'r_repro', branch:'report', x:700, y:2970, w:280, h:112, kicker:'REPORT', title:'可复现', text:'保留数据字典、代码、随机种子和输出版本。', color:'#f472b6'}
+];
+
+const EDGE_PARENTS = {
+  root:null,
+  b_question:'root', q_describe:'b_question', q_compare:'b_question', q_rel:'b_question', q_predict:'b_question',
+  b_variables:'root', v_outcome:'b_variables', v_explanatory:'b_variables', v_design:'b_variables', v_missing:'b_variables',
+  b_methods:'root',
+  m_distribution:'b_methods', m_two:'b_methods', m_more:'b_methods', m_categories:'b_methods', m_numeric:'b_methods',
+  m_paired:'b_methods', m_multiple:'b_methods', m_logistic:'b_methods', m_experiment:'b_methods', m_time:'b_methods',
+  m_threshold:'b_methods', m_uncertainty:'b_methods',
+  b_evidence:'root', e_effect:'b_evidence', e_ci:'b_evidence', e_p:'b_evidence', e_uncertain:'b_evidence',
+  b_checks:'root', c_assumptions:'b_checks', c_independence:'b_checks', c_outliers:'b_checks', c_causality:'b_checks',
+  b_report:'root', r_structure:'b_report', r_plain:'b_report', r_ai:'b_report', r_repro:'b_report'
+};
+
+const HELP = {
+  q_describe:{plain:'这是最安全的起点：先看清数据的中心、分布和异常值，再决定是否进入推断。',when:['只有一个变量','还没有明确比较对象','想知道典型水平和波动'],how:['先画直方图或箱线图','看中位数/均值和四分位距','检查是否有极端值或分组混杂'],wrong:['只看平均值，忽略偏态和多峰','把样本描述直接说成总体因果结论'],ai:'请把下面这组数据概览解释给初学者，指出中心、离散度、偏态和异常值，不要过度推断：'},
+  q_compare:{plain:'比较的关键不是“有没有差异”，而是差异有多大、估计有多精确。',when:['有两个或以上独立组','结果是数值','组内个体互不影响'],how:['先看各组箱线图和样本量','检查偏态、方差和极端值','报告均值差、效应量和置信区间'],wrong:['p值小就认为差异很大','忽略组间样本量差异','把观察比较说成因果'],ai:'我在比较两组数值数据。请帮我写出分析思路、需要报告的统计量和常见误读检查清单。'},
+  q_rel:{plain:'关系分析要同时看方向、强度、线性和可能混杂。',when:['两个变量都是数值','想探索是否同增同减','有足够样本和合理测量'],how:['先画散点图','看相关系数和回归斜率','检查非线性点和强影响点'],wrong:['把相关说成因果','忽略非线性关系','只报告p值不报告效应'],ai:'请用初学者能懂的语言解释散点图、相关系数和回归斜率的区别，并提醒因果限制。'},
+  q_predict:{plain:'预测模型关注新样本上的表现，不只是历史数据拟合。',when:['有明确的预测目标','有训练数据和验证方式','误差代价可以被讨论'],how:['区分训练/验证数据','看准确率、召回率和误报代价','报告模型限制和数据漂移风险'],wrong:['用过拟合结果宣称准确率','忽略类别不平衡','把预测当因果'],ai:'请帮我检查一个分类/预测项目的评估指标是否合理，并解释误报和漏报代价。'},
+  v_outcome:{plain:'结果变量类型决定方法族；类型判断错，后面的模型通常都会错。',when:['开始选择方法前','不知道为什么推荐模型'],how:['问：结果是连续数值还是类别？','问：类别是否有顺序？','问：是否是是/否、次数或时间到事件？'],wrong:['把 Likert 等级当作严格连续数值','把类别编码成1/2/3后直接算均值','忽略稀缺事件'],ai:'我的结果变量是……，取值和测量方式是……。请判断它适合的统计方法族，并解释理由。'},
+  v_explanatory:{plain:'解释变量的测量层级和数量决定能否做多因素调整。',when:['有多个影响因素','要控制混杂','因子实验设计'],how:['列出每个变量的类型和单位','检查变量之间是否高度重叠','明确哪些是前置变量，哪些可能是中介'],wrong:['把所有变量塞进模型','用P值挑选变量后说成验证性结论','忽略共线性'],ai:'请帮我判断这些解释变量应该作为分组、连续、有序还是非线性项进入模型。'},
+  v_design:{plain:'研究设计决定解释强度；观察数据可以探索，随机实验才更接近因果。',when:['写方法部分','解释结论边界'],how:['说明随机化、盲法和对照组','识别配对、重复测量或聚类','避免用横截面数据做因果断言'],wrong:['把相关解释成治疗效果','忽略同一被试重复测量','把选择偏差说成真实差异'],ai:'请根据我的研究设计判断结论可以写到什么强度，并建议如何描述限制。'},
+  v_missing:{plain:'缺失和样本量会影响代表性，也可能让结果看似稳定但不可复现。',when:['数据清洗前','报告样本量时'],how:['报告缺失数量和原因','比较缺失与未缺失人群','避免仅因结果不同删除极端值'],wrong:['直接删除所有缺失','用均值填补后不声明','样本太小时解释过大'],ai:'请帮我设计一段缺失数据和样本量的透明报告模板。'},
+  m_distribution:{plain:'先用图看分布，再选中心指标；偏态时中位数常比均值更诚实。',when:['描述年龄、成绩、金额、等待时间','检查数据质量'],how:['直方图看形状','中位数和IQR描述偏态','均值和标准差适合近似对称分布'],wrong:['收入/等待时间严重偏态仍只报均值','忽略多峰可能代表多个群体','把样本描述说成总体推断'],ai:'请把“中位数、均值、标准差、四分位距”翻译成一个外行能记住的选择规则。'},
+  m_two:{plain:'两组比较应报告差异方向、效应量和置信区间，而不是只有p值。',when:['两个独立班级/组别','结果是连续分数'],how:['先看两组箱线图','检查近正态和方差；偏态用非参数','报告均值差、95% CI和Cohen\'s d或Hedges\' g'],wrong:['把不显著说成“无差异”','样本大时把微小差异说成重要','忽略不等方差和极端值'],ai:'请帮我写一段两组均值比较结果解释，必须包含均值差、效应量、置信区间和限制。'},
+  m_more:{plain:'ANOVA先回答“至少两组不同”，事后比较才说明具体差异。',when:['三个及以上独立组','结果为数值'],how:['报告F、自由度、p和η²','用Tukey等方法做事后比较','检查方差齐性和样本量'],wrong:['多次两两t检验不校正','只看整体显著就编故事','忽略不平衡设计的稳健方法'],ai:'请帮我检查三组比较报告是否包含整体检验、事后校正、效应量和前提检查。'},
+  m_categories:{plain:'类别数据看比例和风险变化，不能把卡方显著解释成因果或强度大小。',when:['性别×选择、方案×结果','两个类别变量'],how:['交叉表列出行百分比','卡方/Fisher检验关联','报告比例差、风险比或优势比'],wrong:['小期望频数用普通卡方','把优势比直接说成风险比','不报告比例只报p'],ai:'请帮我把交叉表结果改写为外行能懂的百分比差和风险解释，并检查优势比误用。'},
+  m_numeric:{plain:'相关描述共同变化，回归给出一个单位变化对应的平均变化。',when:['两个连续变量','想探索方向和线性趋势'],how:['先画散点图和置信带','根据偏态/单调性选Pearson或Spearman','报告r或斜率、CI和R²'],wrong:['异常值驱动相关','把曲线关系硬拟合直线','用相关推断因果'],ai:'请帮我把两个数值变量的相关与简单回归结果写成非统计读者能理解的句子。'},
+  m_paired:{plain:'同一人/同一对象前后测量要利用配对结构，不能当作独立两组。',when:['前后测、左右手、匹配对'],how:['先看差值分布','近正态用配对t；偏态用Wilcoxon','报告平均差、CI和标准化效应'],wrong:['用独立样本t检验配对数据','忽略回归向均值','不谈练习效应或时间效应'],ai:'请帮我检查配对前后测分析流程，并生成结果解释和限制说明。'},
+  m_multiple:{plain:'多因素分析能比较“在其他变量相近时”的关联，但不是自动因果。',when:['有多个混杂因素','想看某变量独立贡献'],how:['检查缺失、共线性和非线性','报告调整后的系数和CI','用标准化系数或预测图比较大小'],wrong:['调整变量选择不透明','把控制变量解释为因果','样本小但变量多'],ai:'请帮我审阅多元回归的方法和限制段落，重点是混杂、共线性和过度调整。'},
+  m_logistic:{plain:'逻辑回归输出概率和优势比，实际决策还要看阈值和代价。',when:['结果是是/否','想估计影响概率的因素'],how:['报告系数、优势比和CI','看AUC但不能只看AUC','选择阈值后看敏感性和特异性'],wrong:['把优势比说成概率','事件很少时模型不稳','忽略类别不平衡'],ai:'请帮我解释逻辑回归的优势比，并把它翻译成概率变化示例。'},
+  m_experiment:{plain:'因子实验能发现“一个因素的效果是否取决于另一个因素”。',when:['两个及以上可控因素','可以随机分配组合'],how:['看主效应和交互图','报告F、p、效应量和CI','用简单效应解释显著交互'],wrong:['只看主效应忽略交互','把非随机分组说成实验因果','重复测量未建模'],ai:'请帮我解释因子实验中的主效应、交互效应和简单效应，并生成课堂讲解脚本。'},
+  m_time:{plain:'时间数据要先分解趋势、季节和随机波动，不能只挑两个时间点。',when:['月度/季度/小时数据','有季节或政策变化'],how:['画时间序列和移动平均','做季节分解','检查断点、异常值和自相关'],wrong:['把季节回升说成长期改善','忽略疫情/政策等结构断点','用普通回归忽略时间相关'],ai:'请帮我检查时间趋势结论是否被季节性、异常月份或断点误导。'},
+  m_threshold:{plain:'阈值没有天然最优；要同时看漏报、误报和实际代价。',when:['医学筛查、风险预警、AI分类'],how:['看混淆矩阵随阈值变化','报告敏感性、特异性、精确率','结合漏报和误报成本'],wrong:['只看准确率','忽略类别不平衡','把默认0.5当作最好'],ai:'请帮我根据误报和漏报代价解释为什么某个分类阈值更合适。'},
+  m_uncertainty:{plain:'不确定性分析展示可能范围，不是预测唯一结局。',when:['投资、项目排期、风险模拟'],how:['设定输入分布和随机种子','报告中位数和10%/90%分位','检查极端情景和模型假设'],wrong:['把单次模拟路径当预测','只报平均值掩盖尾部风险','忽略参数不确定性'],ai:'请帮我解释蒙特卡洛结果中的中位数、分位带和最坏情形，并提醒读者不要只看平均。'},
+  e_effect:{plain:'效应量回答“差多少/强多少”，让结果大小不被样本量掩盖。',when:['报告主要结果','比较不同研究'],how:['按方法选d、η²、r、R²、比例差等','用业务单位解释大小','给出基准或最小重要差异'],wrong:['小效应因样本大而说成重要','把d=0.2直接说成没用','不同指标混着比较'],ai:'请帮我把效应量转换为非统计读者能理解的业务含义，并检查是否有夸大。'},
+  e_ci:{plain:'置信区间同时提示方向、大小和估计精度。',when:['报告关键估计','决定是否足以支持行动'],how:['写“估计值 [下限, 上限]”','看区间是否跨过无效应','评估区间是否包含无实际意义值'],wrong:['把95%解释为“真值有95%概率在区间内”','只看是否包含0','忽略区间过宽'],ai:'请帮我把置信区间解释成初学者能懂的风险和精度表达。'},
+  e_p:{plain:'p值是在模型和假设成立时，观察到当前或更极端结果的概率。',when:['做假设检验','解释显著性'],how:['先设α和假设','结合效应量和CI','避免只按0.05分界'],wrong:['p=.051说“无差异”','p值当作原假设为真概率','多重比较不校正'],ai:'请帮我检查这段p值解释是否犯下常见错误，并改写成统计规范表达。'},
+  e_uncertain:{plain:'未来和复杂系统需要范围，而不是单点答案。',when:['预测、模拟、风险沟通'],how:['展示悲观/中性/乐观情景','报告分位数和极端损失','说明模型假设未覆盖的风险'],wrong:['只给平均值','把窄区间当作确定','忽略黑天鹅和输入错误'],ai:'请帮我把不确定性结果改写成既不制造恐慌也不过度乐观的决策提示。'},
+  c_assumptions:{plain:'前提检查是分析的一部分；违反时要换稳健方法或说明敏感性。',when:['正式建模前','结果异常时'],how:['残差图、Q-Q图、方差检查','尝试稳健/非参数替代','报告敏感性分析'],wrong:['因为p显著就跳过前提','机械阈值化判断正态','多次尝试模型后只报最好'],ai:'请帮我为我的模型列一份前提检查、稳健替代和报告话术清单。'},
+  c_independence:{plain:'独立性是很多模型的核心假设；聚类和重复测量会破坏它。',when:['班级/门店/患者分组','同一人多次测量','时间序列'],how:['识别数据层级和重复','用混合模型、GEE或时间序列方法','在方法中说明依赖结构'],wrong:['把同一班学生当作独立个体','忽略时间自相关','把聚类标准误当成因果'],ai:'请判断我的数据是否存在重复测量或聚类，并建议合适的分析策略。'},
+  c_outliers:{plain:'极端值可能是错误、 rare事件或重要信号；处理规则必须透明。',when:['数据清洗和敏感性分析'],how:['先追查录入/测量错误','用稳健统计比较结论','报告纳入/剔除后的结果'],wrong:['只因为影响p值就删除','把合理高值当异常','不报告清洗规则'],ai:'请帮我写一段透明、可复现的异常值处理和敏感性分析说明。'},
+  c_causality:{plain:'因果解释需要设计支持：随机化、时间先后、混杂控制和机制。',when:['写结论和政策建议'],how:['区分预测、关联和因果','列出主要混杂和反向解释','谨慎使用“可能导致/提示”'],wrong:['横截面数据说“导致”','控制几个变量就宣称因果','忽略选择偏差和幸存者偏差'],ai:'请帮我给这段结论做因果强度审查，改写为与证据匹配的措辞。'},
+  r_structure:{plain:'报告从读者问题开始，而不是从模型输出开始。',when:['写正式报告或课堂作业'],how:['问题与背景','数据与方法','结果证据','限制与下一步'],wrong:['堆满模型表但无结论','方法与问题脱节','没有说明数据边界'],ai:'请帮我按“问题-数据-方法-结果-限制-下一步”整理我的分析报告。'},
+  r_plain:{plain:'好的结论一句话讲清方向、大小、精度和边界。',when:['向领导/学生/客户汇报'],how:['先用一句人话结论','再给统计证据','最后说明不确定性和行动建议'],wrong:['只说“显著”','用术语吓退读者','把可能说成确定'],ai:'请帮我把这段统计结果改写成外行能懂、但不过度承诺的结论。'},
+  r_ai:{plain:'AI适合做逻辑复核、翻译和边界检查；数据责任仍在分析者。',when:['报告初稿完成后','担心术语或解释'],how:['让AI找过度解释','让AI解释术语','用原始数据核对每个数字'],wrong:['让AI凭空编结果','把AI输出当最终事实','不保留提示和版本'],ai:'请审阅我的分析报告，找出过度解释、缺失限制、术语误用和逻辑漏洞。'},
+  r_repro:{plain:'可复现让别人能检查你的路径，也让未来你能理解今天的选择。',when:['项目交付、课件、论文'],how:['保存数据字典和清洗规则','固定随机种子和包版本','保留代码、输出和报告版本'],wrong:['只交最终截图','分析步骤靠记忆','数据版本和报告不匹配'],ai:'请帮我生成一份可复现分析清单，包含数据、代码、环境、随机种子和输出。'}
+};
+const BRANCH_HELP = {
+  question:'这是路线起点。先选一个问题类型，再进入变量和方法；不要让模型决定你要问什么。',
+  variables:'变量类型和研究设计决定可用方法。先用一句话说清“结果是什么、解释是什么、数据怎么来”。',
+  methods:'这里是常用方法库。方法没有高低，只有是否匹配问题、变量和前提。',
+  evidence:'显著只是门槛，不是结论。证据层要求报告效应量、置信区间和不确定性。',
+  checks:'前提和风险决定结论边界。宁可少说一点，也不要过度承诺。',
+  report:'报告要把统计语言翻译成读者能行动的语言，并保留复核路径。'
+};
+
+const nodeMap = new Map(NODES.map(n => [n.id, n]));
+const viewport = document.getElementById('viewport');
+const canvas = document.getElementById('canvas');
+const wires = document.getElementById('wires');
+const nodesLayer = document.getElementById('nodes');
+const detail = document.getElementById('detail');
+const search = document.getElementById('search');
+const scenarios = [...document.querySelectorAll('.scenario')];
+const togglePathsBtn = document.getElementById('togglePaths');
+let selected = 'root';
+let query = '';
+let highlightPaths = true;
+let transform = {x:0, y:0, scale:.72};
+let activeTab = 'understand';
+
+function branchOf(node) {
+  if (node.branch === 'root') return {color:node.color, title:'总览'};
+  return {color:node.color, title:nodeMap.get('b_' + node.branch)?.title || '思维导图'};
+}
+
+function normalText(node) {
+  return `${node.title} ${node.text} ${HELP[node.id]?.plain || ''} ${HELP[node.id]?.when?.join(' ') || ''}`.toLowerCase();
+}
+
+function buildNodes() {
+  nodesLayer.innerHTML = '';
+  NODES.forEach(node => {
+    const el = document.createElement('button');
+    el.type = 'button';
+    el.className = `node ${node.id === 'root' ? 'root' : ''}`;
+    el.dataset.id = node.id;
+    el.style.setProperty('--accent', node.color);
+    el.style.left = node.x + 'px';
+    el.style.top = node.y + 'px';
+    el.style.width = node.w + 'px';
+    el.style.height = node.h + 'px';
+    el.innerHTML = `<span class="kicker"><span>${node.kicker}</span></span><h3>${node.title}</h3><p>${node.text}</p>${node.id === 'root' ? '<span class="hint">点击任意节点查看解释</span>' : ''}`;
+    el.setAttribute('aria-label', `${node.title}：${node.text}`);
+    el.addEventListener('click', () => selectNode(node.id, true));
+    nodesLayer.appendChild(el);
+  });
+}
+
+function center(node) { return {x:node.x + node.w/2, y:node.y + node.h/2}; }
+
+function buildWires() {
+  wires.innerHTML = '';
+  Object.entries(EDGE_PARENTS).forEach(([childId, parentId]) => {
+    if (!parentId) return;
+    const a = center(nodeMap.get(parentId));
+    const b = center(nodeMap.get(childId));
+    const dx = Math.max(90, Math.abs(b.x - a.x) * .55);
+    const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    path.setAttribute('d', `M${a.x},${a.y} C${a.x+dx},${a.y} ${b.x-dx},${b.y} ${b.x},${b.y}`);
+    path.classList.add('edge');
+    path.dataset.child = childId;
+    path.dataset.parent = parentId;
+    const branchColor = nodeMap.get(childId).color;
+    path.style.setProperty('--edge', branchColor);
+    wires.appendChild(path);
+  });
+}
+
+function pathIds(id) {
+  const path = new Set([id]);
+  let cur = id;
+  while (EDGE_PARENTS[cur]) { cur = EDGE_PARENTS[cur]; path.add(cur); }
+  return path;
+}
+
+function applySelection() {
+  const selectedPath = pathIds(selected);
+  const childPath = new Set(Object.entries(EDGE_PARENTS).filter(([,p]) => selectedPath.has(p)).map(([c]) => c));
+  const keep = highlightPaths ? new Set([...selectedPath, ...childPath]) : null;
+  const q = query.trim().toLowerCase();
+  document.querySelectorAll('.node').forEach(el => {
+    const id = el.dataset.id;
+    const node = nodeMap.get(id);
+    el.classList.toggle('selected', id === selected);
+    const searchHit = !q || normalText(node).includes(q);
+    const pathHit = !keep || keep.has(id);
+    el.classList.toggle('dim', !searchHit || !pathHit);
+  });
+  document.querySelectorAll('.edge').forEach(edge => {
+    const isPath = highlightPaths && selectedPath.has(edge.dataset.parent) && (edge.dataset.child === selected || pathIds(edge.dataset.child).has(selected));
+    edge.classList.toggle('active', isPath);
+  });
+  scenarios.forEach(btn => btn.classList.toggle('active', btn.dataset.target === selected));
+  renderDetail();
+}
+
+function setTransform(next) {
+  transform = {...transform, ...next};
+  transform.scale = Math.min(1.35, Math.max(.22, transform.scale));
+  canvas.style.transform = `translate3d(${transform.x}px,${transform.y}px,0) scale(${transform.scale})`;
+}
+
+function fitOverview() {
+  const rect = viewport.getBoundingClientRect();
+  const scale = Math.min(rect.width / canvas.clientWidth, rect.height / canvas.clientHeight) * .94;
+  setTransform({scale, x:(rect.width - canvas.clientWidth * scale)/2, y:(rect.height - canvas.clientHeight * scale)/2});
+}
+
+function focusRoot() {
+  const rect = viewport.getBoundingClientRect();
+  const scale = rect.width < 760 ? .46 : .66;
+  const root = center(nodeMap.get('root'));
+  setTransform({scale, x:rect.width/2 - root.x*scale, y:rect.height/2 - root.y*scale});
+}
+
+function zoomAt(factor, cx, cy) {
+  const rect = viewport.getBoundingClientRect();
+  const px = cx ?? rect.width/2, py = cy ?? rect.height/2;
+  const wx = (px - transform.x)/transform.scale, wy = (py - transform.y)/transform.scale;
+  const scale = transform.scale * factor;
+  setTransform({scale, x:px - wx*scale, y:py - wy*scale});
+}
+
+let dragging = false, moved = false, dragStart = null;
+viewport.addEventListener('pointerdown', event => {
+  if (event.target.closest('.node')) return;
+  dragging = true; moved = false;
+  dragStart = {x:event.clientX, y:event.clientY, tx:transform.x, ty:transform.y};
+  viewport.classList.add('dragging');
+  viewport.setPointerCapture(event.pointerId);
+});
+viewport.addEventListener('pointermove', event => {
+  if (!dragging) return;
+  const dx = event.clientX - dragStart.x, dy = event.clientY - dragStart.y;
+  if (Math.abs(dx) > 3 || Math.abs(dy) > 3) moved = true;
+  setTransform({x:dragStart.tx + dx, y:dragStart.ty + dy});
+});
+viewport.addEventListener('pointerup', () => { dragging = false; viewport.classList.remove('dragging'); });
+viewport.addEventListener('pointercancel', () => { dragging = false; viewport.classList.remove('dragging'); });
+viewport.addEventListener('wheel', event => {
+  event.preventDefault();
+  const rect = viewport.getBoundingClientRect();
+  zoomAt(event.deltaY < 0 ? 1.09 : .91, event.clientX - rect.left, event.clientY - rect.top);
+}, {passive:false});
+
+function contentFor(node) {
+  const h = HELP[node.id] || {};
+  if (!h.plain && BRANCH_HELP[node.branch]) {
+    return {plain:BRANCH_HELP[node.branch], when:['刚开始不知道从哪里看','想理解这个阶段的作用'],how:['点击它的子节点','配合右侧解释阅读'],wrong:['跳过问题定义直接套模型','只收藏方法名不练习'],ai:'请解释这个思维导图分支在教学中的作用，并给出一个初学者练习。'};
+  }
+  return h;
+}
+
+function renderDetail() {
+  const node = nodeMap.get(selected);
+  const h = contentFor(node);
+  const branch = branchOf(node);
+  document.documentElement.style.setProperty('--accent', node.color);
+  const tabs = [
+    {id:'understand', label:'怎么懂'},
+    {id:'use', label:'何时用'},
+    {id:'mistakes', label:'别误解'},
+    {id:'report', label:'报告'}
+  ];
+  detail.innerHTML = `
+    <div class="side-head">
+      <span class="badge">${branch.title}</span>
+      <h1>${node.title}</h1>
+      <p>${node.text}</p>
+    </div>
+    <div class="tabs" role="tablist">${tabs.map(t => `<button role="tab" aria-selected="${t.id === activeTab}" class="${t.id === activeTab ? 'active' : ''}" data-tab="${t.id}">${t.label}</button>`).join('')}</div>
+    <section class="panel ${activeTab === 'understand' ? 'active' : ''}">
+      <div class="intro"><strong>一句话理解：</strong> ${h.plain || '点击这个节点，先理解它在分析流程中的作用。'}</div>
+      <div class="info-card"><h4>外行学习提示</h4><p>不要背公式。先用自己的话说：数据是什么？想回答什么？结论会帮助谁决策？</p></div>
+      <h4 style="margin:16px 0 7px;">看什么</h4>
+      <ul class="simple-list">${(h.how || []).map(x => `<li>${x}</li>`).join('') || '<li>点击子节点查看具体方法。</li>'}</ul>
+      <div class="next"><h4>继续学习</h4><a href="./index.html">返回互动应用导航<span>→</span></a><a href="./apps/screening-threshold.html" target="_blank" rel="noopener">练习：分类阈值决策<span>→</span></a></div>
+    </section>
+    <section class="panel ${activeTab === 'use' ? 'active' : ''}">
+      <div class="info-card accent"><h4>适合什么时候用</h4><ul class="simple-list">${(h.when || []).map(x => `<li>${x}</li>`).join('') || '<li>用于理解分析流程的当前位置。</li>'}</ul></div>
+      <div class="info-card"><h4>操作路径</h4><ul class="simple-list">${(h.how || []).map(x => `<li>${x}</li>`).join('')}</ul></div>
+      <div class="info-card"><h4>提示词</h4><p>${h.ai || '请解释这个节点并给我一个练习。'}</p></div>
+    </section>
+    <section class="panel ${activeTab === 'mistakes' ? 'active' : ''}">
+      <div class="info-card accent"><h4>常见误解</h4><ul class="simple-list">${(h.wrong || []).map(x => `<li>${x}</li>`).join('')}</ul></div>
+      <div class="info-card"><h4>自查问题</h4><ul class="checklist"><li>结论是否超过了数据设计能支持的范围？</li><li>是否只报告p值，没有效应量和区间？</li><li>异常值、缺失和依赖结构是否被检查？</li><li>换一种稳健方法，结论方向还稳定吗？</li></ul></div>
+    </section>
+    <section class="panel ${activeTab === 'report' ? 'active' : ''}">
+      <p class="tip">先填你能确定的信息；不确定的留空，AI提示词会提醒补充。</p>
+      <form class="form" id="reportForm">
+        <div class="field"><label for="rq">研究/业务问题</label><input id="rq" value="不同学习方式是否影响完成率？"></div>
+        <div class="form-row">
+          <div class="field"><label for="rs">数据来源</label><input id="rs" value="课程后台记录"></div>
+          <div class="field"><label for="rn">样本量</label><input id="rn" value="n = 240"></div>
+        </div>
+        <div class="form-row">
+          <div class="field"><label for="rm">方法</label><input id="rm" value="${node.title}"></div>
+          <div class="field"><label for="rp">p值 / 检验统计量</label><input id="rp" value="p = .03"></div>
+        </div>
+        <div class="field"><label for="rr">主要结果</label><textarea id="rr" rows="2">新方式的完成率比旧方式高 8 个百分点。</textarea></div>
+        <div class="field"><label for="rc">效应量 / 置信区间</label><textarea id="rc" rows="2">95% CI [2, 14]；Cohen's h = .25。</textarea></div>
+        <div class="field"><label for="rl">限制 / 风险</label><textarea id="rl" rows="2">学员自愿选择，未随机分组；可能受先验动机影响。</textarea></div>
+        <div class="actions"><button class="action" type="submit">生成报告初稿</button><button class="action ghost" type="button" id="copyReport">复制结果</button><button class="action ghost" type="button" id="copyPrompt">复制AI复核提示</button></div>
+      </form>
+      <div class="output"><h4>REPORT DRAFT</h4><pre id="reportOut">填写后点击“生成报告初稿”。</pre></div>
+    </section>`;
+  detail.querySelectorAll('[data-tab]').forEach(btn => btn.addEventListener('click', () => { activeTab = btn.dataset.tab; renderDetail(); }));
+  const form = document.getElementById('reportForm');
+  if (form) {
+    form.addEventListener('submit', event => {
+      event.preventDefault();
+      const v = id => document.getElementById(id).value.trim() || '待补充';
+      document.getElementById('reportOut').textContent =
+`结论（外行版）
+我们关心的问题是：${v('rq')}。本次分析基于“${v('rs')}”，样本量为${v('rn')}，方法采用${v('rm')}。结果显示：${v('rr')}。统计证据包括：${v('rc')}；${v('rp')}。因此，当前证据提示存在可见变化或关联，但不宜直接说成必然因果。
+
+边界与谨慎
+${v('rl')}。这个结论主要适用于与样本相似的人群和条件，不能自动推广到所有场景。若关键前提改变，应重新分析。
+
+下一步
+1. 核对数据清洗、缺失值和方法前提。
+2. 做敏感性分析，检查结论方向是否稳定。
+3. 明确最小重要差异，再决定是否调整策略。`;
+    });
+    document.getElementById('copyReport').addEventListener('click', () => navigator.clipboard.writeText(document.getElementById('reportOut').textContent));
+    document.getElementById('copyPrompt').addEventListener('click', () => navigator.clipboard.writeText(
+`你是统计与数据解释审稿人。请检查以下报告初稿：是否过度解释因果、误读p值、漏报效应量/置信区间、忽略前提和不确定性。请给出修改后的外行版结论和三条审稿意见。\n\n${document.getElementById('reportOut').textContent}`
+    ));
+  }
+}
+
+function selectNode(id, centerNode=false) {
+  selected = id;
+  activeTab = 'understand';
+  if (centerNode) {
+    const node = nodeMap.get(id);
+    const rect = viewport.getBoundingClientRect();
+    if (rect.width < 760) {
+      const c = center(node);
+      setTransform({x:rect.width/2 - c.x*transform.scale, y:rect.height/2 - c.y*transform.scale});
+    }
+  }
+  applySelection();
+}
+
+search.addEventListener('input', () => { query = search.value; applySelection(); });
+scenarios.forEach(btn => btn.addEventListener('click', () => selectNode(btn.dataset.target, true)));
+document.getElementById('zoomIn').addEventListener('click', () => zoomAt(1.12));
+document.getElementById('zoomOut').addEventListener('click', () => zoomAt(.9));
+document.getElementById('zoomReset').addEventListener('click', fitOverview);
+document.getElementById('resetMap').addEventListener('click', focusRoot);
+togglePathsBtn.addEventListener('click', () => {
+  highlightPaths = !highlightPaths;
+  togglePathsBtn.classList.toggle('active', highlightPaths);
+  togglePathsBtn.setAttribute('aria-pressed', String(highlightPaths));
+  applySelection();
+});
+document.addEventListener('keydown', event => {
+  if (event.target.matches('input,textarea,select')) return;
+  if (event.key === '0') focusRoot();
+  if (event.key === '9') fitOverview();
+});
+
+buildNodes();
+buildWires();
+focusRoot();
+selectNode('root');
+window.addEventListener('resize', () => {
+  if (window.innerWidth < 760) return;
+});
+</script>
+</body>
+</html>
