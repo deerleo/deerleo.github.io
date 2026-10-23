@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>智能体框架地图与搭建实战 · 第7讲 · Milu Lab</title>
+<meta name="description" content="交互思维导图认识 DSH、DSH Research Lab、Coze、Dify、Claude Agent SDK、LangChain 和 LangGraph。Dify 工作流与教育、公卫双实验，配套可复制的 AI 提示词及手工安装、配置、打包和部署步骤。">
+<link rel="stylesheet" href="./assets/agent-frameworks/style.css">
+<script defer src="./assets/agent-frameworks/lesson.js"></script>
+</head>
+<body>
+<a class="skip" href="#frameworks">跳到框架地图</a>
+<header><a class="brand" href="./">Milu Lab <span>第7讲 / 实操讲义</span></a><nav aria-label="课堂导航"><a href="#frameworks">框架地图</a><a href="#workflow">Dify工作流</a><a href="#lab">双领域实验</a><a href="#practice">搭建与交付</a></nav></header>
+<main>
+<section class="hero" id="top">
+  <div class="hero-copy"><p class="eyebrow">AI 辅助统计分析与结果解释</p><h1>把分析流程<br>搭成智能体</h1><p class="lead">从一张框架地图出发，搭一条 Dify 工作流，再用 DSH Research Lab 跑通教育与公共卫生研究，把可复现的工具交给别人使用。</p><a class="primary" href="#frameworks">从框架地图开始 ↘</a><p class="caption">已有统计基础也能直接跳到实操。每个关键步骤都有「交给 AI」与「自己操作」两条路径。</p></div>
+  <div class="hero-map" aria-label="本讲学习路线">
+    <div class="map-root">一个研究问题<small>“这份数据能说明什么？”</small></div>
+    <div class="fork"><a href="#workflow"><b>画流程 · Dify</b><span>输入 → 计算 → 解释 → 发布</span></a><a href="#lab"><b>调工具 · DSH</b><span>协议 → 执行 → 复核 → 打包</span></a></div>
+    <div class="map-end">同一个交付标准<small>数据有来源 · 数值可复算 · 别人能运行</small></div>
+  </div>
+</section>
+
+<section class="section" id="concepts">
+  <div class="section-head"><span class="number">01</span><div><h2>先认清智能体的零件</h2><p>聊天模型负责生成回答。把它接入工具、状态和执行循环，才开始形成能完成任务的系统。</p></div></div>
+  <div class="anatomy">
+    <div class="anatomy-core"><strong>Agent 智能体</strong><span>接收目标<br>选择行动<br>观察结果并继续</span></div>
+    <div class="anatomy-branches">
+      <div><b>模型 / LLM</b><span>理解问题、提出计划、解释输出。模型名称和框架名称分开选。</span></div>
+      <div><b>工具 / Tool</b><span>真正读文件、调用接口、运行 Python。统计量由计算程序产生。</span></div>
+      <div><b>知识与技能 / RAG · Skill</b><span>RAG 检索参考材料；Skill 约定一类任务的执行方法与验收要求。</span></div>
+      <div><b>上下文与状态 / State</b><span>记住数据版本、当前步骤、已确认的方法；支持失败恢复与人工接管。</span></div>
+      <div><b>运行框架 / Harness</b><span>组织模型与工具循环，处理权限、会话、日志。MCP 可作为连接外部工具的协议。</span></div>
+    </div>
+  </div>
+  <p class="note">本讲的分工：人确认研究设计与分析方法 → 程序计算 → AI 解读 → 人核验。工作流可以包含智能体节点，智能体也可以调用固定工作流。</p>
+</section>
+
+<section class="section" id="frameworks">
+  <div class="section-head"><span class="number">02</span><div><h2>框架地图：你想搭哪一种？</h2><p>按主要开发入口分组。点击任一节点，查看它在分析任务中的位置、输入输出与代价。</p></div></div>
+  <div class="choices" aria-label="按目标选择路线"><span>我的目标</span><button data-goal="visual">先做一个可分享的流程</button><button data-goal="harness">复用本地科研脚本</button><button data-goal="code">把智能体嵌进自己的系统</button><button data-goal="all" aria-pressed="true">看完整地图</button></div>
+  <div class="framework-layout">
+    <div class="framework-tree">
+      <div class="tree-root">智能体开发<small>从使用门槛与控制权出发</small></div>
+      <div class="tree-lanes">
+        <div class="lane" data-lane="visual"><h3>可视化平台<small>在画布里组织任务</small></h3><div class="node-group"><button class="node" data-framework="dify"><b>Dify</b><span>流程与 AI 应用</span></button><button class="node" data-framework="coze"><b>Coze / 扣子</b><span>助手与工作流</span></button></div></div>
+        <div class="lane" data-lane="harness"><h3>运行框架与 SDK<small>让工具围绕模型运行</small></h3><div class="node-group"><button class="node" data-framework="dsh"><b>DSH</b><span>插件化 Harness</span></button><button class="node child" data-framework="lab"><b>↳ DSH Research Lab</b><span>本讲科研工作台</span></button><button class="node" data-framework="claude"><b>Claude Agent SDK</b><span>代码接入智能体循环</span></button></div></div>
+        <div class="lane" data-lane="code"><h3>代码编排库<small>自己决定状态与控制流</small></h3><div class="node-group"><button class="node" data-framework="langchain"><b>LangChain</b><span>模型与工具的组合</span></button><button class="node" data-framework="langgraph"><b>LangGraph</b><span>有状态的图编排</span></button></div><p class="relationship">LangChain 的 Agent 基于 LangGraph；LangGraph 也可以单独使用。</p></div>
+      </div>
+    </div>
+    <article class="detail" id="framework-detail" aria-live="polite"></article>
+  </div>
+  <details class="comparison"><summary>同一件事怎么实现？展开横向对照</summary><div class="table-scroll"><table><caption>任务：输入数据，得到可复核的分析报告</caption><thead><tr><th>路线</th><th>谁安排下一步</th><th>计算在哪里</th><th>如何给别人用</th><th>主要维护成本</th></tr></thead><tbody>
+  <tr><td>Dify / Coze</td><td>画布节点与分支，也可调用 Agent</td><td>代码节点或外部统计 API</td><td>发布应用 / API，能力以版本为准</td><td>平台、插件、模型配置</td></tr>
+  <tr><td>DSH + Research Lab</td><td>智能体遵循协议与技能，调用脚本</td><td>本地或服务器 Python</td><td>源码包 / Preset / 受控 Web 工作区</td><td>运行环境、权限、计算依赖</td></tr>
+  <tr><td>Claude Agent SDK</td><td>SDK 提供循环，代码配置工具与权限</td><td>运行 SDK 的受控环境</td><td>自己封装服务与界面</td><td>服务、鉴权、会话与费用</td></tr>
+  <tr><td>LangChain / LangGraph</td><td>Agent 循环 / 显式状态图</td><td>自己定义的工具与节点</td><td>自己封装 API 与前端</td><td>代码、持久化、观测与部署</td></tr>
+  </tbody></table></div></details>
+</section>
+
+<section class="section workflow-section" id="workflow">
+  <div class="section-head"><span class="number">03</span><div><h2>把一次分析画成 Dify 工作流</h2><p>先做一个能跑的小版本：输入数值数组，程序生成描述统计，模型解释。掌握变量传递后再接完整统计服务。</p></div></div>
+  <div class="flow" id="flow" aria-label="Dify 工作流示意，点击查看节点配置"></div>
+  <div class="flow-inspector"><div id="flow-detail" aria-live="polite"></div><div class="mini-run"><label for="values">在这里试一下计算节点（浏览器教学演示）</label><textarea id="values" rows="2">[72, 81, 65, 90, 76]</textarea><button class="primary" id="run-demo">运行描述统计</button><output id="demo-output" aria-live="polite"></output><small>这个演示只在本页计算，不调用 Dify 或模型。工作流的实际搭建步骤见下方实操区。</small></div></div>
+  <p class="note">扩展到 t 检验、回归时：用 HTTP Request 节点调用受控的 Python 统计 API，再把 JSON 交给模型。不要假设 Dify 沙箱已安装 scipy / statsmodels，文件上传也需要单独解析。</p>
+  <a class="text-link" href="#practice" data-recipe-link="dify-flow">查看这条工作流的提示词、代码和变量映射 ↗</a>
+</section>
+
+<section class="section" id="lab">
+  <div class="section-head"><span class="number">04</span><div><h2>同一工作台，两种研究任务</h2><p>DSH 提供执行环境，Research Lab 提供科研协议、技能和计算脚本。切换实验，观察哪些部分复用、哪些必须重新定义。</p></div></div>
+  <div class="lab-tabs" aria-label="选择数据实验"><button data-case="health" aria-pressed="true">公共卫生 · 心脏病风险</button><button data-case="education" aria-pressed="false">教育 · 学习行为与成绩</button></div>
+  <div class="lab-workbench"><div id="lab-story" aria-live="polite"></div><div class="lab-tree"><b>DSH：模型、会话、权限与工具循环</b><div><strong>Research Lab</strong><span>Preset 角色配置 → Skill 执行规程 → Tool Python 计算</span></div><div><strong id="domain-label">public-health</strong><span>领域知识 + protocol.md + 数据字典</span></div><div><strong>可核验的交付</strong><span>results.json → tables / figures → report.md</span></div></div></div>
+  <div class="evidence" id="lab-evidence"></div>
+  <p class="caption">图像来自本地 dsh-research-lab v0.2.0 的脚本输出快照，页面切换不会重新训练。复现时以自己的 results.json 为准；原始数据、协议和完整指标见项目仓库。</p>
+  <a class="text-link" href="#practice" data-recipe-link="lab-run">从双实验首跑到定制自己的 Agent ↗</a>
+</section>
+
+<section class="section practice-section" id="practice">
+  <div class="section-head"><span class="number">05</span><div><h2>同一步骤，两种做法</h2><p>入门学员复制左侧提示词到能操作本机的 AI 编程工具；熟悉环境的学员使用右侧命令。网页聊天工具只能给指导，不能直接替你安装。</p></div></div>
+  <div class="practice-layout"><aside class="recipe-nav"><label for="platform">我的操作系统</label><select id="platform"><option value="unix">macOS / Linux · Bash</option><option value="windows">Windows · PowerShell / WSL</option></select><div id="recipe-list" aria-label="实操步骤"></div><button id="download-notes">下载全部双路径讲义 ↓</button></aside><article id="recipe-detail" class="recipe-detail" aria-live="polite"></article></div>
+</section>
+
+<section class="section" id="delivery">
+  <div class="section-head"><span class="number">06</span><div><h2>交付时，别人拿到什么？</h2><p>选择交付形态，再决定构建和部署方式。Python 科研脚本通常直接运行；源码包、静态报告与在线智能体有不同的运行要求。</p></div></div>
+  <div class="delivery-tree"><div class="tree-root">我要交给别人</div><div class="delivery-branches"><a href="#practice" data-recipe-link="dify-publish"><b>一个链接</b><span>Dify 发布 Web App<br>保持后端服务在线<br>测试访问与输入权限</span></a><a href="#practice" data-recipe-link="lab-package"><b>一套可复现工具</b><span>Research Lab 源码分发包<br>对方安装 Python 依赖<br>独立运行与校验</span></a><a href="#practice" data-recipe-link="lab-deploy"><b>一个在线工作区</b><span>DSH + Python + 项目数据<br>服务器运行与 HTTPS 代理<br>限定授权用户与工作目录</span></a></div></div>
+  <details><summary>课堂验收：让另一位学员实际用一次</summary><ol><li>用一份正常输入完成运行，指出每个结论的数据与输出来源。</li><li>再提交空数组、缺列或错误编码，确认流程明确报错或要求修正。</li><li>在新目录解包并安装，复跑同一实验，与原结果核对。</li><li>分享链接时，换一个浏览器测试访问权限，确认密钥留在服务端。</li><li>留下版本、协议、提示词、计算代码和输出文件，记录需要人工判断的环节。</li></ol></details>
+</section>
+
+<section class="sources section" id="sources"><h2>资料与版本</h2><p>教学内容核对日期：2026-10-23。DSH 实操基线为 0.2.1-rc.2，Research Lab 为 v0.2.0。其余项目按官方文档安装，课堂前记录实际版本；界面、插件和部署参数随版本变化。</p><div id="source-links"></div><p>课程衔接：<a href="./method-mindmap.html">统计方法与结果解释导图</a>。理论用来约束方法选择和核验；本页用来搭建、运行和交付。</p></section>
+<noscript><p class="note">本页框架选择、节点配置和双路径讲义需要启用 JavaScript。可先阅读上方概念图与框架对照表，或查看 <a href="https://github.com/milulab/dsh-research-lab">Research Lab 操作手册</a>与 <a href="https://docs.dify.ai/">Dify 官方文档</a>。</p></noscript>
+</main>
+<footer><a href="./">← 返回 AI 数据分析课堂</a><a href="#top">回到顶部 ↑</a><span>Milu Lab · 第7讲实操补充</span></footer>
+<div class="toast" role="status" id="toast"></div>
+</body></html>
