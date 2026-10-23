@@ -142,13 +142,14 @@
       .hero-stats { display: none; }
     }
   </style>
+  <link rel="stylesheet" href="{{ '/assets/css/subpage-shell.css' | relative_url }}">
 </head>
 <body>
 <header>
   <div class="nav">
     <a class="brand" href="../../">
       <span class="mark">🦌</span>
-      <span>Milu Lab<small>AI DATA ANALYSE</small></span>
+      <span>AI 数据分析互动课堂<small>AI DATA ANALYSE</small></span>
     </a>
     <nav class="nav-links" aria-label="页面导航">
       <a class="home" href="../../">首页</a>
@@ -263,9 +264,7 @@
   </section>
 </main>
 
-<footer>
-  <p>课程路由：<code>/course/ai-data-analyse/</code> · 所有应用均在新页面加载，可直接投屏或自主探究。</p>
-</footer>
+<footer class="subpage-footer">课程路由：<code>/course/ai-data-analyse/</code> · 所有应用均在新页面加载，可直接投屏或自主探究。</footer>
 
 <script>
   const searchInput = document.getElementById('search');

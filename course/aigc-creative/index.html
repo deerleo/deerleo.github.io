@@ -12,9 +12,10 @@
     .principle{margin:44px 0 56px;padding:22px 24px;border:1px solid var(--line);border-radius:18px;background:rgba(28,26,42,.78)}.principle h2{margin:0;font-size:20px}.principle p{margin:5px 0 0;color:var(--muted);font-size:14px}.principle strong{color:var(--lime)}.heading{display:flex;justify-content:space-between;align-items:end;gap:20px;margin-bottom:18px}.heading h2{margin:0;font-size:clamp(27px,4vw,38px);letter-spacing:-.04em}.heading p{max-width:430px;margin:0;color:var(--muted);font-size:13px}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:15px}.lesson{display:flex;flex-direction:column;min-height:335px;padding:22px;border:1px solid var(--line);border-radius:18px;background:linear-gradient(145deg,rgba(36,30,51,.96),rgba(22,21,32,.96))}.meta{display:flex;justify-content:space-between;color:var(--cyan);font-size:11px;font-weight:850;letter-spacing:.08em}.lesson h3{margin:14px 0 7px;font-size:21px;line-height:1.3}.lesson p{margin:0;color:var(--muted);font-size:14px}.lesson h4{margin:15px 0 4px;color:var(--pink);font-size:12px}.lesson ul{margin:4px 0 14px;padding-left:19px;color:#e0dbe8;font-size:13px}.lesson li+li{margin-top:5px}.prompt{margin:8px 0 14px;padding:13px;border:1px solid rgba(243,168,213,.24);border-radius:12px;background:rgba(243,168,213,.06);color:#eee2ef;font-size:13px}.output{margin-top:auto;padding:10px 12px;border-left:2px solid var(--lime);background:rgba(200,237,130,.07);color:#e3edd5;font-size:13px}.ethics{margin-top:42px;padding:23px;border:1px solid rgba(150,216,233,.3);border-radius:18px;background:rgba(150,216,233,.06)}.ethics h2{margin:0 0 8px;font-size:22px}.ethics p{margin:0;color:var(--muted);font-size:14px}.ethics a{display:inline-block;margin-top:16px;color:var(--cyan);font-size:13px;font-weight:800;text-decoration:none}.footer{display:flex;justify-content:space-between;gap:16px;margin-top:54px;padding-top:18px;border-top:1px solid var(--line);color:#988fa5;font-size:12px}
     @media(max-width:700px){.wrap{padding:35px 16px 68px}.top{padding:18px 16px 0}.heading{display:block}.heading p{margin-top:7px}.grid{grid-template-columns:1fr}.lesson{min-height:0}.output{margin-top:4px}.footer{display:block}.footer span{display:block;margin:5px 0}}
   </style>
+  <link rel="stylesheet" href="{{ '/assets/css/subpage-shell.css' | relative_url }}">
 </head>
-<body>
-  <div class="top"><a href="{{ '/' | relative_url }}">← 迷鹿 MiLu</a></div>
+<body id="top">
+  {% include subpage-shell.html identity="AIGC 创意实作" descriptor="教程" %}
   <main class="wrap">
     <header class="hero"><p class="eyebrow">Generative AI creative studio</p><h1>AIGC 创意实作：<br><em>从想法到作品</em></h1><p>这套入门课程从青少年 AIGC 夏令营材料中重新整理。我们不依赖某个平台注册流程或旧版界面，而练习可迁移的创作方法：向 AI 讲清想法、比较多个方案、反复迭代，并由创作者对最终作品负责。</p><div class="chips"><span>4 个创作单元</span><span>青少年与初学者</span><span>小组项目制</span><span>建议 2 天完成</span></div></header>
     <section class="principle"><h2>创作者仍然是导演</h2><p>生成式 AI 可以提供素材和变化，但<strong>主题、选择、判断与最终发布责任仍然属于创作者</strong>。把 AI 的输出当成草稿和灵感来源，而不是事实证明或自动完成的作品。</p></section>
@@ -25,7 +26,7 @@
       <article class="lesson"><div class="meta"><span>04 · 团队作品与责任使用</span><span>半天课程</span></div><h3>把分散的创意变成一件可展示的作品</h3><p>小组先选一个校园或社区主题，确定观众和作品形式。分工完成文字、画面与动态片段，最后统一风格、校对信息并讲述创作过程。展评时不只看视觉效果，也说明内容如何形成。</p><h4>发布前检查</h4><ul><li>是否包含真实人物、个人信息、未成年人影像或不适合公开的材料？</li><li>素材、人物形象、音乐和平台的授权条件是否允许当前用途？</li><li>是否说明 AI 的参与方式，并核验了作品里的事实内容？</li></ul><div class="output">作品：主题图文或短视频、团队创作说明，以及授权与信息核验清单。</div></article>
     </div></section>
     <section class="ethics"><h2>把创意能力和媒介素养一起教</h2><p>不要上传同学的照片、声音或联系方式来试生成；发布前检查生成结果是否误导、冒犯或侵犯他人权益。页面保留通用创作结构与练习方式，具体平台与功能以实际可用情况为准。</p><a href="{{ '/course/ai-foundations/' | relative_url }}">继续学习 AI 背后的数学基础 →</a></section>
-    <footer class="footer"><span>课程材料：AIGC 夏令营课程大纲、ChatGPT 入门与图像生成训练材料；操作步骤按通用方法重新编写。</span><span><a href="{{ '/' | relative_url }}">迷鹿 MiLu</a></span></footer>
+    <footer class="subpage-footer">课程材料：AIGC 夏令营课程大纲、ChatGPT 入门与图像生成训练材料；操作步骤按通用方法重新编写。</footer>
   </main>
 </body>
 </html>
