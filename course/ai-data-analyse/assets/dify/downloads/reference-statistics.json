@@ -1,0 +1,328 @@
+{
+  "analysis": "公共卫生历史病例样本的描述统计与探索性关联分析",
+  "n": 297,
+  "positive": 137,
+  "negative": 160,
+  "sample_positive_fraction": 0.4612794612794613,
+  "wilson_ci95": [
+    0.4054412849458481,
+    0.5181064863947094
+  ],
+  "subgroups": [
+    {
+      "group": "全体",
+      "n": 297,
+      "positive": 137,
+      "positive_fraction": 0.4612794612794613,
+      "wilson_ci95": [
+        0.4054412849458481,
+        0.5181064863947094
+      ]
+    },
+    {
+      "group": "男性(sex=1)",
+      "n": 201,
+      "positive": 112,
+      "positive_fraction": 0.5572139303482587,
+      "wilson_ci95": [
+        0.48811087406533504,
+        0.6241710835638226
+      ]
+    },
+    {
+      "group": "女性(sex=0)",
+      "n": 96,
+      "positive": 25,
+      "positive_fraction": 0.2604166666666667,
+      "wilson_ci95": [
+        0.18305899970298767,
+        0.35621055281214864
+      ]
+    },
+    {
+      "group": "年龄≥55岁",
+      "n": 159,
+      "positive": 95,
+      "positive_fraction": 0.5974842767295597,
+      "wilson_ci95": [
+        0.5198277814364852,
+        0.670541429356046
+      ]
+    },
+    {
+      "group": "年龄<55岁",
+      "n": 138,
+      "positive": 42,
+      "positive_fraction": 0.30434782608695654,
+      "wilson_ci95": [
+        0.23373848376053757,
+        0.385554771899904
+      ]
+    }
+  ],
+  "descriptive": [
+    {
+      "variable": "age",
+      "unit": "岁",
+      "all": {
+        "n": 297,
+        "mean": 54.54208754208754,
+        "sample_sd": 9.049735681096763,
+        "median": 56.0,
+        "min": 29.0,
+        "max": 77.0
+      },
+      "negative": {
+        "n": 160,
+        "mean": 52.64375,
+        "sample_sd": 9.55115118683139,
+        "median": 52.0,
+        "min": 29.0,
+        "max": 76.0
+      },
+      "positive": {
+        "n": 137,
+        "mean": 56.75912408759124,
+        "sample_sd": 7.899670085670048,
+        "median": 58.0,
+        "min": 35.0,
+        "max": 77.0
+      }
+    },
+    {
+      "variable": "trestbps",
+      "unit": "mmHg",
+      "all": {
+        "n": 297,
+        "mean": 131.69360269360268,
+        "sample_sd": 17.762806366599,
+        "median": 130.0,
+        "min": 94.0,
+        "max": 200.0
+      },
+      "negative": {
+        "n": 160,
+        "mean": 129.175,
+        "sample_sd": 16.373989958767268,
+        "median": 130.0,
+        "min": 94.0,
+        "max": 180.0
+      },
+      "positive": {
+        "n": 137,
+        "mean": 134.63503649635035,
+        "sample_sd": 18.896730153034397,
+        "median": 130.0,
+        "min": 100.0,
+        "max": 200.0
+      }
+    },
+    {
+      "variable": "chol",
+      "unit": "mg/dL",
+      "all": {
+        "n": 297,
+        "mean": 247.35016835016836,
+        "sample_sd": 51.997582535138974,
+        "median": 243.0,
+        "min": 126.0,
+        "max": 564.0
+      },
+      "negative": {
+        "n": 160,
+        "mean": 243.49375,
+        "sample_sd": 53.75754993048234,
+        "median": 235.5,
+        "min": 126.0,
+        "max": 564.0
+      },
+      "positive": {
+        "n": 137,
+        "mean": 251.85401459854015,
+        "sample_sd": 49.679937385401686,
+        "median": 253.0,
+        "min": 131.0,
+        "max": 409.0
+      }
+    },
+    {
+      "variable": "thalach",
+      "unit": "次/分钟",
+      "all": {
+        "n": 297,
+        "mean": 149.5993265993266,
+        "sample_sd": 22.941562061360813,
+        "median": 153.0,
+        "min": 71.0,
+        "max": 202.0
+      },
+      "negative": {
+        "n": 160,
+        "mean": 158.58125,
+        "sample_sd": 19.043304465574074,
+        "median": 161.0,
+        "min": 96.0,
+        "max": 202.0
+      },
+      "positive": {
+        "n": 137,
+        "mean": 139.1094890510949,
+        "sample_sd": 22.71067345341392,
+        "median": 142.0,
+        "min": 71.0,
+        "max": 195.0
+      }
+    },
+    {
+      "variable": "oldpeak",
+      "unit": "原始单位",
+      "all": {
+        "n": 297,
+        "mean": 1.0555555555555556,
+        "sample_sd": 1.1661227818468956,
+        "median": 0.8,
+        "min": 0.0,
+        "max": 6.2
+      },
+      "negative": {
+        "n": 160,
+        "mean": 0.59875,
+        "sample_sd": 0.7871601293144806,
+        "median": 0.2,
+        "min": 0.0,
+        "max": 4.2
+      },
+      "positive": {
+        "n": 137,
+        "mean": 1.589051094890511,
+        "sample_sd": 1.3050061320633928,
+        "median": 1.4,
+        "min": 0.0,
+        "max": 6.2
+      }
+    }
+  ],
+  "comparisons": [
+    {
+      "comparison": "男性 vs 女性",
+      "exposed_label": "男性",
+      "reference_label": "女性",
+      "cells": {
+        "a_exposed_positive": 112,
+        "b_exposed_negative": 89,
+        "c_reference_positive": 25,
+        "d_reference_negative": 71
+      },
+      "exposed_n": 201,
+      "reference_n": 96,
+      "exposed_positive_fraction": 0.5572139303482587,
+      "reference_positive_fraction": 0.2604166666666667,
+      "odds_ratio": 3.573932584269663,
+      "or_ci95": [
+        2.0951021705060024,
+        6.096597243188164
+      ],
+      "p_value": 1.5945330533659588e-06,
+      "p_holm": 1.5945330533659588e-06,
+      "test": "Pearson 卡方检验，df=1，无连续性校正",
+      "chi_square": 23.030479240147347,
+      "min_expected": 44.282828282828284,
+      "correction": "无",
+      "note": "粗OR，未调整混杂；95%CI为未做多重校正的log-Wald近似区间。"
+    },
+    {
+      "comparison": "年龄≥55 vs <55",
+      "exposed_label": "≥55岁",
+      "reference_label": "<55岁",
+      "cells": {
+        "a_exposed_positive": 95,
+        "b_exposed_negative": 64,
+        "c_reference_positive": 42,
+        "d_reference_negative": 96
+      },
+      "exposed_n": 159,
+      "reference_n": 138,
+      "exposed_positive_fraction": 0.5974842767295597,
+      "reference_positive_fraction": 0.30434782608695654,
+      "odds_ratio": 3.392857142857143,
+      "or_ci95": [
+        2.09608908955487,
+        5.491884695741315
+      ],
+      "p_value": 4.318440618152918e-07,
+      "p_holm": 8.636881236305836e-07,
+      "test": "Pearson 卡方检验，df=1，无连续性校正",
+      "chi_square": 25.54652072118465,
+      "min_expected": 63.656565656565654,
+      "correction": "无",
+      "note": "粗OR，未调整混杂；95%CI为未做多重校正的log-Wald近似区间。"
+    },
+    {
+      "comparison": "运动诱发心绞痛有 vs 无",
+      "exposed_label": "exang=1",
+      "reference_label": "exang=0",
+      "cells": {
+        "a_exposed_positive": 74,
+        "b_exposed_negative": 23,
+        "c_reference_positive": 63,
+        "d_reference_negative": 137
+      },
+      "exposed_n": 97,
+      "reference_n": 200,
+      "exposed_positive_fraction": 0.7628865979381443,
+      "reference_positive_fraction": 0.315,
+      "odds_ratio": 6.996549344375431,
+      "or_ci95": [
+        4.016807402039365,
+        12.18671891100059
+      ],
+      "p_value": 3.827954315780625e-13,
+      "p_holm": 1.1483862947341876e-12,
+      "test": "Pearson 卡方检验，df=1，无连续性校正",
+      "chi_square": 52.72951345332606,
+      "min_expected": 44.744107744107744,
+      "correction": "无",
+      "note": "粗OR，未调整混杂；95%CI为未做多重校正的log-Wald近似区间。"
+    }
+  ],
+  "multiple_testing": "对可估计的性别、年龄分组、运动诱发心绞痛三项探索性检验作Holm校正",
+  "estimated_test_count": 3,
+  "ci_method": "样本阳性比例：Wilson；粗OR：log-Wald",
+  "limitations": [
+    "这是历史病例样本中的阳性比例，不能作为一般人群患病率或发病率。",
+    "观察性关联不等于因果。粗OR未控制年龄、性别等混杂，也不是风险比或概率倍数。",
+    "年龄55岁分界仅用于教学探索，不是临床诊断阈值。",
+    "完整案例剔除可能带来选择偏差；区间未纳入抽样设计或多重比较校正。",
+    "本流程没有训练预测模型、没有ROC/AUC、没有多元Logistic回归，不得补造这些结果。"
+  ],
+  "audit": {
+    "source": "内置 UCI Cleveland 公开历史数据",
+    "source_url": "https://archive.ics.uci.edu/dataset/45/heart+disease",
+    "raw_sha256": "a74b7efa387bc9d108d7d0115d831fe9b414b29ae7124f331b622b4efa0427c8",
+    "input_rows": 303,
+    "retained_rows": 297,
+    "removed_missing_rows": 6,
+    "missing_by_column": {
+      "age": 0,
+      "sex": 0,
+      "cp": 0,
+      "trestbps": 0,
+      "chol": 0,
+      "fbs": 0,
+      "restecg": 0,
+      "thalach": 0,
+      "exang": 0,
+      "oldpeak": 0,
+      "slope": 0,
+      "ca": 4,
+      "thal": 2,
+      "num": 0
+    },
+    "duplicate_rows_retained": 0,
+    "ignored_columns": [],
+    "missing_strategy": "14个必需字段的完整案例分析；不插补；重复记录仅标记、不自动删除",
+    "label_mapping": "num=0 → 阴性；num=1/2/3/4 → 阳性",
+    "age_group_rule": "年龄≥55岁 vs <55岁；教学分组，不是诊断阈值",
+    "row_count_note": "所有后续统计均使用同一份完整案例数据"
+  }
+}
