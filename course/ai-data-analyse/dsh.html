@@ -1,0 +1,354 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>DeepSeek Harness 科研智能体 · 从安装到两个真实案例 · Milu Lab</title>
+<meta name="description" content="在 DeepSeek Harness（DSH）上从零安装科研智能体框架：模型配置、12 个科研 Skill、Agent Preset，然后用教育（649 名学生）与公卫（303 例病例）两个真实公开数据集完整走通分析流程。全部统计真实执行，附教学资源包下载。">
+<link rel="canonical" href="https://milulab.com/course/ai-data-analyse/dsh.html">
+<style>
+:root{--navy:#0b1524;--navy2:#101e33;--line:rgba(148,163,184,.25);--text:#eaf3ff;--muted:#9fb2c7;
+--blue:#38bdf8;--cyan:#67e8f9;--lime:#a3e635;--gold:#fbbf24;--pink:#f472b6;--violet:#a78bfa;--red:#f87171}
+*{box-sizing:border-box}html{scroll-behavior:smooth}
+body{margin:0;color:var(--text);font-size:15px;line-height:1.7;
+background:radial-gradient(1000px 520px at 82% -8%,rgba(56,189,248,.16),transparent),
+radial-gradient(860px 480px at 6% 16%,rgba(167,139,250,.13),transparent),
+linear-gradient(145deg,var(--navy),var(--navy2));min-height:100vh;
+font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif}
+header{position:sticky;top:0;z-index:30;backdrop-filter:blur(18px);background:rgba(8,16,28,.75);border-bottom:1px solid var(--line)}
+.nav{max-width:1120px;margin:auto;padding:13px 22px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.brand{display:flex;align-items:center;gap:10px;font-weight:800;text-decoration:none;color:var(--text)}
+.brand .mark{width:36px;height:36px;border-radius:10px;display:grid;place-items:center;background:linear-gradient(135deg,var(--blue),#6366f1)}
+.brand small{display:block;color:var(--muted);font-size:11px;font-weight:600}
+.nav-links{display:flex;gap:2px;flex-wrap:wrap}
+.nav-links a{color:var(--muted);padding:7px 11px;border-radius:999px;font-size:13px;font-weight:700;text-decoration:none}
+.nav-links a:hover{color:#fff;background:rgba(56,189,248,.12)}
+main{max-width:1120px;margin:auto;padding:0 22px}
+.hero{padding:58px 0 10px;display:grid;grid-template-columns:1.25fr .85fr;gap:26px;align-items:start}
+@media(max-width:920px){.hero{grid-template-columns:1fr}}
+.kicker{color:var(--cyan);font-size:12px;font-weight:800;letter-spacing:.14em;text-transform:uppercase}
+h1{margin:10px 0 10px;font-size:clamp(28px,4.6vw,42px);line-height:1.16;letter-spacing:-.03em}
+.lead{color:#c9d8ec;font-size:16px;margin:0 0 16px}
+.actions{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+.btn{display:inline-flex;align-items:center;gap:8px;padding:10px 16px;border-radius:12px;font-weight:800;font-size:14px;text-decoration:none;border:1px solid var(--line);color:var(--text)}
+.btn.primary{background:linear-gradient(135deg,var(--blue),#6366f1);border:0;color:#06121f}
+.btn:hover{filter:brightness(1.1)}
+.caption{color:var(--muted);font-size:12.5px}
+.receipt{border:1px solid var(--line);border-radius:16px;padding:16px 18px;background:rgba(255,255,255,.045)}
+.receipt-title{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px}
+.receipt-title b{font-size:15px}.receipt-title span{color:var(--muted);font-size:11px}
+.rline{display:flex;justify-content:space-between;gap:10px;padding:6px 0;border-bottom:1px dashed rgba(148,163,184,.18);font-size:13.5px}
+.rline:last-of-type{border-bottom:0}
+.rline span{color:var(--muted)}.rline strong{font-variant-numeric:tabular-nums}
+.receipt small{display:block;margin-top:8px;color:var(--muted);font-size:11.5px}
+section{padding:44px 0 6px}
+h2{font-size:24px;margin:0 0 6px;letter-spacing:-.02em}
+h2 .stepno{color:var(--blue);font-family:"SF Mono",ui-monospace,monospace;font-size:16px;margin-right:8px}
+.sub{color:var(--muted);margin:0 0 18px;font-size:14px}
+h3{font-size:16.5px;margin:22px 0 8px}
+.checklist{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:10px;margin:12px 0}
+.check{border:1px solid var(--line);border-radius:12px;padding:10px 13px;font-size:13px;background:rgba(255,255,255,.04)}
+.check b{color:var(--lime)}
+.snippet{border:1px solid var(--line);border-radius:14px;overflow:hidden;margin:12px 0;background:#0a1220}
+.snippet-bar{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:8px 14px;background:rgba(148,163,184,.08);border-bottom:1px solid var(--line)}
+.snippet-bar strong{font-size:12.5px;color:var(--cyan)}
+.snippet-actions{display:flex;gap:6px}
+.snippet-actions button{border:1px solid var(--line);background:transparent;color:var(--muted);border-radius:8px;padding:3px 10px;font-size:11.5px;font-weight:700;cursor:pointer}
+.snippet-actions button:hover{color:#fff;border-color:var(--blue)}
+pre{margin:0;padding:14px 16px;overflow-x:auto;font-size:12.8px;line-height:1.75;font-family:"SF Mono",ui-monospace,Menlo,Consolas,monospace}
+code.inline{background:rgba(56,189,248,.1);border:1px solid rgba(56,189,248,.25);padding:1px 7px;border-radius:7px;font-size:12.5px;color:var(--cyan);font-family:"SF Mono",ui-monospace,monospace}
+.cm{color:#7d8ca3}.sh{color:var(--lime)}.kw{color:var(--violet)}.num{color:var(--gold)}
+.figure{border:1px solid var(--line);border-radius:14px;overflow:hidden;margin:14px 0;background:#0a1220}
+.figure img{display:block;width:100%;height:auto}
+.figcap{padding:9px 14px;font-size:12.5px;color:var(--muted);border-top:1px solid var(--line)}
+.figcap b{color:var(--gold)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:860px){.grid2{grid-template-columns:1fr}}
+.dl{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:12px}
+.dlcard{border:1px solid var(--line);border-radius:14px;padding:16px;background:rgba(255,255,255,.045)}
+.dlcard h4{margin:0 0 6px;font-size:15px}
+.dlcard p{margin:0 0 10px;color:var(--muted);font-size:12.5px}
+.callout{border:1px solid rgba(251,191,36,.35);background:rgba(251,191,36,.07);border-radius:12px;padding:11px 15px;font-size:13px;color:#fde9b8;margin:12px 0}
+.danger{border:1px solid rgba(248,113,113,.4);background:rgba(248,113,113,.07);border-radius:12px;padding:11px 15px;font-size:13px;color:#fecaca;margin:12px 0}
+table{width:100%;border-collapse:collapse;font-size:13px;margin:10px 0}
+th,td{border:1px solid var(--line);padding:7px 10px;text-align:left}
+th{background:rgba(148,163,184,.1);color:#dbe7f5}
+td{color:#c3d2e6}td b{color:var(--gold)}
+footer{max-width:1120px;margin:auto;padding:28px 22px 46px;color:var(--muted);font-size:12.5px;border-top:1px solid rgba(148,163,184,.14);margin-top:44px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px}
+footer a{color:var(--cyan);text-decoration:none}
+</style></head><body>
+<header><div class="nav">
+<a class="brand" href="./"><span class="mark">🧪</span><span>Milu Lab<small>第7讲 / DSH 科研智能体</small></span></a>
+<nav class="nav-links">
+<a href="#s1">安装</a><a href="#s2">模型</a><a href="#s3">技能</a><a href="#s4">Preset</a>
+<a href="#s5">教育案例</a><a href="#s6">公卫案例</a><a href="#downloads">下载</a><a href="#s7">验收</a>
+</nav></div></header>
+<main>
+
+<section class="hero">
+<div>
+<span class="kicker">DeepSeek Harness · Research Agents · 真实数据</span>
+<h1>从安装到出报告：<br>用两个真实案例串起科研智能体</h1>
+<p class="lead">七步渐进：装 DSH → 配模型（GLM-5.3-Flash）→ 装 12 个科研技能 → 配 Agent Preset →
+教育案例（649 名学生，T1–T5）→ 公卫案例（303 例病例，H1–H5）→ 49 项验收。
+每一步都给"粘贴即用"的指令卡和预期产出，全部统计来自真实执行。</p>
+<div class="actions">
+<a class="btn primary" href="#s1">从第 1 步开始 ↓</a>
+<a class="btn" href="#downloads">下载资源包</a>
+<a class="btn" href="https://github.com/milulab/dsh-research-lab">GitHub ↗</a>
+</div>
+<p class="caption">数据：UCI Student Performance（CC BY 4.0）与 UCI Heart Disease（CC BY 4.0）官方原件，SHA256 锁定；<b>零模拟数据</b>。</p>
+</div>
+<div class="receipt" aria-label="跑完会得到什么">
+<div class="receipt-title"><b>跑完你会得到</b><span>真实验算锚点</span></div>
+<div class="rline"><span>教育 · 行为模型 M1 调整 R²</span><strong>0.2629</strong></div>
+<div class="rline"><span>教育 · 含期中成绩 M2（泄漏对照）</span><strong>0.8500</strong></div>
+<div class="rline"><span>公卫 · 5 折 CV AUC</span><strong>0.869 ± 0.069</strong></div>
+<div class="rline"><span>公卫 · 留出集 AUC / Brier</span><strong>0.950 / 0.094</strong></div>
+<div class="rline"><span>双实现互证</span><strong>|Δ系数| = 0</strong></div>
+<div class="rline"><span>自动验收</span><strong>49 / 49 全绿</strong></div>
+<small>以上为固定 seed 的确定性复现值；任何人任何机器重跑应逐位一致（跨平台浮点容差见 verify.py）。</small>
+</div>
+</section>
+
+<section id="s1">
+<h2><span class="stepno">STEP 1</span>安装：DSH 运行时 + 框架仓库</h2>
+<p class="sub">DSH 是运行时（模型路由 / 工具调用 / 会话），框架仓库提供 Preset、技能、工具与数据。两者各装一次。</p>
+<div class="snippet"><div class="snippet-bar"><strong>① 安装 DSH（Node 18+）</strong><div class="snippet-actions"><button data-copy="c1">复制</button></div></div>
+<pre id="c1"><span class="cm"># macOS / Linux</span>
+npm install -g <span class="sh">@deepseek-ai/dsh@0.2.1-rc.2</span>
+dsh --version          <span class="cm"># 应输出 0.2.1-rc.2（本教程锁定版本）</span>
+
+<span class="cm"># 三种使用形态（同一套配置）</span>
+dsh web                <span class="cm"># 浏览器工作台（课堂主界面，默认 127.0.0.1:3080，带 token）</span>
+dsh tui                <span class="cm"># 终端交互</span>
+dsh headless <span class="kw">"任务"</span>     <span class="cm"># 一次性任务；--json 输出可核验的事件流</span></pre></div>
+<div class="snippet"><div class="snippet-bar"><strong>② 获取框架仓库 + Python 环境</strong><div class="snippet-actions"><button data-copy="c2">复制</button></div></div>
+<pre id="c2">git clone https://github.com/milulab/dsh-research-lab.git
+<span class="sh">cd</span> dsh-research-lab
+python3 -m venv .venv
+.venv/bin/pip install -r requirements.txt     <span class="cm"># Windows: .venv\Scripts\pip</span>
+
+<span class="cm"># 先跑一次总验收：49 项应全绿（数据完整性/确定性复跑/双实现互证）</span>
+.venv/bin/python scripts/verify.py</pre></div>
+<div class="callout">✅ 检查点：看到 <b>49/49 checks passed — ALL GREEN</b> 才继续。GitHub Actions 已在 ubuntu/macos/windows × Python 3.11/3.12 六个矩阵验证过同样的结果。</div>
+</section>
+
+<section id="s2">
+<h2><span class="stepno">STEP 2</span>模型配置：接入 GLM-5.3-Flash</h2>
+<p class="sub">DSH 的 web 与 headless 是<b>两个独立 profile</b>，各有一份配置，改完下次请求生效、无需重启。课堂建议两个都配。</p>
+<div class="snippet"><div class="snippet-bar"><strong>配置片段 · ~/.dsh/profiles/web/cordis.patch.yml（headless 同理）</strong><div class="snippet-actions"><button data-copy="c3">复制</button></div></div>
+<pre id="c3"><span class="cm"># 追加/合并到已有配置（智谱 Anthropic 协议网关）</span>
+- id: llm-pi-ai
+  config:
+    providers:
+      zhipu:
+        apiKeyEnv: ZHIPU_API_KEY        <span class="cm"># 先 export ZHIPU_API_KEY=你的智谱密钥</span>
+        api: anthropic-messages
+        baseURL: https://open.bigmodel.cn/api/anthropic
+        models:
+          - id: glm-5.3-flash           <span class="cm"># 课堂默认：快、便宜</span>
+          - id: glm-4.7                 <span class="cm"># 备用：复杂推理</span>
+- id: agent-default-model
+  config:
+    provider: zhipu
+    model: glm-5.3-flash</pre></div>
+<div class="snippet"><div class="snippet-bar"><strong>验证模型已生效</strong><div class="snippet-actions"><button data-copy="c4">复制</button></div></div>
+<pre id="c4"><span class="cm"># 重启 dsh web 后，浏览器打开控制台输出的带 token 地址</span>
+dsh web
+<span class="cm"># 界面右上角模型选择器应出现 GLM-5.3-Flash 并为默认；</span>
+<span class="cm"># 对话框输入"只回复两个字：在线"应秒回。</span>
+
+<span class="cm"># 无 key 时 headless 会报 MISSING_CREDENTIAL——属预期，配好环境变量即可</span></pre></div>
+</section>
+
+<section id="s3">
+<h2><span class="stepno">STEP 3</span>安装 12 个科研技能</h2>
+<p class="sub">技能不是提示词模板：每件都带<b>适用条件 / 输入契约 / 执行流程 / 验证条件 / 失败处理</b>。装到用户级 <code class="inline">~/.dsh/skills/</code> 对所有会话生效；装到仓库 <code class="inline">.dsh/skills/</code> 只对该工作区生效。</p>
+<div class="snippet"><div class="snippet-bar"><strong>一键安装（推荐脚本，含路径锚定）</strong><div class="snippet-actions"><button data-copy="c5">复制</button></div></div>
+<pre id="c5"><span class="cm"># 方式 A：框架自带脚本（装 preset 时会连带装技能）</span>
+bash scripts/install.sh <span class="sh">--preset</span> research-lab
+
+<span class="cm"># 方式 B：手动复制 12 件到用户级</span>
+<span class="sh">for</span> s <span class="kw">in</span> research-design data-intake data-quality exploratory-analysis \
+       statistical-modeling model-validation scientific-report evidence-traceability \
+       edu-performance-analysis edu-leakage-audit \
+       health-risk-modeling health-threshold-evaluation; <span class="kw">do</span>
+  cp -R skills/$s ~/.dsh/skills/
+<span class="kw">done</span>
+
+<span class="cm"># 验证：新开对话问一句</span>
+dsh headless <span class="kw">"列出当前加载技能里有哪些属于 dsh-research-lab（只报名字）"</span></pre></div>
+<div class="checklist">
+<div class="check"><b>通用 8 件</b>：research-design · data-intake · data-quality · exploratory-analysis · statistical-modeling · model-validation · scientific-report · evidence-traceability</div>
+<div class="check"><b>教育 2 件</b>：edu-performance-analysis（T1–T5 流程与锚点）· edu-leakage-audit（泄漏审计纪律）</div>
+<div class="check"><b>公卫 2 件</b>：health-risk-modeling（H1–H5 防泄漏建模）· health-threshold-evaluation（阈值即决策）</div>
+<div class="check"><b>⚠️ 格式红线</b>：SKILL.md 必须以 <b>---</b> frontmatter 开头；任何说明文字放在 frontmatter 之后，否则 DSH 扫描不到</div>
+</div>
+</section>
+
+<section id="s4">
+<h2><span class="stepno">STEP 4</span>配置 Agent Preset：告诉智能体"你是谁、守什么规矩"</h2>
+<p class="sub">Preset = 守则 + 技能清单 + 工具清单 + 工作区边界。仓库自带三层：<code class="inline">research-lab</code>（通用）、<code class="inline">edu-research</code>、<code class="inline">health-research</code>。核心是 <code class="inline">agent.cordis.yml</code> 六条铁律。</p>
+<div class="snippet"><div class="snippet-bar"><strong>presets/research-lab/agent.cordis.yml · 铁律段（节选）</strong><div class="snippet-actions"><button data-copy="c6">复制</button></div></div>
+<pre id="c6">agent:
+  name: research-lab
+  instructions: |
+    1. 研究问题先行：没有协议就先按 research-design 生成 protocol.md。
+    2. 数据审计先行：任何分析前先跑数据审计（tools/data_audit.py）。
+    3. 统计值只能来自工具执行：你没有权限"生成"p 值/R²/AUC——那叫编造。
+    4. 原始数据只读：datasets/*/raw/ 永不修改，派生数据写 processed/ 或工作区。
+    5. 措辞边界：观察性数据只说"关联"；缺列/语义不明时提出修正要求。
+    6. 复核义务：交付前对最关键的数字写独立复核并运行；不一致就停下报告。
+  skills: [ research-design, data-intake, data-quality, ... ]
+  tools:  [ tools/data_audit.py, tools/regression.py, tools/stat_tests.py, ... ]
+  workspace:
+    datasets_readonly: [ datasets/education-student-performance/raw, ... ]</pre></div>
+<div class="snippet"><div class="snippet-bar"><strong>让 3080 工作台用上这套配置</strong><div class="snippet-actions"><button data-copy="c7">复制</button></div></div>
+<pre id="c7"><span class="cm"># 在你希望作为工作区的目录启动 dsh web（会话按启动目录分组）</span>
+<span class="sh">cd</span> dsh-research-lab
+dsh web                <span class="cm"># 新实例的工作区即仓库根，技能/数据/工具全部就位</span>
+
+<span class="cm"># 已有实例（如 3080 端口）不想动？把技能装到用户级 ~/.dsh/skills/ 即可（STEP 3 方式 B）。</span>
+<span class="cm"># 对话中用绝对路径访问仓库数据，产物由智能体重定向到当前工作区。</span></pre></div>
+</section>
+
+<section id="s5">
+<h2><span class="stepno">STEP 5</span>教育案例：学习行为 × 学业成绩（T1–T5）</h2>
+<p class="sub">数据：UCI Student Performance，葡萄牙两所中学、葡语课 <b>649 名中学生 × 33 字段</b>（2008 年，CC BY 4.0）。注意：这是中学数据——教的是科研方法本身。</p>
+
+<h3>T1 · 数据审计：先看原料再看菜</h3>
+<p>在 DSH 对话框粘贴：</p>
+<div class="snippet"><div class="snippet-bar"><strong>指令卡 T1</strong><div class="snippet-actions"><button data-copy="p1">复制指令</button></div></div>
+<pre id="p1">用 .venv/bin/python 运行 tools/data_audit.py 审计
+datasets/education-student-performance/raw/student-por.csv（--sep ';'），
+然后亲自 head 原始文件第 2 行，检查 G1/G2 两列的取值有什么形态学特征。
+回答：行列规模、缺失与重复计数、以及这个"引号数字"说明了什么。</pre></div>
+<p>预期产出：649×33、0 缺失、0 重复；raw 字节级发现 <b>G1/G2 取值带引号</b>——标准解析器会静默转成整数。<b>这就是"解析层必须显式断言类型"的现场证据。</b></p>
+
+<h3>T2 · 关联与组间检验：先画出来</h3>
+<div class="snippet"><div class="snippet-bar"><strong>指令卡 T2（带可视化）</strong><div class="snippet-actions"><button data-copy="p2">复制指令</button></div></div>
+<pre id="p2">运行 scripts/make_teaching_figures.py 生成教学图，然后解读两张：
+① edu_g3_distribution.png：G3 分布有什么形状特征？对用 OLS 建模意味着什么？
+② edu_studytime_box.png：四个学习时间档的 G3 箱线怎么读？Spearman ρ=+0.275
+   该怎么向高中生家长解释（限"关联"表述）？</pre></div>
+<div class="figure"><img src="assets/dsh/edu_g3_distribution.png" alt="G3 分布直方图" loading="lazy"></div>
+<div class="figure"><img src="assets/dsh/edu_studytime_box.png" alt="学习时间与G3箱线图" loading="lazy"></div>
+<div class="figcap"><b>课堂讲点</b>：G3 在 0 分有堆积（有界离散），OLS 是协议锁定的一阶近似——"分布长什么样"决定"方法能不能用"，而不是反过来。</div>
+
+<h3>T3 · 回归与诊断：系数表 + 森林图</h3>
+<div class="snippet"><div class="snippet-bar"><strong>指令卡 T3</strong><div class="snippet-actions"><button data-copy="p3">复制指令</button></div></div>
+<pre id="p3">按协议公式 G3 ~ C(school)+C(sex)+Medu+Fedu+studytime+failures+absences
+跑 examples/education-demo/run_t1_t5.py，解读 edu_m1_forest.png：
+① studytime 与 failures 的系数、95%CI、p 值；
+② BP 与 JB 诊断都显著，为什么必须同时报 HC3 稳健标准误？
+③ 对照 results.json 里 hc3_se 字段验证结论方向是否改变。</pre></div>
+<div class="figure"><img src="assets/dsh/edu_m1_forest.png" alt="M1 系数森林图" loading="lazy"></div>
+<div class="figcap"><b>真实锚点</b>：studytime <b>+0.511 [0.239, 0.783]</b> p=2.5e-4；failures <b>−1.667 [−2.043, −1.292]</b> p≈2e-17；VIFmax=1.80 无共线；BP p≈2e-33、JB p≈2e-70（异方差+非正态是真实社会数据常态）。</div>
+
+<h3>T4 · 泄漏对照：本案例的灵魂</h3>
+<div class="snippet"><div class="snippet-bar"><strong>指令卡 T4</strong><div class="snippet-actions"><button data-copy="p4">复制指令</button></div></div>
+<pre id="p4">看 edu_leakage_bar.png 和 edu_corr_heatmap.png，回答：
+M2 比 M1 调整 R² 高出 0.587，能写成"模型改进"吗？
+结合热图里 G1/G2 与 G3 的相关性，用三句话向审稿人解释为什么这是泄漏、
+以及 M2 在什么问题定义下才合法。</pre></div>
+<div class="grid2">
+<div class="figure"><img src="assets/dsh/edu_leakage_bar.png" alt="M1/M2 泄漏对照" loading="lazy"></div>
+<div class="figure"><img src="assets/dsh/edu_corr_heatmap.png" alt="Spearman 相关热图" loading="lazy"></div>
+</div>
+<div class="figcap"><b>灵魂结论</b>：+0.587 不是模型变好，是<b>任务被换掉</b>——期中成绩进了预测因子，"预测"就变成了"抄近道"。M1（0.263）才回答研究问题；M2（0.850）只合法于"期末解释"。</div>
+
+<h3>T5 · 复现交付与独立复核</h3>
+<div class="snippet"><div class="snippet-bar"><strong>指令卡 T5（复核义务）</strong><div class="snippet-actions"><button data-copy="p5">复制指令</button></div></div>
+<pre id="p5">对你刚才报告里最重要的一个数字（建议选 studytime 系数）：
+写一段不依赖 statsmodels 的独立复核代码并运行（numpy 最小二乘即可），
+与 results.json 对账。若一致，给出 |Δ|；若不一致，停下来说明差异，不许择优采信。</pre></div>
+<div class="callout">✅ 预期：<b>|Δ系数| = 0</b>（expected/reference_results.json 就是这么锁定的）。学员亲眼看到"两条独立实现路径逐位一致"，比讲十遍"可复现"都有说服力。</div>
+</section>
+
+<section id="s6">
+<h2><span class="stepno">STEP 6</span>公卫案例：心脏病风险分类（H1–H5）</h2>
+<p class="sub">数据：UCI Heart Disease processed Cleveland，<b>303 例真实历史病例 × 14 字段</b>（Detrano 1989，CC BY 4.0）。与教育案例同一框架、同一套技能——只有协议与数据包不同。</p>
+
+<h3>H1 · 审计：缺失与标签规则必须显式</h3>
+<div class="snippet"><div class="snippet-bar"><strong>指令卡 H1</strong><div class="snippet-actions"><button data-copy="p6">复制指令</button></div></div>
+<pre id="p6">审计 datasets/health-heart-disease/raw/processed.cleveland.data（无表头，"?" 是缺失编码）。
+回答：①ca 与 thal 各缺几例？完整案例剩多少？②标签 num 0–4 如何二元化？
+160/137 这个分布是怎么一步步来的？③为什么"?" 不能当作 thal 的一个合法水平？</pre></div>
+<div class="figure"><img src="assets/dsh/health_overview.png" alt="标签分布与年龄分布" loading="lazy"></div>
+
+<h3>H2 · 基线筛查 + OR 表：流行病学的第一张表</h3>
+<div class="snippet"><div class="snippet-bar"><strong>指令卡 H2</strong><div class="snippet-actions"><button data-copy="p7">复制指令</button></div></div>
+<pre id="p7">运行管线后解读 health_or_forest.png：
+①哪些特征是显著风险因子（OR>1 且 CI 不跨 1）？ca 的 OR=3.55 临床上怎么理解？
+②19 项检验家族做 Bonferroni 与 BH-FDR 校正后各剩几项显著？
+为什么筛查场景更常用 FDR？</pre></div>
+<div class="figure"><img src="assets/dsh/health_or_forest.png" alt="OR 森林图" loading="lazy"></div>
+<div class="figcap"><b>真实锚点</b>：ca <b>OR=3.55 [2.11, 5.98]</b>；exang 2.24；thalach 0.98（保护方向）；FDR 后 16/19 项显著。</div>
+
+<h3>H3–H4 · 防泄漏建模与评价</h3>
+<div class="snippet"><div class="snippet-bar"><strong>指令卡 H3–H4</strong><div class="snippet-actions"><button data-copy="p8">复制指令</button></div></div>
+<pre id="p8">解读 health_threshold_sweep.png 与 health_confusion.png：
+①0.5 阈值漏诊 6 例（敏感度 0.786）——筛查语境为什么通常不可接受？
+②Youden 阈值 0.186 把敏感度提到 1.00，代价是什么？"最优阈值"这种说法对吗？
+③CV AUC 0.869 与留出集 0.950 为什么必须分开报告？标准化为什么必须放在 Pipeline 里？</pre></div>
+<div class="grid2">
+<div class="figure"><img src="assets/dsh/health_threshold_sweep.png" alt="阈值扫描" loading="lazy"></div>
+<div class="figure"><img src="assets/dsh/health_confusion.png" alt="双阈值混淆矩阵" loading="lazy"></div>
+</div>
+<div class="figcap"><b>灵魂结论</b>：阈值是<b>决策</b>不是统计——0.5 没有天然正当性；Youden 把 FN 压到 0 的代价是 FP 4→7。"最优阈值"必须绑定临床语境的代价权衡。</div>
+
+<h3>H5 · 复核与边界</h3>
+<div class="snippet"><div class="snippet-bar"><strong>指令卡 H5</strong><div class="snippet-actions"><button data-copy="p9">复制指令</button></div></div>
+<pre id="p9">管线输出里有三重互证：sklearn vs 秩和法 AUC（同概率应差 0.0）、
+statsmodels GLM 参考口径（跨求解器容差 0.005）、Brier+校准曲线。
+请逐一核对 results.json 中对应字段并解释：判别（AUC）与校准（Brier）
+分别回答什么问题？为什么历史研究数据不能用于真实诊断？</pre></div>
+<div class="danger">⚠️ 临床边界（不可协商）：历史研究数据、教学演示用途；预测因子关联不构成因果；一切产物不得用于真实临床诊断或个体健康决策。</div>
+</section>
+
+<section id="downloads">
+<h2>下载与资源包</h2>
+<p class="sub">全部资源开源；数据为官方原件随仓库分发（CC BY 4.0 允许），SHA256 锁定于 metadata/source.yml。</p>
+<div class="dl">
+<div class="dlcard"><h4>📦 框架仓库（源码 zip）</h4><p>含 presets / 12 技能 / tools / 两数据包 / expected 锚点 / verify / 教学图生成脚本。</p><a class="btn" href="https://github.com/milulab/dsh-research-lab/archive/refs/heads/main.zip">下载 main.zip</a></div>
+<div class="dlcard"><h4>🎓 教学资源包</h4><p>12 个技能 + 两数据包（raw/字典/协议/expected）+ 9 张教学图 + 逐条指令卡（本页 p1–p9 的 md 版），课堂即发即用。</p><a class="btn" href="https://github.com/milulab/dsh-research-lab/releases/download/v0.2.0/dsh-research-lab-teaching-pack-v0.2.0.zip">下载教学包 v0.2.0（719KB）</a></div>
+<div class="dlcard"><h4>🗂 原始数据（官方源）</h4><p>UCI id=320 Student Performance 与 id=45 Heart Disease；仓库内 scripts/fetch_data.py 可校验/恢复。</p><a class="btn" href="https://archive.ics.uci.edu/dataset/320/student+performance">UCI 320 ↗</a></div>
+<div class="dlcard"><h4>📖 配套文档</h4><p>quickstart / customize-agent（七步定制）/ teaching-guide（授课手册）/ method-checklist（方法覆盖对照）。</p><a class="btn" href="https://github.com/milulab/dsh-research-lab/tree/main/docs">docs 目录 ↗</a></div>
+</div>
+</section>
+
+<section id="s7">
+<h2><span class="stepno">STEP 7</span>验收：什么算"学会了"</h2>
+<p class="sub">验收标准不是"回答像专家"，而是下面五条可检查的行为。</p>
+<div class="checklist">
+<div class="check"><b>① 本机 verify 全绿</b>：python scripts/verify.py → 49/49（含 SHA256、确定性复跑、双实现互证）</div>
+<div class="check"><b>② 数字可溯源</b>：能指出 report.md 任一数字在 results.json 的字段路径</div>
+<div class="check"><b>③ 泄漏题过关</b>：能讲清 M1/M2 对照为什么"不是模型改进而是任务被换掉"</div>
+<div class="check"><b>④ 防编造</b>：给一份缺列的坏数据，智能体提出修正要求而不是编数字（现场演示）</div>
+<div class="check"><b>⑤ 迁移自检</b>：教育→公卫哪些环节复用（tools+通用技能）、哪些必须重做（协议/字典/锚点）</div>
+</div>
+<table>
+<tr><th>常见坑</th><th>现象</th><th>处理</th></tr>
+<tr><td>技能装了不生效</td><td>对话里问技能列表没有新技能</td><td>检查 SKILL.md 是否以 <b>---</b> frontmatter 开头（本教程踩过）；重启会话</td></tr>
+<tr><td>headless 报 MISSING_CREDENTIAL</td><td>没配模型</td><td>STEP 2；注意 web 与 headless 是两份独立配置</td></tr>
+<tr><td>智能体想写仓库 outputs/ 被拦</td><td>沙箱只允许写当前工作区</td><td>属正常防护：让它把产物重定向到工作区目录（两案例实测都这样自处理）</td></tr>
+<tr><td>Windows 下 SHA256 全错</td><td>git 检出时换行符被转换</td><td>确认 .gitattributes 存在（raw/expected 已禁转换）；重新 checkout</td></tr>
+<tr><td>改了结果再校验</td><td>想手改 expected/ 里的数字</td><td>不允许——expected 由管线生成并锁定，改协议须升版本号重跑</td></tr>
+</table>
+</section>
+
+</main>
+<footer>
+<div>DSH Research Lab · MIT · 数据 CC BY 4.0（Cortez &amp; Silva 2008；Detrano et al. 1989）· 教学演示用途</div>
+<div><a href="./">互动课堂</a> · <a href="dify.html">Dify 版教程</a> · <a href="https://milulab.com/project/dsh-research-lab/">框架主页</a> · <a href="https://github.com/milulab/dsh-research-lab">GitHub</a></div>
+</footer>
+<script>
+document.querySelectorAll("[data-copy]").forEach(function(b){
+  b.addEventListener("click", function(){
+    var el = document.getElementById(b.dataset.copy);
+    if(!el) return;
+    navigator.clipboard.writeText(el.innerText).then(function(){
+      var old = b.textContent; b.textContent = "已复制 ✓";
+      setTimeout(function(){ b.textContent = old; }, 1200);
+    });
+  });
+});
+</script>
+</body></html>
