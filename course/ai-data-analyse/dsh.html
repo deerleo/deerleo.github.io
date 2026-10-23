@@ -127,6 +127,16 @@ python3 -m venv .venv
 
 <span class="cm"># 先跑一次总验收：49 项应全绿（数据完整性/确定性复跑/双实现互证）</span>
 .venv/bin/python scripts/verify.py</pre></div>
+
+<div class="snippet"><div class="snippet-bar"><strong>🤖 AI 帮我配置（推荐：把下面整段粘贴给 DSH 对话）</strong><div class="snippet-actions"><button data-copy="ai2">复制提示词</button></div></div>
+<pre id="ai2">帮我完成模型配置，要循序渐进、每步先解释再动手：
+1) 检查环境：node/npm 版本、~/.dsh/profiles/ 下有哪些 profile；
+2) 我要用智谱网关（baseURL: https://open.bigmodel.cn/api/anthropic，协议 anthropic-messages），
+   模型 glm-5.3-flash（默认）+ glm-4.7（备用），密钥走环境变量 ZHIPU_API_KEY（不要让我明文贴密钥）；
+3) 把需要写入 ~/.dsh/profiles/web/cordis.patch.yml 与 headless 同名文件的 YAML 片段先展示给我，
+   说明每个字段含义，经我确认后再写入（写入前 diff 预览）；
+4) 写完生成三条自测命令并逐条运行：YAML 可解析、默认模型已切换、给出我在 web 界面验证模型的方法。
+安全边界：密钥只经环境变量引用；改配置前必须给我看 diff。</pre></div>
 <div class="callout">✅ 检查点：看到 <b>49/49 checks passed — ALL GREEN</b> 才继续。GitHub Actions 已在 ubuntu/macos/windows × Python 3.11/3.12 六个矩阵验证过同样的结果。</div>
 </section>
 
@@ -179,6 +189,15 @@ dsh headless <span class="kw">"列出当前加载技能里有哪些属于 dsh-re
 <div class="check"><b>通用 8 件</b>：research-design · data-intake · data-quality · exploratory-analysis · statistical-modeling · model-validation · scientific-report · evidence-traceability</div>
 <div class="check"><b>教育 2 件</b>：edu-performance-analysis（T1–T5 流程与锚点）· edu-leakage-audit（泄漏审计纪律）</div>
 <div class="check"><b>公卫 2 件</b>：health-risk-modeling（H1–H5 防泄漏建模）· health-threshold-evaluation（阈值即决策）</div>
+
+<div class="snippet"><div class="snippet-bar"><strong>🤖 AI 帮我配置（粘贴给 DSH 对话）</strong><div class="snippet-actions"><button data-copy="ai3">复制提示词</button></div></div>
+<pre id="ai3">帮我安装并校验 dsh-research-lab 的 12 个科研技能：
+1) 技能源在 /Users/&lt;你&gt;/repos/dsh-research-lab/skills/（我先告诉你实际路径）；
+   目标位置 ~/.dsh/skills/（用户级，所有会话生效）；
+2) 逐个复制前先检查每个 SKILL.md：必须以 --- frontmatter 开头，否则报告并跳过；
+3) 复制完成后逐个校验 name/description 字段存在，最后输出 12 项清单表（✓/✗）；
+4) 新开一个 headless 会话实测："列出当前加载技能中属于 dsh-research-lab 的名字"，
+   把结果贴给我确认。</pre></div>
 <div class="check"><b>⚠️ 格式红线</b>：SKILL.md 必须以 <b>---</b> frontmatter 开头；任何说明文字放在 frontmatter 之后，否则 DSH 扫描不到</div>
 </div>
 </section>
@@ -200,6 +219,14 @@ dsh headless <span class="kw">"列出当前加载技能里有哪些属于 dsh-re
   tools:  [ tools/data_audit.py, tools/regression.py, tools/stat_tests.py, ... ]
   workspace:
     datasets_readonly: [ datasets/education-student-performance/raw, ... ]</pre></div>
+
+<div class="snippet"><div class="snippet-bar"><strong>🤖 AI 帮我配置（粘贴给 DSH 对话）</strong><div class="snippet-actions"><button data-copy="ai4">复制提示词</button></div></div>
+<pre id="ai4">帮我理解并启用 presets/ 里的三层 Agent Preset：
+1) 逐字段讲解 presets/research-lab/agent.cordis.yml 的 instructions 六条铁律、
+   skills 与 tools 清单、workspace 边界——用大白话各解释一遍；
+2) 对比 edu-research 与 health-research 两个 preset 的差异（锚点数字、协议指向、领域技能）；
+3) 告诉我在 web 界面怎么选用 preset，以及不用 preset 时如何靠用户级技能获得同等能力；
+4) 出 3 道自测题考我（配置类），等我回答后给标准答案。</pre></div>
 <div class="snippet"><div class="snippet-bar"><strong>让 3080 工作台用上这套配置</strong><div class="snippet-actions"><button data-copy="c7">复制</button></div></div>
 <pre id="c7"><span class="cm"># 在你希望作为工作区的目录启动 dsh web（会话按启动目录分组）</span>
 <span class="sh">cd</span> dsh-research-lab
@@ -213,6 +240,7 @@ dsh web                <span class="cm"># 新实例的工作区即仓库根，�
 <h2><span class="stepno">STEP 5</span>教育案例：学习行为 × 学业成绩（T1–T5）</h2>
 <p class="sub">数据：UCI Student Performance，葡萄牙两所中学、葡语课 <b>649 名中学生 × 33 字段</b>（2008 年，CC BY 4.0）。注意：这是中学数据——教的是科研方法本身。</p>
 
+<div class="callout">🧭 <b>怎么用这张页面上课</b>：每张指令卡直接粘贴到 DSH 对话框即可；运行产物落在<b>你自己的工作区</b>（如 edu_rerun_outputs/），所以每个人的图和日志都是自己生成的——数字应与全班一致（确定性复现），文件与图各是各的。任何一步卡住，把报错原文贴回对话框，智能体按失败处理流程给你修正选项。</div>
 <h3>T1 · 数据审计：先看原料再看菜</h3>
 <p>在 DSH 对话框粘贴：</p>
 <div class="snippet"><div class="snippet-bar"><strong>指令卡 T1</strong><div class="snippet-actions"><button data-copy="p1">复制指令</button></div></div>
@@ -306,7 +334,17 @@ statsmodels GLM 参考口径（跨求解器容差 0.005）、Brier+校准曲线�
 <section id="downloads">
 <h2>下载与资源包</h2>
 <p class="sub">全部资源开源；数据为官方原件随仓库分发（CC BY 4.0 允许），SHA256 锁定于 metadata/source.yml。</p>
+
+<h3 style="margin-top:26px">配套资料（直链）</h3>
 <div class="dl">
+<div class="dlcard"><h4>📋 第7讲教案（V0.3）</h4><p>本页的完整教学设计：定位、时序、锚点卡、验收与边界声明。教师备课用。</p><a class="btn" href="https://github.com/milulab/dsh-research-lab/releases/download/v0.2.0/lesson7-teaching-plan-v0.3.md">下载教案 MD</a></div>
+<div class="dlcard"><h4>🗂 教学指令卡 p1–p9</h4><p>本页全部指令的 Markdown 版（含预期产出与迁移讨论题），可直接投屏或印发。</p><a class="btn" href="https://github.com/milulab/dsh-research-lab/releases/download/v0.2.0/teaching-prompts.md">下载指令卡</a></div>
+<div class="dlcard"><h4>📖 教育数据协议 + 字典</h4><p>protocol.md（预登记分析计划 V1.0）与 33 字段数据字典——"协议先于数据"的实体。</p><a class="btn" href="https://github.com/milulab/dsh-research-lab/blob/main/datasets/education-student-performance/protocol.md">查看协议 ↗</a></div>
+<div class="dlcard"><h4>❤️ 公卫数据协议 + 字典</h4><p>标签映射规则、缺失策略、80/20 seed=42 划分与 H1–H5 分析计划的锁定原文。</p><a class="btn" href="https://github.com/milulab/dsh-research-lab/blob/main/datasets/health-heart-disease/protocol.md">查看协议 ↗</a></div>
+<div class="dlcard"><h4>🖥 本地工作台 dashboard</h4><p>python scripts/dashboard.py：浏览器里一键跑两管线与总验收、看日志翻产物（127.0.0.1）。</p><a class="btn" href="https://github.com/milulab/dsh-research-lab/blob/main/scripts/dashboard.py">查看脚本 ↗</a></div>
+<div class="dlcard"><h4>✅ 验收脚本 verify.py</h4><p>49 项对账：SHA256 完整性 / 确定性复跑 / 双实现互证 / 协议断言，CI 六矩阵背书。</p><a class="btn" href="https://github.com/milulab/dsh-research-lab/blob/main/scripts/verify.py">查看脚本 ↗</a></div>
+</div>
+<div class="dl" style="margin-top:12px">
 <div class="dlcard"><h4>📦 框架仓库（源码 zip）</h4><p>含 presets / 12 技能 / tools / 两数据包 / expected 锚点 / verify / 教学图生成脚本。</p><a class="btn" href="https://github.com/milulab/dsh-research-lab/archive/refs/heads/main.zip">下载 main.zip</a></div>
 <div class="dlcard"><h4>🎓 教学资源包</h4><p>12 个技能 + 两数据包（raw/字典/协议/expected）+ 9 张教学图 + 逐条指令卡（本页 p1–p9 的 md 版），课堂即发即用。</p><a class="btn" href="https://github.com/milulab/dsh-research-lab/releases/download/v0.2.0/dsh-research-lab-teaching-pack-v0.2.0.zip">下载教学包 v0.2.0（719KB）</a></div>
 <div class="dlcard"><h4>🗂 原始数据（官方源）</h4><p>UCI id=320 Student Performance 与 id=45 Heart Disease；仓库内 scripts/fetch_data.py 可校验/恢复。</p><a class="btn" href="https://archive.ics.uci.edu/dataset/320/student+performance">UCI 320 ↗</a></div>
