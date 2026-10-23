@@ -14,10 +14,10 @@ projects:
     icon: work
     description: 做过的完整作品、产品化尝试和可交付的交互式工具。
     items:
-      - title: 化学烧杯混合互动模拟
-        text: 教学 / 交互式网页实验
-        link: /beaker-mixer-standalone.html
-        tag: Demo
+      - title: DSH Research Lab 开源科研智能体框架
+        text: 科研 Agent / 真实数据管线 / 49 项自动验收
+        link: /project/dsh-research-lab/
+        tag: Open Source
       - title: 企业级 AI 应用原型
         text: Agent / 业务流程 / 交付设计
         tag: 整理中

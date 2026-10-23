@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>教育科研方法论 · DSH Research Lab</title>
+  <meta name="description" content="EduResearch 教育科研模板：以 UCI Student Performance 真实数据（649 名中学生）完成数据审计、关联分析、回归诊断、泄漏对照与复现交付（T1–T5）。">
+  <meta name="robots" content="index,follow">
+  <style>
+    :root { --navy:#0b1524; --navy-2:#101e33; --line:rgba(148,163,184,.28);
+      --text:#eaf3ff; --muted:#9fb2c7; --blue:#38bdf8; --cyan:#67e8f9;
+      --lime:#a3e635; --gold:#fbbf24; --pink:#f472b6; --violet:#a78bfa; }
+    * { box-sizing:border-box; } html { scroll-behavior:smooth; }
+    body { margin:0; min-height:100vh; color:var(--text);
+      background:
+        radial-gradient(1000px 540px at 82% -8%, rgba(56,189,248,.18), transparent),
+        radial-gradient(860px 480px at 8% 18%, rgba(167,139,250,.14), transparent),
+        linear-gradient(145deg,var(--navy),var(--navy-2));
+      font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+      font-size:15px; line-height:1.65; }
+    header { position:sticky; top:0; z-index:20; backdrop-filter:blur(18px);
+      background:rgba(8,16,28,.72); border-bottom:1px solid rgba(148,163,184,.18); }
+    .nav { max-width:1120px; margin:auto; padding:14px 22px; display:flex;
+      align-items:center; justify-content:space-between; gap:12px; }
+    .brand { display:flex; align-items:center; gap:10px; font-weight:800; }
+    .mark { width:36px; height:36px; border-radius:10px; display:grid; place-items:center;
+      background:linear-gradient(135deg,#a3e635,#38bdf8); }
+    .nav-links { display:flex; gap:4px; flex-wrap:wrap; }
+    .nav-links a { color:var(--muted); padding:7px 11px; border-radius:999px;
+      font-size:13px; font-weight:700; text-decoration:none; }
+    .nav-links a:hover { color:#fff; background:rgba(56,189,248,.12); }
+    .hero { max-width:1120px; margin:auto; padding:56px 22px 10px; }
+    .kicker { color:var(--lime); font-size:12px; font-weight:800; letter-spacing:.14em; text-transform:uppercase; }
+    h1 { margin:10px 0 8px; font-size:clamp(26px,4.4vw,38px); letter-spacing:-.03em; line-height:1.18; }
+    .lead { color:#c9d8ec; max-width:840px; font-size:15.5px; }
+    section { max-width:1120px; margin:auto; padding:34px 22px 6px; }
+    h2 { font-size:21px; margin:0 0 4px; letter-spacing:-.02em; }
+    .sub { color:var(--muted); font-size:13.5px; margin:0 0 16px; }
+    .steps { display:grid; gap:12px; }
+    .step { border:1px solid var(--line); border-radius:16px; padding:16px 18px; background:rgba(255,255,255,.04); }
+    .step h3 { margin:0 0 6px; font-size:15.5px; display:flex; gap:9px; align-items:center; }
+    .step h3 i { font-style:normal; width:24px; height:24px; border-radius:7px; display:grid;
+      place-items:center; font-size:12px; color:#06121f; background:linear-gradient(135deg,var(--lime),var(--cyan)); }
+    .step p { margin:6px 0; color:#c3d2e6; font-size:13.5px; }
+    .kv { display:flex; justify-content:space-between; gap:10px; padding:5px 0;
+      border-bottom:1px dashed rgba(148,163,184,.16); font-size:13px; }
+    .kv:last-child { border-bottom:0; }
+    .kv span { color:var(--muted); } .kv b { font-variant-numeric:tabular-nums; }
+    .teach { border:1px solid rgba(251,191,36,.35); background:rgba(251,191,36,.07);
+      border-radius:12px; padding:10px 14px; font-size:13px; color:#fde9b8; margin-top:10px; }
+    .na { border:1px solid rgba(255,138,128,.32); background:rgba(255,138,128,.06);
+      border-radius:12px; padding:12px 16px; font-size:13px; color:#ffc9c2; }
+    code { background:rgba(56,189,248,.10); border:1px solid rgba(56,189,248,.22);
+      padding:1px 7px; border-radius:7px; font-size:12.5px; color:var(--cyan);
+      font-family:"SF Mono",ui-monospace,Menlo,Consolas,monospace; }
+    pre { padding:16px; border-radius:13px; background:#0a1220; border:1px solid var(--line);
+      overflow-x:auto; font-size:12.5px; font-family:"SF Mono",ui-monospace,Menlo,monospace; line-height:1.7; }
+    footer { max-width:1120px; margin:auto; padding:26px 22px 44px; color:var(--muted);
+      font-size:13px; border-top:1px solid rgba(148,163,184,.14); margin-top:36px;
+      display:flex; justify-content:space-between; flex-wrap:wrap; gap:10px; }
+    a { color:var(--cyan); text-decoration:none; }
+  </style>
+</head>
+<body>
+<header>
+  <div class="nav">
+    <div class="brand"><div class="mark">🎓</div><div>EduResearch 教育科研台<small>dsh-research-lab · 领域方法论</small></div></div>
+    <nav class="nav-links">
+      <a href="index.html">← 框架总览</a>
+      <a href="#t1t5">T1–T5 流程</a><a href="#anchors">数值锚点</a>
+      <a href="#teach">课堂讲点</a><a href="#na">不适用方法</a>
+      <a href="health-methodology.html">公卫方法论 →</a>
+    </nav>
+  </div>
+</header>
+
+<div class="hero">
+  <span class="kicker">Domain Methodology · Education</span>
+  <h1>学习行为与学业成绩的关联研究</h1>
+  <p class="lead">以 UCI Student Performance（id=320）为基准数据：葡萄牙两所中学、葡语课
+  <b>649 名中学生 × 33 字段</b>，真实公开数据（CC BY 4.0）。研究对象是高校教师学员——
+  本域教的是教育科研方法本身，不是"预测学生"。</p>
+</div>
+
+<section id="t1t5">
+  <h2>T1–T5 预登记协议流程</h2>
+  <p class="sub">协议 V1.0 先于分析锁定（datasets/education-student-performance/protocol.md）；分析计划不得边看边改。</p>
+  <div class="steps">
+    <div class="step"><h3><i>T1</i>数据导入与字段语义核查</h3>
+      <p>分号解析 + 逐列类型断言 + 缺失/重复审计。raw 字节级检查发现 <b>G1/G2 取值带引号</b>——标准解析器静默吸收为整数，类型异常就此消失。<b>引号数字是解析层必须显式核查类型的原因</b>。</p>
+      <div class="teach">教学点：引号数字 → 静默类型漂移 → "解析层不得信任推断"三段论，是 data-intake 技能的核心案例。</div>
+    </div>
+    <div class="step"><h3><i>T2</i>单变量关联 + 组间检验（只表述关联）</h3>
+      <p>有序暴露用 Spearman（ρ：studytime +0.2747、failures −0.4484）；absences 双口径对照（Pearson −0.0914 / Spearman −0.1585）；两独立组 Welch t + Mann-Whitney + Cohen's d（sex：d=−0.264）；Medu 五组 Welch ANOVA（F=9.85）；卡方 + Cramér's V（school×higher V=0.131，含期望频数检查）；8 项检验家族 Bonferroni / BH-FDR 双校正。</p>
+    </div>
+    <div class="step"><h3><i>T3</i>多变量回归 M1 与诊断</h3>
+      <p>协议公式 <code>G3 ~ C(school)+C(sex)+Medu+Fedu+studytime+failures+absences</code>：
+      调整 R²=0.2629；studytime +0.511 [0.239, 0.783]；failures −1.667（p≈2e-17）。
+      诊断三件套真实存在：BP 显著（异方差）→ 必报 HC3 稳健 SE；JB 拒绝正态（偏度 −0.84）；
+      VIFmax=1.80 无共线；设计矩阵满秩；Cook's d &gt;4/n 共 60 例（报告而不删除）。</p>
+    </div>
+    <div class="step"><h3><i>T4</i>目标信息时点对照（泄漏审计）</h3>
+      <p>M2 = M1 + G1 + G2 → 调整 R² 0.2629 → <b>0.8500（Δ+0.587）</b>。
+      解读纪律：M2 回答"期末解释/含泄漏预测"，不是"更好的模型"；回答研究问题的只有 M1。
+      教育数据几乎总含期中成绩——这是该领域最常见、最隐蔽的泄漏源。</p>
+      <div class="teach">课堂金句：如果论文里出现这种解释力跳变，先问"预测在什么时点可用"，而不是先庆祝。</div>
+    </div>
+    <div class="step"><h3><i>T4b</i>连续预测与解释</h3>
+      <p>80/20（seed=42）holdout MAE=2.20 / RMSE=<b>2.826</b> / R²=0.226；5 折 CV R² 均值 <b>0.2377</b>；
+      置换重要性（r² 计分，30 次重复）给出"哪些变量真正贡献样本外预测"。</p>
+    </div>
+    <div class="step"><h3><i>T5</i>复现交付</h3>
+      <p>results.json（全量结构化）+ report.md（人读）+ tables/ + figures/ + 运行日志；
+      双实现互证：statsmodels vs numpy 手写 OLS <b>|Δ系数|=0（逐位一致）</b>；
+      <code>python scripts/verify.py --suite education</code> 一键对账。</p>
+    </div>
+  </div>
+</section>
+
+<section id="anchors">
+  <h2>数值锚点卡（授课只引用这些锁定值）</h2>
+  <div style="max-width:640px">
+    <div class="kv"><span>样本规模</span><b>649 × 33，0 缺失 0 重复</b></div>
+    <div class="kv"><span>studytime ↔ G3</span><b>ρ = +0.2747（p≈1.1e-12）</b></div>
+    <div class="kv"><span>性别效应（男−女）</span><b>−0.847 分，d = −0.2643</b></div>
+    <div class="kv"><span>M1 调整 R²</span><b>0.2629</b></div>
+    <div class="kv"><span>M2（含 G1/G2）调整 R²</span><b>0.8500（Δ +0.5872）</b></div>
+    <div class="kv"><span>holdout RMSE / CV R²</span><b>2.826 / 0.2377</b></div>
+    <div class="kv"><span>多重校正</span><b>8 项家族：Bonferroni 6 项 / FDR 8 项显著</b></div>
+  </div>
+</section>
+
+<section id="teach">
+  <h2>课堂讲点（教师速查）</h2>
+  <div class="steps">
+    <div class="step"><h3>🧲 为什么是"中学数据"？</h3>
+      <p>授课对象是高校教师，研究主题是教育科研方法。数据真实性、变量语义（studytime 分档、failures 上限封顶 4）、重叠样本（382 名学生两课都有记录，禁合并当独立样本）——每一条都是真实科研会遇到的问题。</p></div>
+    <div class="step"><h3>🗣️ 措辞边界训练</h3>
+      <p>全部结论用"关联/一致/提示"；"证明/导致/效应"在观察性设计里不出现——报告生成器从 JSON 引用数字时同步执行这一纪律。</p></div>
+    <div class="step"><h3>🔁 换学科怎么迁</h3>
+      <p>tools/ 零改动；换协议 + 字典 + Skill + expected/ 锚点即可。迁移自检：用第二份数据证明"真实复用"而非"复制结果"。</p></div>
+  </div>
+</section>
+
+<section id="na">
+  <h2>不适用方法（显式声明，防方法错配）</h2>
+  <div class="na">
+    生存分析（无时间-事件字段）· 纵向/混合模型（无重复测量）· 因果效应估计（观察性无识别策略）·
+    调查加权（非复杂抽样）· 序数 Logistic 作主模型（G3 近似连续，OLS 为协议主模型，序数模型仅课后扩展）
+  </div>
+</section>
+
+<pre style="max-width:1120px;margin:20px auto 0"><span style="color:#7d8ca3"># 一键复现本域全部数字</span>
+python examples/education-demo/run_t1_t5.py
+python scripts/verify.py --suite education   <span style="color:#7d8ca3"># 教育段逐项对账</span></pre>
+
+<footer>
+  <div>UCI Student Performance · Cortez &amp; Silva (2008) · CC BY 4.0 · 教学演示用途</div>
+  <div><a href="index.html">框架总览</a> · <a href="health-methodology.html">公卫方法论</a> · <a href="https://github.com/milulab/dsh-research-lab">GitHub</a></div>
+</footer>
+</body>
+</html>

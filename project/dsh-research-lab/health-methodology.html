@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>公卫科研方法论 · DSH Research Lab</title>
+  <meta name="description" content="HealthResearch 公共卫生模板：以 UCI Heart Disease 真实历史病例（Cleveland 303 例）完成缺失审计、防泄漏建模、ROC/阈值/校准评价与复现交付（H1–H5）。">
+  <meta name="robots" content="index,follow">
+  <style>
+    :root { --navy:#0b1524; --navy-2:#101e33; --line:rgba(148,163,184,.28);
+      --text:#eaf3ff; --muted:#9fb2c7; --blue:#38bdf8; --cyan:#67e8f9;
+      --lime:#a3e635; --gold:#fbbf24; --pink:#f472b6; --violet:#a78bfa; }
+    * { box-sizing:border-box; } html { scroll-behavior:smooth; }
+    body { margin:0; min-height:100vh; color:var(--text);
+      background:
+        radial-gradient(1000px 540px at 82% -8%, rgba(244,114,182,.14), transparent),
+        radial-gradient(860px 480px at 8% 18%, rgba(56,189,248,.16), transparent),
+        linear-gradient(145deg,var(--navy),var(--navy-2));
+      font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+      font-size:15px; line-height:1.65; }
+    header { position:sticky; top:0; z-index:20; backdrop-filter:blur(18px);
+      background:rgba(8,16,28,.72); border-bottom:1px solid rgba(148,163,184,.18); }
+    .nav { max-width:1120px; margin:auto; padding:14px 22px; display:flex;
+      align-items:center; justify-content:space-between; gap:12px; }
+    .brand { display:flex; align-items:center; gap:10px; font-weight:800; }
+    .mark { width:36px; height:36px; border-radius:10px; display:grid; place-items:center;
+      background:linear-gradient(135deg,#f472b6,#38bdf8); }
+    .nav-links { display:flex; gap:4px; flex-wrap:wrap; }
+    .nav-links a { color:var(--muted); padding:7px 11px; border-radius:999px;
+      font-size:13px; font-weight:700; text-decoration:none; }
+    .nav-links a:hover { color:#fff; background:rgba(244,114,182,.12); }
+    .hero { max-width:1120px; margin:auto; padding:56px 22px 10px; }
+    .kicker { color:var(--pink); font-size:12px; font-weight:800; letter-spacing:.14em; text-transform:uppercase; }
+    h1 { margin:10px 0 8px; font-size:clamp(26px,4.4vw,38px); letter-spacing:-.03em; line-height:1.18; }
+    .lead { color:#c9d8ec; max-width:840px; font-size:15.5px; }
+    section { max-width:1120px; margin:auto; padding:34px 22px 6px; }
+    h2 { font-size:21px; margin:0 0 4px; letter-spacing:-.02em; }
+    .sub { color:var(--muted); font-size:13.5px; margin:0 0 16px; }
+    .steps { display:grid; gap:12px; }
+    .step { border:1px solid var(--line); border-radius:16px; padding:16px 18px; background:rgba(255,255,255,.04); }
+    .step h3 { margin:0 0 6px; font-size:15.5px; display:flex; gap:9px; align-items:center; }
+    .step h3 i { font-style:normal; width:24px; height:24px; border-radius:7px; display:grid;
+      place-items:center; font-size:12px; color:#1f0b16; background:linear-gradient(135deg,var(--pink),var(--gold)); }
+    .step p { margin:6px 0; color:#c3d2e6; font-size:13.5px; }
+    .kv { display:flex; justify-content:space-between; gap:10px; padding:5px 0;
+      border-bottom:1px dashed rgba(148,163,184,.16); font-size:13px; }
+    .kv:last-child { border-bottom:0; }
+    .kv span { color:var(--muted); } .kv b { font-variant-numeric:tabular-nums; }
+    .teach { border:1px solid rgba(251,191,36,.35); background:rgba(251,191,36,.07);
+      border-radius:12px; padding:10px 14px; font-size:13px; color:#fde9b8; margin-top:10px; }
+    .danger { border:1px solid rgba(255,138,128,.4); background:rgba(255,138,128,.08);
+      border-radius:12px; padding:12px 16px; font-size:13px; color:#ffc9c2; }
+    .na { border:1px solid rgba(255,138,128,.32); background:rgba(255,138,128,.06);
+      border-radius:12px; padding:12px 16px; font-size:13px; color:#ffc9c2; }
+    code { background:rgba(244,114,182,.10); border:1px solid rgba(244,114,182,.22);
+      padding:1px 7px; border-radius:7px; font-size:12.5px; color:#f9a8d4;
+      font-family:"SF Mono",ui-monospace,Menlo,Consolas,monospace; }
+    footer { max-width:1120px; margin:auto; padding:26px 22px 44px; color:var(--muted);
+      font-size:13px; border-top:1px solid rgba(148,163,184,.14); margin-top:36px;
+      display:flex; justify-content:space-between; flex-wrap:wrap; gap:10px; }
+    a { color:var(--cyan); text-decoration:none; }
+  </style>
+</head>
+<body>
+<header>
+  <div class="nav">
+    <div class="brand"><div class="mark">❤️</div><div>HealthResearch 公卫科研台<small>dsh-research-lab · 领域方法论</small></div></div>
+    <nav class="nav-links">
+      <a href="index.html">← 框架总览</a>
+      <a href="#h1h5">H1–H5 流程</a><a href="#anchors">数值锚点</a>
+      <a href="#teach">课堂讲点</a><a href="#na">不适用方法</a>
+      <a href="education-methodology.html">教育方法论 →</a>
+    </nav>
+  </div>
+</header>
+
+<div class="hero">
+  <span class="kicker">Domain Methodology · Public Health</span>
+  <h1>心脏病风险分类模型的验证式教学</h1>
+  <p class="lead">以 UCI Heart Disease（id=45）processed Cleveland 子集为基准：<b>303 例真实历史病例</b>（Detrano et al. 1989；CC BY 4.0）。本域教的是风险建模的验证纪律——防泄漏划分、
+  判别与校准分离、阈值即决策。<b>历史研究数据，禁止用于真实临床诊断。</b></p>
+</div>
+
+<section id="h1h5">
+  <h2>H1–H5 预登记协议流程</h2>
+  <p class="sub">协议 V1.0 先于分析锁定（datasets/health-heart-disease/protocol.md）；标签映射与缺失策略显式记录。</p>
+  <div class="steps">
+    <div class="step"><h3><i>H1</i>字段、缺失与标签审计</h3>
+      <p>303 例；缺失 <b>ca=4、thal=2</b>（"?" 是缺失编码不是合法水平）→ 完整案例法 <b>297</b>；
+      标签二元化规则显式记录（num==0→0；1–4→1）→ <b>160 阴性 / 137 阳性</b>。</p>
+      <div class="teach">教学点：任何"数字转标签"的规则必须随每次结果输出——隐式转换是临床数据科学的经典事故源。</div>
+    </div>
+    <div class="step"><h3><i>H2</i>基线协变量筛查 + OR 表</h3>
+      <p>连续特征按结局分组：Welch t + Mann-Whitney + Cohen's d（age d=0.466，阳性更年长组更高；
+      thalach 阴性组更高）；7 个分类特征卡方 + 期望频数检查；19 项检验家族 Bonferroni（13 显著）/
+      <b>BH-FDR（16 显著）</b>。OR 表（GLM/IRLS 流行病学惯例）：<b>ca OR=3.55 [2.11, 5.98]</b>、
+      thalach OR=0.98（保护方向）、exang OR=2.24。</p>
+    </div>
+    <div class="step"><h3><i>H3</i>防泄漏划分与交叉验证</h3>
+      <p>分层 80/20（seed=42）：训练 237 / 测试 60；StandardScaler + LogisticRegression 置于同一
+      Pipeline，标准化只在训练折内拟合。<b>5 折分层 CV AUC = 0.869 ± 0.069</b>——CV 与留出集
+      指标分开报告，禁止只报好看的那个。</p>
+      <div class="teach">教学点：预处理泄漏会同时抬高 CV 与留出指标且更难察觉——"Pipeline 化"不是风格偏好，是正确性要求。</div>
+    </div>
+    <div class="step"><h3><i>H4</i>评价：判别、阈值、校准、解释、敏感性</h3>
+      <p>留出集 <b>AUC=0.9498</b>；0.5 阈值混淆（tn28/fp4/fn6/tp22，敏感度 0.7857 / 特异度 0.8750 /
+      <b>F1=0.8148</b>）；<b>Youden 阈值 0.1864</b>（敏感度 1.00 / 特异度 0.7812 / F1=0.8889，
+      FN→0 的代价是 FP 4→7）；19 档阈值扫描表；<b>Brier=0.0938</b> + 校准曲线（判别≠校准）；
+      置换重要性 top=ca（AUC 降幅 0.0748）；敏感性分析：剔除 fbs/restecg 后
+      <b>ΔAUC=+0.0045、共有特征符号零翻转</b>（设定稳健）。</p>
+      <div class="teach">课堂金句：0.5 没有天然正当性——筛查语境漏诊 21% 通常不可接受；"最优阈值"必须绑定代价语境。</div>
+    </div>
+    <div class="step"><h3><i>H5</i>复现交付</h3>
+      <p>results.json / report.md / tables（系数、OR、阈值扫描、置换重要性）/ figures（ROC + 校准）；
+      独立口径交叉核验：sklearn vs 秩和法 AUC 差 =0.0（同概率）；GLM+秩和 vs sklearn 差 0.0011
+      （&lt;0.005 跨求解器容差）；<code>python scripts/verify.py --suite health</code> 一键对账；
+      环境指纹（库版本/seed/平台）随 results.json 输出。</p>
+    </div>
+  </div>
+</section>
+
+<section id="anchors">
+  <h2>数值锚点卡（授课只引用这些锁定值）</h2>
+  <div style="max-width:640px">
+    <div class="kv"><span>样本链</span><b>303 →（−4 −2 缺失）→ 297（160 阴 / 137 阳）</b></div>
+    <div class="kv"><span>5 折分层 CV AUC</span><b>0.8694 ± 0.0685</b></div>
+    <div class="kv"><span>留出集 AUC</span><b>0.9498（n_test=60，须带波动提示）</b></div>
+    <div class="kv"><span>F1（0.5 / Youden）</span><b>0.8148 / 0.8889</b></div>
+    <div class="kv"><span>Brier 分数</span><b>0.0938</b></div>
+    <div class="kv"><span>最强血管征象</span><b>ca OR = 3.55 [2.11, 5.98]</b></div>
+    <div class="kv"><span>敏感性分析</span><b>ΔAUC=+0.0045，符号零翻转</b></div>
+  </div>
+</section>
+
+<section id="teach">
+  <h2>课堂讲点（教师速查）</h2>
+  <div class="steps">
+    <div class="step"><h3>⚖️ 判别与校准为什么分开讲</h3>
+      <p>AUC 只说"排序对不对"（筛查够用）；Brier + 校准曲线说"概率本身可信吗"（决策与沟通必需）。
+      本模型判别好（0.95）而校准一般——这正好是教学素材而非缺陷。</p></div>
+    <div class="step"><h3>📉 小样本的诚实</h3>
+      <p>测试集仅 60 例：任何指标必须同时给出 CV 标准差（±0.069）与抽样波动提示；
+      引用裸点估计是本域的反面教材。</p></div>
+    <div class="step"><h3>🧭 与教育台的迁移对照</h3>
+      <p>tools/ 与 8 个通用 Skills 全部复用；协议/字典/锚点/领域 Skills 全重做——
+      一次迁移讲清"框架通用、领域配置"的架构含义。</p></div>
+  </div>
+</section>
+
+<section id="na">
+  <h2>不适用方法（显式声明，防方法错配）</h2>
+  <div class="na">
+    生存分析/Cox（无随访时间与删失字段）· 纵向/混合模型（无重复测量）· 因果效应估计（观察性无识别策略，
+    OR 只表述关联）· 调查加权（非复杂抽样）· 填补作主分析（协议为完整案例法，填补须修订协议后另行验证）
+  </div>
+  <div class="danger" style="margin-top:12px">⚠️ 临床边界（不可协商）：历史研究数据；不得用于真实临床诊断
+  或个体健康决策；报告尾注随每份产物输出。</div>
+</section>
+
+<pre style="max-width:1120px;margin:20px auto 0"><span style="color:#7d8ca3"># 一键复现本域全部数字</span>
+python examples/health-demo/run_h1_h5.py
+python scripts/verify.py --suite health   <span style="color:#7d8ca3"># 公卫段逐项对账</span></pre>
+
+<footer>
+  <div>UCI Heart Disease · Detrano et al. (1989) · CC BY 4.0 · 教学演示用途 · 禁临床使用</div>
+  <div><a href="index.html">框架总览</a> · <a href="education-methodology.html">教育方法论</a> · <a href="https://github.com/milulab/dsh-research-lab">GitHub</a></div>
+</footer>
+</body>
+</html>
