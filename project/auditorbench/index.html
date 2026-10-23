@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="AuditorBench：研究大语言模型审计员的稳定性、误报、上下文影响与集成可靠性的受控实验基准。">
+  <meta name="robots" content="index,follow">
+  <title>AuditorBench · 迷鹿 MiLu</title>
+  <style>
+    :root{color-scheme:dark;--bg:#0c1717;--panel:#142323;--line:#334746;--ink:#edf2e9;--muted:#adbbb2;--lime:#c3ed59;--mint:#94d7b0;--amber:#edbd76}
+    *{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:radial-gradient(ellipse at 75% 0,#24423c 0,transparent 43%),var(--bg);color:var(--ink);font:16px/1.72 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}a{color:inherit}
+    .top{max-width:1080px;margin:auto;padding:24px 24px 0}.top a{color:var(--lime);font-size:13px;text-decoration:none}.wrap{max-width:1080px;margin:auto;padding:46px 24px 86px}.eyebrow{color:var(--mint);font-size:12px;font-weight:850;letter-spacing:.16em;text-transform:uppercase}.hero{max-width:800px}.hero h1{margin:10px 0 15px;font-size:clamp(42px,7vw,72px);line-height:1.05;letter-spacing:-.055em}.hero h1 em{color:var(--lime);font-style:normal}.hero p{color:var(--muted);font-size:17px}.tags{display:flex;gap:9px;flex-wrap:wrap;margin-top:22px}.tags span{padding:5px 11px;border:1px solid var(--line);border-radius:999px;color:#dce7dc;font-size:12px}
+    .visual{margin:44px 0 58px;padding:26px;border:1px solid var(--line);border-radius:20px;background:rgba(20,35,35,.84)}.domains{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.domain{padding:20px;border:1px solid rgba(195,237,89,.23);background:rgba(195,237,89,.045)}.domain b{display:block;color:var(--lime);font-size:12px;letter-spacing:.1em}.domain span{display:block;margin-top:5px;color:var(--muted);font-size:13px}.flow{display:flex;justify-content:center;align-items:center;gap:10px;flex-wrap:wrap;margin-top:20px;padding-top:19px;border-top:1px solid var(--line);color:#d8e6d9;font-size:12px}.flow i{color:var(--lime);font-style:normal}
+    .section{margin-top:50px}.section h2{margin:0 0 12px;font-size:clamp(26px,4vw,36px);letter-spacing:-.04em}.section-intro{max-width:740px;color:var(--muted);font-size:14px}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin-top:18px}.card{padding:21px;border:1px solid var(--line);border-radius:17px;background:linear-gradient(145deg,rgba(20,35,35,.94),rgba(14,26,27,.96))}.card small{color:var(--mint);font-size:11px;font-weight:850;letter-spacing:.1em}.card h3{margin:9px 0 5px;font-size:19px}.card p{margin:0;color:var(--muted);font-size:14px}.question{margin-top:44px;padding:22px 24px;border-left:3px solid var(--lime);background:rgba(195,237,89,.06)}.question h2{margin:0 0 7px;font-size:22px}.question p{margin:0;color:#d5e1d6;font-size:14px}.limits{margin-top:46px}.limits ul{padding-left:21px;color:var(--muted);font-size:14px}.limits li+li{margin-top:8px}.status{margin-top:40px;padding:16px 18px;border:1px solid rgba(237,189,118,.35);border-radius:13px;background:rgba(237,189,118,.06);color:#e4d6be;font-size:13px}.related{display:flex;gap:18px;flex-wrap:wrap;margin-top:22px}.related a{color:var(--mint);font-size:13px;font-weight:800;text-decoration:none}.footer{display:flex;justify-content:space-between;gap:16px;margin-top:54px;padding-top:18px;border-top:1px solid var(--line);color:#899891;font-size:12px}
+    @media(max-width:680px){.wrap{padding:34px 16px 68px}.top{padding:18px 16px 0}.visual{padding:15px}.domains{grid-template-columns:1fr}.domain{padding:14px}.grid{grid-template-columns:1fr}.footer{display:block}.footer span{display:block;margin:5px 0}}
+  </style>
+</head>
+<body>
+  <div class="top"><a href="{{ '/' | relative_url }}#work">← 返回项目作品</a></div>
+  <main class="wrap">
+    <header class="hero"><p class="eyebrow">Independent research prototype</p><h1>Auditor<em>Bench</em></h1><p>当 AI 开始检查代码、配置和合规流程，我们还需要检验一件事：审计员本身可靠吗？这个研究原型设计了一组有明确答案的受控样例，用来观察审计模型是否稳定、在哪些场景容易误报，以及多个模型放在一起是否真的更可靠。</p><div class="tags"><span>受控评测基准</span><span>60 个合成样例</span><span>代码 · 配置 · 数据处理</span><span>论文草稿阶段</span></div></header>
+    <section class="visual" aria-label="测试样例和可靠性指标的关系示意图"><div class="domains"><div class="domain"><b>CODE</b><span>代码安全缺陷与干净样例</span></div><div class="domain"><b>CONFIG</b><span>基础设施配置错误与正确配置</span></div><div class="domain"><b>POLICY</b><span>数据处理与隐私规则</span></div></div><div class="flow"><span>同一组受控输入</span><i>→</i><span>单模型重复审计</span><i>→</i><span>跨模型比较与集成</span></div></section>
+    <section class="section"><h2>研究怎么做</h2><p class="section-intro">每个样例都经过人工编写和标注：要么包含一个已知问题，要么作为干净样例。模型收到统一的任务指令，并用结构化结果报告判断。评测关注的不只是“找没找到问题”，还要看错误是否稳定、模型之间是否互补。</p><div class="grid">
+      <article class="card"><small>01 · 准确与误报</small><h3>能发现问题，也能放过正确项吗？</h3><p>把含有已知缺陷的样例和干净样例分开计算，分别观察检出情况与不必要告警。</p></article>
+      <article class="card"><small>02 · 重复运行</small><h3>同一模型会不会反复改变主意？</h3><p>对相同样例多次运行，记录结论翻转和稳定漏检，区分随机波动与持续偏差。</p></article>
+      <article class="card"><small>03 · 上下文影响</small><h3>前面的审计记录或批准语句会影响它吗？</h3><p>比较不同会话上下文和附加说明下的判断变化，观察模型是否能坚持按证据审计。</p></article>
+      <article class="card"><small>04 · 多模型集成</small><h3>多数投票一定比单个模型好吗？</h3><p>比较投票、并集和交集策略，并观察成员误报倾向是否会把集成结果带偏。</p></article>
+    </div></section>
+    <section class="question"><h2>项目想说明什么</h2><p>“让第二个模型再检查一次”不自动构成可靠性保障。评测一个审计系统时，还需要看它在哪些类型上稳定出错、是否把偏好误当成缺陷，以及每个集成成员给结果带来的具体变化。</p></section>
+    <section class="section limits"><h2>边界与下一步</h2><ul><li>当前是研究原型，使用受控合成样例，不等同于真实生产环境中的安全、合规或代码审计表现。</li><li>样例规模有限，类别设计和标注也会影响测量结果；更大规模的独立复核仍然重要。</li><li>部分 API 模型评测未完成，因此不把当前观察表述为对所有模型或部署方式的普遍结论。</li><li>论文仍在草稿阶段，结果尚未经过同行评审；本页面展示研究问题与方法，不提供未经复核的性能排名。</li></ul></section>
+    <p class="status"><strong>公开范围：</strong>本页介绍研究问题、评测维度和限制。底层测试语料、模型原始响应、研究草稿及本地配置不随网站发布。</p>
+    <div class="related"><a href="{{ '/' | relative_url }}#work">返回全部项目 →</a><a href="https://github.com/deerleo">查看 GitHub →</a></div>
+    <footer class="footer"><span>AuditorBench · 独立研究原型</span><span>Leo Lu · 迷鹿 MiLu</span></footer>
+  </main>
+</body>
+</html>

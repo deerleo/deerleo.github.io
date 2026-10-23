@@ -80,6 +80,10 @@ body {
 .work-link b { font-size: 16px; transition: transform .2s ease; }
 .work-item:hover .work-link b { transform: translate(2px,-2px); }
 .visual-lab { isolation: isolate; background: #f1eadb; }
+.visual-auditorbench { align-content: center; gap: 18px; padding: 24px; background: radial-gradient(ellipse at 50% 0, #36564c, transparent 72%), #18352f; }
+.audit-domains, .audit-metrics { display: flex; justify-content: center; flex-wrap: wrap; gap: 8px; }
+.audit-domains span { padding: 12px 17px; border: 1px solid rgba(223,238,216,.3); color: #e6eedc; background: rgba(9,27,24,.38); font-size: 11px; font-weight: 850; letter-spacing: .12em; }
+.audit-metrics i { padding: 7px 11px; border-radius: 999px; color: #c3ed59; background: rgba(195,237,89,.1); font-size: 11px; font-style: normal; font-weight: 750; }
 .visual-lab::before, .visual-lab::after { position: absolute; z-index: -1; content: ""; width: 210px; height: 210px; border: 1px solid rgba(23,59,44,.12); border-radius: 50%; }
 .visual-lab::after { width: 280px; height: 280px; }
 .beaker { position: absolute; top: 51px; width: 66px; height: 118px; border: 3px solid #345941; border-top: 0; border-radius: 0 0 19px 19px; transform: skewY(-4deg); }
