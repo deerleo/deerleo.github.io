@@ -113,6 +113,66 @@ tutorials:
         text: 在教育与公共卫生案例中运行和核验研究流程
         status: 已发布
 
+  - id: ai-for-teaching-research
+    mode: series
+    title: AI 赋能教研：从任务到可复用工作流
+    kicker: 实战系列
+    description: 围绕科研写作、项目申报、课程设计、反馈分析与智能体工程，练习把 AI 使用变成可验证、可复用的工作流程。
+    level: 入门到进阶
+    progress:
+      done: 8
+      total: 8
+    link: /course/ai-teaching-research/
+    episodes:
+      - title: 01 · 任务定义与提示设计
+        text: 把目标、输入、约束和验收条件写清楚
+        status: 已发布
+      - title: 02 · 文献整理与论文写作
+        text: 从题录到证据表，再到可核查的综述草稿
+        status: 已发布
+      - title: 03 · 课题申报拆解
+        text: 对齐科学问题、研究内容、方法与进度
+        status: 已发布
+      - title: 04 · 教学设计与学习评价
+        text: 让目标、课堂活动和评价标准相互对应
+        status: 已发布
+      - title: 05 · 反馈分析与教学改进
+        text: 脱敏、编码、归纳、抽查与行动闭环
+        status: 已发布
+      - title: 06 · 把流程封装为 Skill
+        text: 输入、步骤、输出、质量规则和人工复核
+        status: 已发布
+      - title: 07 · 从单个助手到多步骤 Agent
+        text: 先建立清晰分工，再决定是否需要协作编排
+        status: 已发布
+      - title: 08 · 个人教研 AI 系统
+        text: 连接交互、知识、智能体与工具，持续评估
+        status: 已发布
+
+  - id: aigc-creative-practice
+    mode: series
+    title: AIGC 创意实作：从想法到作品
+    kicker: 创作系列
+    description: 为青少年与创作者设计的生成式 AI 入门路径：理解模型能力、拆解创意提示、迭代图像与动态作品，并完成小组创作。
+    level: 入门
+    progress:
+      done: 4
+      total: 4
+    link: /course/aigc-creative/
+    episodes:
+      - title: 01 · 认识生成式 AI
+        text: 区分生成、检索与事实判断，学会与模型对话
+        status: 已发布
+      - title: 02 · 把想法变成画面
+        text: 从主体、场景、构图、光线和风格迭代图像
+        status: 已发布
+      - title: 03 · 从静帧到动态叙事
+        text: 用镜头、动作和连续性设计短视频方案
+        status: 已发布
+      - title: 04 · 团队创作与责任使用
+        text: 完成主题作品，并检查隐私、授权与标注
+        status: 已发布
+
 media:
   - id: accounts
     kicker: Media
