@@ -77,6 +77,7 @@ footer a{color:var(--cyan);text-decoration:none}
 <a class="brand" href="./"><span class="mark">🧪</span><span>Milu Lab<small>第7讲 / DSH 科研智能体</small></span></a>
 <nav class="nav-links">
 <a href="#s1">安装</a><a href="#s2">模型</a><a href="#s3">技能</a><a href="#s4">Preset</a>
+<a href="#tools">工具封装</a><a href="#plugins">插件</a>
 <a href="#s5">教育案例</a><a href="#s6">公卫案例</a><a href="#downloads">下载</a><a href="#s7">验收</a>
 </nav></div></header>
 <main>
@@ -128,8 +129,42 @@ python3 -m venv .venv
 <span class="cm"># 先跑一次总验收：49 项应全绿（数据完整性/确定性复跑/双实现互证）</span>
 .venv/bin/python scripts/verify.py</pre></div>
 
-<div class="snippet"><div class="snippet-bar"><strong>🤖 AI 帮我配置（推荐：把下面整段粘贴给 DSH 对话）</strong><div class="snippet-actions"><button data-copy="ai2">复制提示词</button></div></div>
-<pre id="ai2">帮我完成模型配置，要循序渐进、每步先解释再动手：
+<div class="snippet"><div class="snippet-bar"><strong>🤖 AI 帮我安装（把下面整段粘贴给任意 AI 编程助手：Codex / Claude Code）</strong><div class="snippet-actions"><button data-copy="ai1">复制提示词</button></div></div>
+<pre id="ai1">帮我在这台电脑上安装 DeepSeek Harness（DSH），循序渐进、每步先解释再动手：
+1) 检查前置：node --version（需 ≥20）与 npm 是否可用；缺失就告诉我用 nvm 装 Node 的命令；
+2) 安装锁定版本：npm install -g @deepseek-ai/dsh@0.2.1-rc.2，装完运行 dsh --version 验证
+   输出 0.2.1-rc.2；
+3) 运行 dsh --help，用三句话给我讲清三种使用形态的区别：web（浏览器工作台，默认
+   127.0.0.1:3080，启动日志里有带 token 的访问地址）/ tui（终端交互）/ headless（一次性任务）；
+4) 最小自测：dsh headless "只回复两个字：在线"。没配 key 时会报 MISSING_CREDENTIAL——
+   属预期，把报错原文给我，并说明下一步要配置模型（DEEPSEEK_API_KEY 或其他网关）；
+5) 最后把「本机安装状态清单」整理成表：node / npm / dsh 版本、~/.dsh/ 是否生成、还差哪一步。
+安全边界：所有命令先展示再运行；除 dsh 外不安装任何全局包。</pre></div>
+<div class="callout">✅ 检查点：看到 <b>49/49 checks passed — ALL GREEN</b> 才继续。GitHub Actions 已在 ubuntu/macos/windows × Python 3.11/3.12 六个矩阵验证过同样的结果。</div>
+</section>
+
+<section id="s2">
+<h2><span class="stepno">STEP 2</span>模型配置：两条通道（DeepSeek 官方 / GLM 网关）</h2>
+<p class="sub">DSH 的 web 与 headless 是<b>两个独立 profile</b>，各有一份配置，改完下次请求生效、无需重启，课堂建议两个都配。下面给两张"粘贴即用"的配置提示词卡，选一条通道即可；都建议粘贴给<b>任意 AI 编程助手</b>（Codex / Claude Code）执行。</p>
+
+<div class="snippet"><div class="snippet-bar"><strong>🤖 配置提示词 · 方式 A：DeepSeek 官方 API（密钥贴在提示词里）</strong><div class="snippet-actions"><button data-copy="ai2">复制提示词</button></div></div>
+<pre id="ai2">我要接入 DeepSeek 官方 API。我的密钥是：
+DEEPSEEK_API_KEY=sk-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+请按下面步骤帮我完成配置，每步先解释再动手；注意：从现在起你的任何输出都不要完整回显这把密钥：
+1) 把密钥写入本机环境：在 ~/.zshrc（zsh）或对应 shell 配置文件末尾追加
+   export DEEPSEEK_API_KEY=＜我的密钥＞，并让当前终端立即生效（source）；写之前给我看将追加的行；
+2) 说明效果：配置后 DSH 走 deepseek-official 模型目录（如 deepseek-chat），web 与 headless
+   两个 profile 共用这把 key（凭据服务读取同一环境变量），无需各写一份；
+3) 也可以在网页工作台做同样的事：启动 dsh web → Settings → Models → DeepSeek 卡片粘贴同一把
+   密钥保存（写进本机凭据库，界面只存引用不存明文）。两种方式效果相同，选其一即可；
+4) 自测并给我看过程：新开终端运行 dsh headless "只回复两个字：在线"，应正常返回；
+5) 安全提醒（必须执行）：这把密钥已出现在对话记录里，请提醒我去 DeepSeek 平台生成一把
+   设了限额的子密钥来替换，并教我两步完成更换。
+安全边界：密钥只进本机环境变量/凭据库；任何命令、日志、配置文件、回复中都不得出现完整密钥。</pre></div>
+<div class="callout">🔐 <b>密钥安全三原则</b>（本页两种方式都适用）：①贴过提示词的 key 视为已泄露，用完即换限额子密钥；②密钥只落本机（环境变量 / ~/.dsh 凭据库），不进任何会提交的文件；③给学生的课堂 key 单独开账户并限额。</div>
+
+<div class="snippet"><div class="snippet-bar"><strong>🤖 配置提示词 · 方式 B：智谱 GLM 网关（密钥走环境变量，本页案例默认 GLM-5.3-Flash）</strong><div class="snippet-actions"><button data-copy="ai2b">复制提示词</button></div></div>
+<pre id="ai2b">帮我完成模型配置，要循序渐进、每步先解释再动手：
 1) 检查环境：node/npm 版本、~/.dsh/profiles/ 下有哪些 profile；
 2) 我要用智谱网关（baseURL: https://open.bigmodel.cn/api/anthropic，协议 anthropic-messages），
    模型 glm-5.3-flash（默认）+ glm-4.7（备用），密钥走环境变量 ZHIPU_API_KEY（不要让我明文贴密钥）；
@@ -137,12 +172,6 @@ python3 -m venv .venv
    说明每个字段含义，经我确认后再写入（写入前 diff 预览）；
 4) 写完生成三条自测命令并逐条运行：YAML 可解析、默认模型已切换、给出我在 web 界面验证模型的方法。
 安全边界：密钥只经环境变量引用；改配置前必须给我看 diff。</pre></div>
-<div class="callout">✅ 检查点：看到 <b>49/49 checks passed — ALL GREEN</b> 才继续。GitHub Actions 已在 ubuntu/macos/windows × Python 3.11/3.12 六个矩阵验证过同样的结果。</div>
-</section>
-
-<section id="s2">
-<h2><span class="stepno">STEP 2</span>模型配置：接入 GLM-5.3-Flash</h2>
-<p class="sub">DSH 的 web 与 headless 是<b>两个独立 profile</b>，各有一份配置，改完下次请求生效、无需重启。课堂建议两个都配。</p>
 <div class="snippet"><div class="snippet-bar"><strong>配置片段 · ~/.dsh/profiles/web/cordis.patch.yml（headless 同理）</strong><div class="snippet-actions"><button data-copy="c3">复制</button></div></div>
 <pre id="c3"><span class="cm"># 追加/合并到已有配置（智谱 Anthropic 协议网关）</span>
 - id: llm-pi-ai
@@ -234,6 +263,116 @@ dsh web                <span class="cm"># 新实例的工作区即仓库根，�
 
 <span class="cm"># 已有实例（如 3080 端口）不想动？把技能装到用户级 ~/.dsh/skills/ 即可（STEP 3 方式 B）。</span>
 <span class="cm"># 对话中用绝对路径访问仓库数据，产物由智能体重定向到当前工作区。</span></pre></div>
+</section>
+
+<section id="tools">
+<h2><span class="stepno">STEP+ 进阶</span>把已有 Python 脚本封装为 DSH 工具（以天气分析为例）</h2>
+<p class="sub">适用场景：你已经有能跑通的天气/时序分析 <code class="inline">.py</code> 文件（读 CSV、按月聚合、画图），
+想让智能体在对话里直接调用它。设计原则只有一条：<b>适配层是零依赖的薄层</b>——参数校验、子进程调用、结果转发放在
+Node；统计计算全部留在 Python（口径永远一份）；模型不参与任何计算。</p>
+
+<div class="snippet"><div class="snippet-bar"><strong>指令卡 W1 · 封装全流程（整段粘贴给 DSH 对话或 AI 编程助手；先把你的 .py 文件放进工作区）</strong><div class="snippet-actions"><button data-copy="w1">复制指令</button></div></div>
+<pre id="w1">我上传了一个已有的天气分析脚本 weather_analysis.py（读 CSV、按月聚合、画时序图）。
+请把它封装为 DSH 工具，分三个阶段做，每阶段结束停下来等我确认：
+
+阶段 1 · 抽取函数（保持口径）
+1) 通读脚本，用三句话向我复述：输入列、统计口径、输出物；不要改任何计算方法；
+2) 把核心逻辑抽成函数 analyze_seasonality(data_path, date_col, metric_col, output_dir,
+   date_start=None, date_end=None)，写到 code/seasonality_tool.py：
+   stdout 只输出结果 JSON；matplotlib 用 Agg 后端；报错也输出结构化 JSON（工具边界友好）；
+3) 写最小测试 code/test_seasonality_tool.py 并运行到通过。断言必须锚定数据的已知事实
+   （总行数、某列均值、峰值月份），不是"跑通就行"。
+
+阶段 2 · 生成零依赖插件包
+4) 生成 dsh-weather-tools/ 目录：package.json（dsh.bundle.patch 指向 cordis.patch.yml）、
+   index.js（export name / inject / apply 三段式）、cordis.patch.yml（insert 插件行）。
+   完成后 npm pack 出 tgz。以下五条硬规则来自真实报错，违反任何一条即返工：
+   a. 不要 import '@deepseek-ai/dsh-tools'。插件自带副本会污染 profile 的模块解析，
+      导致所有工具调用报 "Cannot read properties of undefined (reading 'prepare')"。
+      正确做法：直接构造原生工具定义——parameters 写 JSON Schema，execute 自己做参数校验；
+   b. 可选参数必须省略 required 字段（写 required: false 会在加载时被拒）；
+   c. output 的 object 根 schema 必须显式写 additionalProperties: true；
+   d. execute 里用 ctx.workingDirectory.ensure(exec.agent, exec.signal) 取会话工作区，
+      模型给的相对路径以它为基准；用 child_process 调 python3，环境加 MPLBACKEND=Agg；
+   e. 适配层不碰任何统计数字——模型也不参与计算，数字只来自 Python 的 stdout。
+5) 每次改动 index.js 后必须递增 package.json 的 version 再重新 pack+add：
+   版本号不变时 pnpm 不会替换已装副本（实测踩过：改了代码行为却不变）。
+
+阶段 3 · 安装、注册与端到端验收
+6) 安装到两个 profile：dsh plugin --profile web add ./dsh-weather-tools-&lt;版本&gt;.tgz
+   与 dsh plugin --profile headless add 同一个 tgz；
+7) 注册核验：dsh --profile web --dump-config | grep dsh-weather-tools 必须看到插件行。
+   注意：remove 之后再 add 可能把 bundle 登记弄丢——装完必须用 dump-config 复核；
+8) 端到端验收：dsh headless --json "调用 analyze_seasonality 工具分析 data/weather_monthly.csv，
+   日期列 month，指标列 temp_mean，输出到 outputs/tool_test/"，从事件流里找出成对的
+   "tool_call" 与 "tool_result" 事件展示给我；再打开 outputs/tool_test/results.json
+   与我手跑原脚本的结果对账，数字应一致；
+9) 最后交付一份「工具说明书」：参数表、一句话调用示例、三条常见报错与处理方法。</pre></div>
+
+<h3>验收与排障</h3>
+<div class="snippet"><div class="snippet-bar"><strong>指令卡 W2 · 三条验收（全过才算封装成功）</strong><div class="snippet-actions"><button data-copy="w2">复制指令</button></div></div>
+<pre id="w2">对我刚封装的工具逐条验收并贴出证据：
+① 注册：dsh --profile web --dump-config | grep dsh-weather-tools 有输出；
+② 真实分发：dsh headless --json "调用 analyze_seasonality 工具分析 data/weather_monthly.csv，
+   日期列 month，指标列 temp_mean，输出到 outputs/tool_check/" 的事件流里，
+   tool_call 与 tool_result 成对出现且 status 为 completed；
+③ 口径一致：工具产出的 results.json 关键数字与我直接运行原脚本的输出一致（给我看对比）。
+任何一条不过，按排障表定位原因后修复，不要绕过。</pre></div>
+<table>
+<tr><th>报错/现象（实测原文）</th><th>根因</th><th>处理</th></tr>
+<tr><td>Cannot read properties of undefined (reading 'prepare')</td><td>插件 dependencies 里带了 @deepseek-ai/dsh-tools，profile 里出现第二份副本，Symbol 索引失配</td><td>删掉依赖，改用原生定义（规则 a）；清掉 profile node_modules 里的残留副本</td></tr>
+<tr><td>…required must be true when present（加载即报）</td><td>parameters 里写了 required: false</td><td>可选参数<b>省略</b> required 字段</td></tr>
+<tr><td>…additionalProperties must be explicitly true or false</td><td>object 根 schema 没写 additionalProperties</td><td>显式写 true（或 false 收紧）</td></tr>
+<tr><td>改了 index.js 行为不变</td><td>版本号没变，pnpm 复用旧包（added 0）</td><td>每次改动 bump version，重新 pack + add</td></tr>
+<tr><td>dsh plugin add link:路径 后 import 失败</td><td>link 安装按真实路径解析，找不到依赖</td><td>开发期在插件目录内做 node_modules 软链；正式用 npm pack 出 tgz 安装</td></tr>
+</table>
+</section>
+
+<section id="plugins">
+<h2><span class="stepno">STEP+ 进阶</span>好用的现成插件：安装与验证</h2>
+<p class="sub">下面四个社区插件全部在 0.2.1-rc.2 实机装过。通用心法是"四步验证"：
+<b>看仓库 → 装包 → dump-config 查注册 → 真实数据调用并复核结果</b>。插件能装上 ≠ 能用 ≠ 结论可信——
+第三步之前不要相信任何插件产出。</p>
+
+<div class="snippet"><div class="snippet-bar"><strong>四个插件的安装命令（已实测）</strong><div class="snippet-actions"><button data-copy="c8">复制命令</button></div></div>
+<pre id="c8"><span class="cm"># ① dsh-data-insight · 数据探查/质量报告（Skill 型：装完即得一套中文 runbook 技能）</span>
+dsh plugin --profile web add dsh-data-insight
+
+<span class="cm"># ② dsh-genui · 对话内交互图表卡片（安装后输入区出现 GenUI 开关）</span>
+dsh plugin --profile web add dsh-genui
+
+<span class="cm"># ③ dsh-report-studio · 把会话整理成工作报告（当前版本与 0.2.x 不兼容，需豁免，两步）</span>
+dsh plugin --profile web allow-version dsh-report-studio@0.4.7 \
+  --dsh-version 0.2.1-rc.2 --accept-risk
+dsh plugin --profile web add github:ciceroyang/dsh-report-studio#v0.4.7
+
+<span class="cm"># ④ dsh-data-mode · 自然语言查数（⚠️ 见下方兼容性说明，进阶研究用）</span>
+dsh plugin --profile web add ./dsh-data-mode-0.1.0.tgz   <span class="cm"># npm pack 出的本地包最稳</span>
+
+<span class="cm"># 通用核验：插件行必须出现在组合后的配置树里</span>
+dsh --profile web --dump-config | grep -E "data-insight|genui|report-studio|data-mode"</pre></div>
+
+<div class="checklist">
+<div class="check"><b>① data-insight（推荐必装）</b>：五阶段数据体检 runbook（探查→指标→图表→严谨性自检）。实测可产出结构化质量报告，<b>但其结论必须人工复核</b>——实测曾把 41 个月完整数据谎报成"缺失 2024 全年"，三行 pandas 即可拆穿。这是全课程最好的"AI 幻觉"现场教材。</div>
+<div class="check"><b>② genui（推荐）</b>：回复里内联渲染柱状图/表单/仪表盘，数字与 results.json 一致；适合做成果展示与 UI 扩展起点。</div>
+<div class="check"><b>③ report-studio（选讲）</b>：把会话整理成日/周报、交接文档。版本豁免命令本身是绝佳的"依赖锁死 vs 运行时版本"教学点（豁免时 DSH 会打印完整风险提示）。</div>
+<div class="check"><b>④ data-mode（进阶研究）</b>：README 很好，但 0.1.x 预设机制已废弃、客户端注入是旧写法，当前装上后"数据源选择按钮"不渲染。自然语言查数需求用标准模式（让智能体实际运行 pandas/DuckDB）完全可达；坚持修复它本身就是极好的插件开发实战。</div>
+</div>
+
+<div class="snippet"><div class="snippet-bar"><strong>装完必做的对话级验证（以 data-insight 为例）</strong><div class="snippet-actions"><button data-copy="c9">复制命令</button></div></div>
+<pre id="c9"><span class="cm"># 用真实数据调一次，并立刻复核它的关键断言（两步缺一不可）</span>
+dsh headless <span class="kw">"用数据洞察技能对 data/processed/beijing_monthly_weather_pm25.csv 做数据体检：
+输出行数、列清单、缺失情况、pm25_mean 基本统计，并列出数据质量问题清单。"</span>
+
+<span class="cm"># 复核：插件说"缺 X 个月"，就用三行 pandas 对账</span>
+python3 - <span class="kw">&lt;&lt;</span><span class="sh">'EOF'</span>
+import pandas as pd
+df = pd.read_csv(<span class="kw">"</span>data/processed/beijing_monthly_weather_pm25.csv<span class="kw">"</span>)
+full = pd.date_range(df.month.min(), df.month.max(), freq=<span class="kw">"</span>MS<span class="kw">"</span>)
+print(<span class="kw">"</span>行数<span class="kw">"</span>, len(df), <span class="kw">"</span>应到月数<span class="kw">"</span>, len(full),
+      <span class="kw">"</span>实际缺失<span class="kw">"</span>, sorted(set(full.strftime(<span class="kw">"</span>%Y-%m<span class="kw">"</span>)) - set(df.month)) or <span class="kw">"</span>无<span class="kw">"</span>)
+EOF</pre></div>
+<div class="callout">🧭 <b>课堂讲点</b>：上面的复核脚本就是验收④"防编造"的微缩版——学员先相信插件报告，再亲手拆穿它，比任何说教都有效。若插件报告与 pandas 对账一致，同样值得展示："复核通过"也是一种科学结论。</div>
 </section>
 
 <section id="s5">
