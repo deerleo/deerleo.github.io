@@ -6,7 +6,8 @@ const sources = {
   dsh:['DSH 官方仓库','https://github.com/deepseek-ai/deepseek-harness'],
   dshWeb:['DSH Web 使用与模型配置','https://github.com/deepseek-ai/deepseek-harness/blob/master/docs/user/guide/index.md'],
   dshDeploy:['DSH 反向代理部署','https://github.com/deepseek-ai/deepseek-harness/blob/master/docs/user/guide/public-deployments.md'],
-  lab:['Research Lab 项目与操作手册','https://github.com/milulab/dsh-research-lab'],
+  labProject:['DSH Research Lab 项目介绍','https://milulab.com/project/dsh-research-lab'],
+  lab:['Research Lab 源码与操作手册','https://github.com/milulab/dsh-research-lab'],
   dify:['Dify Docker Compose 部署','https://docs.dify.ai/en/self-host/deploy/quick-start/docker-compose'],
   difyCode:['Dify 代码节点','https://docs.dify.ai/en/cloud/use-dify/nodes/code'],
   coze:['Coze Studio 开源版','https://github.com/coze-dev/coze-studio'],
@@ -26,7 +27,7 @@ const frameworks = {
   dify:{type:'可视化 AI 应用平台 · 本讲主线 A',name:'Dify',desc:'用节点和连线把数据输入、计算、模型解释组织成流程。适合把一套相对固定的分析步骤交给同事重复使用。',input:'表单、文本或文件；数据类型和变量要逐节点映射。',output:'工作流结果、Web 应用或 API；服务端运行计算与模型调用。',cost:'上手快，但统计依赖、文件解析、复杂逻辑仍要代码或外部服务。',scene:'本讲先用数值数组做描述统计，再扩展为“统计 API → 模型解释”。',recipe:'dify-install',source:'dify'},
   coze:{type:'可视化智能体平台',name:'Coze / 扣子',desc:'在可视化环境里组合提示词、知识库、插件和工作流，适合做可对话的数据问答助手，再接入计算服务。',input:'用户消息与已配置资源；插件提供外部能力。',output:'对话、工作流结果与应用接口。发布渠道取决于使用的产品版本。',cost:'要维护资源与插件权限。云端扣子与自部署 Coze Studio 的能力、账号和发布范围要分别确认。',scene:'做一个“上传脱敏数据 → 调用统计工具 → 回答追问”的教学助手。',recipe:'coze-start',source:'coze'},
   dsh:{type:'插件化 Agent Harness · 本讲主线 B',name:'DSH · DeepSeek Harness',desc:'围绕模型执行循环组合插件，提供 Web / CLI 等入口，让智能体读取工作区、调用工具并观察运行结果。它是执行科研任务的底座。',input:'任务目标、项目工作区、模型配置与插件。',output:'工具执行结果、会话与文件产物。具体科研能力来自另外配置的项目和工具。',cost:'需要 Node.js、模型凭据与工作区权限；开发预览阶段应冻结版本。',scene:'让它读取 Research Lab 的协议，调用 Python 管线，再根据真实输出解释。',recipe:'dsh-start',source:'dsh'},
-  lab:{type:'基于 DSH 的科研应用模板 · 不是独立基础框架',name:'DSH Research Lab',desc:'把研究协议、Skill、计算脚本与数据包组合成科研工作台。DSH 负责调度，Python 负责统计，教师确认方法和结论。',input:'公开数据、数据字典、预先确定的分析协议与领域知识。',output:'results.json、report.md、CSV 表格、PNG 图，以及可共享的源码包。',cost:'换数据时要重写协议、字典与预期结果，重新验收。已有脚本可独立运行，接入 DSH 后才演示模型调度。',scene:'教育：学习行为与成绩关联；公卫：心脏病风险分类与验证。',recipe:'lab-run',source:'lab'},
+  lab:{type:'基于 DSH 的科研应用模板 · 不是独立基础框架',name:'DSH Research Lab',desc:'把研究协议、Skill、计算脚本与数据包组合成科研工作台。DSH 负责调度，Python 负责统计，教师确认方法和结论。',input:'公开数据、数据字典、预先确定的分析协议与领域知识。',output:'results.json、report.md、CSV 表格、PNG 图，以及可共享的源码包。',cost:'换数据时要重写协议、字典与预期结果，重新验收。已有脚本可独立运行，接入 DSH 后才演示模型调度。',scene:'教育：学习行为与成绩关联；公卫：心脏病风险分类与验证。',recipe:'lab-run',source:'labProject'},
   claude:{type:'将智能体运行能力接入代码的 SDK',name:'Claude Agent SDK',desc:'在 Python 或 TypeScript 应用里使用 Claude Code 的智能体循环、内置工具、权限与会话能力。适合把智能体嵌入自己的业务系统。',input:'程序给定的任务、工作目录、工具许可和模型凭据。',output:'流式消息、工具调用与工作区文件。界面和对外服务由开发者实现。',cost:'需要开发与服务运维。普通模型 API 客户端只提供模型访问；Agent SDK 进一步提供执行循环。',scene:'在院系科研系统里增加“运行分析并解释结果”的后台任务。',recipe:'claude-start',source:'claude'},
   langchain:{type:'模型与工具组合库',name:'LangChain',desc:'提供模型集成、工具与 create_agent 等抽象，便于在代码里组装任务。适合需要切换模型或复用多种工具的团队。',input:'消息、模型、工具函数及系统提示。',output:'Agent 消息与工具执行结果；业务报告按自己的数据契约生成。',cost:'需要写代码和管理依赖。工具函数、错误处理和权限仍由开发者设计。',scene:'把既有的统计函数封装为工具，让模型选择调用并解释结果。',recipe:'langchain-start',source:'langchain'},
   langgraph:{type:'有状态的图编排框架 · 常见误写 Langraph',name:'LangGraph',desc:'显式定义状态、节点和条件边，适合混合确定性处理与模型决策，控制循环、暂停和恢复。可以独立使用，也可作为 LangChain Agent 的底层。',input:'状态对象、节点函数与流转规则。',output:'更新后的状态、事件与最终产物；持久化需要配置检查点存储。',cost:'控制更细，也需要自己定义状态模式、持久化和运行服务。调用 compile() 生成的是可执行图对象。',scene:'数据审计不通过就退回；方法待教师确认时暂停；确认后再建模。',recipe:'langgraph-start',source:'langgraph'}
@@ -35,7 +36,7 @@ let frameworkId = 'dify';
 function showFramework(id){
   frameworkId=id; const f=frameworks[id];
   $$('#frameworks [data-framework]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.framework===id)));
-  $('#framework-detail').innerHTML=`<p class="type">${esc(f.type)}</p><h3>${esc(f.name)}</h3><p>${esc(f.desc)}</p><dl><dt>输入什么</dt><dd>${esc(f.input)}</dd><dt>得到什么</dt><dd>${esc(f.output)}</dd><dt>需要承担什么</dt><dd>${esc(f.cost)}</dd></dl><p>${esc(f.scene)}</p><a class="text-link" href="#practice" data-recipe-link="${f.recipe}">进入这条路线的实操 ↗</a><p>${link(f.source)}</p>`;
+  $('#framework-detail').innerHTML=`<p class="type">${esc(f.type)}</p><h3>${esc(f.name)}</h3><p>${esc(f.desc)}</p><dl><dt>输入什么</dt><dd>${esc(f.input)}</dd><dt>得到什么</dt><dd>${esc(f.output)}</dd><dt>需要承担什么</dt><dd>${esc(f.cost)}</dd></dl><p>${esc(f.scene)}</p><a class="text-link" href="#practice" data-recipe-link="${f.recipe}">进入这条路线的实操 ↗</a><p>${link(f.source)}${id==='lab'?' · '+link('lab'):''}</p>`;
 }
 $$('[data-framework]').forEach(b=>b.addEventListener('click',()=>showFramework(b.dataset.framework)));
 $$('[data-goal]').forEach(b=>b.addEventListener('click',()=>{
@@ -63,7 +64,7 @@ const labs={
   health:{tag:'HealthResearch / UCI Cleveland / 原始 303 例',title:'哪些因素与心脏病状态有关？',body:'先审计缺失与标签映射，再用 297 个完整案例运行建模与验证。管线输出关联检验、OR、交叉验证、ROC 与校准，供课堂复核。历史观察性病例仅用于教学。',task:'课堂动作：打开 results.json，核对训练 / 测试划分，追问“交叉验证 AUC 与测试 AUC 为什么不同？”不要把测试集上选出的阈值称为已通过独立验证。',domain:'public-health / health-research',images:[['health-roc.png','ROC：观察区分能力','核对测试集、标签定义和 AUC 来源；单次划分的表现不能直接推广。'],['health-calibration.png','校准：观察概率是否可信','区分排序能力与概率质量，结合 Brier 分数检查。']]},
   education:{tag:'EduResearch / UCI 葡语课 / 649 名学生 × 33 字段',title:'学习行为与成绩如何关联？',body:'先审计数据类型，再进行关联分析、M1 多元回归与诊断。M2 加入 G1/G2 早期成绩作信息时点对照，提醒学员根据预测时点判断可用特征。',task:'课堂动作：核对 M1 与 M2 的公式、残差和调整 R²。G1/G2 在预测时是否已知决定能否使用，不能只因拟合变好就更换研究问题。观察性结果按关联解释。',domain:'education / edu-research',images:[['education-m1.png','M1：不含 G1/G2 的模型','检查残差结构与异常点，再回到诊断输出确认是否需要稳健推断。'],['education-m2.png','M2：加入 G1/G2 的对照','这组图对应不同的信息集。解释拟合变化前，先核对研究目标与数据时点。']]}
 };
-function showLab(id){const l=labs[id];$$('[data-case]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.case===id)));$('#lab-story').innerHTML=`<p class="tagline">${esc(l.tag)}</p><h3>${esc(l.title)}</h3><p>${esc(l.body)}</p><p>${esc(l.task)}</p><p>${link(id)} · ${link('lab')}</p>`;$('#domain-label').textContent=l.domain;$('#lab-evidence').innerHTML=l.images.map(([file,title,desc])=>`<figure><img src="./assets/agent-frameworks/${file}" width="${file.startsWith('health')?780:1050}" height="${file.startsWith('health')?780:675}" loading="lazy" alt="${esc(title)}，Research Lab 实际计算输出"><figcaption><b>${esc(title)}</b>${esc(desc)}</figcaption></figure>`).join('');}
+function showLab(id){const l=labs[id];$$('[data-case]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.case===id)));$('#lab-story').innerHTML=`<p class="tagline">${esc(l.tag)}</p><h3>${esc(l.title)}</h3><p>${esc(l.body)}</p><p>${esc(l.task)}</p><p>${link('labProject')} · ${link(id)} · ${link('lab')}</p>`;$('#domain-label').textContent=l.domain;$('#lab-evidence').innerHTML=l.images.map(([file,title,desc])=>`<figure><img src="./assets/agent-frameworks/${file}" width="${file.startsWith('health')?780:1050}" height="${file.startsWith('health')?780:675}" loading="lazy" alt="${esc(title)}，Research Lab 实际计算输出"><figcaption><b>${esc(title)}</b>${esc(desc)}</figcaption></figure>`).join('');}
 $$('[data-case]').forEach(b=>b.addEventListener('click',()=>showLab(b.dataset.case)));
 
 // All code and prompts below are teaching material; this page never executes shell commands.
