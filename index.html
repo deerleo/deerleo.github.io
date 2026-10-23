@@ -3,156 +3,115 @@ layout: brand
 css: milu
 ---
 {% include icons.html %}
-<div class="milu">
-  <header class="site-nav">
-    <div class="nav-inner">
-      <a class="brand" href="#top" aria-label="迷鹿 MiLu 首页">
-        <span class="brand-mark">
-          <svg class="icon" aria-hidden="true" focusable="false"><use href="#icon-deer"></use></svg>
-        </span>
-        <span class="brand-copy">AI 有鹿</span>
-      </a>
+<div class="milu" id="top">
+  <aside class="portrait-stage" aria-label="Leo Lu 个人介绍">
+    <img class="portrait" src="{{ '/assets/images/profile.jpg' | relative_url }}" width="1170" height="1170" alt="Leo Lu 头像">
+    <div class="portrait-shade"></div>
+    <a class="stage-brand" href="#top" aria-label="回到首页">
+      <span class="brand-mark"><svg class="icon" aria-hidden="true"><use href="#icon-deer"></use></svg></span>
+      <span>迷鹿 MiLu<small>AI · PRODUCT · MAKING</small></span>
+    </a>
+    <div class="portrait-caption"><span>LEO LU</span><span>把想法做成能用的东西。</span></div>
+  </aside>
+
+  <main class="story-column">
+    <header class="site-nav">
       <nav class="nav-links" aria-label="页面导航">
-        <a href="#about">关于</a>
-        <a href="#projects">项目</a>
-        <a href="#blog">Blog</a>
+        <a href="#about">关于我</a>
+        <a href="#work">项目作品</a>
         <a href="#tutorials">教程</a>
-        <a href="#media">自媒体</a>
-        <a href="#contact">联系</a>
+        <a href="#approach">做事方式</a>
+        <a class="nav-contact" href="#contact">联系 ↗</a>
       </nav>
-    </div>
-  </header>
+    </header>
 
-  <main id="top">
-    <section class="hero" id="about" aria-labelledby="hero-title">
-      <div class="hero-copy">
-        <p class="section-kicker">About</p>
-        <h1 id="hero-title">迷鹿 MiLu</h1>
-        <p class="role-line">AI 技术实践者 · 产品创业者 · 科技内容创作者</p>
-        <p class="hero-summary">
-          我把 AI、产品和内容放在同一个真实工作流里持续实践：让 AI 不止于技术，让普通人真正用起来，让企业真正创造价值。
-        </p>
-        <div class="hero-actions">
-          <a class="button primary" href="#projects">看项目</a>
-          <a class="button ghost" href="#blog">Blog</a>
-          <a class="button ghost" href="#tutorials">教程</a>
-          <a class="button ghost" href="#contact">联系</a>
-        </div>
-        <dl class="hero-stats">
-          <div><dt>10+</dt><dd>年实践</dd></div>
-          <div><dt>5</dt><dd>内容板块</dd></div>
-          <div><dt>3</dt><dd>服务对象</dd></div>
-        </dl>
+    <section class="intro" id="about" aria-labelledby="hero-title">
+      <h1 id="hero-title">让 AI 真正<br><em>走进工作里。</em></h1>
+      <p class="hero-summary">我是一名 AI 产品实践者与工程探索者，喜欢在技术、产品和业务之间搭桥。从真实问题出发，设计流程、动手构建，再用可验证的结果判断它是否真的有用。</p>
+      <div class="hero-actions">
+        <a class="button primary" href="#work">看看我做过什么 <span aria-hidden="true">↓</span></a>
+        <a class="text-link" href="mailto:dearsuley@gmail.com">找我聊聊 <span aria-hidden="true">↗</span></a>
+      </div>
+      <div class="focus-line" aria-label="关注领域">
+        <span>AI 与智能体</span><i></i><span>产品构建</span><i></i><span>知识表达</span>
+      </div>
+    </section>
+
+    <section class="work-section" id="work" aria-labelledby="work-title">
+      <div class="section-heading">
+        <h2 id="work-title">把复杂问题，<br>做成清晰的工具。</h2>
+        <p>精选项目 · 从开源科研框架到课堂互动实验，把抽象的技术落到具体场景里。</p>
       </div>
 
-      <aside class="profile-card" aria-labelledby="about-title">
-        <div class="profile-photo">
-          <img src="{{ '/assets/images/avatar.jpg' | relative_url }}" width="320" height="320" alt="迷鹿 MiLu 的头像">
-        </div>
-        <div class="about-panel">
-          <h2 id="about-title">我在做什么</h2>
-          <p>懂技术、懂产品、懂商业，并愿意亲自下场实践。</p>
-          <div class="about-list">
-            {% for card in site.data.milu.about.cards %}
-            <article>
-              <h3>{{ card.title }}</h3>
-              <p>{{ card.text }}</p>
-            </article>
-            {% endfor %}
+      <div class="work-list">
+        <a class="work-item work-featured" href="{{ '/project/dsh-research-lab/' | relative_url }}">
+          <div class="work-visual visual-research">
+            <img src="{{ '/assets/images/edu-research-preview.png' | relative_url }}" width="960" height="640" loading="lazy" alt="教育科研数据分析图表预览">
+            <img class="research-detail" src="{{ '/assets/images/health-research-preview.png' | relative_url }}" width="960" height="640" loading="lazy" alt="公共卫生科研分类分析图表预览">
           </div>
-        </div>
-      </aside>
-    </section>
+          <div class="work-meta"><span>开源工具 · 科研 AI</span></div>
+          <h3>DSH Research Lab</h3>
+          <p>面向高校科研的智能体工作台，包含教育与公共卫生双领域模板，把数据审计、统计分析、报告生成和 49 项自动验证串成可复核的研究流程。</p>
+          <span class="work-link">查看项目 <b aria-hidden="true">↗</b></span>
+        </a>
 
-    <section class="section" id="projects" aria-labelledby="projects-title">
-      <div class="section-head">
-        <p class="section-kicker">Projects</p>
-        <h2 id="projects-title">项目</h2>
-        <p class="section-lead">完整作品、产品化尝试和 AI / Agent 实验项目。</p>
-      </div>
-      <div class="creation-grid projects-grid">
-        {% for group in site.data.milu.projects %}
-          {% for item in group.items %}
-            {% include card-item.html item=item category=group.title %}
-          {% endfor %}
-        {% endfor %}
-      </div>
-    </section>
+        <a class="work-item" href="{{ '/course/ai-data-analyse/' | relative_url }}">
+          <div class="work-visual visual-classroom">
+            <img src="{{ '/assets/images/edu-method-preview.png' | relative_url }}" width="960" height="640" loading="lazy" alt="互动式统计学习课堂的分析图示">
+          </div>
+          <div class="work-meta"><span>教育产品 · 数据分析</span></div>
+          <h3>AI 数据分析互动课堂</h3>
+          <p>用可操作的实验讲清统计方法、回归与分类决策，让学习者在调整数据和参数时看见结论如何变化。</p>
+          <span class="work-link">进入课堂 <b aria-hidden="true">↗</b></span>
+        </a>
 
-    <section class="section section-alt" id="blog" aria-labelledby="blog-title">
-      <div class="section-head">
-        <p class="section-kicker">Blog</p>
-        <h2 id="blog-title">Blog</h2>
-        <p class="section-lead">实践复盘、产品判断、创业思考与技术边界分析。</p>
+        <a class="work-item" href="{{ '/beaker-mixer.html' | relative_url }}">
+          <div class="work-visual visual-lab" role="img" aria-label="烧杯混合实验工具的色彩预览">
+            <span class="beaker beaker-one"></span><span class="beaker beaker-two"></span><span class="beaker beaker-three"></span>
+          </div>
+          <div class="work-meta"><span>互动模拟 · 科学教育</span></div>
+          <h3>化学烧杯混合实验</h3>
+          <p>一页式互动模拟工具，把颜色与液体变化变成直观反馈，让化学实验更容易理解和探索。</p>
+          <span class="work-link">打开实验 <b aria-hidden="true">↗</b></span>
+        </a>
       </div>
-      <div class="creation-grid trio-grid">
-        {% for group in site.data.milu.blog %}
-          {% for item in group.items %}
-            {% include card-item.html item=item category=group.title %}
-          {% endfor %}
-        {% endfor %}
-      </div>
-    </section>
 
-    <section class="section" id="tutorials" aria-labelledby="tutorials-title">
-      <div class="section-head">
-        <p class="section-kicker">Tutorials</p>
-        <h2 id="tutorials-title">教程</h2>
-        <p class="section-lead">单篇教程解决具体问题，系列教程沉淀完整学习路径。</p>
-      </div>
-      <div class="tutorial-grid">
-        {% for item in site.data.milu.tutorials %}
-          {% include tutorial-card.html item=item %}
-        {% endfor %}
+      <div class="practice-note">
+        <span class="note-mark">+</span>
+        <p><strong>也在真实业务里打磨 AI。</strong><br>参与企业级 AI 应用与数据系统实践，关注声誉洞察、知识检索、自动化流程，以及系统在真实环境中的可靠交付。</p>
       </div>
     </section>
 
-    <section class="section section-alt" id="media" aria-labelledby="media-title">
-      <div class="section-head">
-        <p class="section-kicker">Media</p>
-        <h2 id="media-title">自媒体</h2>
-        <p class="section-lead">长期更新的内容平台与账号入口。</p>
+    <section class="approach-section tutorial-section" id="tutorials" aria-labelledby="tutorials-title">
+      <h2 id="tutorials-title">把难懂的概念，<br>变成亲手做过的实验。</h2>
+      <p class="tutorial-intro">这些教程来自真实课堂和项目实践。先建立直觉，再用互动实验验证，最后把概念连回 AI 系统。</p>
+      <div class="tutorial-links">
+        <a href="{{ '/course/ai-foundations/' | relative_url }}"><span><strong>人工智能与数学</strong><small>概率、向量、Transformer 与智能体 · 6 个互动实验</small></span><b aria-hidden="true">↗</b></a>
+        <a href="{{ '/course/ai-data-analyse/' | relative_url }}"><span><strong>AI 数据分析互动课堂</strong><small>统计方法、实验设计、Dify 工作流与科研智能体</small></span><b aria-hidden="true">↗</b></a>
       </div>
-      <div class="creation-grid trio-grid">
-        {% for group in site.data.milu.media %}
-          {% for item in group.items %}
-            {% include card-item.html item=item category=group.title %}
-          {% endfor %}
-        {% endfor %}
+    </section>
+
+    <section class="approach-section" id="approach" aria-labelledby="approach-title">
+      <h2 id="approach-title">好用，才算做完。</h2>
+      <div class="approach-list">
+        <article><div><h3>先找到真问题</h3><p>把需求放回使用场景，厘清谁在什么时候需要什么结果。</p></div></article>
+        <article><div><h3>用原型快速验证</h3><p>先做出能跑的版本，让流程、体验和技术选择接受实际检验。</p></div></article>
+        <article><div><h3>把可靠性做进去</h3><p>重视数据来源、过程留痕、结果复核和交付后的持续改进。</p></div></article>
       </div>
     </section>
 
     <section class="contact" id="contact" aria-labelledby="contact-title">
-      <div class="contact-copy">
-        <p class="section-kicker light">Contact</p>
-        <h2 id="contact-title">如果你也在把 AI 做成真实能力</h2>
-        <p>
-          欢迎交流 AI 工作流落地、智能体工程、企业级应用、产品构建、培训合作或内容共创。
-          请在邮件里简单说明你的场景、目标和当前卡点，我会尽量给出有针对性的回复。
-        </p>
-        <div class="contact-actions">
-          <a class="button primary" href="mailto:dearsuley@gmail.com">dearsuley@gmail.com</a>
-          <a class="button ghost" href="https://github.com/deerleo" target="_blank" rel="noopener">GitHub</a>
-        </div>
-      </div>
-      <div class="contact-card" aria-label="合作方向">
-        <h3>开放交流方向</h3>
-        <ul>
-          <li>AI 工作流设计与团队落地</li>
-          <li>Agent 架构与应用交付</li>
-          <li>AI 产品原型与需求梳理</li>
-          <li>课程、工作坊与内容共创</li>
-        </ul>
-      </div>
+      <h2 id="contact-title">一起把好点子<br>做成真实价值。</h2>
+      <p>欢迎聊聊 AI 应用、产品原型、科研与教育工具，或任何值得认真解决的问题。</p>
+      <a class="contact-link" href="mailto:dearsuley@gmail.com">dearsuley@gmail.com <span aria-hidden="true">↗</span></a>
+      <a class="github-link" href="https://github.com/deerleo" target="_blank" rel="noopener">也可以在 GitHub 找到我 →</a>
     </section>
-  </main>
 
-  <footer class="site-footer">
-    <p>© <span id="year">2026</span> 迷鹿 MiLu · AI 有鹿</p>
-    <p class="footer-line">AI, Made Human. 让 AI 更容易理解，更容易使用，更能创造价值。</p>
-  </footer>
+    <footer class="site-footer">
+      <span>© <span id="year">2026</span> Leo Lu · 迷鹿 MiLu</span>
+      <span>AI, Made Human.</span>
+    </footer>
+  </main>
 </div>
 
-<script>
-  document.getElementById('year').textContent = new Date().getFullYear();
-</script>
+<script>document.getElementById('year').textContent = new Date().getFullYear();</script>

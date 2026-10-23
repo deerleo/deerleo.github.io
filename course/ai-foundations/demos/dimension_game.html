@@ -1,0 +1,1387 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>维度探索 - 理解AI的数学世界</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(135deg, #0c0c1e 0%, #1a1a3e 50%, #2d1b4e 100%);
+            min-height: 100vh;
+            overflow-x: hidden;
+            color: #fff;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* 标题 */
+        .header {
+            text-align: center;
+            padding: 30px 0;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            background: linear-gradient(135deg, #00f5ff, #ff00ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-shadow: 0 0 30px rgba(0, 245, 255, 0.5);
+            animation: titleGlow 2s ease-in-out infinite alternate;
+        }
+
+        @keyframes titleGlow {
+            from { filter: drop-shadow(0 0 10px #00f5ff); }
+            to { filter: drop-shadow(0 0 20px #ff00ff); }
+        }
+
+        .header .subtitle {
+            color: #a0a0ff;
+            margin-top: 10px;
+            font-size: 1.1em;
+        }
+
+        /* 导航标签 */
+        .tabs {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin: 30px 0;
+            flex-wrap: wrap;
+        }
+
+        .tab {
+            padding: 12px 25px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: #a0a0ff;
+        }
+
+        .tab:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .tab.active {
+            background: linear-gradient(135deg, #00f5ff, #ff00ff);
+            color: #fff;
+            border-color: transparent;
+            box-shadow: 0 5px 20px rgba(0, 245, 255, 0.3);
+        }
+
+        /* 面板 */
+        .panel {
+            display: none;
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            animation: fadeIn 0.5s ease;
+        }
+
+        .panel.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .panel-title {
+            font-size: 1.8em;
+            margin-bottom: 20px;
+            color: #00f5ff;
+        }
+
+        /* 画布容器 */
+        .canvas-container {
+            display: flex;
+            justify-content: center;
+            margin: 30px 0;
+        }
+
+        canvas {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        /* 控制面板 */
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin: 20px 0;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .control-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 10px 20px;
+            border-radius: 15px;
+        }
+
+        .control-group label {
+            color: #a0a0ff;
+        }
+
+        input[type="range"] {
+            width: 150px;
+            height: 8px;
+            -webkit-appearance: none;
+            background: linear-gradient(90deg, #00f5ff, #ff00ff);
+            border-radius: 4px;
+            outline: none;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 20px;
+            height: 20px;
+            background: #fff;
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 0 10px rgba(0, 245, 255, 0.5);
+        }
+
+        .value-display {
+            min-width: 50px;
+            text-align: center;
+            font-weight: bold;
+            color: #00f5ff;
+        }
+
+        /* 按钮 */
+        .btn {
+            padding: 12px 30px;
+            font-size: 1em;
+            font-weight: bold;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #00f5ff, #00a8ff);
+            color: #000;
+            box-shadow: 0 5px 20px rgba(0, 245, 255, 0.3);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #ff00ff, #ff0080);
+            color: #fff;
+            box-shadow: 0 5px 20px rgba(255, 0, 255, 0.3);
+        }
+
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 30px rgba(0, 245, 255, 0.5);
+        }
+
+        /* 信息框 */
+        .info-box {
+            background: linear-gradient(135deg, rgba(0, 245, 255, 0.1), rgba(255, 0, 255, 0.1));
+            border-radius: 15px;
+            padding: 20px;
+            margin: 20px 0;
+            border-left: 4px solid #00f5ff;
+        }
+
+        .info-box h3 {
+            color: #00f5ff;
+            margin-bottom: 10px;
+        }
+
+        .info-box p {
+            color: #ccc;
+            line-height: 1.8;
+        }
+
+        .highlight {
+            color: #ff00ff;
+            font-weight: bold;
+        }
+
+        /* 维度可视化 */
+        .dimension-display {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+            margin: 30px 0;
+            flex-wrap: wrap;
+        }
+
+        .dimension-box {
+            width: 120px;
+            height: 120px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .dimension-box:hover {
+            transform: scale(1.1);
+            border-color: #00f5ff;
+            box-shadow: 0 0 20px rgba(0, 245, 255, 0.3);
+        }
+
+        .dimension-box.active {
+            border-color: #ff00ff;
+            box-shadow: 0 0 30px rgba(255, 0, 255, 0.5);
+        }
+
+        .dimension-box .dim-icon {
+            font-size: 2em;
+            margin-bottom: 10px;
+        }
+
+        .dimension-box .dim-label {
+            font-size: 0.9em;
+            color: #a0a0ff;
+        }
+
+        /* 向量显示 */
+        .vector-display {
+            font-family: 'Courier New', monospace;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 15px 25px;
+            border-radius: 10px;
+            margin: 20px 0;
+            overflow-x: auto;
+        }
+
+        .vector-bracket {
+            font-size: 1.5em;
+            color: #ff00ff;
+        }
+
+        .vector-values {
+            display: inline-flex;
+            gap: 8px;
+            margin: 0 10px;
+        }
+
+        .vector-value {
+            display: inline-block;
+            min-width: 60px;
+            text-align: center;
+            padding: 5px;
+            background: rgba(0, 245, 255, 0.1);
+            border-radius: 5px;
+            transition: all 0.3s ease;
+        }
+
+        .vector-value:hover {
+            background: rgba(255, 0, 255, 0.2);
+            transform: scale(1.1);
+        }
+
+        /* 词向量演示 */
+        .word-vector-demo {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .word-card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .word-card:hover {
+            transform: translateY(-5px);
+            border-color: #00f5ff;
+        }
+
+        .word-card.selected {
+            border-color: #ff00ff;
+            box-shadow: 0 0 20px rgba(255, 0, 255, 0.3);
+        }
+
+        .word-card .word {
+            font-size: 1.5em;
+            margin-bottom: 10px;
+        }
+
+        .word-card .word-vec {
+            font-size: 0.8em;
+            color: #a0a0ff;
+            font-family: monospace;
+        }
+
+        /* 相似度显示 */
+        .similarity-display {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 15px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+
+        .similarity-bar {
+            height: 30px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            margin: 10px 0;
+            overflow: hidden;
+        }
+
+        .similarity-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #00f5ff, #ff00ff);
+            border-radius: 15px;
+            transition: width 0.5s ease;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            padding-right: 15px;
+            font-weight: bold;
+            color: #000;
+        }
+
+        /* 维度诅咒演示 */
+        .curse-demo {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin: 30px 0;
+            flex-wrap: wrap;
+        }
+
+        .curse-box {
+            width: 200px;
+            height: 200px;
+            position: relative;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+        }
+
+        .curse-box.low-dim {
+            background: rgba(0, 245, 255, 0.1);
+        }
+
+        .curse-box.high-dim {
+            background: rgba(255, 0, 255, 0.1);
+        }
+
+        .data-point {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background: #00f5ff;
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { box-shadow: 0 0 5px #00f5ff; }
+            50% { box-shadow: 0 0 15px #00f5ff, 0 0 25px #00f5ff; }
+        }
+
+        /* 进度条 */
+        .progress-container {
+            margin: 20px 0;
+        }
+
+        .progress-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+            color: #a0a0ff;
+        }
+
+        .progress-track {
+            height: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #00f5ff, #ff00ff);
+            border-radius: 10px;
+            transition: width 0.3s ease;
+        }
+
+        /* 响应式 */
+        @media (max-width: 600px) {
+            .header h1 {
+                font-size: 1.8em;
+            }
+
+            .dimension-box {
+                width: 80px;
+                height: 80px;
+            }
+
+            .dimension-box .dim-icon {
+                font-size: 1.5em;
+            }
+
+            .tab {
+                padding: 8px 15px;
+                font-size: 0.9em;
+            }
+        }
+
+        /* 粒子效果 */
+        .particle {
+            position: fixed;
+            pointer-events: none;
+            border-radius: 50%;
+            animation: float 10s infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0) rotate(0deg); opacity: 0.3; }
+            50% { transform: translateY(-100px) rotate(180deg); opacity: 0.8; }
+        }
+
+        /* 3D立方体 */
+        .cube-container {
+            perspective: 500px;
+            width: 150px;
+            height: 150px;
+            margin: 30px auto;
+        }
+
+        .cube {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            transform-style: preserve-3d;
+            animation: rotateCube 10s infinite linear;
+        }
+
+        @keyframes rotateCube {
+            from { transform: rotateX(0) rotateY(0); }
+            to { transform: rotateX(360deg) rotateY(360deg); }
+        }
+
+        .cube-face {
+            position: absolute;
+            width: 150px;
+            height: 150px;
+            border: 2px solid rgba(0, 245, 255, 0.5);
+            background: rgba(0, 245, 255, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2em;
+        }
+
+        .cube-face.front { transform: translateZ(75px); }
+        .cube-face.back { transform: rotateY(180deg) translateZ(75px); }
+        .cube-face.right { transform: rotateY(90deg) translateZ(75px); }
+        .cube-face.left { transform: rotateY(-90deg) translateZ(75px); }
+        .cube-face.top { transform: rotateX(90deg) translateZ(75px); }
+        .cube-face.bottom { transform: rotateX(-90deg) translateZ(75px); }
+    </style>
+</head>
+<body>
+    <!-- 背景粒子 -->
+    <div id="particles"></div>
+
+    <div class="container">
+        <!-- 标题 -->
+        <div class="header">
+            <h1>🌐 维度探索</h1>
+            <p class="subtitle">理解AI的数学世界 - 从0维到高维空间</p>
+        </div>
+
+        <!-- 导航标签 -->
+        <div class="tabs">
+            <div class="tab active" onclick="showPanel('intro')">🎓 维度入门</div>
+            <div class="tab" onclick="showPanel('visual')">🎨 维度可视化</div>
+            <div class="tab" onclick="showPanel('embedding')">📝 向量嵌入</div>
+            <div class="tab" onclick="showPanel('curse')">😱 维度的诅咒</div>
+            <div class="tab" onclick="showPanel('game')">🎮 维度游戏</div>
+        </div>
+
+        <!-- 面板1：维度入门 -->
+        <div class="panel active" id="panel-intro">
+            <h2 class="panel-title">什么是维度？</h2>
+
+            <div class="info-box">
+                <h3>💡 核心概念</h3>
+                <p>维度是<span class="highlight">描述一个点所需要的独立坐标数量</span>。简单来说，就是确定一个位置需要几个数字！</p>
+            </div>
+
+            <div class="dimension-display">
+                <div class="dimension-box" onclick="explainDimension(0)">
+                    <div class="dim-icon">📍</div>
+                    <div class="dim-label">0维 · 点</div>
+                </div>
+                <div class="dimension-box" onclick="explainDimension(1)">
+                    <div class="dim-icon">📏</div>
+                    <div class="dim-label">1维 · 线</div>
+                </div>
+                <div class="dimension-box" onclick="explainDimension(2)">
+                    <div class="dim-icon">📄</div>
+                    <div class="dim-label">2维 · 面</div>
+                </div>
+                <div class="dimension-box" onclick="explainDimension(3)">
+                    <div class="dim-icon">📦</div>
+                    <div class="dim-label">3维 · 体</div>
+                </div>
+                <div class="dimension-box" onclick="explainDimension(768)">
+                    <div class="dim-icon">🧠</div>
+                    <div class="dim-label">768维 · AI</div>
+                </div>
+            </div>
+
+            <div id="dimensionExplanation" class="info-box">
+                <h3>👆 点击上方的维度框查看解释</h3>
+                <p>每个维度代表一个不同的空间概念，从简单的点到复杂的AI高维空间...</p>
+            </div>
+
+            <div class="info-box">
+                <h3>🐜 生动的比喻：蚂蚁的世界</h3>
+                <p>
+                    <strong>0维：</strong>蚂蚁被困在一个点上，哪也去不了<br>
+                    <strong>1维：</strong>蚂蚁在一条线上，只能前进后退<br>
+                    <strong>2维：</strong>蚂蚁在一张纸上，可以前后左右爬<br>
+                    <strong>3维：</strong>蚂蚁变成了一只鸟，还能上下飞<br>
+                    <strong>768维：</strong>就像有了768个"方向"可以移动！
+                </p>
+            </div>
+        </div>
+
+        <!-- 面板2：维度可视化 -->
+        <div class="panel" id="panel-visual">
+            <h2 class="panel-title">维度可视化</h2>
+
+            <div class="info-box">
+                <h3>🎨 从点到体</h3>
+                <p>用滑块调整维度，观察图形的变化！</p>
+            </div>
+
+            <div class="controls">
+                <div class="control-group">
+                    <label>维度：</label>
+                    <input type="range" id="dimSlider" min="0" max="3" value="2" step="1" oninput="updateVisualization()">
+                    <span class="value-display" id="dimValue">2维</span>
+                </div>
+            </div>
+
+            <div class="canvas-container">
+                <canvas id="dimCanvas" width="400" height="400"></canvas>
+            </div>
+
+            <div id="visualExplanation" class="info-box">
+                <h3>📐 2维空间</h3>
+                <p>2维空间是一个<span class="highlight">平面</span>，需要两个坐标(x, y)来确定位置。就像一张纸，你可以在上面自由地前后左右移动。</p>
+            </div>
+
+            <!-- 3D立方体展示 -->
+            <div class="cube-container">
+                <div class="cube">
+                    <div class="cube-face front">🎯</div>
+                    <div class="cube-face back">📦</div>
+                    <div class="cube-face right">🔺</div>
+                    <div class="cube-face left">🔵</div>
+                    <div class="cube-face top">⭐</div>
+                    <div class="cube-face bottom">💎</div>
+                </div>
+            </div>
+            <p style="text-align: center; color: #a0a0ff;">↑ 旋转的3维立方体</p>
+        </div>
+
+        <!-- 面板3：向量嵌入 -->
+        <div class="panel" id="panel-embedding">
+            <h2 class="panel-title">向量嵌入 - AI如何"理解"词语</h2>
+
+            <div class="info-box">
+                <h3>💡 什么是向量嵌入？</h3>
+                <p>向量嵌入就像给每个词发一张<span class="highlight">"身份证"</span>，上面有很多属性值。电脑虽然不懂"苹果"这个词，但能看懂身份证上的数字，从而"理解"这个词！</p>
+            </div>
+
+            <div class="controls">
+                <div class="control-group">
+                    <label>嵌入维度：</label>
+                    <input type="range" id="embedDim" min="2" max="128" value="16" step="2" oninput="updateEmbedding()">
+                    <span class="value-display" id="embedDimValue">16维</span>
+                </div>
+            </div>
+
+            <div class="vector-display">
+                <span class="vector-bracket">[</span>
+                <div class="vector-values" id="vectorDisplay">
+                    <!-- 动态生成 -->
+                </div>
+                <span class="vector-bracket">]</span>
+            </div>
+
+            <h3 style="margin: 30px 0 15px; color: #00f5ff;">📝 选择词语查看其向量</h3>
+
+            <div class="word-vector-demo" id="wordCards">
+                <!-- 动态生成 -->
+            </div>
+
+            <div class="similarity-display" id="similarityDisplay">
+                <h3 style="color: #ff00ff; margin-bottom: 15px;">📊 词语相似度</h3>
+                <p style="color: #a0a0ff; margin-bottom: 10px;">选择两个词语来计算它们的相似度</p>
+                <div id="similarityBars">
+                    <p>👆 请先选择词语</p>
+                </div>
+            </div>
+
+            <div class="info-box">
+                <h3>🧮 向量运算的魔力</h3>
+                <p>
+                    <strong>国王 - 男人 + 女人 ≈ 女王</strong><br><br>
+                    这就是向量嵌入的神奇之处！通过简单的数学运算，AI能发现词语之间的<span class="highlight">语义关系</span>。
+                </p>
+            </div>
+        </div>
+
+        <!-- 面板4：维度的诅咒 -->
+        <div class="panel" id="panel-curse">
+            <h2 class="panel-title">维度的诅咒 😱</h2>
+
+            <div class="info-box">
+                <h3>⚠️ 什么是维度的诅咒？</h3>
+                <p>高维空间中，数据变得<span class="highlight">极度稀疏</span>。想象在10平米的房间找钥匙很容易，但如果房间变成100万个足球场那么大，钥匙还是那么小，找起来就难如登天！</p>
+            </div>
+
+            <div class="controls">
+                <div class="control-group">
+                    <label>维度：</label>
+                    <input type="range" id="curseDim" min="2" max="50" value="2" oninput="updateCurseDemo()">
+                    <span class="value-display" id="curseDimValue">2维</span>
+                </div>
+                <div class="control-group">
+                    <label>数据点：</label>
+                    <input type="range" id="dataPoints" min="10" max="100" value="30" oninput="updateCurseDemo()">
+                    <span class="value-display" id="pointsValue">30个</span>
+                </div>
+            </div>
+
+            <div class="canvas-container">
+                <canvas id="curseCanvas" width="400" height="400"></canvas>
+            </div>
+
+            <div class="progress-container">
+                <div class="progress-label">
+                    <span>空间利用率</span>
+                    <span id="densityValue">100%</span>
+                </div>
+                <div class="progress-track">
+                    <div class="progress-fill" id="densityBar" style="width: 100%"></div>
+                </div>
+            </div>
+
+            <div class="progress-container">
+                <div class="progress-label">
+                    <span>平均点间距离</span>
+                    <span id="distanceValue">0.5</span>
+                </div>
+                <div class="progress-track">
+                    <div class="progress-fill" id="distanceBar" style="width: 50%"></div>
+                </div>
+            </div>
+
+            <div id="curseExplanation" class="info-box">
+                <h3>📊 低维空间 (2维)</h3>
+                <p>在2维空间中，30个数据点相对密集，彼此之间的距离较近，便于分析和计算。</p>
+            </div>
+
+            <div class="info-box">
+                <h3>🛠 AI的应对策略</h3>
+                <p>
+                    <strong>1. 降维：</strong>PCA、t-SNE将高维数据投影到低维<br>
+                    <strong>2. 注意力机制：</strong>只关注相关部分<br>
+                    <strong>3. 流形假设：</strong>真实数据往往分布在低维流形上
+                </p>
+            </div>
+        </div>
+
+        <!-- 面板5：维度游戏 -->
+        <div class="panel" id="panel-game">
+            <h2 class="panel-title">🎮 维度挑战游戏</h2>
+
+            <div class="info-box">
+                <h3>🎯 游戏目标</h3>
+                <p>根据提示，找到目标点在高维空间中的正确坐标！</p>
+            </div>
+
+            <div class="controls">
+                <div class="control-group">
+                    <label>难度（维度）：</label>
+                    <input type="range" id="gameDim" min="2" max="5" value="2">
+                    <span class="value-display" id="gameDimValue">2维</span>
+                </div>
+                <button class="btn btn-primary" onclick="startGame()">开始游戏</button>
+            </div>
+
+            <div id="gameArea" style="display: none;">
+                <div class="canvas-container">
+                    <canvas id="gameCanvas" width="400" height="400"></canvas>
+                </div>
+
+                <div class="info-box" id="gameHint">
+                    <h3>🎯 找到目标点！</h3>
+                    <p>目标坐标：<span id="targetCoords" class="highlight">?</span></p>
+                </div>
+
+                <div class="controls" id="coordInputs">
+                    <!-- 动态生成坐标输入 -->
+                </div>
+
+                <div class="controls">
+                    <button class="btn btn-secondary" onclick="checkAnswer()">提交答案</button>
+                    <button class="btn btn-primary" onclick="startGame()">下一关</button>
+                </div>
+
+                <div class="progress-container">
+                    <div class="progress-label">
+                        <span>得分</span>
+                        <span id="gameScore">0</span>
+                    </div>
+                    <div class="progress-track">
+                        <div class="progress-fill" id="scoreBar" style="width: 0%"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ==================== 全局变量 ====================
+        let audioCtx = null;
+        let selectedWords = [];
+        let gameTarget = [];
+        let gameScore = 0;
+
+        // 预定义词向量（简化版）
+        const wordVectors = {
+            '苹果': [0.8, 0.9, 0.3, 0.1, 0.7, 0.5, 0.2, 0.6],
+            '香蕉': [0.7, 0.8, 0.4, 0.2, 0.6, 0.4, 0.3, 0.5],
+            '汽车': [0.1, 0.2, 0.9, 0.8, 0.1, 0.3, 0.7, 0.2],
+            '卡车': [0.2, 0.3, 0.8, 0.9, 0.2, 0.4, 0.6, 0.3],
+            '国王': [0.9, 0.1, 0.2, 0.3, 0.8, 0.7, 0.1, 0.2],
+            '女王': [0.8, 0.2, 0.3, 0.4, 0.7, 0.8, 0.2, 0.3],
+            '男人': [0.5, 0.1, 0.1, 0.2, 0.4, 0.3, 0.1, 0.1],
+            '女人': [0.4, 0.2, 0.2, 0.3, 0.3, 0.4, 0.2, 0.2]
+        };
+
+        // ==================== 音效系统 ====================
+        function initAudio() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+        }
+
+        function playSound(type) {
+            initAudio();
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+
+            switch(type) {
+                case 'click':
+                    osc.frequency.setValueAtTime(600, audioCtx.currentTime);
+                    gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
+                    osc.start(audioCtx.currentTime);
+                    osc.stop(audioCtx.currentTime + 0.1);
+                    break;
+                case 'success':
+                    osc.frequency.setValueAtTime(523, audioCtx.currentTime);
+                    osc.frequency.setValueAtTime(659, audioCtx.currentTime + 0.1);
+                    osc.frequency.setValueAtTime(784, audioCtx.currentTime + 0.2);
+                    gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+                    osc.start(audioCtx.currentTime);
+                    osc.stop(audioCtx.currentTime + 0.3);
+                    break;
+            }
+        }
+
+        // ==================== 面板切换 ====================
+        function showPanel(panelId) {
+            playSound('click');
+            document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.getElementById('panel-' + panelId).classList.add('active');
+            event.target.classList.add('active');
+
+            // 初始化对应面板
+            if (panelId === 'visual') updateVisualization();
+            if (panelId === 'embedding') initEmbedding();
+            if (panelId === 'curse') updateCurseDemo();
+        }
+
+        // ==================== 维度解释 ====================
+        function explainDimension(dim) {
+            playSound('click');
+            document.querySelectorAll('.dimension-box').forEach(b => b.classList.remove('active'));
+            event.target.closest('.dimension-box').classList.add('active');
+
+            const explanations = {
+                0: {
+                    title: '0维 · 点',
+                    content: '0维空间只有<span class="highlight">位置</span>，没有方向。就像纸上的一个墨点，它"存在"但不能移动。'
+                },
+                1: {
+                    title: '1维 · 线',
+                    content: '1维空间只有<span class="highlight">长度</span>。就像一条无限细的线，你只能前后移动。需要1个数字(x)来确定位置。'
+                },
+                2: {
+                    title: '2维 · 面',
+                    content: '2维空间有<span class="highlight">长度和宽度</span>。就像一张纸，你可以前后左右移动。需要2个数字(x, y)来确定位置。'
+                },
+                3: {
+                    title: '3维 · 体',
+                    content: '3维空间有<span class="highlight">长、宽、高</span>。就像我们的现实世界，你可以前后左右上下移动。需要3个数字(x, y, z)来确定位置。'
+                },
+                768: {
+                    title: '768维 · AI空间',
+                    content: 'AI使用高维空间来"理解"词语。GPT的词向量通常有768维或更多！每个维度代表一种<span class="highlight">语义特征</span>（如颜色、形状、情感...）。虽然人类无法想象，但数学公式可以完美运算！'
+                }
+            };
+
+            const exp = explanations[dim] || explanations[768];
+            document.getElementById('dimensionExplanation').innerHTML = `
+                <h3>${exp.title}</h3>
+                <p>${exp.content}</p>
+            `;
+        }
+
+        // ==================== 维度可视化 ====================
+        function updateVisualization() {
+            const dim = parseInt(document.getElementById('dimSlider').value);
+            document.getElementById('dimValue').textContent = dim + '维';
+
+            const canvas = document.getElementById('dimCanvas');
+            const ctx = canvas.getContext('2d');
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            const explanations = {
+                0: '0维空间只有一个<span class="highlight">点</span>，没有方向，没有大小。它是所有维度的起点。',
+                1: '1维空间是一条<span class="highlight">线</span>，只有长度。点可以在上面前后移动。',
+                2: '2维空间是一个<span class="highlight">平面</span>，有长度和宽度。需要两个坐标(x, y)来确定位置。',
+                3: '3维空间是一个<span class="highlight">立体</span>，有长、宽、高。我们的世界就是3维的！'
+            };
+
+            document.getElementById('visualExplanation').innerHTML = `
+                <h3>📐 ${dim}维空间</h3>
+                <p>${explanations[dim]}</p>
+            `;
+
+            const cx = canvas.width / 2;
+            const cy = canvas.height / 2;
+
+            if (dim === 0) {
+                // 画一个点
+                ctx.beginPath();
+                ctx.arc(cx, cy, 8, 0, Math.PI * 2);
+                ctx.fillStyle = '#00f5ff';
+                ctx.fill();
+                ctx.shadowColor = '#00f5ff';
+                ctx.shadowBlur = 20;
+            } else if (dim === 1) {
+                // 画一条线
+                ctx.beginPath();
+                ctx.moveTo(50, cy);
+                ctx.lineTo(350, cy);
+                ctx.strokeStyle = '#00f5ff';
+                ctx.lineWidth = 3;
+                ctx.stroke();
+                // 端点
+                ctx.beginPath();
+                ctx.arc(50, cy, 5, 0, Math.PI * 2);
+                ctx.arc(350, cy, 5, 0, Math.PI * 2);
+                ctx.fillStyle = '#ff00ff';
+                ctx.fill();
+            } else if (dim === 2) {
+                // 画一个平面（正方形）
+                ctx.fillStyle = 'rgba(0, 245, 255, 0.2)';
+                ctx.fillRect(100, 100, 200, 200);
+                ctx.strokeStyle = '#00f5ff';
+                ctx.lineWidth = 2;
+                ctx.strokeRect(100, 100, 200, 200);
+                // 坐标轴
+                drawArrow(ctx, 100, 300, 320, 300, '#ff00ff');
+                drawArrow(ctx, 100, 300, 100, 80, '#ff00ff');
+                ctx.fillStyle = '#fff';
+                ctx.font = '14px Arial';
+                ctx.fillText('x', 325, 305);
+                ctx.fillText('y', 95, 70);
+                // 点
+                ctx.beginPath();
+                ctx.arc(200, 200, 6, 0, Math.PI * 2);
+                ctx.fillStyle = '#ff00ff';
+                ctx.fill();
+                ctx.fillText('(x, y)', 210, 195);
+            } else if (dim === 3) {
+                // 画一个3D立方体（等距投影）
+                drawCube(ctx, cx, cy, 100);
+            }
+        }
+
+        function drawArrow(ctx, fromX, fromY, toX, toY, color) {
+            const headLen = 10;
+            const angle = Math.atan2(toY - fromY, toX - fromX);
+            ctx.beginPath();
+            ctx.moveTo(fromX, fromY);
+            ctx.lineTo(toX, toY);
+            ctx.strokeStyle = color;
+            ctx.lineWidth = 2;
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(toX, toY);
+            ctx.lineTo(toX - headLen * Math.cos(angle - Math.PI / 6), toY - headLen * Math.sin(angle - Math.PI / 6));
+            ctx.lineTo(toX - headLen * Math.cos(angle + Math.PI / 6), toY - headLen * Math.sin(angle + Math.PI / 6));
+            ctx.closePath();
+            ctx.fillStyle = color;
+            ctx.fill();
+        }
+
+        function drawCube(ctx, cx, cy, size) {
+            const angle = Math.PI / 6;
+            const cos = Math.cos(angle);
+            const sin = Math.sin(angle);
+
+            // 立方体的8个顶点
+            const vertices = [
+                [-1, -1, -1], [1, -1, -1], [1, 1, -1], [-1, 1, -1],
+                [-1, -1, 1], [1, -1, 1], [1, 1, 1], [-1, 1, 1]
+            ];
+
+            // 投影到2D
+            const projected = vertices.map(v => {
+                const x = cx + (v[0] + v[2] * cos) * size / 2;
+                const y = cy + (v[1] + v[2] * sin) * size / 2;
+                return [x, y];
+            });
+
+            // 绘制面
+            const faces = [
+                [0, 1, 2, 3], // 前
+                [4, 5, 6, 7], // 后
+                [0, 1, 5, 4], // 下
+                [2, 3, 7, 6], // 上
+                [0, 3, 7, 4], // 左
+                [1, 2, 6, 5]  // 右
+            ];
+
+            const colors = [
+                'rgba(0, 245, 255, 0.3)',
+                'rgba(0, 200, 255, 0.2)',
+                'rgba(100, 0, 255, 0.2)',
+                'rgba(100, 0, 255, 0.3)',
+                'rgba(255, 0, 255, 0.2)',
+                'rgba(255, 0, 255, 0.3)'
+            ];
+
+            faces.forEach((face, i) => {
+                ctx.beginPath();
+                ctx.moveTo(projected[face[0]][0], projected[face[0]][1]);
+                for (let j = 1; j < face.length; j++) {
+                    ctx.lineTo(projected[face[j]][0], projected[face[j]][1]);
+                }
+                ctx.closePath();
+                ctx.fillStyle = colors[i];
+                ctx.fill();
+                ctx.strokeStyle = '#00f5ff';
+                ctx.lineWidth = 1;
+                ctx.stroke();
+            });
+
+            // 坐标轴
+            drawArrow(ctx, cx - 80, cy + 60, cx + 80, cy + 60, '#ff00ff');
+            drawArrow(ctx, cx - 80, cy + 60, cx - 80, cy - 80, '#00ff00');
+            drawArrow(ctx, cx - 80, cy + 60, cx - 30, cy + 110, '#ffff00');
+            ctx.fillStyle = '#fff';
+            ctx.font = '14px Arial';
+            ctx.fillText('x', cx + 85, cy + 65);
+            ctx.fillText('y', cx - 85, cy - 85);
+            ctx.fillText('z', cx - 25, cy + 125);
+        }
+
+        // ==================== 向量嵌入 ====================
+        function initEmbedding() {
+            updateEmbedding();
+            initWordCards();
+        }
+
+        function updateEmbedding() {
+            const dim = parseInt(document.getElementById('embedDim').value);
+            document.getElementById('embedDimValue').textContent = dim + '维';
+
+            // 生成随机向量
+            const vector = [];
+            for (let i = 0; i < Math.min(dim, 16); i++) {
+                vector.push((Math.random() * 2 - 1).toFixed(2));
+            }
+
+            const display = document.getElementById('vectorDisplay');
+            display.innerHTML = vector.map((v, i) =>
+                `<span class="vector-value" title="维度${i+1}">${v}</span>`
+            ).join('');
+
+            if (dim > 16) {
+                display.innerHTML += `<span class="vector-value">... (${dim - 16} more)</span>`;
+            }
+        }
+
+        function initWordCards() {
+            const container = document.getElementById('wordCards');
+            container.innerHTML = Object.keys(wordVectors).map(word => `
+                <div class="word-card" onclick="selectWord('${word}')" id="card-${word}">
+                    <div class="word">${word}</div>
+                    <div class="word-vec">[${wordVectors[word].slice(0, 3).map(v => v.toFixed(1)).join(', ')}...]</div>
+                </div>
+            `).join('');
+        }
+
+        function selectWord(word) {
+            playSound('click');
+
+            if (selectedWords.includes(word)) {
+                selectedWords = selectedWords.filter(w => w !== word);
+                document.getElementById('card-' + word).classList.remove('selected');
+            } else {
+                if (selectedWords.length >= 2) {
+                    document.getElementById('card-' + selectedWords[0]).classList.remove('selected');
+                    selectedWords.shift();
+                }
+                selectedWords.push(word);
+                document.getElementById('card-' + word).classList.add('selected');
+            }
+
+            updateSimilarityDisplay();
+        }
+
+        function updateSimilarityDisplay() {
+            const container = document.getElementById('similarityBars');
+
+            if (selectedWords.length < 2) {
+                container.innerHTML = '<p>👆 请选择两个词语</p>';
+                return;
+            }
+
+            const vec1 = wordVectors[selectedWords[0]];
+            const vec2 = wordVectors[selectedWords[1]];
+            const similarity = cosineSimilarity(vec1, vec2);
+
+            container.innerHTML = `
+                <div style="margin-bottom: 10px;">
+                    <strong>${selectedWords[0]}</strong> vs <strong>${selectedWords[1]}</strong>
+                </div>
+                <div class="similarity-bar">
+                    <div class="similarity-fill" style="width: ${similarity * 100}%">${(similarity * 100).toFixed(1)}%</div>
+                </div>
+                <p style="margin-top: 10px; color: #a0a0ff;">
+                    ${similarity > 0.8 ? '🔥 非常相似！它们可能有相近的语义。' :
+                      similarity > 0.5 ? '😊 有一定相似性，可能属于同一类别。' :
+                      '🤔 相似度较低，它们可能属于不同类别。'}
+                </p>
+            `;
+        }
+
+        function cosineSimilarity(a, b) {
+            let dotProduct = 0;
+            let normA = 0;
+            let normB = 0;
+            for (let i = 0; i < a.length; i++) {
+                dotProduct += a[i] * b[i];
+                normA += a[i] * a[i];
+                normB += b[i] * b[i];
+            }
+            return dotProduct / (Math.sqrt(normA) * Math.sqrt(normB));
+        }
+
+        // ==================== 维度的诅咒 ====================
+        function updateCurseDemo() {
+            const dim = parseInt(document.getElementById('curseDim').value);
+            const points = parseInt(document.getElementById('dataPoints').value);
+
+            document.getElementById('curseDimValue').textContent = dim + '维';
+            document.getElementById('pointsValue').textContent = points + '个';
+
+            const canvas = document.getElementById('curseCanvas');
+            const ctx = canvas.getContext('2d');
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // 生成高维数据点
+            const dataPoints = [];
+            for (let i = 0; i < points; i++) {
+                const point = [];
+                for (let d = 0; d < dim; d++) {
+                    point.push(Math.random());
+                }
+                dataPoints.push(point);
+            }
+
+            // 计算平均距离
+            let totalDist = 0;
+            let count = 0;
+            for (let i = 0; i < dataPoints.length; i++) {
+                for (let j = i + 1; j < dataPoints.length; j++) {
+                    totalDist += euclideanDistance(dataPoints[i], dataPoints[j]);
+                    count++;
+                }
+            }
+            const avgDist = count > 0 ? totalDist / count : 0;
+
+            // 理论最大距离
+            const maxDist = Math.sqrt(dim);
+
+            // 在2D画布上投影显示
+            const projected = dataPoints.map(p => [p[0] * 380 + 10, p[1] * 380 + 10]);
+
+            // 绘制点
+            projected.forEach((p, i) => {
+                ctx.beginPath();
+                ctx.arc(p[0], p[1], 5, 0, Math.PI * 2);
+                ctx.fillStyle = '#00f5ff';
+                ctx.fill();
+
+                // 显示与其他点的连线（仅显示前几个）
+                if (i < 5) {
+                    for (let j = i + 1; j < Math.min(5, projected.length); j++) {
+                        ctx.beginPath();
+                        ctx.moveTo(p[0], p[1]);
+                        ctx.lineTo(projected[j][0], projected[j][1]);
+                        ctx.strokeStyle = 'rgba(255, 0, 255, 0.2)';
+                        ctx.stroke();
+                    }
+                }
+            });
+
+            // 更新统计
+            const density = Math.min(100, (points / Math.pow(10, dim / 10)) * 100);
+            const distPercent = (avgDist / maxDist) * 100;
+
+            document.getElementById('densityValue').textContent = density.toFixed(1) + '%';
+            document.getElementById('densityBar').style.width = density + '%';
+
+            document.getElementById('distanceValue').textContent = avgDist.toFixed(2);
+            document.getElementById('distanceBar').style.width = Math.min(100, distPercent) + '%';
+
+            // 更新解释
+            let explanation = '';
+            if (dim <= 3) {
+                explanation = `<h3>📊 低维空间 (${dim}维)</h3>
+                    <p>在${dim}维空间中，${points}个数据点相对密集，彼此之间的距离较近，便于分析和计算。空间利用率较高。</p>`;
+            } else if (dim <= 10) {
+                explanation = `<h3>📊 中维空间 (${dim}维)</h3>
+                    <p>随着维度增加，空间体积<span class="highlight">急剧膨胀</span>。数据点开始变得稀疏，距离概念开始模糊。</p>`;
+            } else {
+                explanation = `<h3>📊 高维空间 (${dim}维) 😱</h3>
+                    <p>高维空间中，数据点变得<span class="highlight">极度稀疏</span>！平均距离接近理论最大值，"最近邻"概念几乎失效。这就是"维度的诅咒"！</p>`;
+            }
+
+            document.getElementById('curseExplanation').innerHTML = explanation;
+        }
+
+        function euclideanDistance(a, b) {
+            let sum = 0;
+            for (let i = 0; i < a.length; i++) {
+                sum += Math.pow(a[i] - b[i], 2);
+            }
+            return Math.sqrt(sum);
+        }
+
+        // ==================== 维度游戏 ====================
+        function startGame() {
+            playSound('click');
+            const dim = parseInt(document.getElementById('gameDim').value);
+            document.getElementById('gameDimValue').textContent = dim + '维';
+
+            document.getElementById('gameArea').style.display = 'block';
+
+            // 生成目标坐标
+            gameTarget = [];
+            for (let i = 0; i < dim; i++) {
+                gameTarget.push(Math.floor(Math.random() * 10));
+            }
+
+            document.getElementById('targetCoords').textContent = '(' + gameTarget.join(', ') + ')';
+
+            // 生成坐标输入框
+            const inputsContainer = document.getElementById('coordInputs');
+            inputsContainer.innerHTML = '';
+            for (let i = 0; i < dim; i++) {
+                const label = ['x', 'y', 'z', 'w', 'v'][i] || `d${i}`;
+                inputsContainer.innerHTML += `
+                    <div class="control-group">
+                        <label>${label}:</label>
+                        <input type="range" id="input${i}" min="0" max="9" value="5" oninput="updateGameDisplay()">
+                        <span class="value-display" id="inputVal${i}">5</span>
+                    </div>
+                `;
+            }
+
+            updateGameDisplay();
+        }
+
+        function updateGameDisplay() {
+            const dim = parseInt(document.getElementById('gameDim').value);
+
+            // 更新输入值显示
+            for (let i = 0; i < dim; i++) {
+                const input = document.getElementById('input' + i);
+                if (input) {
+                    document.getElementById('inputVal' + i).textContent = input.value;
+                }
+            }
+
+            // 在画布上绘制
+            const canvas = document.getElementById('gameCanvas');
+            const ctx = canvas.getContext('2d');
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // 绘制网格
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
+            for (let i = 0; i <= 10; i++) {
+                ctx.beginPath();
+                ctx.moveTo(i * 40, 0);
+                ctx.lineTo(i * 40, 400);
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.moveTo(0, i * 40);
+                ctx.lineTo(400, i * 40);
+                ctx.stroke();
+            }
+
+            // 绘制目标点
+            const tx = gameTarget[0] * 40 + 20;
+            const ty = (9 - gameTarget[1]) * 40 + 20;
+            ctx.beginPath();
+            ctx.arc(tx, ty, 15, 0, Math.PI * 2);
+            ctx.fillStyle = '#ff00ff';
+            ctx.fill();
+            ctx.fillStyle = '#fff';
+            ctx.font = '12px Arial';
+            ctx.fillText('目标', tx - 12, ty + 4);
+
+            // 绘制用户位置
+            const input0 = document.getElementById('input0');
+            const input1 = document.getElementById('input1');
+            if (input0 && input1) {
+                const ux = parseInt(input0.value) * 40 + 20;
+                const uy = (9 - parseInt(input1.value)) * 40 + 20;
+                ctx.beginPath();
+                ctx.arc(ux, uy, 12, 0, Math.PI * 2);
+                ctx.fillStyle = '#00f5ff';
+                ctx.fill();
+                ctx.fillStyle = '#000';
+                ctx.font = '12px Arial';
+                ctx.fillText('你', ux - 6, uy + 4);
+
+                // 绘制连线
+                ctx.beginPath();
+                ctx.moveTo(tx, ty);
+                ctx.lineTo(ux, uy);
+                ctx.strokeStyle = 'rgba(255, 255, 255, 0.5)';
+                ctx.setLineDash([5, 5]);
+                ctx.stroke();
+                ctx.setLineDash([]);
+            }
+        }
+
+        function checkAnswer() {
+            const dim = parseInt(document.getElementById('gameDim').value);
+
+            let correct = true;
+            for (let i = 0; i < dim; i++) {
+                const input = document.getElementById('input' + i);
+                if (input && parseInt(input.value) !== gameTarget[i]) {
+                    correct = false;
+                    break;
+                }
+            }
+
+            if (correct) {
+                playSound('success');
+                gameScore += 10 * dim;
+                document.getElementById('gameHint').innerHTML = `
+                    <h3 style="color: #00ff88;">🎉 正确！</h3>
+                    <p>你找到了目标点！获得 ${10 * dim} 分！</p>
+                `;
+            } else {
+                document.getElementById('gameHint').innerHTML = `
+                    <h3 style="color: #ff6666;">😅 再试一次</h3>
+                    <p>目标坐标：(${gameTarget.join(', ')})</p>
+                `;
+            }
+
+            document.getElementById('gameScore').textContent = gameScore;
+            document.getElementById('scoreBar').style.width = Math.min(100, gameScore) + '%';
+        }
+
+        // ==================== 背景粒子 ====================
+        function createParticles() {
+            const container = document.getElementById('particles');
+            for (let i = 0; i < 30; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.top = Math.random() * 100 + '%';
+                particle.style.width = Math.random() * 5 + 2 + 'px';
+                particle.style.height = particle.style.width;
+                particle.style.background = `rgba(${Math.random() > 0.5 ? '0, 245, 255' : '255, 0, 255'}, 0.3)`;
+                particle.style.animationDelay = Math.random() * 10 + 's';
+                container.appendChild(particle);
+            }
+        }
+
+        // ==================== 初始化 ====================
+        window.onload = function() {
+            createParticles();
+            updateVisualization();
+            initEmbedding();
+            updateCurseDemo();
+
+            // 维度滑块事件
+            document.getElementById('gameDim').addEventListener('input', function() {
+                document.getElementById('gameDimValue').textContent = this.value + '维';
+            });
+        };
+    </script>
+</body>
+</html>

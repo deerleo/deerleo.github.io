@@ -59,67 +59,59 @@ blog:
         tag: 规划中
 
 tutorials:
-  - id: ai-tools-setup
-    mode: single
-    title: AI 工具上手
-    kicker: Single
-    description: 从安装、配置到常见报错排查，适合第一次搭建自己的 AI 工作环境。
-    duration: 15 min
+  - id: ai-foundations
+    mode: series
+    title: 人工智能与数学：从使用者到创造者
+    kicker: 互动系列
+    description: 从概率、向量与高维数据出发，通过 Transformer、注意力和智能体实验理解 AI 的关键机制。
     level: 入门
-    link:
-    tag: 写作中
-
-  - id: mcp-configuration
-    mode: single
-    title: MCP 配置与调用
-    kicker: Single
-    description: 理解 MCP 的基本概念，配置第一个工具调用，并验证调用链路。
-    duration: 20 min
-    level: 进阶
-    link:
-    tag: 规划中
-
-  - id: agent-architecture
-    mode: series
-    title: Agent 架构入门
-    kicker: Series
-    description: 从单轮调用到任务编排、工具选择、评测与可靠性设计的完整学习路径。
-    level: 系统课
     progress:
-      done: 1
+      done: 6
       total: 6
-    link:
+    link: /course/ai-foundations/
     episodes:
-      - title: 01 · 为什么需要 Agent
-        text: 任务拆解、上下文组织与基础执行模型
+      - title: 01 · 概率与信息
+        text: 蒙提霍尔问题与条件概率
         status: 已发布
-      - title: 02 · 工具调用与 MCP
-        text: 工具选择、参数设计与安全边界
-        status: 写作中
-      - title: 03 · 任务编排与状态管理
-        text: 多步骤任务、失败重试与可观测性
-        status: 规划中
+      - title: 02 · 向量与表示
+        text: 维度、向量嵌入与语义相似
+        status: 已发布
+      - title: 03 · 高维数据
+        text: 维度灾难与数据稀疏性
+        status: 已发布
+      - title: 04 · Transformer
+        text: 上下文、注意力与逐步生成
+        status: 已发布
+      - title: 05 · 多头注意力
+        text: Q、K、V 与信息汇总
+        status: 已发布
+      - title: 06 · 智能体与决策
+        text: 工具调用、反馈与迷宫策略
+        status: 已发布
 
-  - id: ai-workflow-delivery
+  - id: ai-data-analysis-classroom
     mode: series
-    title: AI 工作流落地
-    kicker: Series
-    description: 把 AI 从个人效率工具推进到团队可复用、可交付的业务流程。
-    level: 实战
+    title: AI 数据分析互动课堂
+    kicker: 互动课堂
+    description: 从统计方法选择到真实案例、Dify 工作流与科研智能体，练习可解释、可复核的数据分析。
+    level: 入门到实战
     progress:
-      done: 0
+      done: 4
       total: 4
-    link:
+    link: /course/ai-data-analyse/
     episodes:
-      - title: 01 · 从场景到流程
-        text: 识别高价值环节、拆解输入输出与验收标准
-        status: 规划中
-      - title: 02 · 原型与最小交付
-        text: 快速验证可行性，避免过早平台化
-        status: 规划中
-      - title: 03 · 团队协作与培训
-        text: 降低使用门槛，建立复盘与反馈机制
-        status: 规划中
+      - title: 01 · 选择统计方法
+        text: 用研究问题、变量与设计匹配分析方法
+        status: 已发布
+      - title: 02 · 观察关系与实验设计
+        text: 回归、因子交互、时序与不确定性互动实验
+        status: 已发布
+      - title: 03 · 构建分析工作流
+        text: 逐节点搭建 Dify 公共卫生数据分析流程
+        status: 已发布
+      - title: 04 · 科研智能体实战
+        text: 在教育与公共卫生案例中运行和核验研究流程
+        status: 已发布
 
 media:
   - id: accounts

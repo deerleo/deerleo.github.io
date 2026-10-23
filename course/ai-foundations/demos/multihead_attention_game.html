@@ -1,0 +1,1513 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>多头注意力探索 - Multi-Head Attention</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            min-height: 100vh;
+            overflow-x: hidden;
+            color: #fff;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* 标题 */
+        .header {
+            text-align: center;
+            padding: 30px 0;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            background: linear-gradient(135deg, #ff6b6b, #feca57, #48dbfb, #ff9ff3);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: rainbow 3s ease infinite;
+            background-size: 400% 400%;
+        }
+
+        @keyframes rainbow {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+
+        .header .subtitle {
+            color: #a0a0ff;
+            margin-top: 10px;
+            font-size: 1.1em;
+        }
+
+        /* 导航标签 */
+        .tabs {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin: 30px 0;
+            flex-wrap: wrap;
+        }
+
+        .tab {
+            padding: 12px 25px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: #a0a0ff;
+        }
+
+        .tab:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .tab.active {
+            background: linear-gradient(135deg, #ff6b6b, #feca57);
+            color: #000;
+            border-color: transparent;
+            box-shadow: 0 5px 20px rgba(255, 107, 107, 0.3);
+        }
+
+        /* 面板 */
+        .panel {
+            display: none;
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            animation: fadeIn 0.5s ease;
+        }
+
+        .panel.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .panel-title {
+            font-size: 1.8em;
+            margin-bottom: 20px;
+            color: #feca57;
+        }
+
+        /* 信息框 */
+        .info-box {
+            background: linear-gradient(135deg, rgba(255, 107, 107, 0.1), rgba(254, 202, 87, 0.1));
+            border-radius: 15px;
+            padding: 20px;
+            margin: 20px 0;
+            border-left: 4px solid #feca57;
+        }
+
+        .info-box h3 {
+            color: #feca57;
+            margin-bottom: 10px;
+        }
+
+        .info-box p {
+            color: #ccc;
+            line-height: 1.8;
+        }
+
+        .highlight {
+            color: #ff6b6b;
+            font-weight: bold;
+        }
+
+        .highlight-blue {
+            color: #48dbfb;
+            font-weight: bold;
+        }
+
+        /* 按钮样式 */
+        .btn {
+            padding: 12px 30px;
+            font-size: 1em;
+            font-weight: bold;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #ff6b6b, #feca57);
+            color: #000;
+            box-shadow: 0 5px 20px rgba(255, 107, 107, 0.3);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #48dbfb, #0abde3);
+            color: #000;
+            box-shadow: 0 5px 20px rgba(72, 219, 251, 0.3);
+        }
+
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 30px rgba(255, 107, 107, 0.5);
+        }
+
+        /* QKV展示 */
+        .qkv-display {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin: 30px 0;
+            flex-wrap: wrap;
+        }
+
+        .qkv-box {
+            width: 200px;
+            padding: 25px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            text-align: center;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .qkv-box.query {
+            border-color: #ff6b6b;
+            box-shadow: 0 0 20px rgba(255, 107, 107, 0.2);
+        }
+
+        .qkv-box.key {
+            border-color: #feca57;
+            box-shadow: 0 0 20px rgba(254, 202, 87, 0.2);
+        }
+
+        .qkv-box.value {
+            border-color: #48dbfb;
+            box-shadow: 0 0 20px rgba(72, 219, 251, 0.2);
+        }
+
+        .qkv-box:hover {
+            transform: translateY(-10px);
+        }
+
+        .qkv-box .icon {
+            font-size: 3em;
+            margin-bottom: 10px;
+        }
+
+        .qkv-box .label {
+            font-size: 1.3em;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .qkv-box.query .label { color: #ff6b6b; }
+        .qkv-box.key .label { color: #feca57; }
+        .qkv-box.value .label { color: #48dbfb; }
+
+        .qkv-box .desc {
+            font-size: 0.9em;
+            color: #a0a0ff;
+        }
+
+        /* 头展示 */
+        .heads-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 15px;
+            margin: 30px 0;
+        }
+
+        .head-box {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+
+        .head-box:hover {
+            transform: scale(1.05);
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .head-box.active {
+            border-color: #ff6b6b;
+            box-shadow: 0 0 20px rgba(255, 107, 107, 0.3);
+        }
+
+        .head-box .head-num {
+            font-size: 2em;
+            font-weight: bold;
+            background: linear-gradient(135deg, #ff6b6b, #feca57);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .head-box .head-role {
+            font-size: 0.8em;
+            color: #a0a0ff;
+            margin-top: 5px;
+        }
+
+        .head-box .head-icon {
+            font-size: 1.5em;
+            margin-top: 10px;
+        }
+
+        /* 句子展示 */
+        .sentence-display {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 15px;
+            padding: 25px;
+            margin: 20px 0;
+            font-size: 1.3em;
+            text-align: center;
+            line-height: 2;
+        }
+
+        .word {
+            display: inline-block;
+            padding: 8px 15px;
+            margin: 5px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .word:hover {
+            background: rgba(255, 107, 107, 0.3);
+            transform: scale(1.1);
+        }
+
+        .word.selected {
+            background: rgba(255, 107, 107, 0.5);
+            box-shadow: 0 0 15px rgba(255, 107, 107, 0.5);
+        }
+
+        .word.highlighted {
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        /* 注意力热力图 */
+        .attention-heatmap {
+            display: grid;
+            gap: 3px;
+            margin: 20px 0;
+        }
+
+        .attention-row {
+            display: flex;
+            justify-content: center;
+            gap: 3px;
+        }
+
+        .attention-cell {
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8em;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .attention-cell:hover {
+            transform: scale(1.1);
+            z-index: 10;
+        }
+
+        .attention-label {
+            width: 80px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9em;
+            color: #a0a0ff;
+        }
+
+        /* 头角色展示 */
+        .head-roles {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .role-card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 20px;
+            border-left: 4px solid;
+            transition: all 0.3s ease;
+        }
+
+        .role-card:hover {
+            transform: translateX(10px);
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .role-card h4 {
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .role-card p {
+            color: #a0a0ff;
+            font-size: 0.9em;
+        }
+
+        .role-card.syntax { border-color: #ff6b6b; }
+        .role-card.syntax h4 { color: #ff6b6b; }
+        .role-card.reference { border-color: #feca57; }
+        .role-card.reference h4 { color: #feca57; }
+        .role-card.semantic { border-color: #48dbfb; }
+        .role-card.semantic h4 { color: #48dbfb; }
+        .role-card.position { border-color: #ff9ff3; }
+        .role-card.position h4 { color: #ff9ff3; }
+
+        /* 控制面板 */
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin: 20px 0;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .control-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 10px 20px;
+            border-radius: 15px;
+        }
+
+        .control-group label {
+            color: #a0a0ff;
+        }
+
+        select, input[type="range"] {
+            padding: 8px 15px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            color: #fff;
+            font-size: 1em;
+            cursor: pointer;
+        }
+
+        select option {
+            background: #1a1a2e;
+        }
+
+        input[type="range"] {
+            width: 150px;
+            height: 8px;
+            -webkit-appearance: none;
+            background: linear-gradient(90deg, #ff6b6b, #feca57);
+            border-radius: 4px;
+            padding: 0;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 20px;
+            height: 20px;
+            background: #fff;
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 0 10px rgba(255, 107, 107, 0.5);
+        }
+
+        .value-display {
+            min-width: 50px;
+            text-align: center;
+            font-weight: bold;
+            color: #feca57;
+        }
+
+        /* 比较面板 */
+        .comparison {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin: 30px 0;
+        }
+
+        .comparison-box {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            padding: 25px;
+            text-align: center;
+        }
+
+        .comparison-box h3 {
+            margin-bottom: 20px;
+            font-size: 1.3em;
+        }
+
+        .comparison-box.single h3 { color: #ff6b6b; }
+        .comparison-box.multi h3 { color: #48dbfb; }
+
+        .comparison-box .result {
+            font-size: 2em;
+            font-weight: bold;
+            margin: 20px 0;
+        }
+
+        .comparison-box.single .result { color: #ff6b6b; }
+        .comparison-box.multi .result { color: #48dbfb; }
+
+        /* 小组讨论动画 */
+        .discussion-area {
+            position: relative;
+            height: 400px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 20px;
+            margin: 20px 0;
+            overflow: hidden;
+        }
+
+        .student {
+            position: absolute;
+            width: 80px;
+            height: 80px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.5s ease;
+            cursor: pointer;
+        }
+
+        .student:hover {
+            transform: scale(1.2);
+            z-index: 10;
+        }
+
+        .student .avatar {
+            font-size: 2em;
+        }
+
+        .student .name {
+            font-size: 0.7em;
+            margin-top: 5px;
+            color: #a0a0ff;
+        }
+
+        .student.active {
+            box-shadow: 0 0 30px rgba(255, 107, 107, 0.5);
+            border: 2px solid #ff6b6b;
+        }
+
+        .speech-bubble {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.95);
+            color: #1a1a2e;
+            padding: 15px 20px;
+            border-radius: 15px;
+            max-width: 200px;
+            font-size: 0.9em;
+            opacity: 0;
+            transform: scale(0);
+            transition: all 0.3s ease;
+            z-index: 20;
+        }
+
+        .speech-bubble.show {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        .speech-bubble::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            border-width: 10px 10px 0;
+            border-style: solid;
+            border-color: rgba(255, 255, 255, 0.95) transparent transparent;
+        }
+
+        .center-paper {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 120px;
+            height: 150px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3em;
+        }
+
+        /* 输出合并动画 */
+        .merge-animation {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+            margin: 30px 0;
+            flex-wrap: wrap;
+        }
+
+        .merge-arrow {
+            font-size: 2em;
+            color: #feca57;
+            animation: bounce 1s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateX(0); }
+            50% { transform: translateX(10px); }
+        }
+
+        /* 游戏区域 */
+        .game-area {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 20px;
+            padding: 30px;
+            margin: 20px 0;
+        }
+
+        .game-sentence {
+            font-size: 1.5em;
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+        }
+
+        .game-options {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .game-option {
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+
+        .game-option:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: #feca57;
+        }
+
+        .game-option.selected {
+            border-color: #ff6b6b;
+            background: rgba(255, 107, 107, 0.2);
+        }
+
+        .game-option.correct {
+            border-color: #00ff88;
+            background: rgba(0, 255, 136, 0.2);
+        }
+
+        .score-display {
+            text-align: center;
+            font-size: 1.5em;
+            margin: 20px 0;
+        }
+
+        .score-display span {
+            color: #feca57;
+            font-weight: bold;
+        }
+
+        /* 进度条 */
+        .progress-container {
+            margin: 20px 0;
+        }
+
+        .progress-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+            color: #a0a0ff;
+        }
+
+        .progress-track {
+            height: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #ff6b6b, #feca57, #48dbfb);
+            border-radius: 10px;
+            transition: width 0.5s ease;
+        }
+
+        /* 响应式 */
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 1.8em;
+            }
+
+            .comparison {
+                grid-template-columns: 1fr;
+            }
+
+            .qkv-display {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .qkv-box {
+                width: 100%;
+                max-width: 300px;
+            }
+        }
+
+        /* 流程图 */
+        .flow-diagram {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            margin: 30px 0;
+            flex-wrap: wrap;
+        }
+
+        .flow-box {
+            padding: 15px 25px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            text-align: center;
+            min-width: 100px;
+        }
+
+        .flow-arrow {
+            font-size: 1.5em;
+            color: #feca57;
+        }
+
+        .split-box {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .split-item {
+            padding: 10px 15px;
+            background: rgba(255, 107, 107, 0.2);
+            border-radius: 8px;
+            font-size: 0.9em;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 标题 -->
+        <div class="header">
+            <h1>🧠 多头注意力探索</h1>
+            <p class="subtitle">Multi-Head Attention - AI如何"多角度"理解语言</p>
+        </div>
+
+        <!-- 导航标签 -->
+        <div class="tabs">
+            <div class="tab active" onclick="showPanel('intro')">🎓 概念入门</div>
+            <div class="tab" onclick="showPanel('qkv')">🔍 QKV解密</div>
+            <div class="tab" onclick="showPanel('demo')">🎭 互动演示</div>
+            <div class="tab" onclick="showPanel('compare')">⚔️ 单头vs多头</div>
+            <div class="tab" onclick="showPanel('game')">🎮 挑战游戏</div>
+        </div>
+
+        <!-- 面板1：概念入门 -->
+        <div class="panel active" id="panel-intro">
+            <h2 class="panel-title">什么是多头注意力？</h2>
+
+            <div class="info-box">
+                <h3>💡 核心概念</h3>
+                <p>多头注意力就像<span class="highlight">8个同学同时看一篇文章</span>——A同学关注语法，B同学关注情感，C同学关注事实...最后大家把发现汇总，比一个人看要全面得多！</p>
+            </div>
+
+            <!-- 小组讨论动画 -->
+            <div class="discussion-area" id="discussionArea">
+                <div class="center-paper">📄</div>
+                <!-- 学生会动态生成 -->
+            </div>
+
+            <div class="controls">
+                <button class="btn btn-primary" onclick="startDiscussion()">▶️ 开始讨论</button>
+                <button class="btn btn-secondary" onclick="mergeResults()">🔀 合并结果</button>
+            </div>
+
+            <div id="discussionResult" class="info-box" style="display: none;">
+                <h3>📊 讨论结果汇总</h3>
+                <p id="resultText"></p>
+            </div>
+
+            <div class="info-box">
+                <h3>🔧 具体实现</h3>
+                <p>
+                    1. 将Q、K、V在维度上<span class="highlight">分割成h个头</span>（如8头，每头64维）<br>
+                    2. 每个头<span class="highlight">独立计算注意力</span><br>
+                    3. <span class="highlight">拼接</span>所有头的输出，再线性变换
+                </p>
+            </div>
+
+            <!-- 流程图 -->
+            <div class="flow-diagram">
+                <div class="flow-box">输入</div>
+                <div class="flow-arrow">→</div>
+                <div class="flow-box">分割成8头</div>
+                <div class="flow-arrow">→</div>
+                <div class="split-box">
+                    <div class="split-item">头1: 语法</div>
+                    <div class="split-item">头2: 指代</div>
+                    <div class="split-item">头3: 语义</div>
+                    <div class="split-item">...</div>
+                </div>
+                <div class="flow-arrow">→</div>
+                <div class="flow-box">拼接</div>
+                <div class="flow-arrow">→</div>
+                <div class="flow-box">输出</div>
+            </div>
+        </div>
+
+        <!-- 面板2：QKV解密 -->
+        <div class="panel" id="panel-qkv">
+            <h2 class="panel-title">QKV - 注意力的三要素</h2>
+
+            <div class="info-box">
+                <h3>💡 图书馆比喻</h3>
+                <p>
+                    <strong>Query（查询）</strong>：你带着问题去（"我要找关于恐龙的书"）<br>
+                    <strong>Key（键）</strong>：书架上的标签（"古生物"、"恐龙"、"侏罗纪"）<br>
+                    <strong>Value（值）</strong>：书架上的真书<br><br>
+                    你的问题和标签<span class="highlight">匹配得越好</span>，那本书就越容易被找到！
+                </p>
+            </div>
+
+            <div class="qkv-display">
+                <div class="qkv-box query">
+                    <div class="icon">🎯</div>
+                    <div class="label">Query</div>
+                    <div class="desc">我在找什么？<br>查询向量</div>
+                </div>
+                <div class="qkv-box key">
+                    <div class="icon">🏷️</div>
+                    <div class="label">Key</div>
+                    <div class="desc">怎么匹配？<br>键向量</div>
+                </div>
+                <div class="qkv-box value">
+                    <div class="icon">📦</div>
+                    <div class="label">Value</div>
+                    <div class="desc">实际内容<br>值向量</div>
+                </div>
+            </div>
+
+            <div class="info-box">
+                <h3>🧮 计算过程</h3>
+                <p>
+                    <strong>1. 匹配计算：</strong>Query · Key = 注意力分数<br>
+                    <strong>2. 归一化：</strong>Softmax → 权重（所有权重和为1）<br>
+                    <strong>3. 加权求和：</strong>权重 × Value = 最终输出
+                </p>
+            </div>
+
+            <div class="sentence-display">
+                <span class="word" onclick="selectWord(this, '我')">我</span>
+                <span class="word" onclick="selectWord(this, '喜欢')">喜欢</span>
+                <span class="word" onclick="selectWord(this, '吃')">吃</span>
+                <span class="word" onclick="selectWord(this, '苹果')">苹果</span>
+            </div>
+
+            <div id="qkvDemo" class="info-box">
+                <h3>👆 点击词语查看QKV交互</h3>
+                <p>当"我"作为Query时，会与所有词的Key计算匹配度...</p>
+            </div>
+
+            <!-- 注意力热力图 -->
+            <div id="attentionHeatmap" style="display: none;">
+                <h3 style="text-align: center; margin: 20px 0; color: #feca57;">🔥 注意力热力图</h3>
+                <div class="attention-heatmap" id="heatmapGrid">
+                    <!-- 动态生成 -->
+                </div>
+            </div>
+        </div>
+
+        <!-- 面板3：互动演示 -->
+        <div class="panel" id="panel-demo">
+            <h2 class="panel-title">多头注意力互动演示</h2>
+
+            <div class="controls">
+                <div class="control-group">
+                    <label>句子：</label>
+                    <select id="sentenceSelect" onchange="updateDemo()">
+                        <option value="0">小明在学校里认真地读书</option>
+                        <option value="1">他看到那只猫后非常开心</option>
+                        <option value="2">北京是中国的首都城市</option>
+                    </select>
+                </div>
+                <div class="control-group">
+                    <label>头数：</label>
+                    <input type="range" id="headCount" min="1" max="8" value="8" oninput="updateDemo()">
+                    <span class="value-display" id="headCountValue">8头</span>
+                </div>
+            </div>
+
+            <div id="demoSentence" class="sentence-display">
+                <!-- 动态生成 -->
+            </div>
+
+            <h3 style="margin: 20px 0 10px; color: #feca57;">🧠 8个注意力头各司其职</h3>
+
+            <div class="heads-container" id="headsContainer">
+                <!-- 动态生成 -->
+            </div>
+
+            <div id="headDetail" class="info-box">
+                <h3>👆 点击上方任意"头"查看详情</h3>
+                <p>每个头关注不同的语言特征...</p>
+            </div>
+
+            <div class="head-roles">
+                <div class="role-card syntax">
+                    <h4>🔤 头1: 句法关系</h4>
+                    <p>关注主语-动词、动词-宾语的语法结构</p>
+                </div>
+                <div class="role-card reference">
+                    <h4>🔗 头2: 指代消解</h4>
+                    <p>"他"指代谁？"这"指什么？</p>
+                </div>
+                <div class="role-card semantic">
+                    <h4>💡 头3: 语义相似</h4>
+                    <p>找出同义词、近义词、相关概念</p>
+                </div>
+                <div class="role-card position">
+                    <h4>📍 头4: 位置邻近</h4>
+                    <p>关注相邻词语的局部关系</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 面板4：单头vs多头对比 -->
+        <div class="panel" id="panel-compare">
+            <h2 class="panel-title">单头 vs 多头 注意力</h2>
+
+            <div class="comparison">
+                <div class="comparison-box single">
+                    <h3>🥉 单头注意力</h3>
+                    <div class="result" id="singleScore">65%</div>
+                    <p>准确率</p>
+                    <ul style="text-align: left; margin: 20px; color: #a0a0ff;">
+                        <li>只能关注一种关系</li>
+                        <li>容易遗漏信息</li>
+                        <li>理解不够全面</li>
+                    </ul>
+                </div>
+                <div class="comparison-box multi">
+                    <h3>🥇 多头注意力</h3>
+                    <div class="result" id="multiScore">92%</div>
+                    <p>准确率</p>
+                    <ul style="text-align: left; margin: 20px; color: #a0a0ff;">
+                        <li>同时关注多种关系</li>
+                        <li>信息捕获更完整</li>
+                        <li>理解更加全面</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="controls">
+                <button class="btn btn-primary" onclick="runComparison()">▶️ 运行对比实验</button>
+            </div>
+
+            <div id="comparisonProgress" style="display: none;">
+                <div class="progress-container">
+                    <div class="progress-label">
+                        <span>实验进度</span>
+                        <span id="compProgress">0%</span>
+                    </div>
+                    <div class="progress-track">
+                        <div class="progress-fill" id="compProgressBar" style="width: 0%"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="comparisonResult" class="info-box" style="display: none;">
+                <h3>📊 实验结果</h3>
+                <p id="comparisonText"></p>
+            </div>
+
+            <div class="info-box">
+                <h3>💡 为什么多头更好？</h3>
+                <p>
+                    就像<span class="highlight">8个专家</span>同时分析一篇文章：<br><br>
+                    • 语言学家关注语法结构<br>
+                    • 心理学家关注情感色彩<br>
+                    • 逻辑学家关注论证关系<br>
+                    • 历史学家关注时代背景<br><br>
+                    最后综合所有人的意见，比任何一个人的判断都<span class="highlight-blue">更全面、更准确</span>！
+                </p>
+            </div>
+        </div>
+
+        <!-- 面板5：挑战游戏 -->
+        <div class="panel" id="panel-game">
+            <h2 class="panel-title">🎮 多头注意力挑战</h2>
+
+            <div class="info-box">
+                <h3>🎯 游戏目标</h3>
+                <p>作为"注意力头"，找出句子中特定的关系！每个头有不同的任务。</p>
+            </div>
+
+            <div class="score-display">
+                得分: <span id="gameScore">0</span> / <span id="totalScore">0</span>
+            </div>
+
+            <div class="controls">
+                <button class="btn btn-primary" onclick="startGame()">开始游戏</button>
+            </div>
+
+            <div id="gameArea" class="game-area" style="display: none;">
+                <div class="info-box">
+                    <h3 id="taskTitle">任务：找出主语</h3>
+                    <p id="taskDesc">点击句子中的主语（谁在做动作？）</p>
+                </div>
+
+                <div class="game-sentence" id="gameSentence">
+                    <!-- 动态生成 -->
+                </div>
+
+                <div class="game-options" id="gameOptions">
+                    <!-- 动态生成 -->
+                </div>
+
+                <div class="controls">
+                    <button class="btn btn-secondary" onclick="nextQuestion()">下一题</button>
+                </div>
+            </div>
+
+            <div id="gameComplete" class="info-box" style="display: none;">
+                <h3>🎉 游戏完成！</h3>
+                <p id="finalScore"></p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ==================== 全局变量 ====================
+        let audioCtx = null;
+        let gameScore = 0;
+        let totalScore = 0;
+        let currentQuestion = 0;
+        let selectedWords = [];
+
+        // 学生角色配置
+        const students = [
+            { name: '语法专家', role: '语法', avatar: '👨‍🏫', focus: '主语-动词关系' },
+            { name: '情感分析师', role: '情感', avatar: '👩‍⚕️', focus: '喜怒哀乐情绪' },
+            { name: '事实核查员', role: '事实', avatar: '🔍', focus: '客观信息' },
+            { name: '指代专家', role: '指代', avatar: '🔗', focus: '"他"指代谁' },
+            { name: '语义学家', role: '语义', avatar: '📚', focus: '同义词关系' },
+            { name: '位置专家', role: '位置', avatar: '📍', focus: '相邻词语' },
+            { name: '时态分析师', role: '时态', avatar: '⏰', focus: '过去/现在/未来' },
+            { name: '逻辑专家', role: '逻辑', avatar: '🧩', focus: '因果关系' }
+        ];
+
+        // 句子数据
+        const sentences = [
+            { text: '小明在学校里认真地读书', words: ['小明', '在', '学校', '里', '认真地', '读书'] },
+            { text: '他看到那只猫后非常开心', words: ['他', '看到', '那', '只', '猫', '后', '非常', '开心'] },
+            { text: '北京是中国的首都城市', words: ['北京', '是', '中国', '的', '首都', '城市'] }
+        ];
+
+        // 头角色配置
+        const headRoles = [
+            { id: 1, role: '句法关系', icon: '🔤', color: '#ff6b6b', desc: '关注主语-动词、动词-宾语的语法结构' },
+            { id: 2, role: '指代消解', icon: '🔗', color: '#feca57', desc: '"他"指代谁？"这"指什么？' },
+            { id: 3, role: '语义相似', icon: '💡', color: '#48dbfb', desc: '找出同义词、近义词、相关概念' },
+            { id: 4, role: '位置邻近', icon: '📍', color: '#ff9ff3', desc: '关注相邻词语的局部关系' },
+            { id: 5, role: '情感色彩', icon: '❤️', color: '#ff6b6b', desc: '分析词语的情感倾向' },
+            { id: 6, role: '时态语态', icon: '⏰', color: '#feca57', desc: '识别动作发生的时间和状态' },
+            { id: 7, role: '修饰关系', icon: '🎨', color: '#48dbfb', desc: '形容词修饰哪个名词？' },
+            { id: 8, role: '逻辑关系', icon: '🧩', color: '#ff9ff3', desc: '因果、转折、递进等逻辑' }
+        ];
+
+        // 游戏题目
+        const gameQuestions = [
+            {
+                sentence: '小红在公园里快乐地唱歌',
+                words: ['小红', '在', '公园', '里', '快乐地', '唱歌'],
+                task: '句法分析头：找出主语',
+                answer: '小红',
+                type: 'subject'
+            },
+            {
+                sentence: '他把苹果吃掉了',
+                words: ['他', '把', '苹果', '吃掉', '了'],
+                task: '指代分析头：找出动作的对象',
+                answer: '苹果',
+                type: 'object'
+            },
+            {
+                sentence: '聪明的学生认真地完成了作业',
+                words: ['聪明的', '学生', '认真地', '完成', '了', '作业'],
+                task: '修饰分析头：找出修饰"学生"的词',
+                answer: '聪明的',
+                type: 'modifier'
+            },
+            {
+                sentence: '因为下雨，所以比赛取消了',
+                words: ['因为', '下雨', '，', '所以', '比赛', '取消', '了'],
+                task: '逻辑分析头：找出结果',
+                answer: '比赛取消了',
+                type: 'result'
+            },
+            {
+                sentence: '她很高兴因为她赢了比赛',
+                words: ['她', '很', '高兴', '因为', '她', '赢', '了', '比赛'],
+                task: '情感分析头：找出表达情感的词',
+                answer: '高兴',
+                type: 'emotion'
+            }
+        ];
+
+        // ==================== 音效系统 ====================
+        function initAudio() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+        }
+
+        function playSound(type) {
+            initAudio();
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+
+            switch(type) {
+                case 'click':
+                    osc.frequency.setValueAtTime(600, audioCtx.currentTime);
+                    gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
+                    osc.start(audioCtx.currentTime);
+                    osc.stop(audioCtx.currentTime + 0.1);
+                    break;
+                case 'success':
+                    [523, 659, 784].forEach((freq, i) => {
+                        setTimeout(() => {
+                            const o = audioCtx.createOscillator();
+                            const g = audioCtx.createGain();
+                            o.connect(g);
+                            g.connect(audioCtx.destination);
+                            o.frequency.setValueAtTime(freq, audioCtx.currentTime);
+                            g.gain.setValueAtTime(0.15, audioCtx.currentTime);
+                            g.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.2);
+                            o.start(audioCtx.currentTime);
+                            o.stop(audioCtx.currentTime + 0.2);
+                        }, i * 100);
+                    });
+                    return;
+                case 'wrong':
+                    osc.frequency.setValueAtTime(200, audioCtx.currentTime);
+                    osc.frequency.exponentialRampToValueAtTime(100, audioCtx.currentTime + 0.3);
+                    gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+                    osc.start(audioCtx.currentTime);
+                    osc.stop(audioCtx.currentTime + 0.3);
+                    break;
+            }
+        }
+
+        // ==================== 面板切换 ====================
+        function showPanel(panelId) {
+            playSound('click');
+            document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.getElementById('panel-' + panelId).classList.add('active');
+            event.target.classList.add('active');
+
+            if (panelId === 'intro') initDiscussion();
+            if (panelId === 'demo') updateDemo();
+        }
+
+        // ==================== 小组讨论动画 ====================
+        function initDiscussion() {
+            const area = document.getElementById('discussionArea');
+            area.innerHTML = '<div class="center-paper">📄</div>';
+
+            const positions = [
+                { x: 80, y: 80 }, { x: 320, y: 80 },
+                { x: 80, y: 280 }, { x: 320, y: 280 },
+                { x: 40, y: 180 }, { x: 360, y: 180 },
+                { x: 160, y: 40 }, { x: 240, y: 340 }
+            ];
+
+            students.forEach((student, i) => {
+                const div = document.createElement('div');
+                div.className = 'student';
+                div.id = `student-${i}`;
+                div.style.left = positions[i].x + 'px';
+                div.style.top = positions[i].y + 'px';
+                div.innerHTML = `
+                    <div class="avatar">${student.avatar}</div>
+                    <div class="name">${student.name}</div>
+                `;
+                div.onclick = () => showStudentThought(i);
+                area.appendChild(div);
+            });
+        }
+
+        function showStudentThought(index) {
+            playSound('click');
+            const student = students[index];
+
+            // 移除旧的气泡
+            document.querySelectorAll('.speech-bubble').forEach(b => b.remove());
+            document.querySelectorAll('.student').forEach(s => s.classList.remove('active'));
+
+            // 标记当前学生
+            document.getElementById(`student-${index}`).classList.add('active');
+
+            // 创建气泡
+            const bubble = document.createElement('div');
+            bubble.className = 'speech-bubble';
+            bubble.innerHTML = `<strong>${student.role}视角：</strong><br>我关注${student.focus}`;
+            bubble.style.left = '180px';
+            bubble.style.top = '170px';
+            document.getElementById('discussionArea').appendChild(bubble);
+
+            setTimeout(() => bubble.classList.add('show'), 50);
+        }
+
+        function startDiscussion() {
+            playSound('click');
+            let activeIndex = 0;
+
+            const interval = setInterval(() => {
+                if (activeIndex >= students.length) {
+                    clearInterval(interval);
+                    return;
+                }
+                showStudentThought(activeIndex);
+                activeIndex++;
+            }, 800);
+        }
+
+        function mergeResults() {
+            playSound('success');
+            document.getElementById('discussionResult').style.display = 'block';
+            document.getElementById('resultText').innerHTML = `
+                综合所有专家的意见：<br><br>
+                ✅ <strong>语法专家</strong>：句子结构完整，主谓宾清晰<br>
+                ✅ <strong>情感分析师</strong>：整体情感偏中性偏正面<br>
+                ✅ <strong>事实核查员</strong>：包含可验证的客观信息<br>
+                ✅ <strong>指代专家</strong>：无歧义指代<br>
+                ✅ <strong>语义学家</strong>：词义明确无歧义<br>
+                <br>
+                <span class="highlight">这就是多头注意力的力量！</span>
+            `;
+        }
+
+        // ==================== QKV演示 ====================
+        function selectWord(element, word) {
+            playSound('click');
+            document.querySelectorAll('.word').forEach(w => w.classList.remove('selected'));
+            element.classList.add('selected');
+
+            const words = ['我', '喜欢', '吃', '苹果'];
+            const index = words.indexOf(word);
+
+            // 生成注意力权重
+            const weights = generateAttentionWeights(word);
+
+            document.getElementById('qkvDemo').innerHTML = `
+                <h3>🎯 "${word}" 作为 Query 的注意力分布</h3>
+                <p>
+                    Query向量：${word}的语义表示<br>
+                    Key向量：所有词的标签<br>
+                    Value向量：所有词的实际内容<br><br>
+                    <strong>注意力权重：</strong><br>
+                    ${words.map((w, i) => `· "${w}": ${(weights[i] * 100).toFixed(1)}%`).join('<br>')}
+                </p>
+            `;
+
+            // 显示热力图
+            showAttentionHeatmap(words, weights);
+        }
+
+        function generateAttentionWeights(queryWord) {
+            // 模拟注意力权重
+            const weights = {
+                '我': [0.15, 0.35, 0.20, 0.30],
+                '喜欢': [0.40, 0.15, 0.25, 0.20],
+                '吃': [0.25, 0.35, 0.15, 0.25],
+                '苹果': [0.20, 0.25, 0.35, 0.20]
+            };
+            return weights[queryWord] || [0.25, 0.25, 0.25, 0.25];
+        }
+
+        function showAttentionHeatmap(words, weights) {
+            const container = document.getElementById('attentionHeatmap');
+            container.style.display = 'block';
+
+            const grid = document.getElementById('heatmapGrid');
+            grid.innerHTML = '';
+
+            // 标题行
+            const headerRow = document.createElement('div');
+            headerRow.className = 'attention-row';
+            headerRow.innerHTML = '<div class="attention-label"></div>';
+            words.forEach(word => {
+                headerRow.innerHTML += `<div class="attention-label">${word}</div>`;
+            });
+            grid.appendChild(headerRow);
+
+            // 数据行
+            const row = document.createElement('div');
+            row.className = 'attention-row';
+            row.innerHTML = '<div class="attention-label">权重</div>';
+
+            weights.forEach((w, i) => {
+                const intensity = Math.floor(w * 255);
+                const cell = document.createElement('div');
+                cell.className = 'attention-cell';
+                cell.style.background = `rgba(255, ${255 - intensity}, ${100}, ${0.3 + w * 0.7})`;
+                cell.textContent = (w * 100).toFixed(0) + '%';
+                cell.title = `"${words[i]}": ${(w * 100).toFixed(1)}%`;
+                row.appendChild(cell);
+            });
+
+            grid.appendChild(row);
+        }
+
+        // ==================== 多头演示 ====================
+        function updateDemo() {
+            const sentenceIndex = parseInt(document.getElementById('sentenceSelect').value);
+            const headCount = parseInt(document.getElementById('headCount').value);
+
+            document.getElementById('headCountValue').textContent = headCount + '头';
+
+            const sentence = sentences[sentenceIndex];
+
+            // 显示句子
+            const demoSentence = document.getElementById('demoSentence');
+            demoSentence.innerHTML = sentence.words.map(w =>
+                `<span class="word">${w}</span>`
+            ).join('');
+
+            // 显示头
+            const headsContainer = document.getElementById('headsContainer');
+            headsContainer.innerHTML = '';
+
+            for (let i = 0; i < headCount; i++) {
+                const role = headRoles[i];
+                const div = document.createElement('div');
+                div.className = 'head-box';
+                div.onclick = () => showHeadDetail(i);
+                div.innerHTML = `
+                    <div class="head-num">头${role.id}</div>
+                    <div class="head-icon">${role.icon}</div>
+                    <div class="head-role">${role.role}</div>
+                `;
+                headsContainer.appendChild(div);
+            }
+        }
+
+        function showHeadDetail(index) {
+            playSound('click');
+            const role = headRoles[index];
+
+            document.querySelectorAll('.head-box').forEach(h => h.classList.remove('active'));
+            event.target.closest('.head-box').classList.add('active');
+
+            document.getElementById('headDetail').innerHTML = `
+                <h3>${role.icon} 头${role.id}: ${role.role}</h3>
+                <p>${role.desc}</p>
+                <p style="margin-top: 10px; color: #48dbfb;">
+                    这个头专门负责识别句子中的<span class="highlight">${role.role}</span>，
+                    帮助模型更全面地理解语言！
+                </p>
+            `;
+        }
+
+        // ==================== 单头vs多头对比 ====================
+        function runComparison() {
+            playSound('click');
+            document.getElementById('comparisonProgress').style.display = 'block';
+            document.getElementById('comparisonResult').style.display = 'none';
+
+            let progress = 0;
+            const interval = setInterval(() => {
+                progress += 2;
+                document.getElementById('compProgress').textContent = progress + '%';
+                document.getElementById('compProgressBar').style.width = progress + '%';
+
+                if (progress >= 100) {
+                    clearInterval(interval);
+                    showComparisonResult();
+                }
+            }, 50);
+        }
+
+        function showComparisonResult() {
+            playSound('success');
+            document.getElementById('comparisonResult').style.display = 'block';
+            document.getElementById('comparisonText').innerHTML = `
+                <strong>单头注意力：</strong>准确率 65%<br>
+                · 只能关注一种关系<br>
+                · 容易遗漏重要信息<br><br>
+
+                <strong>多头注意力：</strong>准确率 92%<br>
+                · 同时关注8种不同关系<br>
+                · 信息捕获更完整<br><br>
+
+                <span class="highlight">多头注意力比单头提升 27%！</span>
+            `;
+        }
+
+        // ==================== 游戏系统 ====================
+        function startGame() {
+            playSound('click');
+            gameScore = 0;
+            totalScore = 0;
+            currentQuestion = 0;
+
+            document.getElementById('gameScore').textContent = '0';
+            document.getElementById('totalScore').textContent = '0';
+            document.getElementById('gameArea').style.display = 'block';
+            document.getElementById('gameComplete').style.display = 'none';
+
+            showQuestion();
+        }
+
+        function showQuestion() {
+            if (currentQuestion >= gameQuestions.length) {
+                endGame();
+                return;
+            }
+
+            const q = gameQuestions[currentQuestion];
+            document.getElementById('taskTitle').textContent = q.task;
+            document.getElementById('taskDesc').textContent = getTaskDesc(q.type);
+
+            const sentenceDiv = document.getElementById('gameSentence');
+            sentenceDiv.innerHTML = q.words.map(w =>
+                `<span class="word" onclick="selectGameWord(this, '${w}')">${w}</span>`
+            ).join('');
+
+            selectedWords = [];
+        }
+
+        function getTaskDesc(type) {
+            const descs = {
+                'subject': '谁在做动作？点击选择',
+                'object': '动作作用在什么上？',
+                'modifier': '哪个词修饰了名词？',
+                'result': '发生了什么结果？',
+                'emotion': '哪个词表达情感？'
+            };
+            return descs[type] || '请选择正确答案';
+        }
+
+        function selectGameWord(element, word) {
+            playSound('click');
+
+            if (element.classList.contains('selected')) {
+                element.classList.remove('selected');
+                selectedWords = selectedWords.filter(w => w !== word);
+            } else {
+                element.classList.add('selected');
+                selectedWords.push(word);
+            }
+        }
+
+        function checkGameAnswer() {
+            const q = gameQuestions[currentQuestion];
+            const correct = selectedWords.includes(q.answer);
+
+            totalScore += 10;
+            if (correct) {
+                gameScore += 10;
+                playSound('success');
+            } else {
+                playSound('wrong');
+            }
+
+            document.getElementById('gameScore').textContent = gameScore;
+            document.getElementById('totalScore').textContent = totalScore;
+        }
+
+        function nextQuestion() {
+            checkGameAnswer();
+            currentQuestion++;
+            showQuestion();
+        }
+
+        function endGame() {
+            document.getElementById('gameArea').style.display = 'none';
+            document.getElementById('gameComplete').style.display = 'block';
+
+            const percentage = (gameScore / totalScore * 100).toFixed(0);
+            document.getElementById('finalScore').innerHTML = `
+                最终得分: <span class="highlight">${gameScore} / ${totalScore}</span><br>
+                正确率: <span class="highlight">${percentage}%</span><br><br>
+                ${percentage >= 80 ? '🎉 太棒了！你已经掌握了多头注意力的精髓！' :
+                  percentage >= 60 ? '😊 不错！继续加油！' :
+                  '💪 多练习几次会更好！'}
+            `;
+        }
+
+        // ==================== 初始化 ====================
+        window.onload = function() {
+            initDiscussion();
+        };
+    </script>
+</body>
+</html>

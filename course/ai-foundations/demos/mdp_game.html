@@ -1,0 +1,1059 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>迷宫探险 - MDP互动游戏</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            color: #fff;
+            padding: 15px;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        /* 标题 */
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .header h1 {
+            font-size: 1.8em;
+            margin-bottom: 5px;
+        }
+
+        .header .subtitle {
+            color: #a0a0ff;
+            font-size: 0.95em;
+        }
+
+        /* 游戏信息栏 */
+        .game-info {
+            display: flex;
+            justify-content: space-around;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+
+        .info-item {
+            text-align: center;
+        }
+
+        .info-item .label {
+            font-size: 0.8em;
+            color: #a0a0ff;
+            margin-bottom: 5px;
+        }
+
+        .info-item .value {
+            font-size: 1.5em;
+            font-weight: bold;
+        }
+
+        .info-item .value.gold { color: #ffd700; }
+        .info-item .value.red { color: #ff6b6b; }
+        .info-item .value.green { color: #4ade80; }
+
+        /* 迷宫 */
+        .maze-container {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 15px;
+        }
+
+        .maze {
+            display: grid;
+            gap: 3px;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 10px;
+            border-radius: 15px;
+        }
+
+        .cell {
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5em;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+        }
+
+        .cell.empty { background: rgba(255, 255, 255, 0.05); }
+        .cell.wall { background: #374151; }
+        .cell.player {
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            animation: pulse 1s infinite;
+        }
+        .cell.goal {
+            background: linear-gradient(135deg, #ffd700, #f59e0b);
+        }
+        .cell.trap {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+        }
+        .cell.visited {
+            background: rgba(59, 130, 246, 0.2);
+        }
+        .cell.slip {
+            animation: shake 0.3s ease;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+
+        /* 方向控制 */
+        .controls {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+            margin-bottom: 15px;
+        }
+
+        .control-row {
+            display: flex;
+            gap: 5px;
+        }
+
+        .control-btn {
+            width: 60px;
+            height: 60px;
+            font-size: 1.5em;
+            border: none;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .control-btn:hover {
+            background: rgba(59, 130, 246, 0.5);
+            transform: scale(1.05);
+        }
+
+        .control-btn:active {
+            transform: scale(0.95);
+        }
+
+        /* 概率显示 */
+        .probability-display {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 15px;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .probability-display h4 {
+            color: #ffd700;
+            margin-bottom: 10px;
+        }
+
+        .prob-bars {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .prob-item {
+            text-align: center;
+        }
+
+        .prob-bar {
+            width: 40px;
+            height: 80px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .prob-fill {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            background: linear-gradient(to top, #3b82f6, #8b5cf6);
+            transition: height 0.3s ease;
+        }
+
+        .prob-label {
+            margin-top: 5px;
+            font-size: 0.8em;
+            color: #a0a0ff;
+        }
+
+        .prob-value {
+            font-weight: bold;
+            color: #ffd700;
+        }
+
+        /* 消息区 */
+        .message {
+            background: rgba(59, 130, 246, 0.2);
+            border-radius: 12px;
+            padding: 12px;
+            text-align: center;
+            margin-bottom: 15px;
+            min-height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .message.success { background: rgba(74, 222, 128, 0.2); }
+        .message.fail { background: rgba(255, 107, 107, 0.2); }
+
+        /* 按钮组 */
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-bottom: 15px;
+        }
+
+        .btn {
+            padding: 12px 25px;
+            font-size: 0.95em;
+            font-weight: bold;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            color: #fff;
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+
+        /* 图例 */
+        .legend {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin-bottom: 15px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 0.85em;
+        }
+
+        .legend-icon {
+            width: 25px;
+            height: 25px;
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9em;
+        }
+
+        /* AI模式 */
+        .ai-panel {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 15px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+
+        .ai-panel h4 {
+            color: #4ade80;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .ai-stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .ai-stat {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 10px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .ai-stat .label {
+            font-size: 0.75em;
+            color: #a0a0ff;
+        }
+
+        .ai-stat .value {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #4ade80;
+        }
+
+        /* 学习曲线 */
+        .learning-curve {
+            height: 100px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            margin-top: 10px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .curve-canvas {
+            width: 100%;
+            height: 100%;
+        }
+
+        /* 提示卡 */
+        .tip-card {
+            background: linear-gradient(135deg, rgba(255, 215, 0, 0.1), rgba(255, 165, 0, 0.1));
+            border-left: 4px solid #ffd700;
+            border-radius: 0 12px 12px 0;
+            padding: 12px 15px;
+            margin-bottom: 15px;
+        }
+
+        .tip-card h4 {
+            color: #ffd700;
+            margin-bottom: 5px;
+            font-size: 0.9em;
+        }
+
+        .tip-card p {
+            color: #ccc;
+            font-size: 0.85em;
+            line-height: 1.5;
+        }
+
+        /* 关卡选择 */
+        .level-select {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .level-btn {
+            width: 40px;
+            height: 40px;
+            border: none;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .level-btn.active {
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+        }
+
+        .level-btn:hover {
+            transform: scale(1.1);
+        }
+
+        /* 响应式 */
+        @media (max-width: 400px) {
+            .cell {
+                width: 40px;
+                height: 40px;
+                font-size: 1.2em;
+            }
+
+            .control-btn {
+                width: 50px;
+                height: 50px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 标题 -->
+        <div class="header">
+            <h1>🎮 迷宫探险</h1>
+            <p class="subtitle">体验马尔可夫决策过程 (MDP)</p>
+        </div>
+
+        <!-- 游戏信息 -->
+        <div class="game-info">
+            <div class="info-item">
+                <div class="label">分数</div>
+                <div class="value gold" id="score">0</div>
+            </div>
+            <div class="info-item">
+                <div class="label">步数</div>
+                <div class="value" id="steps">0</div>
+            </div>
+            <div class="info-item">
+                <div class="label">成功率</div>
+                <div class="value green" id="successRate">0%</div>
+            </div>
+        </div>
+
+        <!-- 关卡选择 -->
+        <div class="level-select">
+            <button class="level-btn active" onclick="selectLevel(1)">1</button>
+            <button class="level-btn" onclick="selectLevel(2)">2</button>
+            <button class="level-btn" onclick="selectLevel(3)">3</button>
+        </div>
+
+        <!-- 图例 -->
+        <div class="legend">
+            <div class="legend-item">
+                <div class="legend-icon" style="background: linear-gradient(135deg, #3b82f6, #8b5cf6);">🤖</div>
+                <span>你</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-icon" style="background: linear-gradient(135deg, #ffd700, #f59e0b);">🏆</div>
+                <span>终点</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-icon" style="background: linear-gradient(135deg, #ef4444, #dc2626);">💀</div>
+                <span>陷阱</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-icon" style="background: #374151;">🧱</div>
+                <span>墙</span>
+            </div>
+        </div>
+
+        <!-- 迷宫 -->
+        <div class="maze-container">
+            <div class="maze" id="maze"></div>
+        </div>
+
+        <!-- 消息 -->
+        <div class="message" id="message">
+            用方向键或点击按钮移动，找到🏆！
+        </div>
+
+        <!-- 概率显示 -->
+        <div class="probability-display">
+            <h4>🎲 这就是"不确定性"！</h4>
+            <div class="prob-bars">
+                <div class="prob-item">
+                    <div class="prob-bar">
+                        <div class="prob-fill" id="probUp" style="height: 80%"></div>
+                    </div>
+                    <div class="prob-label">↑ 你选的</div>
+                    <div class="prob-value">80%</div>
+                </div>
+                <div class="prob-item">
+                    <div class="prob-bar">
+                        <div class="prob-fill" id="probSlip" style="height: 20%"></div>
+                    </div>
+                    <div class="prob-label">↔ 滑倒</div>
+                    <div class="prob-value">20%</div>
+                </div>
+            </div>
+            <p style="color: #a0a0ff; font-size: 0.85em; margin-top: 10px;">
+                你选↑，但有20%概率滑到其他方向！
+            </p>
+        </div>
+
+        <!-- 方向控制 -->
+        <div class="controls">
+            <div class="control-row">
+                <button class="control-btn" onclick="move('up')">↑</button>
+            </div>
+            <div class="control-row">
+                <button class="control-btn" onclick="move('left')">←</button>
+                <button class="control-btn" onclick="move('down')">↓</button>
+                <button class="control-btn" onclick="move('right')">→</button>
+            </div>
+        </div>
+
+        <!-- 按钮组 -->
+        <div class="btn-group">
+            <button class="btn btn-secondary" onclick="resetGame()">🔄 重新开始</button>
+            <button class="btn btn-primary" onclick="toggleAIMode()">🤖 AI挑战</button>
+        </div>
+
+        <!-- AI面板 -->
+        <div class="ai-panel" id="aiPanel" style="display: none;">
+            <h4>🤖 AI正在学习...</h4>
+            <div class="ai-stats">
+                <div class="ai-stat">
+                    <div class="label">训练次数</div>
+                    <div class="value" id="trainCount">0</div>
+                </div>
+                <div class="ai-stat">
+                    <div class="label">平均得分</div>
+                    <div class="value" id="avgScore">0</div>
+                </div>
+            </div>
+            <div class="learning-curve">
+                <canvas class="curve-canvas" id="learningCurve"></canvas>
+            </div>
+            <div class="btn-group" style="margin-top: 10px;">
+                <button class="btn btn-primary" onclick="watchAI()">👀 看AI走</button>
+                <button class="btn btn-secondary" onclick="stopAI()">⏹️ 停止</button>
+            </div>
+        </div>
+
+        <!-- 提示 -->
+        <div class="tip-card">
+            <h4>💡 MDP的核心</h4>
+            <p>
+                <strong>状态</strong>：你在哪？ | <strong>动作</strong>：往哪走？<br>
+                <strong>转移概率</strong>：走了之后到哪？ | <strong>奖励</strong>：得到什么？<br><br>
+                马尔可夫性：只看"现在"，不用管"过去"！
+            </p>
+        </div>
+    </div>
+
+    <script>
+        // ==================== 游戏配置 ====================
+        const levels = {
+            1: {
+                maze: [
+                    [0, 0, 0, 0, 0],
+                    [0, 1, 0, 1, 0],
+                    [0, 0, 0, 0, 0],
+                    [0, 1, 0, 1, 0],
+                    [0, 0, 0, 0, 0]
+                ],
+                start: [0, 0],
+                goal: [4, 4],
+                traps: [[1, 1], [1, 3], [3, 1], [3, 3]]
+            },
+            2: {
+                maze: [
+                    [0, 0, 1, 0, 0, 0],
+                    [0, 1, 0, 0, 1, 0],
+                    [0, 0, 0, 1, 0, 0],
+                    [0, 1, 0, 0, 0, 1],
+                    [0, 0, 1, 0, 0, 0],
+                    [0, 0, 0, 0, 0, 0]
+                ],
+                start: [0, 0],
+                goal: [5, 5],
+                traps: [[1, 1], [1, 4], [3, 1], [3, 5]]
+            },
+            3: {
+                maze: [
+                    [0, 0, 0, 1, 0, 0, 0],
+                    [0, 1, 0, 0, 0, 1, 0],
+                    [0, 0, 0, 1, 0, 0, 0],
+                    [1, 0, 1, 0, 1, 0, 1],
+                    [0, 0, 0, 1, 0, 0, 0],
+                    [0, 1, 0, 0, 0, 1, 0],
+                    [0, 0, 0, 1, 0, 0, 0]
+                ],
+                start: [0, 0],
+                goal: [6, 6],
+                traps: [[1, 1], [1, 5], [5, 1], [5, 5]]
+            }
+        };
+
+        // 游戏状态
+        let currentLevel = 1;
+        let playerPos = [0, 0];
+        let score = 0;
+        let steps = 0;
+        let gamesPlayed = 0;
+        let gamesWon = 0;
+        let visitedCells = new Set();
+        let aiMode = false;
+        let aiTraining = false;
+        let aiInterval = null;
+
+        // Q-table for AI
+        let qTable = {};
+        const learningRate = 0.1;
+        const discountFactor = 0.9;
+        const epsilon = 0.2;
+        let trainingScores = [];
+
+        // 音效
+        let audioCtx = null;
+
+        function playSound(type) {
+            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+
+            if (type === 'move') {
+                osc.frequency.setValueAtTime(400, audioCtx.currentTime);
+                gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
+                osc.start(audioCtx.currentTime);
+                osc.stop(audioCtx.currentTime + 0.1);
+            } else if (type === 'slip') {
+                osc.frequency.setValueAtTime(300, audioCtx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(150, audioCtx.currentTime + 0.2);
+                gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.2);
+                osc.start(audioCtx.currentTime);
+                osc.stop(audioCtx.currentTime + 0.2);
+            } else if (type === 'win') {
+                [523, 659, 784].forEach((freq, i) => {
+                    setTimeout(() => {
+                        const o = audioCtx.createOscillator();
+                        const g = audioCtx.createGain();
+                        o.connect(g);
+                        g.connect(audioCtx.destination);
+                        o.frequency.setValueAtTime(freq, audioCtx.currentTime);
+                        g.gain.setValueAtTime(0.15, audioCtx.currentTime);
+                        g.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.2);
+                        o.start(audioCtx.currentTime);
+                        o.stop(audioCtx.currentTime + 0.2);
+                    }, i * 100);
+                });
+            } else if (type === 'trap') {
+                osc.frequency.setValueAtTime(200, audioCtx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(100, audioCtx.currentTime + 0.3);
+                gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+                osc.start(audioCtx.currentTime);
+                osc.stop(audioCtx.currentTime + 0.3);
+            }
+        }
+
+        // ==================== 游戏核心 ====================
+        function initGame() {
+            const level = levels[currentLevel];
+            playerPos = [...level.start];
+            visitedCells = new Set();
+            visitedCells.add(`${playerPos[0]},${playerPos[1]}`);
+            renderMaze();
+            updateUI();
+        }
+
+        function renderMaze() {
+            const level = levels[currentLevel];
+            const mazeEl = document.getElementById('maze');
+            const rows = level.maze.length;
+            const cols = level.maze[0].length;
+
+            mazeEl.style.gridTemplateColumns = `repeat(${cols}, 50px)`;
+            mazeEl.innerHTML = '';
+
+            for (let r = 0; r < rows; r++) {
+                for (let c = 0; c < cols; c++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'cell';
+                    cell.dataset.row = r;
+                    cell.dataset.col = c;
+
+                    // 判断单元格类型
+                    if (playerPos[0] === r && playerPos[1] === c) {
+                        cell.classList.add('player');
+                        cell.textContent = '🤖';
+                    } else if (level.goal[0] === r && level.goal[1] === c) {
+                        cell.classList.add('goal');
+                        cell.textContent = '🏆';
+                    } else if (level.traps.some(t => t[0] === r && t[1] === c)) {
+                        cell.classList.add('trap');
+                        cell.textContent = '💀';
+                    } else if (level.maze[r][c] === 1) {
+                        cell.classList.add('wall');
+                        cell.textContent = '🧱';
+                    } else {
+                        cell.classList.add('empty');
+                        if (visitedCells.has(`${r},${c}`)) {
+                            cell.classList.add('visited');
+                        }
+                    }
+
+                    mazeEl.appendChild(cell);
+                }
+            }
+        }
+
+        function move(direction) {
+            if (aiMode && aiTraining) return;
+
+            const level = levels[currentLevel];
+            const rows = level.maze.length;
+            const cols = level.maze[0].length;
+
+            // 应用转移概率（80%按选择，20%滑倒）
+            const actualDirection = applyTransitionProbability(direction);
+
+            // 计算新位置
+            let newRow = playerPos[0];
+            let newCol = playerPos[1];
+
+            if (actualDirection === 'up') newRow--;
+            else if (actualDirection === 'down') newRow++;
+            else if (actualDirection === 'left') newCol--;
+            else if (actualDirection === 'right') newCol++;
+
+            // 边界检查
+            if (newRow < 0 || newRow >= rows || newCol < 0 || newCol >= cols) {
+                showMessage('🧱 撞墙了！', 'fail');
+                return { reward: -5, done: false };
+            }
+
+            // 墙壁检查
+            if (level.maze[newRow][newCol] === 1) {
+                showMessage('🧱 撞墙了！', 'fail');
+                return { reward: -5, done: false };
+            }
+
+            // 滑倒效果
+            if (actualDirection !== direction) {
+                playSound('slip');
+                showMessage('😅 滑倒了！走到了' + getDirectionEmoji(actualDirection), 'fail');
+            } else {
+                playSound('move');
+            }
+
+            // 移动
+            playerPos = [newRow, newCol];
+            visitedCells.add(`${newRow},${newCol}`);
+            steps++;
+
+            // 检查结果
+            let reward = -1; // 每步扣1分
+            let done = false;
+
+            // 检查是否到达终点
+            if (newRow === level.goal[0] && newCol === level.goal[1]) {
+                reward = 100;
+                done = true;
+                gamesWon++;
+                score += 100;
+                playSound('win');
+                showMessage('🎉 太棒了！找到宝藏了！+' + reward, 'success');
+            }
+            // 检查是否踩到陷阱
+            else if (level.traps.some(t => t[0] === newRow && t[1] === newCol)) {
+                reward = -50;
+                done = true;
+                score -= 50;
+                playSound('trap');
+                showMessage('💀 踩到陷阱了！' + reward, 'fail');
+            }
+
+            renderMaze();
+            updateUI();
+
+            if (done) {
+                gamesPlayed++;
+            }
+
+            return { reward, done, newState: [...playerPos] };
+        }
+
+        function applyTransitionProbability(intendedDirection) {
+            const rand = Math.random();
+
+            if (rand < 0.8) {
+                return intendedDirection; // 80%按选择
+            } else {
+                // 20%滑到其他方向
+                const directions = ['up', 'down', 'left', 'right'];
+                const otherDirections = directions.filter(d => d !== intendedDirection);
+                return otherDirections[Math.floor(Math.random() * otherDirections.length)];
+            }
+        }
+
+        function getDirectionEmoji(dir) {
+            const emojis = { up: '↑', down: '↓', left: '←', right: '→' };
+            return emojis[dir];
+        }
+
+        function showMessage(text, type = '') {
+            const msgEl = document.getElementById('message');
+            msgEl.textContent = text;
+            msgEl.className = 'message ' + type;
+        }
+
+        function updateUI() {
+            document.getElementById('score').textContent = score;
+            document.getElementById('steps').textContent = steps;
+            document.getElementById('successRate').textContent =
+                gamesPlayed > 0 ? Math.round(gamesWon / gamesPlayed * 100) + '%' : '0%';
+        }
+
+        function resetGame() {
+            const level = levels[currentLevel];
+            playerPos = [...level.start];
+            steps = 0;
+            visitedCells = new Set();
+            visitedCells.add(`${playerPos[0]},${playerPos[1]}`);
+            renderMaze();
+            showMessage('用方向键或点击按钮移动，找到🏆！');
+        }
+
+        function selectLevel(levelNum) {
+            currentLevel = levelNum;
+            document.querySelectorAll('.level-btn').forEach((btn, i) => {
+                btn.classList.toggle('active', i + 1 === levelNum);
+            });
+            resetGame();
+        }
+
+        // ==================== AI 学习 ====================
+        function toggleAIMode() {
+            aiMode = !aiMode;
+            const panel = document.getElementById('aiPanel');
+
+            if (aiMode) {
+                panel.style.display = 'block';
+                initQTable();
+                showMessage('🤖 AI模式已开启！点击"看AI走"观察学习过程');
+            } else {
+                panel.style.display = 'none';
+                stopAI();
+            }
+        }
+
+        function initQTable() {
+            qTable = {};
+            const level = levels[currentLevel];
+            const rows = level.maze.length;
+            const cols = level.maze[0].length;
+
+            for (let r = 0; r < rows; r++) {
+                for (let c = 0; c < cols; c++) {
+                    if (level.maze[r][c] !== 1) {
+                        const key = `${r},${c}`;
+                        qTable[key] = { up: 0, down: 0, left: 0, right: 0 };
+                    }
+                }
+            }
+        }
+
+        function getBestAction(state) {
+            const key = `${state[0]},${state[1]}`;
+            const qValues = qTable[key];
+
+            if (!qValues) return 'right';
+
+            // ε-greedy策略
+            if (Math.random() < epsilon) {
+                const actions = ['up', 'down', 'left', 'right'];
+                return actions[Math.floor(Math.random() * actions.length)];
+            }
+
+            let bestAction = 'up';
+            let bestValue = qValues[bestAction];
+
+            for (const action in qValues) {
+                if (qValues[action] > bestValue) {
+                    bestValue = qValues[action];
+                    bestAction = action;
+                }
+            }
+
+            return bestAction;
+        }
+
+        function updateQValue(state, action, reward, nextState) {
+            const stateKey = `${state[0]},${state[1]}`;
+            const nextKey = `${nextState[0]},${nextState[1]}`;
+
+            const currentQ = qTable[stateKey][action];
+            const maxNextQ = Math.max(...Object.values(qTable[nextKey] || { up: 0, down: 0, left: 0, right: 0 }));
+
+            qTable[stateKey][action] = currentQ + learningRate * (reward + discountFactor * maxNextQ - currentQ);
+        }
+
+        function trainAI(episodes = 100) {
+            aiTraining = true;
+            let episode = 0;
+
+            aiInterval = setInterval(() => {
+                if (episode >= episodes) {
+                    aiTraining = false;
+                    clearInterval(aiInterval);
+                    showMessage('🎓 AI训练完成！点击"看AI走"观看结果');
+                    return;
+                }
+
+                // 重置游戏
+                resetGame();
+                const level = levels[currentLevel];
+                let state = [...level.start];
+                let totalReward = 0;
+
+                // 运行一局
+                for (let step = 0; step < 100; step++) {
+                    const action = getBestAction(state);
+                    const result = simulateMove(state, action);
+
+                    updateQValue(state, action, result.reward, result.newState);
+                    totalReward += result.reward;
+                    state = result.newState;
+
+                    if (result.done) break;
+                }
+
+                trainingScores.push(totalReward);
+                episode++;
+
+                // 更新显示
+                document.getElementById('trainCount').textContent = episode;
+                const avgScore = trainingScores.slice(-20).reduce((a, b) => a + b, 0) / Math.min(20, trainingScores.length);
+                document.getElementById('avgScore').textContent = avgScore.toFixed(1);
+
+                drawLearningCurve();
+
+            }, 20);
+        }
+
+        function simulateMove(state, direction) {
+            const level = levels[currentLevel];
+            const rows = level.maze.length;
+            const cols = level.maze[0].length;
+
+            // 模拟中不使用概率，直接执行
+            let newRow = state[0];
+            let newCol = state[1];
+
+            if (direction === 'up') newRow--;
+            else if (direction === 'down') newRow++;
+            else if (direction === 'left') newCol--;
+            else if (direction === 'right') newCol++;
+
+            // 边界和墙壁
+            if (newRow < 0 || newRow >= rows || newCol < 0 || newCol >= cols || level.maze[newRow][newCol] === 1) {
+                return { reward: -5, done: false, newState: state };
+            }
+
+            let reward = -1;
+            let done = false;
+
+            if (newRow === level.goal[0] && newCol === level.goal[1]) {
+                reward = 100;
+                done = true;
+            } else if (level.traps.some(t => t[0] === newRow && t[1] === newCol)) {
+                reward = -50;
+                done = true;
+            }
+
+            return { reward, done, newState: [newRow, newCol] };
+        }
+
+        function watchAI() {
+            if (trainingScores.length < 10) {
+                trainAI(100);
+                return;
+            }
+
+            resetGame();
+            let state = [...playerPos];
+
+            const runInterval = setInterval(() => {
+                const action = getBestAction(state);
+                const result = move(action); // 使用真实move，带概率
+
+                state = [...playerPos];
+
+                if (result.done) {
+                    clearInterval(runInterval);
+                }
+            }, 500);
+        }
+
+        function stopAI() {
+            aiTraining = false;
+            if (aiInterval) {
+                clearInterval(aiInterval);
+                aiInterval = null;
+            }
+        }
+
+        function drawLearningCurve() {
+            const canvas = document.getElementById('learningCurve');
+            const ctx = canvas.getContext('2d');
+            const width = canvas.parentElement.clientWidth;
+            const height = 100;
+
+            canvas.width = width;
+            canvas.height = height;
+
+            ctx.clearRect(0, 0, width, height);
+
+            if (trainingScores.length < 2) return;
+
+            const minScore = Math.min(...trainingScores);
+            const maxScore = Math.max(...trainingScores);
+            const range = maxScore - minScore || 1;
+
+            ctx.beginPath();
+            ctx.strokeStyle = '#4ade80';
+            ctx.lineWidth = 2;
+
+            trainingScores.forEach((score, i) => {
+                const x = (i / (trainingScores.length - 1)) * width;
+                const y = height - ((score - minScore) / range) * (height - 20) - 10;
+
+                if (i === 0) ctx.moveTo(x, y);
+                else ctx.lineTo(x, y);
+            });
+
+            ctx.stroke();
+        }
+
+        // ==================== 键盘控制 ====================
+        document.addEventListener('keydown', (e) => {
+            const keyMap = {
+                'ArrowUp': 'up',
+                'ArrowDown': 'down',
+                'ArrowLeft': 'left',
+                'ArrowRight': 'right',
+                'w': 'up',
+                's': 'down',
+                'a': 'left',
+                'd': 'right'
+            };
+
+            if (keyMap[e.key]) {
+                e.preventDefault();
+                move(keyMap[e.key]);
+            }
+        });
+
+        // ==================== 初始化 ====================
+        window.onload = initGame;
+    </script>
+</body>
+</html>

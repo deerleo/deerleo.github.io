@@ -1,14 +1,14 @@
 #Update all the sections by editing the data.yml file inside _data folder.
 
 # Site Settings
-title: 迷鹿 MiLu｜AI 技术实践者 · 产品创业者
+title: Leo Lu｜AI 应用与产品实践
 url: 'https://milulab.com'
 
 #change it according to your repository name
 # disabling since we are using a custom domain
 #baseurl: '/online-cv' 
 
-description: 迷鹿 MiLu 的个人品牌网站：AI 技术实践、智能体工程、产品创业、企业级落地与科技内容创作。
+description: Leo Lu（迷鹿 MiLu）的个人主页，记录 AI 产品实践、智能体工程、企业应用、教育工具与开源项目。
 # Style will be applied only after restarting the build or serve. Just choose one of the options.
 theme_skin: blue # blue turquoise green berry orange ceramic teal oceanstale
 chrome_mobile_color: '#173b2c'
