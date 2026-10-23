@@ -9,3 +9,6 @@ _site/
 
 # Bundler
 vendor/
+
+# 本地克隆的框架仓库（独立维护，不入网站库）
+dsh-research-lab/
