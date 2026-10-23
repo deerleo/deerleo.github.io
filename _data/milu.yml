@@ -18,12 +18,14 @@ projects:
         text: 科研 Agent / 真实数据管线 / 49 项自动验收
         link: /project/dsh-research-lab/
         tag: Open Source
-      - title: 企业级 AI 应用原型
-        text: Agent / 业务流程 / 交付设计
-        tag: 整理中
-      - title: 个人知识库系统
-        text: 内容沉淀 / 检索 / 工作流
-        tag: 规划中
+      - title: AI 数据分析互动课堂
+        text: 统计方法 / 实验设计 / 科研工作流
+        link: /course/ai-data-analyse/
+        tag: 教育产品
+      - title: 化学烧杯混合实验
+        text: 化学现象 / 互动模拟 / 单页工具
+        link: /beaker-mixer.html
+        tag: 教学工具
 
   - id: experiments
     kicker: Experiments
@@ -31,15 +33,10 @@ projects:
     icon: experiment
     description: 围绕 AI、Agent 和新工作流的探索实验，记录判断与踩坑。
     items:
-      - title: AI FDE / Agent 工作流
-        text: 任务编排 / 工具调用 / 可靠性
-        tag: 探索中
-      - title: AI 审计实验
-        text: 风险识别 / 过程留痕 / 结果解释
-        tag: 探索中
-      - title: 自动化内容流水线
-        text: 选题 / 初稿 / 多平台适配
-        tag: 规划中
+      - title: AuditorBench
+        text: AI 审计员 / 稳定性 / 误报与集成评估
+        link: /project/auditorbench/
+        tag: 研究原型
 
 blog:
   - id: articles
