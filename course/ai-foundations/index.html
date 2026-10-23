@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="从概率、向量和注意力出发，通过六个互动实验理解人工智能的数学基础、Transformer 与智能体。">
+  <meta name="robots" content="index,follow">
+  <title>人工智能与数学：从 AI 使用者到智能体创造者 · 迷鹿</title>
+  <style>
+    :root{color-scheme:dark;--bg:#09111d;--panel:#111e30;--line:#2b3b50;--ink:#edf4fb;--muted:#a8b7c9;--mint:#c3ed59;--cyan:#75d7e8}
+    *{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:radial-gradient(ellipse at 80% 0,#163449 0,transparent 42%),var(--bg);color:var(--ink);font:16px/1.7 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
+    a{color:inherit}.top{max-width:1100px;margin:auto;padding:24px 24px 0}.top a{color:var(--mint);font-size:13px;text-decoration:none}.wrap{max-width:1100px;margin:auto;padding:48px 24px 88px}.eyebrow{color:var(--cyan);font-size:12px;font-weight:800;letter-spacing:.16em;text-transform:uppercase}.hero{max-width:760px}.hero h1{margin:10px 0 16px;font-size:clamp(40px,7vw,72px);line-height:1.05;letter-spacing:-.055em}.hero h1 em{color:var(--mint);font-style:normal}.hero p{max-width:700px;color:var(--muted);font-size:17px}.stats{display:flex;gap:10px;flex-wrap:wrap;margin-top:24px}.stats span{border:1px solid var(--line);border-radius:999px;padding:6px 12px;color:#d6e2ee;font-size:12px}.handout{display:inline-block;margin-top:16px;padding:9px 13px;border:1px solid rgba(195,237,89,.55);border-radius:10px;color:var(--mint);font-size:13px;font-weight:800;text-decoration:none}.handout:hover{background:rgba(195,237,89,.1)}
+    .principle{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin:54px 0 68px;padding:25px;border:1px solid var(--line);border-radius:20px;background:rgba(17,30,48,.74)}.principle h2{margin:0;font-size:20px}.principle p{margin:7px 0 0;color:var(--muted);font-size:14px}.path{display:flex;align-items:center;gap:9px;flex-wrap:wrap;color:var(--mint);font-size:13px;font-weight:750}.path i{color:#71829a;font-style:normal}
+    .heading{display:flex;align-items:end;justify-content:space-between;gap:20px;margin-bottom:20px}.heading h2{margin:0;font-size:clamp(27px,4vw,38px);letter-spacing:-.04em}.heading p{max-width:440px;margin:0;color:var(--muted);font-size:13px}.lessons{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:15px}.lesson{display:flex;flex-direction:column;min-height:260px;padding:22px;border:1px solid var(--line);border-radius:18px;background:linear-gradient(145deg,rgba(20,35,54,.95),rgba(12,22,36,.96))}.lesson-top{display:flex;justify-content:space-between;color:var(--cyan);font-size:11px;font-weight:850;letter-spacing:.08em}.lesson h3{margin:14px 0 7px;font-size:21px;line-height:1.3}.lesson p{margin:0;color:var(--muted);font-size:14px}.takeaway{margin-top:14px;padding:11px 13px;border-left:2px solid var(--mint);background:rgba(195,237,89,.07);color:#d8e3d2;font-size:13px}.lesson a{display:inline-flex;align-items:center;gap:8px;width:fit-content;margin-top:auto;padding-top:17px;color:var(--mint);font-size:13px;font-weight:800;text-decoration:none}.lesson a:hover{text-decoration:underline}
+    .bridge{margin-top:64px;padding:24px;border:1px solid rgba(117,215,232,.3);border-radius:18px;background:rgba(117,215,232,.06)}.bridge h2{margin:0 0 8px;font-size:22px}.bridge p{max-width:750px;margin:0 0 15px;color:var(--muted);font-size:14px}.bridge a{color:var(--cyan);font-size:14px;font-weight:800;text-decoration:none}.footer{display:flex;justify-content:space-between;gap:16px;margin-top:60px;padding-top:18px;border-top:1px solid var(--line);color:#8595a8;font-size:12px}
+    @media(max-width:680px){.wrap{padding-top:38px}.principle{grid-template-columns:1fr}.lessons{grid-template-columns:1fr}.heading{display:block}.heading p{margin-top:8px}.lesson{min-height:230px}.footer{display:block}.footer span{display:block;margin:5px 0}}
+  </style>
+</head>
+<body>
+  <div class="top"><a href="{{ '/' | relative_url }}">← 迷鹿 MiLu</a></div>
+  <main class="wrap">
+    <header class="hero">
+      <p class="eyebrow">A hands-on introduction to AI</p>
+      <h1>人工智能与数学：<br><em>从使用者到创造者</em></h1>
+      <p>数学不是 AI 之外的一道门槛。概率告诉我们如何更新判断，向量把相似性变成几何，注意力帮助模型挑选上下文，智能体则把模型接进可以执行的任务。沿着六个小实验，一步步把这些概念连起来。</p>
+      <div class="stats"><span>建议用时 90 分钟</span><span>无需编程基础</span><span>6 个可交互实验</span><span>适合自学与课堂演示</span></div>
+      <a class="handout" href="./assets/ai-math-course-handout.pdf" download>下载配套课程讲义 PDF ↘</a>
+    </header>
+
+    <section class="principle" aria-label="学习路径">
+      <div><h2>每一讲怎么学</h2><p>先带着问题做实验，再解释观察到的现象；最后用一个问题检查自己是否能把概念讲给别人听。</p></div>
+      <div class="path"><span>提出问题</span><i>→</i><span>动手观察</span><i>→</i><span>解释机制</span><i>→</i><span>连接 AI</span></div>
+    </section>
+
+    <section aria-labelledby="lesson-title">
+      <div class="heading"><h2 id="lesson-title">六个概念，六次动手验证</h2><p>建议按顺序学习。每个实验都可以单独打开，也适合教师投屏后让学生先预测、再操作、最后讨论。</p></div>
+      <div class="lessons">
+        <article class="lesson"><div class="lesson-top"><span>01 · 概率与信息</span><span>约 12 分钟</span></div><h3>换门为什么更容易赢？</h3><p>用蒙提霍尔游戏区分“剩下两扇门”与“主持人知道答案后选择打开一扇门”。关注主持人的规则如何改变条件概率。</p><div class="takeaway">带走：换门获胜概率为 2/3，关键在于主持人的选择不是随机的。</div><a href="./demos/monty_hall_game.html">开始三门实验 ↗</a></article>
+        <article class="lesson"><div class="lesson-top"><span>02 · 向量与表示</span><span>约 15 分钟</span></div><h3>AI 怎样把词语放进空间？</h3><p>从点、线、平面走向高维向量。通过移动和比较表示，理解“语义接近”如何转化为空间里的相似关系。</p><div class="takeaway">带走：向量是可计算的表示；距离或方向只在选定的表示和度量下有意义。</div><a href="./demos/dimension_game.html">探索维度与嵌入 ↗</a></article>
+        <article class="lesson"><div class="lesson-top"><span>03 · 高维数据</span><span>约 12 分钟</span></div><h3>维度越多，为什么反而越难？</h3><p>观察空间扩张怎样让数据变稀疏，认识维度灾难对距离、样本量与模型泛化的影响。</p><div class="takeaway">带走：增加特征不自动带来更多信息；高维建模需要足够数据、合适表示和验证。</div><a href="./demos/dimension_game.html">打开维度实验，在页面中选择「维度的诅咒」 ↗</a></article>
+        <article class="lesson"><div class="lesson-top"><span>04 · Transformer</span><span>约 18 分钟</span></div><h3>Transformer 如何处理上下文？</h3><p>用“并行查看上下文”的直觉认识 Transformer，分清输入表示、位置关系、注意力与逐步生成的作用。</p><div class="takeaway">带走：模型根据上下文计算下一个词元的分布，再按解码策略生成内容。</div><a href="./demos/transformer_game.html">拆开 Transformer ↗</a></article>
+        <article class="lesson"><div class="lesson-top"><span>05 · 注意力机制</span><span>约 18 分钟</span></div><h3>Q、K、V 与多头注意力</h3><p>把 Query 看作当前要找的信息，Key 看作可匹配的线索，Value 看作要汇总的内容；比较单头和多头视角。</p><div class="takeaway">带走：注意力权重表达当前计算中的信息分配，不等于模型完整的解释或因果证明。</div><a href="./demos/multihead_attention_game.html">运行注意力实验 ↗</a></article>
+        <article class="lesson"><div class="lesson-top"><span>06 · 智能体与决策</span><span>约 15 分钟</span></div><h3>聊天机器人怎样变成智能体？</h3><p>用任务、环境、工具与反馈解释智能体的执行循环，再用迷宫认识状态、动作、奖励和策略。</p><div class="takeaway">带走：能调用工具不代表可靠；目标、权限、失败处理与结果验收都要设计。</div><a href="./demos/agent_vs_chatbot_game.html">比较聊天机器人与智能体 ↗</a><a href="./demos/mdp_game.html">继续迷宫决策实验 ↗</a></article>
+      </div>
+    </section>
+
+    <section class="bridge"><h2>继续把 AI 用到真实问题里</h2><p>理解概念之后，可以进入数据分析课堂：选择统计方法、设计可复核分析流程，再把 Dify 工作流或科研智能体搭建出来。</p><a href="{{ '/course/ai-data-analyse/' | relative_url }}">进入 AI 数据分析互动课堂 →</a></section>
+    <footer class="footer"><span>课程材料：课堂讲义与自制互动演示，经重新编排为网页自学路径。</span><span><a href="{{ '/' | relative_url }}">迷鹿 MiLu</a> · 把想法做成能用的东西</span></footer>
+  </main>
+</body>
+</html>

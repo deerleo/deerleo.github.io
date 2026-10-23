@@ -1,0 +1,1306 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>蒙提霍尔问题 - 互动游戏</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* 星空背景 */
+        .stars {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .star {
+            position: absolute;
+            background: white;
+            border-radius: 50%;
+            animation: twinkle 2s infinite;
+        }
+
+        @keyframes twinkle {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 1; }
+        }
+
+        /* 主容器 */
+        .container {
+            position: relative;
+            z-index: 1;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* 标题 */
+        .header {
+            text-align: center;
+            padding: 30px 0;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            color: #fff;
+            text-shadow: 0 0 20px #e94560, 0 0 40px #e94560;
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+
+        @keyframes glow {
+            from { text-shadow: 0 0 20px #e94560, 0 0 40px #e94560; }
+            to { text-shadow: 0 0 30px #ff6b6b, 0 0 60px #ff6b6b, 0 0 80px #ff6b6b; }
+        }
+
+        .header .subtitle {
+            color: #a0a0a0;
+            margin-top: 10px;
+            font-size: 1.1em;
+        }
+
+        /* 游戏面板 */
+        .game-panel {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        /* 提示信息 */
+        .message-box {
+            background: linear-gradient(135deg, #e94560, #0f3460);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 30px;
+            text-align: center;
+            min-height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .message-box p {
+            color: #fff;
+            font-size: 1.2em;
+            line-height: 1.6;
+        }
+
+        /* 门区域 */
+        .doors-container {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin: 40px 0;
+            flex-wrap: wrap;
+        }
+
+        .door-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .door {
+            width: 160px;
+            height: 220px;
+            background: linear-gradient(180deg, #8B4513 0%, #654321 100%);
+            border-radius: 10px 10px 5px 5px;
+            cursor: pointer;
+            position: relative;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            transform-style: preserve-3d;
+            perspective: 1000px;
+        }
+
+        .door:hover:not(.opened):not(.disabled) {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 40px rgba(233, 69, 96, 0.3);
+        }
+
+        .door.selected {
+            box-shadow: 0 0 30px #00ff88, 0 0 60px #00ff88;
+            transform: translateY(-5px);
+        }
+
+        .door.opened {
+            cursor: default;
+        }
+
+        .door.disabled {
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+
+        /* 门框装饰 */
+        .door::before {
+            content: '';
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            right: 10px;
+            bottom: 10px;
+            border: 3px solid rgba(255, 215, 0, 0.3);
+            border-radius: 5px;
+        }
+
+        /* 门把手 */
+        .door-handle {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            width: 15px;
+            height: 25px;
+            background: linear-gradient(135deg, #FFD700, #FFA500);
+            border-radius: 3px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+        }
+
+        /* 门编号 */
+        .door-number {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 2em;
+            color: #FFD700;
+            font-weight: bold;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+
+        /* 门后的内容 */
+        .door-content {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 80px;
+            background: linear-gradient(180deg, #2a2a4a 0%, #1a1a2e 100%);
+            border-radius: 10px 10px 5px 5px;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+
+        .door.opened .door-content {
+            opacity: 1;
+        }
+
+        /* 门打开动画 */
+        .door-frame {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(180deg, #8B4513 0%, #654321 100%);
+            border-radius: 10px 10px 5px 5px;
+            transform-origin: left;
+            transition: transform 0.8s ease;
+        }
+
+        .door.opened .door-frame {
+            transform: rotateY(-110deg);
+        }
+
+        /* 门标签 */
+        .door-label {
+            color: #fff;
+            font-size: 1.1em;
+            font-weight: bold;
+            background: rgba(233, 69, 96, 0.8);
+            padding: 8px 25px;
+            border-radius: 20px;
+        }
+
+        /* 按钮区域 */
+        .buttons {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin: 30px 0;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 15px 40px;
+            font-size: 1.1em;
+            font-weight: bold;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .btn-stay {
+            background: linear-gradient(135deg, #f39c12, #e74c3c);
+            color: white;
+            box-shadow: 0 5px 20px rgba(243, 156, 18, 0.4);
+        }
+
+        .btn-stay:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 30px rgba(243, 156, 18, 0.6);
+        }
+
+        .btn-switch {
+            background: linear-gradient(135deg, #00b894, #00cec9);
+            color: white;
+            box-shadow: 0 5px 20px rgba(0, 184, 148, 0.4);
+        }
+
+        .btn-switch:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 30px rgba(0, 184, 148, 0.6);
+        }
+
+        .btn-restart {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-restart:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 30px rgba(102, 126, 234, 0.6);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+        .btn-simulate {
+            background: linear-gradient(135deg, #fd79a8, #e84393);
+            color: white;
+        }
+
+        /* 统计面板 */
+        .stats-panel {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-top: 30px;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .stat-card h3 {
+            color: #a0a0a0;
+            font-size: 0.9em;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+        }
+
+        .stat-value {
+            font-size: 2.5em;
+            font-weight: bold;
+            background: linear-gradient(135deg, #00ff88, #00d4ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .stat-card.stay .stat-value {
+            background: linear-gradient(135deg, #f39c12, #e74c3c);
+            -webkit-background-clip: text;
+            background-clip: text;
+        }
+
+        .stat-card.switch .stat-value {
+            background: linear-gradient(135deg, #00b894, #00cec9);
+            -webkit-background-clip: text;
+            background-clip: text;
+        }
+
+        /* 进度条 */
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            overflow: hidden;
+            margin-top: 10px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            border-radius: 10px;
+            transition: width 0.5s ease;
+        }
+
+        .progress-fill.stay {
+            background: linear-gradient(90deg, #f39c12, #e74c3c);
+        }
+
+        .progress-fill.switch {
+            background: linear-gradient(90deg, #00b894, #00cec9);
+        }
+
+        /* 结果弹窗 */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 100;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.show {
+            display: flex;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .modal-content {
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            border-radius: 20px;
+            padding: 40px;
+            text-align: center;
+            max-width: 400px;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            animation: popIn 0.5s ease;
+        }
+
+        @keyframes popIn {
+            from { transform: scale(0.8); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        .modal-content .emoji {
+            font-size: 80px;
+            margin-bottom: 20px;
+        }
+
+        .modal-content h2 {
+            color: #fff;
+            font-size: 1.8em;
+            margin-bottom: 15px;
+        }
+
+        .modal-content p {
+            color: #a0a0a0;
+            margin-bottom: 25px;
+        }
+
+        .modal-content.win h2 {
+            color: #00ff88;
+        }
+
+        .modal-content.lose h2 {
+            color: #e94560;
+        }
+
+        /* 原理说明 */
+        .explanation {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 25px;
+            margin-top: 30px;
+            border-left: 4px solid #e94560;
+        }
+
+        .explanation h3 {
+            color: #e94560;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+        }
+
+        .explanation p {
+            color: #ccc;
+            line-height: 1.8;
+            margin-bottom: 10px;
+        }
+
+        .explanation .highlight {
+            color: #00ff88;
+            font-weight: bold;
+        }
+
+        /* 响应式 */
+        @media (max-width: 600px) {
+            .header h1 {
+                font-size: 1.8em;
+            }
+
+            .door {
+                width: 100px;
+                height: 140px;
+            }
+
+            .door-content {
+                font-size: 50px;
+            }
+
+            .door-number {
+                font-size: 1.5em;
+            }
+
+            .btn {
+                padding: 12px 25px;
+                font-size: 0.9em;
+            }
+        }
+
+        /* 粒子效果 */
+        .confetti {
+            position: fixed;
+            width: 10px;
+            height: 10px;
+            pointer-events: none;
+            z-index: 200;
+            animation: confetti-fall 3s linear forwards;
+        }
+
+        @keyframes confetti-fall {
+            0% {
+                transform: translateY(-100vh) rotate(0deg);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(100vh) rotate(720deg);
+                opacity: 0;
+            }
+        }
+
+        /* 模拟进度 */
+        .simulation-progress {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .simulation-progress.active {
+            display: block;
+        }
+
+        .simulation-progress .spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid rgba(255, 255, 255, 0.1);
+            border-top-color: #e94560;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <!-- 星空背景 -->
+    <div class="stars" id="stars"></div>
+
+    <div class="container">
+        <!-- 标题 -->
+        <div class="header">
+            <h1>🚪 蒙提霍尔问题</h1>
+            <p class="subtitle">Monty Hall Problem - 一个反直觉的概率悖论</p>
+        </div>
+
+        <!-- 游戏面板 -->
+        <div class="game-panel">
+            <!-- 提示信息 -->
+            <div class="message-box">
+                <p id="message">🎯 欢迎来到蒙提霍尔游戏！<br>三扇门后藏着一辆跑车和两只山羊，选择一扇门试试你的运气！</p>
+            </div>
+
+            <!-- 门区域 -->
+            <div class="doors-container">
+                <div class="door-wrapper">
+                    <div class="door" id="door1" onclick="selectDoor(1)" onmouseover="playSound('hover')">
+                        <div class="door-frame">
+                            <span class="door-number">1</span>
+                            <div class="door-handle"></div>
+                        </div>
+                        <div class="door-content" id="content1">?</div>
+                    </div>
+                    <span class="door-label">门 1</span>
+                </div>
+
+                <div class="door-wrapper">
+                    <div class="door" id="door2" onclick="selectDoor(2)" onmouseover="playSound('hover')">
+                        <div class="door-frame">
+                            <span class="door-number">2</span>
+                            <div class="door-handle"></div>
+                        </div>
+                        <div class="door-content" id="content2">?</div>
+                    </div>
+                    <span class="door-label">门 2</span>
+                </div>
+
+                <div class="door-wrapper">
+                    <div class="door" id="door3" onclick="selectDoor(3)" onmouseover="playSound('hover')">
+                        <div class="door-frame">
+                            <span class="door-number">3</span>
+                            <div class="door-handle"></div>
+                        </div>
+                        <div class="door-content" id="content3">?</div>
+                    </div>
+                    <span class="door-label">门 3</span>
+                </div>
+            </div>
+
+            <!-- 按钮区域 -->
+            <div class="buttons" id="gameButtons">
+                <button class="btn btn-stay" id="btnStay" onclick="finalDecision(false)" disabled>
+                    🛑 坚持不换
+                </button>
+                <button class="btn btn-switch" id="btnSwitch" onclick="finalDecision(true)" disabled>
+                    🔄 选择换门
+                </button>
+            </div>
+
+            <div class="buttons">
+                <button class="btn btn-restart" onclick="resetGame()">
+                    🔄 重新开始
+                </button>
+                <button class="btn btn-simulate" onclick="runSimulation()">
+                    📊 模拟1000次
+                </button>
+                <button class="btn" id="musicBtn" onclick="toggleBackgroundMusic()" style="background: linear-gradient(135deg, #6c5ce7, #a29bfe); color: white; box-shadow: 0 5px 20px rgba(108, 92, 231, 0.4);">
+                    🔇 音乐关
+                </button>
+            </div>
+
+            <!-- 模拟进度 -->
+            <div class="simulation-progress" id="simProgress">
+                <div class="spinner"></div>
+                <p style="color: #fff;">正在模拟 1000 轮游戏...</p>
+            </div>
+
+            <!-- 统计面板 -->
+            <div class="stats-panel">
+                <div class="stat-card">
+                    <h3>总游戏次数</h3>
+                    <div class="stat-value" id="totalGames">0</div>
+                </div>
+                <div class="stat-card stay">
+                    <h3>坚持不换胜率</h3>
+                    <div class="stat-value" id="stayRate">0%</div>
+                    <div class="progress-bar">
+                        <div class="progress-fill stay" id="stayProgress" style="width: 0%"></div>
+                    </div>
+                </div>
+                <div class="stat-card switch">
+                    <h3>换门胜率</h3>
+                    <div class="stat-value" id="switchRate">0%</div>
+                    <div class="progress-bar">
+                        <div class="progress-fill switch" id="switchProgress" style="width: 0%"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 原理说明 -->
+        <div class="explanation">
+            <h3>💡 为什么换门胜率更高？</h3>
+            <p>
+                <strong>关键理解：</strong>当你选择一扇门时，你有 <span class="highlight">1/3</span> 的概率选到跑车。
+                这意味着另外两扇门加起来有 <span class="highlight">2/3</span> 的概率有车。
+            </p>
+            <p>
+                主持人帮你排除了一扇山羊门后，剩下那扇门<span class="highlight">继承了整个 2/3 的概率</span>！
+                所以换门策略的胜率是 66.7%，而不换只有 33.3%。
+            </p>
+            <p>
+                <strong>核心公式（贝叶斯定理）：</strong><br>
+                P(车在门2 | 主持人开门3) = P(主持人开门3 | 车在门2) × P(车在门2) / P(主持人开门3) = 1 × (1/3) / (1/2) = <span class="highlight">2/3</span>
+            </p>
+        </div>
+    </div>
+
+    <!-- 结果弹窗 -->
+    <div class="modal" id="resultModal">
+        <div class="modal-content" id="modalContent">
+            <div class="emoji" id="resultEmoji">🎉</div>
+            <h2 id="resultTitle">恭喜！</h2>
+            <p id="resultText">你赢得了跑车！</p>
+            <button class="btn btn-restart" onclick="closeModal()">继续游戏</button>
+        </div>
+    </div>
+
+    <script>
+        // ==================== 音效系统 ====================
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        let audioCtx = null;
+
+        // 初始化音频上下文
+        function initAudio() {
+            if (!audioCtx) {
+                audioCtx = new AudioContext();
+            }
+        }
+
+        // 播放音效
+        function playSound(type) {
+            initAudio();
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+
+            switch(type) {
+                case 'click':
+                    playClick();
+                    break;
+                case 'doorOpen':
+                    playDoorOpen();
+                    break;
+                case 'win':
+                    playWin();
+                    break;
+                case 'lose':
+                    playLose();
+                    break;
+                case 'hover':
+                    playHover();
+                    break;
+                case 'tada':
+                    playTada();
+                    break;
+                case 'swoosh':
+                    playSwoosh();
+                    break;
+            }
+        }
+
+        // 点击音效 - 清脆的叮
+        function playClick() {
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+
+            osc.frequency.setValueAtTime(800, audioCtx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(1200, audioCtx.currentTime + 0.1);
+
+            gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.15);
+
+            osc.start(audioCtx.currentTime);
+            osc.stop(audioCtx.currentTime + 0.15);
+        }
+
+        // 门打开音效 - 咔哒声
+        function playDoorOpen() {
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            const filter = audioCtx.createBiquadFilter();
+
+            osc.type = 'square';
+            osc.connect(filter);
+            filter.connect(gain);
+            gain.connect(audioCtx.destination);
+
+            filter.type = 'lowpass';
+            filter.frequency.setValueAtTime(2000, audioCtx.currentTime);
+            filter.frequency.exponentialRampToValueAtTime(100, audioCtx.currentTime + 0.3);
+
+            osc.frequency.setValueAtTime(150, audioCtx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(50, audioCtx.currentTime + 0.3);
+
+            gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+
+            osc.start(audioCtx.currentTime);
+            osc.stop(audioCtx.currentTime + 0.3);
+        }
+
+        // 胜利音效 - 欢快的上升音
+        function playWin() {
+            const notes = [523.25, 659.25, 783.99, 1046.50]; // C5, E5, G5, C6
+
+            notes.forEach((freq, i) => {
+                setTimeout(() => {
+                    const osc = audioCtx.createOscillator();
+                    const gain = audioCtx.createGain();
+
+                    osc.type = 'sine';
+                    osc.connect(gain);
+                    gain.connect(audioCtx.destination);
+
+                    osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+
+                    gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+
+                    osc.start(audioCtx.currentTime);
+                    osc.stop(audioCtx.currentTime + 0.3);
+                }, i * 100);
+            });
+        }
+
+        // 失败音效 - 下降音
+        function playLose() {
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+
+            osc.type = 'sine';
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+
+            osc.frequency.setValueAtTime(400, audioCtx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(150, audioCtx.currentTime + 0.5);
+
+            gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.5);
+
+            osc.start(audioCtx.currentTime);
+            osc.stop(audioCtx.currentTime + 0.5);
+        }
+
+        // 悬停音效 - 轻微的嗡声
+        function playHover() {
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+
+            osc.type = 'sine';
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+
+            osc.frequency.setValueAtTime(600, audioCtx.currentTime);
+
+            gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.08);
+
+            osc.start(audioCtx.currentTime);
+            osc.stop(audioCtx.currentTime + 0.08);
+        }
+
+        // 庆祝音效 - 哗啦声
+        function playTada() {
+            // 多个随机频率模拟彩带声
+            for (let i = 0; i < 8; i++) {
+                setTimeout(() => {
+                    const osc = audioCtx.createOscillator();
+                    const gain = audioCtx.createGain();
+
+                    osc.type = 'sine';
+                    osc.connect(gain);
+                    gain.connect(audioCtx.destination);
+
+                    osc.frequency.setValueAtTime(
+                        800 + Math.random() * 800,
+                        audioCtx.currentTime
+                    );
+
+                    gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
+
+                    osc.start(audioCtx.currentTime);
+                    osc.stop(audioCtx.currentTime + 0.1);
+                }, i * 30);
+            }
+        }
+
+        // 刷刷音效 - 用于模拟进度
+        function playSwoosh() {
+            const bufferSize = audioCtx.sampleRate * 0.2;
+            const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+            const data = buffer.getChannelData(0);
+
+            for (let i = 0; i < bufferSize; i++) {
+                data[i] = (Math.random() * 2 - 1) * (1 - i / bufferSize);
+            }
+
+            const source = audioCtx.createBufferSource();
+            const gain = audioCtx.createGain();
+            const filter = audioCtx.createBiquadFilter();
+
+            source.buffer = buffer;
+            filter.type = 'bandpass';
+            filter.frequency.setValueAtTime(1000, audioCtx.currentTime);
+
+            source.connect(filter);
+            filter.connect(gain);
+            gain.connect(audioCtx.destination);
+
+            gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+
+            source.start(audioCtx.currentTime);
+        }
+
+        // ==================== 背景音乐系统 ====================
+        let bgMusicInterval = null;
+        let bgMusicGain = null;
+        let isMusicPlaying = false;
+
+        // 生成轻快的背景音乐（简单的循环旋律）
+        function startBackgroundMusic() {
+            if (isMusicPlaying) return;
+            initAudio();
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+
+            isMusicPlaying = true;
+            bgMusicGain = audioCtx.createGain();
+            bgMusicGain.connect(audioCtx.destination);
+            bgMusicGain.gain.setValueAtTime(0.08, audioCtx.currentTime);
+
+            // C大调简单旋律循环
+            const melody = [
+                { note: 261.63, dur: 0.25 }, // C4
+                { note: 293.66, dur: 0.25 }, // D4
+                { note: 329.63, dur: 0.25 }, // E4
+                { note: 349.23, dur: 0.25 }, // F4
+                { note: 392.00, dur: 0.5 },  // G4
+                { note: 349.23, dur: 0.25 }, // F4
+                { note: 329.63, dur: 0.25 }, // E4
+                { note: 293.66, dur: 0.5 },  // D4
+                { note: 261.63, dur: 0.25 }, // C4
+                { note: 329.63, dur: 0.25 }, // E4
+                { note: 392.00, dur: 0.25 }, // G4
+                { note: 523.25, dur: 0.5 },  // C5
+                { note: 440.00, dur: 0.25 }, // A4
+                { note: 392.00, dur: 0.25 }, // G4
+                { note: 349.23, dur: 0.5 },  // F4
+                { note: 329.63, dur: 0.5 },  // E4
+            ];
+
+            let noteIndex = 0;
+            let nextNoteTime = audioCtx.currentTime;
+
+            function scheduleNote() {
+                if (!isMusicPlaying) return;
+
+                while (nextNoteTime < audioCtx.currentTime + 0.1) {
+                    const { note, dur } = melody[noteIndex];
+
+                    // 主旋律
+                    const osc = audioCtx.createOscillator();
+                    const noteGain = audioCtx.createGain();
+
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(note, nextNoteTime);
+
+                    noteGain.gain.setValueAtTime(0.15, nextNoteTime);
+                    noteGain.gain.exponentialRampToValueAtTime(0.01, nextNoteTime + dur * 0.9);
+
+                    osc.connect(noteGain);
+                    noteGain.connect(bgMusicGain);
+
+                    osc.start(nextNoteTime);
+                    osc.stop(nextNoteTime + dur);
+
+                    // 和弦伴奏（每隔一个音符）
+                    if (noteIndex % 2 === 0) {
+                        const chordOsc = audioCtx.createOscillator();
+                        const chordGain = audioCtx.createGain();
+
+                        chordOsc.type = 'triangle';
+                        chordOsc.frequency.setValueAtTime(note / 2, nextNoteTime);
+
+                        chordGain.gain.setValueAtTime(0.06, nextNoteTime);
+                        chordGain.gain.exponentialRampToValueAtTime(0.01, nextNoteTime + dur);
+
+                        chordOsc.connect(chordGain);
+                        chordGain.connect(bgMusicGain);
+
+                        chordOsc.start(nextNoteTime);
+                        chordOsc.stop(nextNoteTime + dur);
+                    }
+
+                    nextNoteTime += dur;
+                    noteIndex = (noteIndex + 1) % melody.length;
+                }
+
+                bgMusicInterval = requestAnimationFrame(scheduleNote);
+            }
+
+            scheduleNote();
+            updateMusicButton();
+        }
+
+        // 停止背景音乐
+        function stopBackgroundMusic() {
+            isMusicPlaying = false;
+            if (bgMusicInterval) {
+                cancelAnimationFrame(bgMusicInterval);
+                bgMusicInterval = null;
+            }
+            updateMusicButton();
+        }
+
+        // 切换背景音乐
+        function toggleBackgroundMusic() {
+            if (isMusicPlaying) {
+                stopBackgroundMusic();
+            } else {
+                startBackgroundMusic();
+            }
+        }
+
+        // 更新音乐按钮状态
+        function updateMusicButton() {
+            const btn = document.getElementById('musicBtn');
+            if (btn) {
+                btn.textContent = isMusicPlaying ? '🔊 音乐开' : '🔇 音乐关';
+            }
+        }
+
+        // ==================== 游戏状态 ====================
+        let gameState = {
+            prizeDoor: 0,          // 跑车所在的门
+            selectedDoor: 0,       // 玩家选择的门
+            openedDoor: 0,         // 主持人打开的门
+            phase: 'select',       // 游戏阶段: select, decide, result
+            canSwitch: false       // 是否可以换门
+        };
+
+        // 统计数据
+        let stats = {
+            totalGames: 0,
+            stayWins: 0,
+            stayTotal: 0,
+            switchWins: 0,
+            switchTotal: 0
+        };
+
+        // 初始化星空背景
+        function createStars() {
+            const starsContainer = document.getElementById('stars');
+            for (let i = 0; i < 100; i++) {
+                const star = document.createElement('div');
+                star.className = 'star';
+                star.style.left = Math.random() * 100 + '%';
+                star.style.top = Math.random() * 100 + '%';
+                star.style.width = Math.random() * 3 + 'px';
+                star.style.height = star.style.width;
+                star.style.animationDelay = Math.random() * 2 + 's';
+                starsContainer.appendChild(star);
+            }
+        }
+
+        // 更新消息
+        function updateMessage(text) {
+            document.getElementById('message').innerHTML = text;
+        }
+
+        // 选择门
+        function selectDoor(doorNum) {
+            if (gameState.phase !== 'select') return;
+
+            playSound('click'); // 点击音效
+            gameState.selectedDoor = doorNum;
+
+            // 更新门的样式
+            document.querySelectorAll('.door').forEach(d => d.classList.remove('selected'));
+            document.getElementById('door' + doorNum).classList.add('selected');
+
+            updateMessage(`✅ 你选择了 <strong>门 ${doorNum}</strong><br>现在主持人将打开一扇有山羊的门...`);
+
+            // 延迟后主持人开门
+            setTimeout(() => {
+                hostOpenDoor();
+            }, 1000);
+        }
+
+        // 主持人开门
+        function hostOpenDoor() {
+            // 找一扇既不是玩家选的，也不是有车的门
+            let possibleDoors = [1, 2, 3].filter(d => d !== gameState.selectedDoor && d !== gameState.prizeDoor);
+
+            // 如果玩家选的就是车，随机选一扇山羊门
+            if (possibleDoors.length === 2) {
+                gameState.openedDoor = possibleDoors[Math.floor(Math.random() * 2)];
+            } else {
+                gameState.openedDoor = possibleDoors[0];
+            }
+
+            // 打开门，显示山羊
+            const openedDoorEl = document.getElementById('door' + gameState.openedDoor);
+            document.getElementById('content' + gameState.openedDoor).textContent = '🐐';
+            openedDoorEl.classList.add('opened');
+            openedDoorEl.classList.add('disabled');
+
+            playSound('doorOpen'); // 门打开音效
+
+            // 更新游戏状态
+            gameState.phase = 'decide';
+            gameState.canSwitch = true;
+
+            // 启用按钮
+            document.getElementById('btnStay').disabled = false;
+            document.getElementById('btnSwitch').disabled = false;
+
+            const remainingDoor = [1, 2, 3].find(d => d !== gameState.selectedDoor && d !== gameState.openedDoor);
+            updateMessage(`🚪 主持人打开了 <strong>门 ${gameState.openedDoor}</strong>，是一只山羊！<br><br>现在你要：<br>🛑 坚持选择 门 ${gameState.selectedDoor}，还是<br>🔄 换到 门 ${remainingDoor}？`);
+        }
+
+        // 最终决定
+        function finalDecision(switchDoor) {
+            if (gameState.phase !== 'decide') return;
+
+            playSound('click'); // 点击音效
+            let finalChoice = gameState.selectedDoor;
+
+            if (switchDoor) {
+                finalChoice = [1, 2, 3].find(d => d !== gameState.selectedDoor && d !== gameState.openedDoor);
+            }
+
+            // 打开所有门
+            revealAll(finalChoice, switchDoor);
+        }
+
+        // 揭示所有门
+        function revealAll(finalChoice, switched) {
+            gameState.phase = 'result';
+
+            // 显示所有门的内容
+            for (let i = 1; i <= 3; i++) {
+                const content = document.getElementById('content' + i);
+                if (i === gameState.prizeDoor) {
+                    content.textContent = '🚗';
+                } else {
+                    content.textContent = '🐐';
+                }
+                document.getElementById('door' + i).classList.add('opened');
+            }
+
+            // 判断胜负
+            const won = finalChoice === gameState.prizeDoor;
+
+            // 更新统计
+            stats.totalGames++;
+            if (switched) {
+                stats.switchTotal++;
+                if (won) stats.switchWins++;
+            } else {
+                stats.stayTotal++;
+                if (won) stats.stayWins++;
+            }
+
+            updateStats();
+
+            // 显示结果弹窗
+            setTimeout(() => {
+                showResult(won, switched, finalChoice);
+                // 播放结果音效
+                if (won) {
+                    playSound('win');
+                    setTimeout(() => playSound('tada'), 300);
+                } else {
+                    playSound('lose');
+                }
+            }, 800);
+
+            // 禁用按钮
+            document.getElementById('btnStay').disabled = true;
+            document.getElementById('btnSwitch').disabled = true;
+        }
+
+        // 显示结果
+        function showResult(won, switched, finalChoice) {
+            const modal = document.getElementById('resultModal');
+            const content = document.getElementById('modalContent');
+            const emoji = document.getElementById('resultEmoji');
+            const title = document.getElementById('resultTitle');
+            const text = document.getElementById('resultText');
+
+            content.className = 'modal-content ' + (won ? 'win' : 'lose');
+
+            if (won) {
+                emoji.textContent = '🎉';
+                title.textContent = '恭喜你赢了！';
+                text.innerHTML = `你${switched ? '换门后' : '坚持选择'} <strong>门 ${finalChoice}</strong>，赢得了跑车！🚗`;
+                createConfetti();
+            } else {
+                emoji.textContent = '😢';
+                title.textContent = '很遗憾...';
+                text.innerHTML = `你${switched ? '换门后' : '坚持选择'} <strong>门 ${finalChoice}</strong>，只得到了一只山羊🐐`;
+            }
+
+            if (switched) {
+                text.innerHTML += '<br><small style="color: #00b894;">（换门策略：历史胜率 ' + (stats.switchTotal > 0 ? (stats.switchWins/stats.switchTotal*100).toFixed(1) : 0) + '%）</small>';
+            } else {
+                text.innerHTML += '<br><small style="color: #f39c12;">（坚持策略：历史胜率 ' + (stats.stayTotal > 0 ? (stats.stayWins/stats.stayTotal*100).toFixed(1) : 0) + '%）</small>';
+            }
+
+            modal.classList.add('show');
+        }
+
+        // 关闭弹窗
+        function closeModal() {
+            playSound('click');
+            document.getElementById('resultModal').classList.remove('show');
+        }
+
+        // 创建彩带效果
+        function createConfetti() {
+            const colors = ['#e94560', '#00ff88', '#FFD700', '#00d4ff', '#ff6b6b'];
+            for (let i = 0; i < 50; i++) {
+                setTimeout(() => {
+                    const confetti = document.createElement('div');
+                    confetti.className = 'confetti';
+                    confetti.style.left = Math.random() * 100 + '%';
+                    confetti.style.background = colors[Math.floor(Math.random() * colors.length)];
+                    confetti.style.borderRadius = Math.random() > 0.5 ? '50%' : '0';
+                    document.body.appendChild(confetti);
+
+                    setTimeout(() => confetti.remove(), 3000);
+                }, i * 50);
+            }
+        }
+
+        // 更新统计
+        function updateStats() {
+            document.getElementById('totalGames').textContent = stats.totalGames;
+
+            const stayRate = stats.stayTotal > 0 ? (stats.stayWins / stats.stayTotal * 100) : 0;
+            const switchRate = stats.switchTotal > 0 ? (stats.switchWins / stats.switchTotal * 100) : 0;
+
+            document.getElementById('stayRate').textContent = stayRate.toFixed(1) + '%';
+            document.getElementById('switchRate').textContent = switchRate.toFixed(1) + '%';
+
+            document.getElementById('stayProgress').style.width = stayRate + '%';
+            document.getElementById('switchProgress').style.width = switchRate + '%';
+        }
+
+        // 重置游戏
+        function resetGame() {
+            playSound('swoosh'); // 刷刷音效
+            // 重置状态
+            gameState = {
+                prizeDoor: Math.floor(Math.random() * 3) + 1,
+                selectedDoor: 0,
+                openedDoor: 0,
+                phase: 'select',
+                canSwitch: false
+            };
+
+            // 重置门的样式
+            for (let i = 1; i <= 3; i++) {
+                const door = document.getElementById('door' + i);
+                door.classList.remove('selected', 'opened', 'disabled');
+                document.getElementById('content' + i).textContent = '?';
+            }
+
+            // 禁用按钮
+            document.getElementById('btnStay').disabled = true;
+            document.getElementById('btnSwitch').disabled = true;
+
+            updateMessage('🎯 新游戏开始！<br>三扇门后藏着一辆跑车🚗和两只山羊🐐，选择一扇门试试你的运气！');
+        }
+
+        // 运行模拟（带动画效果）
+        function runSimulation() {
+            playSound('swoosh'); // 刷刷音效
+            document.getElementById('simProgress').classList.add('active');
+
+            const totalRounds = 1000;
+            const duration = 45000; // 45秒完成
+            const updateInterval = 100; // 每100ms更新一次
+            const updatesNeeded = duration / updateInterval;
+            const roundsPerUpdate = Math.ceil(totalRounds / updatesNeeded);
+
+            let currentRound = 0;
+            let stayWins = 0;
+            let switchWins = 0;
+
+            updateMessage(`📊 正在模拟... <strong><span id="simCounter">0</span>/1000</strong> 轮`);
+
+            const simulationInterval = setInterval(() => {
+                // 每次更新执行多轮模拟
+                for (let i = 0; i < roundsPerUpdate && currentRound < totalRounds; i++) {
+                    currentRound++;
+
+                    // 随机放置奖品
+                    const prize = Math.floor(Math.random() * 3);
+                    // 玩家随机选
+                    const choice = Math.floor(Math.random() * 3);
+
+                    // 坚持不换
+                    if (choice === prize) stayWins++;
+
+                    // 换门
+                    const available = [0, 1, 2].filter(d => d !== choice && d !== prize);
+                    const opened = available.length === 2 ? available[Math.floor(Math.random() * 2)] : available[0];
+                    const newChoice = [0, 1, 2].find(d => d !== choice && d !== opened);
+                    if (newChoice === prize) switchWins++;
+
+                    // 实时更新统计
+                    stats.stayTotal = currentRound;
+                    stats.stayWins = stayWins;
+                    stats.switchTotal = currentRound;
+                    stats.switchWins = switchWins;
+                    stats.totalGames = currentRound;
+                }
+
+                // 更新显示
+                document.getElementById('simCounter').textContent = currentRound;
+                updateStats();
+
+                // 每隔一段时间播放音效
+                if (currentRound % 100 === 0) {
+                    playSound('click');
+                }
+
+                // 检查是否完成
+                if (currentRound >= totalRounds) {
+                    clearInterval(simulationInterval);
+                    document.getElementById('simProgress').classList.remove('active');
+
+                    updateMessage(`📊 模拟完成！<br>坚持不换胜率: <strong>${(stayWins/totalRounds*100).toFixed(1)}%</strong><br>换门胜率: <strong>${(switchWins/totalRounds*100).toFixed(1)}%</strong><br><small>（接近理论值 33.3% 和 66.7%）</small>`);
+                    playSound('win'); // 模拟完成音效
+                    playSound('tada'); // 庆祝音效
+                }
+            }, updateInterval);
+        }
+
+        // 初始化
+        window.onload = function() {
+            createStars();
+            resetGame();
+        };
+    </script>
+</body>
+</html>
