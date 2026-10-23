@@ -15,9 +15,10 @@
     .bridge{margin-top:64px;padding:24px;border:1px solid rgba(117,215,232,.3);border-radius:18px;background:rgba(117,215,232,.06)}.bridge h2{margin:0 0 8px;font-size:22px}.bridge p{max-width:750px;margin:0 0 15px;color:var(--muted);font-size:14px}.bridge a{color:var(--cyan);font-size:14px;font-weight:800;text-decoration:none}.footer{display:flex;justify-content:space-between;gap:16px;margin-top:60px;padding-top:18px;border-top:1px solid var(--line);color:#8595a8;font-size:12px}
     @media(max-width:680px){.wrap{padding-top:38px}.principle{grid-template-columns:1fr}.lessons{grid-template-columns:1fr}.heading{display:block}.heading p{margin-top:8px}.lesson{min-height:230px}.footer{display:block}.footer span{display:block;margin:5px 0}}
   </style>
+  <link rel="stylesheet" href="{{ '/assets/css/subpage-shell.css' | relative_url }}">
 </head>
-<body>
-  <div class="top"><a href="{{ '/' | relative_url }}">← 迷鹿 MiLu</a></div>
+<body id="top">
+  {% include subpage-shell.html identity="人工智能与数学" descriptor="教程" %}
   <main class="wrap">
     <header class="hero">
       <p class="eyebrow">A hands-on introduction to AI</p>
@@ -45,7 +46,7 @@
     </section>
 
     <section class="bridge"><h2>继续把 AI 用到真实问题里</h2><p>理解概念之后，可以进入数据分析课堂：选择统计方法、设计可复核分析流程，再把 Dify 工作流或科研智能体搭建出来。</p><a href="{{ '/course/ai-data-analyse/' | relative_url }}">进入 AI 数据分析互动课堂 →</a></section>
-    <footer class="footer"><span>课程材料：课堂讲义与自制互动演示，经重新编排为网页自学路径。</span><span><a href="{{ '/' | relative_url }}">迷鹿 MiLu</a> · 把想法做成能用的东西</span></footer>
+    <footer class="subpage-footer">课程材料：课堂讲义与自制互动演示，经重新编排为网页自学路径。 · 把想法做成能用的东西</footer>
   </main>
 </body>
 </html>

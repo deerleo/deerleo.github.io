@@ -13,9 +13,10 @@
     .section{margin-top:50px}.section h2{margin:0 0 12px;font-size:clamp(26px,4vw,36px);letter-spacing:-.04em}.section-intro{max-width:740px;color:var(--muted);font-size:14px}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin-top:18px}.card{padding:21px;border:1px solid var(--line);border-radius:17px;background:linear-gradient(145deg,rgba(20,35,35,.94),rgba(14,26,27,.96))}.card small{color:var(--mint);font-size:11px;font-weight:850;letter-spacing:.1em}.card h3{margin:9px 0 5px;font-size:19px}.card p{margin:0;color:var(--muted);font-size:14px}.question{margin-top:44px;padding:22px 24px;border-left:3px solid var(--lime);background:rgba(195,237,89,.06)}.question h2{margin:0 0 7px;font-size:22px}.question p{margin:0;color:#d5e1d6;font-size:14px}.limits{margin-top:46px}.limits ul{padding-left:21px;color:var(--muted);font-size:14px}.limits li+li{margin-top:8px}.status{margin-top:40px;padding:16px 18px;border:1px solid rgba(237,189,118,.35);border-radius:13px;background:rgba(237,189,118,.06);color:#e4d6be;font-size:13px}.related{display:flex;gap:18px;flex-wrap:wrap;margin-top:22px}.related a{color:var(--mint);font-size:13px;font-weight:800;text-decoration:none}.footer{display:flex;justify-content:space-between;gap:16px;margin-top:54px;padding-top:18px;border-top:1px solid var(--line);color:#899891;font-size:12px}
     @media(max-width:680px){.wrap{padding:34px 16px 68px}.top{padding:18px 16px 0}.visual{padding:15px}.domains{grid-template-columns:1fr}.domain{padding:14px}.grid{grid-template-columns:1fr}.footer{display:block}.footer span{display:block;margin:5px 0}}
   </style>
+  <link rel="stylesheet" href="{{ '/assets/css/subpage-shell.css' | relative_url }}">
 </head>
-<body>
-  <div class="top"><a href="{{ '/' | relative_url }}#work">← 返回项目作品</a></div>
+<body id="top">
+  {% include subpage-shell.html identity="AuditorBench" descriptor="独立研究原型" %}
   <main class="wrap">
     <header class="hero"><p class="eyebrow">Independent research prototype</p><h1>Auditor<em>Bench</em></h1><p>当 AI 开始检查代码、配置和合规流程，我们还需要检验一件事：审计员本身可靠吗？这个研究原型设计了一组有明确答案的受控样例，用来观察审计模型是否稳定、在哪些场景容易误报，以及多个模型放在一起是否真的更可靠。</p><div class="tags"><span>受控评测基准</span><span>60 个合成样例</span><span>代码 · 配置 · 数据处理</span><span>论文草稿阶段</span></div></header>
     <section class="visual" aria-label="测试样例和可靠性指标的关系示意图"><div class="domains"><div class="domain"><b>CODE</b><span>代码安全缺陷与干净样例</span></div><div class="domain"><b>CONFIG</b><span>基础设施配置错误与正确配置</span></div><div class="domain"><b>POLICY</b><span>数据处理与隐私规则</span></div></div><div class="flow"><span>同一组受控输入</span><i>→</i><span>单模型重复审计</span><i>→</i><span>跨模型比较与集成</span></div></section>
@@ -29,7 +30,7 @@
     <section class="section limits"><h2>边界与下一步</h2><ul><li>当前是研究原型，使用受控合成样例，不等同于真实生产环境中的安全、合规或代码审计表现。</li><li>样例规模有限，类别设计和标注也会影响测量结果；更大规模的独立复核仍然重要。</li><li>部分 API 模型评测未完成，因此不把当前观察表述为对所有模型或部署方式的普遍结论。</li><li>论文仍在草稿阶段，结果尚未经过同行评审；本页面展示研究问题与方法，不提供未经复核的性能排名。</li></ul></section>
     <p class="status"><strong>公开范围：</strong>本页介绍研究问题、评测维度和限制。底层测试语料、模型原始响应、研究草稿及本地配置不随网站发布。</p>
     <div class="related"><a href="{{ '/' | relative_url }}#work">返回全部项目 →</a><a href="https://github.com/deerleo">查看 GitHub →</a></div>
-    <footer class="footer"><span>AuditorBench · 独立研究原型</span><span>Leo Lu · 迷鹿 MiLu</span></footer>
+    <footer class="subpage-footer">AuditorBench · 独立研究原型 · Leo Lu</footer>
   </main>
 </body>
 </html>

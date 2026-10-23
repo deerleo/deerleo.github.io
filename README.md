@@ -27,3 +27,4 @@ bundle exec jekyll build
 - 项目、Blog、教程与自媒体内容：`_data/milu.yml`
 - 教程支持 `mode: single` 和 `mode: series`；系列教程可在 `episodes` 中维护章节与状态
 - 网站 favicon：`assets/images/favicon.svg`
+- 二级、三级教程与项目页的顶部及页脚规范：[`docs/subpage-visual-standard.md`](docs/subpage-visual-standard.md)，共享组件见 `_includes/subpage-shell.html` 与 `assets/css/subpage-shell.css`
