@@ -26,6 +26,13 @@ projects:
         text: 化学现象 / 互动模拟 / 单页工具
         link: /beaker-mixer.html
         tag: 教学工具
+      - title: MaudelClaw 企业级 AI Agent 平台
+        text: 多 Agent 协作 / 知识库 RAG / 私有化部署
+        link: https://maudelclaw.ai
+        tag: 企业级
+      - title: 声誉维护 Claw
+        text: 负面监测 / 投诉函生成 / 黄金 4 小时响应
+        tag: 商业化
 
   - id: experiments
     kicker: Experiments

@@ -9,22 +9,22 @@ sidebar:
 
     # Profile information
     name: Leo Lu
-    tagline: Full Stack Developer
+    tagline: AI 产品实践者
     avatar: profile.jpg  #place a 100x100 picture inside /assets/images/ folder and provide the name of the file below
 
     # Sidebar links
     email: dearsuley@gmail.com
-    phone: +86-010-86462866
+    phone:
     timezone: Asia/Shanghai # Enter your timezone, e.g., America/Havana, Africa/Casablanca, America/North_Dakota/Center
     citizenship: P.R.C China
-    website: https://example.com/ # Include the full website URL, including "http://" or "https://".
-    linkedin: alandoe
-    xing: alandoe
-    github: jekyll
+    website: https://milulab.com # Include the full website URL, including "http://" or "https://".
+    linkedin:
+    xing:
+    github: deerleo
     telegram: # add your nickname without '@' sign
     gitlab:
     bitbucket:
-    twitter: '@jekyllrb'
+    twitter:
     stack-overflow: # Number/Username, e.g. 123456/alandoe
     codewars:
     goodreads: # Number-Username, e.g. 123456-alandoe
@@ -36,233 +36,192 @@ sidebar:
     languages:
       title: Languages
       info:
+        - idiom: 中文
+          level: 母语
+
         - idiom: English
-          level: Native
-
-        - idiom: French
-          level: Professional
-
-        - idiom: Spanish
-          level: Professional
+          level: 工作交流
 
     interests:
       title: Interests
       info:
-        - item: Climbing
+        - item: 人工智能与智能体
           link:
 
-        - item: Snowboarding
+        - item: 产品与创业
           link:
 
-        - item: Cooking
+        - item: 教育与内容创作
+          link:
+
+        - item: 科技写作
           link:
 
 career-profile:
     title: Career Profile
     summary: |
-      Summarise your career here lorem ipsum dolor sit amet, consectetuer
-      adipiscing elit. You can [download this free resume/CV template here]().
-      Aenean commodo ligula eget dolor aenean massa. Cum sociis natoque
-      penatibus et magnis dis parturient montes, nascetur ridiculus mus.
-      Donec quam felis, ultricies nec, pellentesque eu.
-      Second paragraph if required.
+      AI 产品实践者与工程探索者，北京科技大学计算机科学与技术专业毕业。十余年产品研发与管理经历，先后担任环游天下、慧摩尔、蜂众联技术总监，主导开发 30 余款产品；创办联逸科技，推出融媒云融媒体平台与天眼测新媒体监测平台；曾任清博智能创新院技术主管，负责全球舆论大数据平台、清博 CEM 系统与元宇宙项目无尽之塔的研发。2025 年创立摩豆智能，推出国产企业级 AI Agent 平台 MaudelClaw，专注多 Agent 协作、知识库 RAG 与完全私有化部署，让智能体真正进入企业日常工作。
 education:
     title: Education
     info:
-      - degree: MSc in Computer Science
-        university: University of London
-        time: 2011 - 2012
+      - degree: 计算机科学与技术 学士
+        university: 北京科技大学
+        time: 2010 - 2014
         details: |
-          Describe your study here lorem ipsum dolor sit amet, consectetuer
-          adipiscing elit. Aenean commodo ligula eget dolor. Aenean massa. Cum
-          sociis natoque penatibus et magnis dis parturient montes, nascetur
-          ridiculus mus. Donec quam felis, ultricies nec, pellentesque eu,
-          pretium quis, sem.
-            - Bullet point
-            - Bullet point
-      - degree: BSc in Applied Mathematics
-        university: Bristol University
-        time: 2007 - 2011
-        details: |
-          Describe your study here lorem ipsum dolor sit amet, consectetuer
-          adipiscing elit. Aenean commodo ligula eget dolor. Aenean massa. Cum
-          sociis natoque penatibus et magnis dis parturient montes, nascetur
-          ridiculus mus. Donec quam felis, ultricies nec, pellentesque eu,
-          pretium quis, sem.
-            - Bullet point
-            - Bullet point
+          系统学习计算机科学基础与软件工程方法，在校期间即投入真实项目开发。
+          大三起在北京必鼎科技实习，参与师兄帮帮忙网站后台与 Android 客户端研发，
+          从此走上工程与产品结合的道路。
+            - 计算机科学与技术专业学士
+            - 在校期间参与真实网站与移动端项目研发
 
 experiences:
     title: Experiences
     info:
-      - role: Lead Developer
-        time: 2015 - Present
-        company: Startup Hubs, San Francisco
+      - role: 创新院技术主管
+        time: 2021.1 - 2025
+        company: 北京清博智能科技有限公司
         details: |
-          Describe your role here lorem ipsum dolor sit amet, consectetuer
-          adipiscing elit. Aenean commodo ligula eget dolor. Aenean massa.
-          Cum sociis natoque penatibus et magnis dis parturient montes,
-          nascetur ridiculus mus. Donec quam felis, ultricies nec,
-          pellentesque eu, pretium quis, sem. Nulla consequat massa quis
-          enim. Donec pede justo. Sed ut perspiciatis unde omnis iste natus
-          error sit voluptatem accusantium doloremque laudantium, totam rem
-          aperiam, eaque ipsa quae ab illo inventore veritatis et quasi
-          architecto beatae vitae dicta sunt explicabo.
-            - Bullet point
-            - Bullet point
-      - role: Senior Software Engineer
-        time: 2014 - 2015
-        company: Google, London
+          负责创新业务开发与前瞻性技术调研储备，主导多个核心平台的研发与总体设计。
+            - 全球舆论大数据平台研发
+            - 清博 CEM 系统研发
+            - 元宇宙 APP 无尽之塔总体开发
+            - 清元数藏 H5 与 App 总体开发
+      - role: 创始人 / 负责人
+        time: 2018.6 - 2020.12
+        company: 联逸科技有限公司
         details: |
-          Describe your role here lorem ipsum dolor sit amet, consectetuer
-          adipiscing elit. Aenean commodo ligula eget dolor. Aenean massa.
-          Cum sociis natoque penatibus et magnis dis parturient montes,
-          nascetur ridiculus mus. Donec quam felis, ultricies nec,
-          pellentesque eu, pretium quis, sem.
-            - Bullet point
-            - Bullet point
-      - role: UI Developer
-        time: 2012 - 2014
-        company: Amazon, London
+          创办公司并管理 30+ 人研发团队，负责产品方向、核心研发与商务拓展。
+            - 融媒云融媒体系统开发
+            - 天眼测媒体产品设计与迭代
+            - 融媒体相关业务商务洽谈
+      - role: 技术总监
+        time: 2016.4 - 2018.5
+        company: 北京蜂众联网络科技有限公司
         details: |
-          Describe your role here lorem ipsum dolor sit amet, consectetuer
-          adipiscing elit. Aenean commodo ligula eget dolor. Aenean massa.
-          Cum sociis natoque penatibus et magnis dis parturient montes,
-          nascetur ridiculus mus. Donec quam felis, ultricies nec,
-          pellentesque eu, pretium quis, sem.
-            - Bullet point
-            - Bullet point
+          主导公司核心产品的研发迭代与内部技术体系建设。
+            - 蜂众联 APP 研发迭代更新
+            - 蜂众联自媒体平台开发迭代更新
+            - 公司内部 IT 信息系统维护
+      - role: 技术经理
+        time: 2014.8 - 2016.3
+        company: 北京慧摩尔科技有限公司（易创互联）
+        details: |
+          管理 40+ 人研发团队，并行推进多个客户项目与自有产品。
+            - 股票邦开发
+            - 送姜钱包管理后台 / APP 接口 / PC 端研发
+            - 国际交友 APP Speak+ 整体研发
+            - 人大金仓国产数据库 WEB 端研发
+            - 倍肯北京市 120 智能医疗项目后台模块
+      - role: 技术总监
+        time: 2013.6 - 2014.7
+        company: 北京环游天下国际旅行社有限公司
+        details: |
+          负责旅游业务全线产品研发与公司 IT 系统建设。
+            - 金米旅游超市、宇通签证网研发
+            - 旅行社业务处理系统研发
+            - 公司内部 IT 信息系统构建
+            - 承接桂林旅游目的地营销系统开发与维护
+      - role: JAVA 工程师（实习）
+        time: 2011.11 - 2012.6
+        company: 北京必鼎科技有限公司
+        details: |
+          大学期间实习，参与校园社交产品的后台与移动端研发。
+            - 师兄帮帮忙网站后台研发
+            - 师兄帮帮忙 Android 端 APP 研发
 
 certifications:
       title: Certifications
       list:
-        - name: CV Builder
-          start: 2020
-          end: 2021
-          organization: Microsoft
-          credentialid: 111-222
-          credentialurl: www.google.com
-          credentialname: Google
-          details: |
-            Details about cert. Lorem ipsum dolor sit amet, consectetur
-            adipiscing elit.
-            Nullam eget orci purus. Nullam ultrices neque nibh.
-            Aenean fermentum, felis vulputate suscipit accumsan,
-            sem enim bibendum augue, sed convallis arcu lacus at dui.
-            Pellentesque et nibh suscipit, vestibulum turpis eu, semper tortor.
-            Praesent felis nibh, eleifend id eleifend id, dictum id enim.
-            Praesent venenatis erat non augue suscipit consectetur.
-
-            Second paragraph. Sed eleifend enim ante, vitae efficitur purus
-            fringilla vel. Ut euismod, sem sed vulputate venenatis,
-            justo diam viverra velit, sed rhoncus leo leo eu justo.
-            Suspendisse placerat risus ante, sed porta nisi blandit at.
-        - name: Git learning
-          start: 2019
+        - name: 软件著作权 · MaudelClaw 应用软件 V1.0
+          start:
           end:
-          organization: Microsoft
-          credentialid: 111-222
-          credentialurl: www.github.com
-          credentialname: Github
+          organization: 摩豆智能科技
+          credentialid:
+          credentialurl:
+          credentialname:
           details: |
-            Older certification. Lorem ipsum dolor sit amet, consectetur
-            adipiscing elit.
-            Nullam eget orci purus. Nullam ultrices neque nibh.
-            Aenean fermentum, felis vulputate suscipit accumsan,
-            sem enim bibendum augue, sed convallis arcu lacus at dui.
-            Pellentesque et nibh suscipit, vestibulum turpis eu, semper tortor.
-            Praesent felis nibh, eleifend id eleifend id, dictum id enim.
-            Praesent venenatis erat non augue suscipit consectetur.
+            国产企业级 AI Agent 平台 MaudelClaw 的应用软件著作权登记（V1.0），
+            覆盖多 Agent 协作、浏览器自动化、文档智能处理与知识库 RAG 等核心能力。
 
 projects:
     title: Projects
     intro: >
-      You can list your side projects in this
-      section. Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-      Vestibulum et ligula in nunc bibendum fringilla a eu lectus.
+      从融媒体平台、舆情大数据到企业级 AI Agent，做过的代表性产品与系统。
     assignments:
-      - title: Velocity
-        link: "#hook"
-        tagline: "A responsive website template designed to help startups promote, market and sell their products."
+      - title: MaudelClaw 企业级 AI Agent 平台
+        link: https://maudelclaw.ai
+        tagline: "国产企业级 AI Agent 平台：多 Agent 协作、浏览器自动化、知识库 RAG 与完全私有化部署。"
 
-      - title: DevStudio
-        link: "#"
-        tagline: "A responsive website template designed to help web developers/designers market their services."
+      - title: DocWise 智能知识库
+        link:
+        tagline: "RAG 智能知识库，语义与混合双引擎检索，支持 100+ 模型接入、视频理解与智能体编排。"
 
-      - title: Tempo
-        link: "#"
-        tagline: "A responsive website template designed to help startups promote their products or services and to attract users &amp; investors"
+      - title: 声誉维护系统
+        link:
+        tagline: "基于大模型的声誉风险管理方案：负面监测、投诉函生成与批量处置，7×24 值守响应。"
 
-      - title: Atom
-        link: "#"
-        tagline: "A comprehensive website template solution for startups/developers to market their mobile apps."
+      - title: 融媒云融媒体平台
+        link:
+        tagline: "面向区域媒体的一体化融媒体生产与运营平台，服务广电与政务媒体客户。"
 
-      - title: Delta
-        link: "#"
-        tagline: "A responsive Bootstrap one page theme designed to help app developers promote their mobile apps"
+      - title: 天眼测新媒体监测平台
+        link:
+        tagline: "新媒体传播监测与效果分析产品，覆盖账号监测与数据洞察。"
+
+      - title: 全球舆论大数据平台
+        link:
+        tagline: "清博智能核心平台，覆盖全球多语言舆情的采集、分析与洞察。"
+
+      - title: 无尽之塔元宇宙 APP
+        link:
+        tagline: "清博智能元宇宙社交与活动空间的总体研发。"
+
+      - title: 清元数藏
+        link:
+        tagline: "数字藏品业务 H5 与 App 的总体开发。"
+
+      - title: DSH Research Lab
+        link: /project/dsh-research-lab/
+        tagline: "开源科研智能体框架，把数据审计、统计分析与报告生成串成可复核的研究流程。"
+
+      - title: AuditorBench
+        link: /project/auditorbench/
+        tagline: "评估 AI 审计员一致性与可靠性的研究基准。"
 
 oss:
     title: OSS Contributions
     intro: >
-      You can list your open source software contributions in this
-      section. Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-      Vestibulum et ligula in nunc bibendum fringilla a eu lectus.
+      在 GitHub 上持续开源与分享，个人主页 github.com/deerleo。
     contributions:
-      - title: Tempo
-        link: "#"
-        tagline: "A responsive website template designed to help startups promote their products or services and to attract users &amp; investors"
-
-      - title: Atom
-        link: "#"
-        tagline: "A comprehensive website template solution for startups/developers to market their mobile apps."
-
-      - title: Delta
-        link: "#"
-        tagline: "A responsive Bootstrap one page theme designed to help app developers promote their mobile apps"
+      - title: DSH Research Lab
+        link: https://github.com/deerleo
+        tagline: "开源科研智能体框架，面向高校科研的可复核智能体研究流程。"
 
 publications:
     title: Publications
-    intro: |
-      You can list your publications in this section. Lorem ipsum dolor sit
-      amet, consectetur adipiscing elit. Vestibulum et ligula in nunc
-      bibendum fringilla a eu lectus.
-    papers:
-      - title: The Art of Computer Programming
-        link: "#"
-        authors: Donald E. Knuth
-        conference: Addison-Wesley, 1968
-
-      - title: "Genetic Programming III: Darwinian Invention &amp; Problem Solving"
-        link: "#"
-        authors: Koza, J.R., Andre, D., Bennett, F.H., Keane, M.A.
-        conference: "Morgan Kaufmann Publishers Inc., San Francisco, CA, USA, 1st edn. (1999)"
-
-      - title: A syntax directed compiler for Algol 60
-        link: "#"
-        authors: Edgar T. Irons
-        conference: "Comm. ACM 4 (1961), 51–55"
+    papers: []
 
 skills:
     title: Skills &amp; Proficiency
 
     toolset:
-      - name: Python & Django
-        level: 98%
+      - name: Java 与全栈开发
+        level: 92%
 
-      - name: Javascript & jQuery
-        level: 98%
+      - name: Python 与 AI 应用工程
+        level: 90%
 
-      - name: Angular
-        level: 98%
+      - name: AI Agent 与大模型应用（RAG / 智能体编排）
+        level: 90%
 
-      - name: HTML5 & CSS
-        level: 95%
+      - name: 舆情监测与融媒体平台
+        level: 92%
 
-      - name: Ruby on Rails
+      - name: Web 与移动端开发
+        level: 88%
+
+      - name: 产品设计与研发团队管理
         level: 85%
-
-      - name: Sketch & Photoshop
-        level: 60%
 
 footer: >
     Designed with <i class="fas fa-heart"></i> by <a href="http://themes.3rdwavemedia.com" target="_blank" rel="nofollow">Xiaoying Riley</a>
