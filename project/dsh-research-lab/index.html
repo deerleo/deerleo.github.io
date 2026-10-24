@@ -119,10 +119,11 @@
   <div class="nav">
     <div class="brand">
       <div class="mark">🧪</div>
-      <div>DSH Research Lab<small>开源高校科研智能体框架 · v0.2.0</small></div>
+      <div>DSH Research Lab<small>开源高校科研智能体框架 · v0.3.0</small></div>
     </div>
     <nav class="nav-links">
       <a href="#arch">架构</a><a href="#layers">分层</a><a href="#data">真实数据</a>
+      <a href="#desktop">桌面端</a>
       <a href="#customize">定制 Agent</a><a href="#quickstart">快速开始</a>
       <a href="education-methodology.html">教育方法论</a>
       <a href="health-methodology.html">公卫方法论</a>
@@ -133,11 +134,13 @@
 <div class="hero">
   <span class="kicker">Open-source · DeepSeek Harness · Research Agents</span>
   <h1>把日常数据分析，封装成<em>可复核的科研智能体</em></h1>
-  <p class="lead">dsh-research-lab 是一套"下载即可运行"的高校科研智能体框架：两套真实公开数据的
-  完整研究管线、8+4 个科研技能、三个层级 Preset、49 项自动验收。教师与研究生不重造轮子，
-  按学科模板定制自己的科研 Agent。</p>
+  <p class="lead">dsh-research-lab 是一套"下载即可运行"的高校科研智能体框架：
+  <b style="color:var(--gold)">macOS 桌面端开箱即用</b>（内置真实 DeepSeek Harness + Node 22 + 全部科研栈，
+  无需预装任何环境）；亦可源码接入——两套真实公开数据的完整研究管线、8+4 个科研技能、
+  三个层级 Preset、49 项自动验收。教师与研究生不重造轮子，按学科模板定制自己的科研 Agent。</p>
   <div class="cta">
-    <a class="btn primary" href="https://github.com/milulab/dsh-research-lab">GitHub 仓库 ↗</a>
+    <a class="btn primary" href="https://github.com/milulab/dsh-research-lab/releases/latest">⬇ 下载桌面端（macOS Apple Silicon）</a>
+    <a class="btn" href="https://github.com/milulab/dsh-research-lab">GitHub 仓库 ↗</a>
     <a class="btn" href="#quickstart">60 秒上手</a>
     <a class="btn" href="../../course/ai-data-analyse/dsh.html">📖 逐步教程（两案例）</a>
     <a class="btn" href="education-methodology.html">教育科研方法论 →</a>
@@ -208,6 +211,27 @@
   </div>
   <div class="warn">⚠️ 教学边界：样本为真实研究数据但仅作课堂演示；观察性数据只谈关联；
   健康数据不得用于真实临床诊断；报告尾注"不代表真实培训效果"随每份产物输出。</div>
+</section>
+
+<section id="desktop">
+  <h2>桌面端：开箱可用的完整科研台</h2>
+  <p class="sub">一个 .app 装下全部——随包内置<b style="color:var(--gold)">真实 DSH</b>（DeepSeek Harness 0.2.1-rc.2，npm 官方包原样分发）、
+  Node 22 运行时与全部 Python 科研栈；使用者<b style="color:var(--gold)">无需预装 Node / Python / DSH</b>。
+  从 <a href="https://github.com/milulab/dsh-research-lab/releases/latest" style="color:var(--cyan)">GitHub Releases</a> 下载
+  <code>dsh-research-lab-*-darwin-arm64.dmg</code>（或 .zip）即可安装。</p>
+  <div class="grid">
+    <div class="card"><h3>🧩 内置真实 DSH</h3><p>工作台一键启动 DSH Web（MIT 许可，整包未修改）：
+      preset 与 12 个技能首启自动装配，会话内 DSH 的 shell 工具直接调用随包 Python 运行管线脚本。</p></div>
+    <div class="card"><h3>🔐 模型 Key 本机配置</h3><p>首次使用在「模型设置」填 Key（DeepSeek 官方或 OpenAI
+      兼容端点）。Key 仅存本机（0600），经环境变量注入 DSH——<b>绝不打包、不写日志、不随应用分发</b>。</p></div>
+    <div class="card"><h3>📊 一键管线与产物</h3><p>教育 / 公卫管线一键运行，报告、表格、图表就地浏览；
+      数据与产出全部落在用户目录，升级应用不触碰已有结果。</p></div>
+    <div class="card"><h3>✅ 构建即验证</h3><p>构建脚本自动做干净环境冒烟：装配 → 双管线真实产出 →
+      启动内置 DSH → token 访问断言（303/401）；报告随构建留存，可复现。</p></div>
+  </div>
+  <div class="warn">⚠️ 诚实边界：当前产物<b>未签名未公证</b>（无 Apple 开发者证书），首次打开需右键 →
+  打开；构建与验证平台为 <b>macOS 11+ Apple Silicon</b>，其他平台尚未提供。桌面版不随仓库分发二进制，
+  构建方式与使用文档见 <a href="https://github.com/milulab/dsh-research-lab/blob/main/docs/desktop.md" style="color:var(--cyan)">docs/desktop.md</a>。</div>
 </section>
 
 <section id="customize">
@@ -294,9 +318,16 @@ dsh web   <span class="cm"># 工作区指向仓库根目录，选择 edu-researc
 </section>
 
 <footer>
+  <div style="max-width:820px;margin:0 auto 10px;text-align:left;color:var(--muted);font-size:12.5px;line-height:1.7;">
+    <b>声明：</b>本项目为教学与研究辅助工具，全部统计结论须由领域专家复核后方可用于实际决策；
+    两套数据均为真实研究数据但仅作课堂演示——观察性数据只谈关联，健康数据不得用于真实临床诊断；
+    桌面端随包分发的 DeepSeek Harness（MIT）与 Node.js（MIT）分别为 DeepSeek 与 OpenJS 基金会项目，
+    本项目与两者无官方隶属关系。许可证 MIT，第三方声明见仓库 THIRD_PARTY_NOTICES.md。
+  </div>
   <div>DSH Research Lab · MIT License · 数据 CC BY 4.0（引用见 THIRD_PARTY_NOTICES.md）</div>
   <div>
     <a href="https://github.com/milulab/dsh-research-lab">GitHub</a> ·
+    <a href="https://github.com/milulab/dsh-research-lab/releases/latest">下载桌面端</a> ·
     <a href="https://milulab.com/course/ai-data-analyse/">互动课堂</a> ·
     <a href="education-methodology.html">教育方法论</a> ·
     <a href="health-methodology.html">公卫方法论</a>
