@@ -15,7 +15,7 @@ projects:
     description: 做过的完整作品、产品化尝试和可交付的交互式工具。
     items:
       - title: DSH Research Lab 开源科研智能体框架
-        text: 科研 Agent / 真实数据管线 / 内置 DSH 开箱即用桌面端
+        text: 科研 Agent / 真实数据管线 / 桌面端内置真实 DSH 开箱即用
         link: /project/dsh-research-lab/
         tag: Open Source
       - title: AI 数据分析互动课堂

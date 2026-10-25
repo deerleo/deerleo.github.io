@@ -34,3 +34,10 @@ compress_html: # - http://jch.penibelst.de/
 port: 4000
 host: 0.0.0.0
 safe: false
+
+# 排除嵌套源码仓库与构建产物（避免本地构建拷贝数 GB 依赖）
+exclude:
+  - dsh-research-lab
+  - vendor
+  - Gemfile
+  - Gemfile.lock
