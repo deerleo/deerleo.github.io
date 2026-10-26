@@ -20,6 +20,7 @@ css: milu
         <a href="#about">关于我</a>
         <a href="#work">项目作品</a>
         <a href="#tutorials">教程</a>
+        <a href="#blog">文章</a>
         <a href="#approach">做事方式</a>
         <a class="nav-contact" href="#contact">联系 ↗</a>
       </nav>
@@ -103,6 +104,20 @@ css: milu
         <a href="{{ '/course/ai-teaching-research/' | relative_url }}"><span><strong>AI 赋能教研</strong><small>科研写作、教学设计、Skill 与智能体工程 · 8 讲</small></span><b aria-hidden="true">↗</b></a>
         <a href="{{ '/course/aigc-creative/' | relative_url }}"><span><strong>AIGC 创意实作</strong><small>从提示设计到图像、动态叙事与团队创作</small></span><b aria-hidden="true">↗</b></a>
       </div>
+    </section>
+
+    <section class="approach-section tutorial-section" id="blog" aria-labelledby="blog-title">
+      <h2 id="blog-title">把实践，<br>写成可复核的经验。</h2>
+      <p class="tutorial-intro">AI 产品实践复盘、Agent 工程笔记、技术边界分析。只写亲手做过、验证过的事。</p>
+      <div class="tutorial-links">
+        {% for post in site.posts limit:3 %}
+        <a href="{{ post.url | relative_url }}"><span><strong>{{ post.title }}</strong><small>{{ post.date | date: "%Y-%m-%d" }} · {{ post.description | default: post.excerpt | strip_html | truncate: 42 }}</small></span><b aria-hidden="true">↗</b></a>
+        {% endfor %}
+        {% if site.posts.size == 0 %}{% for group in site.data.milu.blog %}{% for item in group.items limit:3 %}
+        <a href="{{ '/blog/' | relative_url }}"><span><strong>{{ item.title }}</strong><small>{{ item.text }}</small></span><b aria-hidden="true">↗</b></a>
+        {% endfor %}{% endfor %}{% endif %}
+      </div>
+      <p class="tutorial-intro" style="margin-top:22px"><a href="{{ '/blog/' | relative_url }}" style="color:inherit;font-weight:700;text-decoration:none;border-bottom:1px solid rgba(195,237,89,.5)">全部文章 →</a></p>
     </section>
 
     <section class="approach-section" id="approach" aria-labelledby="approach-title">
