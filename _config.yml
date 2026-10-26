@@ -26,6 +26,8 @@ compress-site: yes
 
 # Blog
 permalink: /blog/:year-:month-:day-:title/
+timezone: Asia/Shanghai   # 文章日期按北京时间解析（CI 是 UTC，否则当天文章会被当未来跳过）
+future: true              # 发布当天日期的文章（写完即发，不等 UTC 时钟）
 defaults:
   - scope:
       path: ""
