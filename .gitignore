@@ -12,3 +12,9 @@ vendor/
 
 # 本地克隆的框架仓库（独立维护，不入网站库）
 /dsh-research-lab/
+
+# 私人专业工作流资料，不进入公开仓库
+/private-workflows/
+
+# WorkBuddy agent 工作数据，不入库
+/.workbuddy/

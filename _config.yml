@@ -38,6 +38,7 @@ safe: false
 # 排除嵌套源码仓库与构建产物（避免本地构建拷贝数 GB 依赖）
 exclude:
   - dsh-research-lab
+  - private-workflows
   - vendor
   - Gemfile
   - Gemfile.lock
