@@ -24,6 +24,15 @@ sass:
 # Build settings
 compress-site: yes
 
+# Blog
+permalink: /blog/:year-:month-:day-:title/
+defaults:
+  - scope:
+      path: ""
+      type: "posts"
+    values:
+      layout: "post"
+
 encoding: "utf-8"
 compress_html: # - http://jch.penibelst.de/
   clippings: all

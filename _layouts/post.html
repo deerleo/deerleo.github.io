@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="{{ page.description | default: page.excerpt | default: site.description }}">
+  <meta name="robots" content="index,follow">
+  <title>{{ page.title }} · 迷鹿 MiLu</title>
+  <style>
+    :root{color-scheme:dark;--bg:#09111d;--panel:#111e30;--line:#2b3b50;--ink:#edf4fb;--muted:#a8b7c9;--mint:#c3ed59;--cyan:#75d7e8}
+    *{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 80% 0,#163449 0,transparent 42%),var(--bg);color:var(--ink);font:16px/1.8 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
+    a{color:var(--mint)}.wrap{max-width:760px;margin:auto;padding:48px 24px 88px}
+    .post-head{margin-bottom:40px;padding-bottom:26px;border-bottom:1px solid var(--line)}
+    .post-meta{display:flex;gap:10px;align-items:center;color:var(--cyan);font-size:11px;font-weight:850;letter-spacing:.08em;flex-wrap:wrap}
+    .post-meta time{color:#8595a8;font-weight:650;letter-spacing:.04em}
+    h1.title{margin:14px 0 12px;font-size:clamp(30px,5vw,44px);line-height:1.15;letter-spacing:-.04em}
+    .post-head p.desc{margin:0;color:var(--muted);font-size:16px}
+    .post-body h2{margin:44px 0 14px;font-size:24px;letter-spacing:-.02em;border-left:3px solid var(--mint);padding-left:12px}
+    .post-body h3{margin:32px 0 10px;font-size:19px}
+    .post-body p{margin:0 0 16px;color:#d6e2ee}
+    .post-body ul,.post-body ol{margin:0 0 16px;padding-left:22px;color:#d6e2ee}
+    .post-body li{margin-bottom:6px}
+    .post-body blockquote{margin:20px 0;padding:14px 18px;border-left:2px solid var(--cyan);background:rgba(117,215,232,.06);color:var(--muted);border-radius:0 12px 12px 0}
+    .post-body code{padding:2px 7px;border:1px solid var(--line);border-radius:6px;background:rgba(17,30,48,.9);font-size:13px;color:var(--cyan)}
+    .post-body pre{overflow-x:auto;padding:16px 18px;border:1px solid var(--line);border-radius:14px;background:rgba(10,18,30,.92)}
+    .post-body pre code{border:0;background:transparent;padding:0;color:#d6e2ee}
+    .post-body table{width:100%;border-collapse:collapse;margin:0 0 18px;font-size:14px}
+    .post-body th,.post-body td{border:1px solid var(--line);padding:8px 12px;text-align:left}
+    .post-body th{color:var(--cyan);background:rgba(17,30,48,.7)}
+    .post-body img{max-width:100%;border-radius:14px}
+    .post-body hr{border:0;border-top:1px solid var(--line);margin:36px 0}
+    .post-footer{display:flex;justify-content:space-between;align-items:center;gap:16px;margin-top:60px;padding-top:18px;border-top:1px solid var(--line);color:#8595a8;font-size:12px;flex-wrap:wrap}
+    .post-footer .back{color:var(--mint);font-weight:800;text-decoration:none;font-size:13px}
+    @media(max-width:680px){.wrap{padding-top:38px}.post-footer{display:block}.post-footer span{display:block;margin:5px 0}}
+  </style>
+  <link rel="stylesheet" href="{{ '/assets/css/subpage-shell.css?v=20261027' | relative_url }}">
+</head>
+<body id="top">
+  {% include subpage-shell.html identity="文章与观点" descriptor="Blog" %}
+  <main class="wrap">
+    <article>
+      <header class="post-head">
+        <div class="post-meta">
+          <time datetime="{{ page.date | date_to_xmlschema }}">{{ page.date | date: "%Y-%m-%d" }}</time>
+          {% if page.tags %}{% for t in page.tags %}<span>{{ t }}</span>{% endfor %}{% endif %}
+        </div>
+        <h1 class="title">{{ page.title }}</h1>
+        {% if page.description %}<p class="desc">{{ page.description }}</p>{% endif %}
+      </header>
+      <div class="post-body">
+        {{ content }}
+      </div>
+    </article>
+    <footer class="post-footer">
+      <a class="back" href="{{ '/blog/' | relative_url }}">← 返回文章列表</a>
+      <span>迷鹿 MiLu · 把想法做成能用的东西</span>
+    </footer>
+  </main>
+</body>
+</html>
