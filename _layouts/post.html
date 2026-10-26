@@ -13,6 +13,17 @@
     .post-head{margin-bottom:40px;padding-bottom:26px;border-bottom:1px solid var(--line)}
     .post-meta{display:flex;gap:10px;align-items:center;color:var(--cyan);font-size:11px;font-weight:850;letter-spacing:.08em;flex-wrap:wrap}
     .post-meta time{color:#8595a8;font-weight:650;letter-spacing:.04em}
+    .series-badge{display:inline-flex;align-items:center;gap:8px;margin-bottom:18px;padding:7px 14px;border:1px solid rgba(195,237,89,.4);border-radius:999px;color:var(--mint);font-size:12px;font-weight:800;text-decoration:none}
+    .series-badge:hover{background:rgba(195,237,89,.08)}
+    .series-nav{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:44px}
+    .series-nav a{display:flex;flex-direction:column;gap:6px;padding:16px 18px;border:1px solid var(--line);border-radius:14px;text-decoration:none;transition:border-color .15s ease}
+    .series-nav a:hover{border-color:rgba(195,237,89,.45)}
+    .series-nav .dir{color:var(--cyan);font-size:11px;font-weight:850;letter-spacing:.08em}
+    .series-nav .t{color:#d6e2ee;font-size:14px;font-weight:700;line-height:1.4}
+    .series-nav a.next{text-align:right}
+    .series-nav a.next .dir{color:var(--mint)}
+    .series-nav .placeholder{padding:16px 18px;border:1px dashed var(--line);border-radius:14px;color:#71829a;font-size:13px;display:flex;align-items:center}
+    @media(max-width:680px){.series-nav{grid-template-columns:1fr}.series-nav a.next{text-align:left}}
     h1.title{margin:14px 0 12px;font-size:clamp(30px,5vw,44px);line-height:1.15;letter-spacing:-.04em}
     .post-head p.desc{margin:0;color:var(--muted);font-size:16px}
     .post-body h2{margin:44px 0 14px;font-size:24px;letter-spacing:-.02em;border-left:3px solid var(--mint);padding-left:12px}
@@ -40,6 +51,10 @@
   <main class="wrap">
     <article>
       <header class="post-head">
+        {% if page.series %}
+        {% assign siblings = site.posts | where: "series", page.series %}
+        <a class="series-badge" href="{{ '/blog/?series=' | append: page.series | relative_url }}">📚 {{ page.series }}<span style="color:#8595a8;font-weight:650">· 共 {{ siblings.size }} 篇</span></a>
+        {% endif %}
         <div class="post-meta">
           <time datetime="{{ page.date | date_to_xmlschema }}">{{ page.date | date: "%Y-%m-%d" }}</time>
           {% if page.tags %}{% for t in page.tags %}<span>{{ t }}</span>{% endfor %}{% endif %}
@@ -50,7 +65,29 @@
       <div class="post-body">
         {{ content }}
       </div>
+      {% if page.series %}
+      {% assign siblings = site.posts | where: "series", page.series %}
+      {% assign prev = null %}{% assign next = null %}{% assign found = false %}
+      {% for p in siblings %}
+        {% if p.url == page.url %}{% assign found = true %}
+        {% elsif found %}{% assign next = p %}{% break %}
+        {% else %}{% assign prev = p %}{% endif %}
+      {% endfor %}
+      {% endif %}
     </article>
+
+    {% if page.series %}{% if prev or next %}
+    <nav class="series-nav" aria-label="专题导航">
+      {% if prev %}
+      <a href="{{ prev.url | relative_url }}"><span class="dir">← 上一篇</span><span class="t">{{ prev.title }}</span></a>
+      {% else %}<div class="placeholder">这是本专题第一篇</div>{% endif %}
+      {% if next %}
+      <a class="next" href="{{ next.url | relative_url }}"><span class="dir">下一篇 →</span><span class="t">{{ next.title }}</span></a>
+      {% else %}<div class="placeholder">本专题到此完结，更多内容在写了</div>{% endif %}
+    </nav>
+    {% endif %}
+    {% endif %}
+
     <footer class="post-footer">
       <a class="back" href="{{ '/blog/' | relative_url }}">← 返回文章列表</a>
       <span>迷鹿 MiLu · 把想法做成能用的东西</span>

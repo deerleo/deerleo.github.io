@@ -21,6 +21,8 @@
     .post-card h2{margin:0;font-size:22px;line-height:1.35;letter-spacing:-.02em}
     .post-card p{margin:0;color:var(--muted);font-size:14px}
     .post-card .read{color:var(--mint);font-size:13px;font-weight:800;margin-top:4px}
+    .series-card{border-color:rgba(195,237,89,.28);background:linear-gradient(145deg,rgba(35,54,38,.5),rgba(12,22,36,.96))}
+    .series-card:hover{border-color:rgba(195,237,89,.6)}
     .empty{padding:40px 24px;border:1px dashed var(--line);border-radius:18px;color:var(--muted);text-align:center}
     .footer{display:flex;justify-content:space-between;gap:16px;margin-top:60px;padding-top:18px;border-top:1px solid var(--line);color:#8595a8;font-size:12px}
     @media(max-width:680px){.wrap{padding-top:38px}.footer{display:block}.footer span{display:block;margin:5px 0}}
@@ -36,11 +38,28 @@
       <p>AI 产品实践复盘、Agent 工程笔记、技术边界分析与创业思考。只写亲手做过、验证过的事。</p>
     </header>
 
-    <section class="postlist" aria-label="文章列表">
+    <section class="postlist" aria-label="专题系列">
+      {% assign seen = "" | split: "" %}
+      {% for post in site.posts %}
+        {% if post.series %}{% unless seen contains post.series %}{% assign seen = seen | push: post.series %}{% endunless %}{% endif %}
+      {% endfor %}
+      {% for s in seen %}
+      {% assign s_posts = site.posts | where: "series", s %}
+      <a class="post-card series-card" href="{{ s_posts.first.url | relative_url }}">
+        <div class="post-meta"><span>📚 专题</span><span>{{ s_posts.size }} 篇</span></div>
+        <h2>{{ s }}</h2>
+        <p>{% for p in s_posts limit:3 %}{{ p.title }}{% unless forloop.last %} · {% endunless %}{% endfor %}</p>
+        <span class="read">进入专题 →</span>
+      </a>
+      {% endfor %}
+    </section>
+
+    <section class="postlist" aria-label="文章列表" style="margin-top:34px">
       {% for post in site.posts %}
       <a class="post-card" href="{{ post.url | relative_url }}">
         <div class="post-meta">
           <time datetime="{{ post.date | date_to_xmlschema }}">{{ post.date | date: "%Y-%m-%d" }}</time>
+          {% if post.series %}<span>📚 {{ post.series }}</span>{% endif %}
           {% if post.tags %}{% for t in post.tags limit:2 %}<span>{{ t }}</span>{% endfor %}{% endif %}
         </div>
         <h2>{{ post.title }}</h2>
