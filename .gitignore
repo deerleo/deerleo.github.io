@@ -18,3 +18,4 @@ vendor/
 
 # WorkBuddy agent 工作数据，不入库
 /.workbuddy/
+Gemfile.lock
