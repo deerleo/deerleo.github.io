@@ -147,7 +147,7 @@ body {
 @media (max-width: 900px) {
   .milu { display: block; }
   .portrait-stage { position: relative; top: auto; height: 48svh; min-height: 330px; max-height: 520px; }
-  .portrait { object-position: 50% 28%; }
+  .portrait { object-position: 50% 38%; }
   .stage-brand { left: 20px; top: 18px; }
   .portrait-caption { left: 22px; bottom: 28px; display: flex; align-items: end; }
   .portrait-caption span:first-child { font-size: clamp(47px, 12vw, 74px); }
