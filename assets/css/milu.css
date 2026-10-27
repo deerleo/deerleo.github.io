@@ -56,6 +56,11 @@ body {
 .intro h1 em { color: var(--accent); font-style: normal; }
 .hero-summary { max-width: 570px; margin: 24px 0 0; color: var(--muted); font-size: clamp(17px, 1.55vw, 20px); line-height: 1.8; }
 .hero-actions { display: flex; align-items: center; flex-wrap: wrap; gap: 25px; margin-top: 27px; }
+.hero-cta-line { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 10px; margin-top: 24px; }
+.cta-chunk { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; padding: 12px 15px; background: rgba(255,255,255,.72); font-size: 13px; color: var(--muted); line-height: 1.5; }
+.cta-chunk b { color: var(--forest); letter-spacing: .02em; padding-right: 8px; border-right: 2px solid var(--lime); }
+.cta-chunk a { color: #486c2a; font-weight: 800; white-space: nowrap; margin-left: auto; border-bottom: 1px solid rgba(72,108,42,.4); transition: border-color .2s ease; }
+.cta-chunk a:hover { border-color: #486c2a; }
 .button { display: inline-flex; align-items: center; justify-content: center; gap: 14px; min-height: 50px; padding: 0 20px; font-size: 14px; font-weight: 800; transition: background .2s ease, transform .2s ease; }
 .button:hover, .button:focus-visible { transform: translateY(-2px); }
 .button.primary { color: #14231a; background: var(--lime); }
