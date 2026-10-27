@@ -1,0 +1,219 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>宝宝的 3D 模型 · MiLu Lab</title>
+<meta name="description" content="一张手机照片，变成一个可以旋转、放大的三维模型。图生 3D + Blender 渲染的完整过程。">
+<meta name="robots" content="noindex">
+<link rel="canonical" href="https://milulab.com/personal/baby-3d.html">
+<meta property="og:title" content="宝宝的 3D 模型">
+<meta property="og:description" content="一张手机照片，变成一个可以旋转、放大的三维模型。">
+<meta property="og:image" content="https://milulab.com/personal/assets/baby/poster.jpg">
+<meta property="og:type" content="article">
+<style>
+  :root{
+    --teal:#2d7788; --teal-soft:rgba(45,119,136,.10); --teal-line:rgba(45,119,136,.22);
+    --ink:#3f4854; --muted:#7b8492; --bg:#f5f5f5; --card:#fff;
+    --sand:#f7f1e8; --accent:#e0a370;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",system-ui,sans-serif;
+    background:radial-gradient(1200px 600px at 50% -10%, #fdf8f1 0%, var(--bg) 55%) fixed;
+    color:var(--ink); -webkit-font-smoothing:antialiased; line-height:1.65;
+  }
+  a{color:var(--teal);text-decoration:none}
+  a:hover{text-decoration:underline}
+
+  .nav{max-width:1080px;margin:0 auto;padding:20px 22px 0;display:flex;justify-content:space-between;align-items:center}
+  .nav .brand{font-weight:800;letter-spacing:.02em;color:var(--teal)}
+  .nav .back{font-size:14px;color:var(--muted)}
+  .nav .back:hover{color:var(--teal)}
+
+  header.hero{max-width:1080px;margin:0 auto;padding:34px 22px 8px;text-align:center}
+  h1{font-size:clamp(26px,4vw,38px);margin:0 0 10px;letter-spacing:-.01em;color:#2b333d}
+  .sub{color:var(--muted);font-size:clamp(14px,1.6vw,16px);margin:0 auto;max-width:640px}
+
+  .chips{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin:18px 0 0}
+  .chip{font-size:12.5px;padding:5px 12px;border-radius:999px;background:var(--teal-soft);color:var(--teal);border:1px solid var(--teal-line)}
+
+  main{max-width:1080px;margin:0 auto;padding:18px 22px 72px}
+
+  .stage{
+    position:relative;background:#fff;
+    border:1px solid rgba(0,0,0,.07);border-radius:22px;
+    box-shadow:0 18px 50px rgba(60,50,35,.10);
+    overflow:hidden;margin:20px 0 14px;
+  }
+  model-viewer{width:100%;height:min(68vh,600px);background:transparent;--poster-color:transparent;display:block}
+  #launch{position:absolute;inset:0;display:flex;flex-direction:column;gap:10px;align-items:center;justify-content:center;color:var(--muted);font-size:14px;background:#fff;transition:opacity .4s}
+  #launch .ring{width:34px;height:34px;border-radius:50%;border:3px solid var(--teal-soft);border-top-color:var(--teal);animation:spin 1s linear infinite}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .stage.hide-launch #launch{opacity:0;pointer-events:none}
+
+  .toolbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:center;padding:0 16px 16px}
+  .toolbar button{
+    appearance:none;border:1px solid var(--teal-line);background:#fff;color:var(--teal);
+    font-size:13px;font-weight:600;padding:8px 14px;border-radius:10px;cursor:pointer;transition:.15s;
+  }
+  .toolbar button:hover{background:var(--teal-soft)}
+  .toolbar button.on{background:var(--teal);color:#fff;border-color:var(--teal)}
+  .toolbar .sep{width:1px;height:22px;background:rgba(0,0,0,.09);margin:0 4px}
+
+  .hint{text-align:center;color:var(--muted);font-size:13px;margin:0 0 40px}
+
+  h2{font-size:20px;margin:0 0 6px;color:#2b333d}
+  .sec-sub{color:var(--muted);font-size:14px;margin:0 0 18px}
+
+  .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+  @media (max-width:820px){.grid{grid-template-columns:repeat(2,1fr)}}
+  figure{margin:0;background:var(--card);border:1px solid rgba(0,0,0,.07);border-radius:16px;overflow:hidden;box-shadow:0 6px 18px rgba(60,50,35,.05)}
+  figure img{width:100%;display:block;aspect-ratio:1/1;object-fit:cover}
+  figcaption{padding:10px 12px;font-size:13px;color:var(--muted);display:flex;justify-content:space-between}
+  figcaption b{color:var(--ink);font-weight:600}
+
+  .how{margin-top:44px;display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+  @media (max-width:820px){.how{grid-template-columns:1fr}}
+  .step{background:var(--card);border:1px solid rgba(0,0,0,.07);border-radius:16px;padding:18px 18px 16px;box-shadow:0 6px 18px rgba(60,50,35,.05)}
+  .step .no{font-size:12px;font-weight:800;color:var(--accent);letter-spacing:.08em}
+  .step h3{font-size:15px;margin:6px 0 6px;color:#2b333d}
+  .step p{margin:0;font-size:13.5px;color:var(--muted);line-height:1.7}
+
+  .dl{margin-top:34px;display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:center;background:var(--sand);border:1px solid rgba(224,163,112,.35);border-radius:16px;padding:16px}
+  .dl span{font-size:13.5px;color:#8a7458}
+  .dl a{font-weight:700;font-size:14px;background:#fff;border:1px solid rgba(224,163,112,.5);border-radius:10px;padding:8px 16px}
+  .dl a:hover{background:#fffaf3;text-decoration:none}
+
+  footer{max-width:1080px;margin:0 auto;padding:0 22px 46px;text-align:center;color:var(--muted);font-size:13px}
+</style>
+</head>
+<body>
+
+<div class="nav">
+  <span class="brand">MiLu Lab</span>
+  <a class="back" href="/">← 回首页</a>
+</div>
+
+<header class="hero">
+  <h1>宝宝的 3D 模型</h1>
+  <p class="sub">一张手机照片，变成一个能旋转、能放大、能拿在手里看的三维模型。底下是全过程。</p>
+  <div class="chips">
+    <span class="chip">图生 3D</span>
+    <span class="chip">PBR 材质</span>
+    <span class="chip">glTF 1.3MB</span>
+    <span class="chip">Blender 渲染</span>
+  </div>
+</header>
+
+<main>
+  <div class="stage" id="stage">
+    <model-viewer
+      id="mv"
+      src="assets/baby/baby_model.glb"
+      poster="assets/baby/poster.jpg"
+      alt="宝宝的 3D 模型"
+      camera-controls
+      auto-rotate
+      auto-rotate-delay="600"
+      rotation-per-second="22deg"
+      camera-orbit="90deg 82deg auto"
+      shadow-intensity="0.55"
+      shadow-softness="1"
+      exposure="1.05"
+      environment-image="neutral"
+      interaction-prompt="none"
+      touch-action="pan-y"
+      ar
+      ar-modes="webxr scene-viewer quick-look">
+    </model-viewer>
+    <div id="launch"><div class="ring"></div><span>模型加载中…</span></div>
+    <div class="toolbar">
+      <button data-view="front" class="on">正面</button>
+      <button data-view="q45">45°</button>
+      <button data-view="side">侧面</button>
+      <button data-view="back">背面</button>
+      <button data-view="top">俯视</button>
+      <span class="sep"></span>
+      <button id="btn-rotate" class="on">自动旋转</button>
+    </div>
+  </div>
+  <p class="hint">拖动旋转 · 滚轮 / 双指缩放 · 双击复位</p>
+
+  <section>
+    <h2>换个角度看</h2>
+    <p class="sec-sub">同一份模型，在 Blender 里换不同机位和光位渲染出来的效果。</p>
+    <div class="grid">
+      <figure><img src="assets/baby/renders/front.jpg" alt="正面全身" loading="lazy"><figcaption><b>正面</b><span>0°</span></figcaption></figure>
+      <figure><img src="assets/baby/renders/angle45.jpg" alt="45 度角" loading="lazy"><figcaption><b>斜前方</b><span>45°</span></figcaption></figure>
+      <figure><img src="assets/baby/renders/back.jpg" alt="背面" loading="lazy"><figcaption><b>背面</b><span>180°</span></figcaption></figure>
+      <figure><img src="assets/baby/renders/face.jpg" alt="面部特写" loading="lazy"><figcaption><b>面部特写</b><span>65mm</span></figcaption></figure>
+      <figure><img src="assets/baby/renders/face2.jpg" alt="面部四分之三侧面" loading="lazy"><figcaption><b>四分之三侧面</b><span>65mm</span></figcaption></figure>
+      <figure><img src="assets/baby/renders/top.jpg" alt="俯视" loading="lazy"><figcaption><b>俯视</b><span>58°</span></figcaption></figure>
+    </div>
+  </section>
+
+  <section>
+    <h2>怎么做的</h2>
+    <p class="sec-sub">没有建模基础，全程三步，加起来不到半小时。</p>
+    <div class="how">
+      <div class="step">
+        <div class="no">STEP 01</div>
+        <h3>拍一张照片</h3>
+        <p>手机随手拍的一张躺姿照。单张图就够，不用环拍、不用扫描仪。</p>
+      </div>
+      <div class="step">
+        <div class="no">STEP 02</div>
+        <h3>图生 3D</h3>
+        <p>照片丢进图生 3D 模型，约三分半出一版带 PBR 材质的模型。背面和底部是 AI 补全的。</p>
+      </div>
+      <div class="step">
+        <div class="no">STEP 03</div>
+        <h3>打光渲染</h3>
+        <p>用 Blender 建了三点布光，绕一圈 8 个机位加 2 个特写渲染，压成 WebP 上网页。</p>
+      </div>
+    </div>
+  </section>
+
+  <div class="dl">
+    <span>想拿去玩？原始模型（glTF 2.0，带贴图）可以直接下载：</span>
+    <a href="assets/baby/baby_model.glb" download>下载 .glb</a>
+  </div>
+</main>
+
+<footer>Made with 🍼 at <a href="/">milulab.com</a></footer>
+
+<script type="module" src="https://cdn.jsdelivr.net/npm/@google/model-viewer@4.4.0/dist/model-viewer.min.js"></script>
+<script>
+  const mv = document.getElementById('mv');
+  const stage = document.getElementById('stage');
+  mv.addEventListener('load', () => stage.classList.add('hide-launch'));
+  setTimeout(() => stage.classList.add('hide-launch'), 6000);
+
+  const views = {
+    front: '90deg 82deg auto',
+    q45:   '45deg 82deg auto',
+    side:  '0deg 82deg auto',
+    back:  '270deg 82deg auto',
+    top:   '90deg 22deg auto'
+  };
+  const btns = document.querySelectorAll('[data-view]');
+  btns.forEach(b => b.addEventListener('click', () => {
+    mv.removeAttribute('auto-rotate');
+    rotBtn.classList.remove('on');
+    mv.setAttribute('camera-orbit', views[b.dataset.view]);
+    mv.setAttribute('interpolation-decay', '120');
+    btns.forEach(x => x.classList.remove('on'));
+    b.classList.add('on');
+  }));
+
+  const rotBtn = document.getElementById('btn-rotate');
+  rotBtn.addEventListener('click', () => {
+    const on = mv.hasAttribute('auto-rotate');
+    if (on) { mv.removeAttribute('auto-rotate'); rotBtn.classList.remove('on'); }
+    else { mv.setAttribute('auto-rotate', ''); rotBtn.classList.add('on'); }
+  });
+</script>
+</body>
+</html>
