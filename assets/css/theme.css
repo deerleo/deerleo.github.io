@@ -1,0 +1,221 @@
+/* ============================================================
+   theme.css — milulab.com 全站主题 token 唯一真源
+   工单 THEME-20261027（浅色 / 深色 / 自动 三态主题）
+   所有页面在自有 <style>/<link> 之前先加载本文件。
+
+   结构：
+   1. :root                 浅色（默认）
+   2. html[data-theme="light"]   浅色（显式选择，与默认同值）
+   3. html[data-theme="dark"]    深色（显式选择或 auto 解析为深）
+   4. @media(prefers-color-scheme:dark) :root:not([data-theme])
+                                 兜底（无 JS / 首帧前跟随系统）
+   兼容策略：保留旧页面变量名 --bg/--panel/--line/--ink/--muted/
+   --mint/--cyan/--lime/--pink/--amber，旧页删掉自己的 :root 后
+   var() 引用自动生效。
+   ============================================================ */
+
+:root {
+  color-scheme: light;
+
+  /* 基底 */
+  --bg: #f1f2ec;
+  --panel: #fffefa;
+  --panel-soft: rgba(255, 254, 250, .86);
+  --panel-2: #f6f7f1;
+  --card-grad: linear-gradient(145deg, #ffffff, #fbfcf7);
+  --page-glow: radial-gradient(ellipse at 80% 0, rgba(60, 118, 87, .10) 0, transparent 42%);
+
+  /* 线与文字 */
+  --line: rgba(23, 59, 44, .15);
+  --line-strong: rgba(23, 59, 44, .28);
+  --ink: #1a2921;
+  --ink-2: #2c3d33;
+  --ink-3: #6a786e;
+  --muted: #56645a;
+
+  /* 品牌彩（旧变量名，浅色取可读值） */
+  --mint: #2f6b4f;
+  --lime: #c3ed59;
+  --cyan: #1f6f7f;
+  --pink: #a34a7a;
+  --amber: #8a5a18;
+
+  /* 强调与功能 */
+  --accent: #3c7657;
+  --accent-2: #1f6f7f;
+  --accent-soft: rgba(60, 118, 87, .08);
+  --accent2-soft: rgba(31, 111, 127, .07);
+  --on-lime: #14231a;
+  --on-accent: #ffffff;
+  --code-bg: #f4f6ef;
+  --header-bg: rgba(241, 242, 236, .86);
+  --shadow: 0 10px 34px rgba(23, 59, 44, .10);
+  --theme-color: #f1f2ec;
+}
+
+html[data-theme="light"] {
+  color-scheme: light;
+
+  --bg: #f1f2ec;
+  --panel: #fffefa;
+  --panel-soft: rgba(255, 254, 250, .86);
+  --panel-2: #f6f7f1;
+  --card-grad: linear-gradient(145deg, #ffffff, #fbfcf7);
+  --page-glow: radial-gradient(ellipse at 80% 0, rgba(60, 118, 87, .10) 0, transparent 42%);
+
+  --line: rgba(23, 59, 44, .15);
+  --line-strong: rgba(23, 59, 44, .28);
+  --ink: #1a2921;
+  --ink-2: #2c3d33;
+  --ink-3: #6a786e;
+  --muted: #56645a;
+
+  --mint: #2f6b4f;
+  --lime: #c3ed59;
+  --cyan: #1f6f7f;
+  --pink: #a34a7a;
+  --amber: #8a5a18;
+
+  --accent: #3c7657;
+  --accent-2: #1f6f7f;
+  --accent-soft: rgba(60, 118, 87, .08);
+  --accent2-soft: rgba(31, 111, 127, .07);
+  --on-lime: #14231a;
+  --on-accent: #ffffff;
+  --code-bg: #f4f6ef;
+  --header-bg: rgba(241, 242, 236, .86);
+  --shadow: 0 10px 34px rgba(23, 59, 44, .10);
+  --theme-color: #f1f2ec;
+}
+
+html[data-theme="dark"] {
+  color-scheme: dark;
+
+  --bg: #0b1611;
+  --panel: #13261d;
+  --panel-soft: rgba(19, 38, 29, .74);
+  --panel-2: #0f1e17;
+  --card-grad: linear-gradient(145deg, rgba(23, 46, 35, .95), rgba(14, 28, 21, .96));
+  --page-glow: radial-gradient(ellipse at 80% 0, rgba(23, 59, 44, .85) 0, transparent 42%);
+
+  --line: rgba(155, 228, 191, .16);
+  --line-strong: rgba(155, 228, 191, .30);
+  --ink: #eef4ec;
+  --ink-2: #d5e2d6;
+  --ink-3: #8fa396;
+  --muted: #a3b7a8;
+
+  --mint: #9be4bf;
+  --lime: #c3ed59;
+  --cyan: #75d7e8;
+  --pink: #f3a8d5;
+  --amber: #f1bd73;
+
+  --accent: #c3ed59;
+  --accent-2: #9be4bf;
+  --accent-soft: rgba(195, 237, 89, .08);
+  --accent2-soft: rgba(155, 228, 191, .07);
+  --on-lime: #14231a;
+  --on-accent: #14231a;
+  --code-bg: rgba(8, 18, 13, .92);
+  --header-bg: rgba(10, 22, 16, .82);
+  --shadow: 0 10px 34px rgba(0, 0, 0, .40);
+  --theme-color: #0b1611;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme]) {
+    color-scheme: dark;
+
+    --bg: #0b1611;
+    --panel: #13261d;
+    --panel-soft: rgba(19, 38, 29, .74);
+    --panel-2: #0f1e17;
+    --card-grad: linear-gradient(145deg, rgba(23, 46, 35, .95), rgba(14, 28, 21, .96));
+    --page-glow: radial-gradient(ellipse at 80% 0, rgba(23, 59, 44, .85) 0, transparent 42%);
+
+    --line: rgba(155, 228, 191, .16);
+    --line-strong: rgba(155, 228, 191, .30);
+    --ink: #eef4ec;
+    --ink-2: #d5e2d6;
+    --ink-3: #8fa396;
+    --muted: #a3b7a8;
+
+    --mint: #9be4bf;
+    --lime: #c3ed59;
+    --cyan: #75d7e8;
+    --pink: #f3a8d5;
+    --amber: #f1bd73;
+
+    --accent: #c3ed59;
+    --accent-2: #9be4bf;
+    --accent-soft: rgba(195, 237, 89, .08);
+    --accent2-soft: rgba(155, 228, 191, .07);
+    --on-lime: #14231a;
+    --on-accent: #14231a;
+    --code-bg: rgba(8, 18, 13, .92);
+    --header-bg: rgba(10, 22, 16, .82);
+    --shadow: 0 10px 34px rgba(0, 0, 0, .40);
+    --theme-color: #0b1611;
+  }
+}
+
+/* 主题切换瞬间的过渡：仅在切换时挂到 <html> 上，240ms 后由 JS 移除，
+   避免首屏与滚动时长期占用 transition。 */
+html.theme-switching,
+html.theme-switching *,
+html.theme-switching *::before,
+html.theme-switching *::after {
+  transition: background-color .18s ease, color .18s ease, border-color .18s ease !important;
+}
+@media (prefers-reduced-motion: reduce) {
+  html.theme-switching,
+  html.theme-switching *,
+  html.theme-switching *::before,
+  html.theme-switching *::after {
+    transition: none !important;
+  }
+}
+
+/* ------------------------------------------------------------
+   右上角三态切换器（_includes/theme-toggle.html）
+   ------------------------------------------------------------ */
+.theme-switch {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  flex: 0 0 auto;
+  padding: 3px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--header-bg);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+}
+.theme-switch button {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--ink-3);
+  cursor: pointer;
+}
+.theme-switch button:hover {
+  color: var(--ink);
+}
+.theme-switch button:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+.theme-switch button[aria-pressed="true"],
+.theme-switch button[aria-pressed="true"]:hover {
+  background: var(--accent);
+  color: var(--on-accent);
+}
+.theme-switch svg {
+  display: block;
+}

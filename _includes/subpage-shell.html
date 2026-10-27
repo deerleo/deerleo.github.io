@@ -1,7 +1,14 @@
+{% comment %}
+  二级/三级页共用顶栏：左侧身份，右侧 theme-toggle + 首页入口。
+  视觉规范见 docs/subpage-visual-standard.md，样式见 assets/css/subpage-shell.css。
+{% endcomment %}
 <header class="subpage-shell">
   <a class="subpage-shell__identity" href="#top" aria-label="{{ include.identity | escape }}">
     {{ include.identity | escape }}
     {% if include.descriptor %}<small>{{ include.descriptor | escape }}</small>{% endif %}
   </a>
-  <a class="subpage-shell__home" href="{{ '/' | relative_url }}" aria-label="返回首页">⌂ 首页</a>
+  <div class="subpage-shell__actions">
+    {% include theme-toggle.html %}
+    <a class="subpage-shell__home" href="{{ '/' | relative_url }}" aria-label="返回首页">⌂ 首页</a>
+  </div>
 </header>

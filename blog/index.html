@@ -6,28 +6,31 @@ layout: null
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#f1f2ec">
+  {% include theme-init.html %}
+  <link rel="stylesheet" href="{{ '/assets/css/theme.css' | relative_url }}?v=20261027">
+  <script src="{{ '/assets/js/theme.js' | relative_url }}" defer></script>
   <meta name="description" content="Leo Lu（迷鹿 MiLu）的文章与观点：AI 产品实践复盘、Agent 工程笔记、技术边界分析与创业思考。">
   <meta name="robots" content="index,follow">
   <title>文章与观点 · 迷鹿 MiLu</title>
   <style>
-    :root{color-scheme:dark;--bg:#09111d;--panel:#111e30;--line:#2b3b50;--ink:#edf4fb;--muted:#a8b7c9;--mint:#c3ed59;--cyan:#75d7e8}
-    *{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:radial-gradient(ellipse at 80% 0,#163449 0,transparent 42%),var(--bg);color:var(--ink);font:16px/1.7 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
+    *{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:var(--page-glow),var(--bg);color:var(--ink);font:16px/1.7 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
     a{color:inherit}.wrap{max-width:1100px;margin:auto;padding:48px 24px 88px}
     .hero{max-width:760px;margin-bottom:44px}.eyebrow{color:var(--cyan);font-size:12px;font-weight:800;letter-spacing:.16em;text-transform:uppercase}
     .hero h1{margin:10px 0 16px;font-size:clamp(36px,6vw,60px);line-height:1.08;letter-spacing:-.05em}.hero h1 em{color:var(--mint);font-style:normal}
     .hero p{max-width:700px;color:var(--muted);font-size:17px}
     .postlist{display:grid;gap:15px}
-    .post-card{display:flex;flex-direction:column;gap:10px;padding:24px;border:1px solid var(--line);border-radius:18px;background:linear-gradient(145deg,rgba(20,35,54,.95),rgba(12,22,36,.96));text-decoration:none;transition:border-color .15s ease}
-    .post-card:hover{border-color:rgba(195,237,89,.45)}
+    .post-card{display:flex;flex-direction:column;gap:10px;padding:24px;border:1px solid var(--line);border-radius:18px;background:var(--card-grad);text-decoration:none;transition:border-color .15s ease}
+    .post-card:hover{border-color:var(--line-strong)}
     .post-meta{display:flex;gap:10px;align-items:center;color:var(--cyan);font-size:11px;font-weight:850;letter-spacing:.08em;flex-wrap:wrap}
-    .post-meta time{color:#8595a8;font-weight:650;letter-spacing:.04em}
+    .post-meta time{color:var(--ink-3);font-weight:650;letter-spacing:.04em}
     .post-card h2{margin:0;font-size:22px;line-height:1.35;letter-spacing:-.02em}
     .post-card p{margin:0;color:var(--muted);font-size:14px}
     .post-card .read{color:var(--mint);font-size:13px;font-weight:800;margin-top:4px}
-    .series-card{border-color:rgba(195,237,89,.28);background:linear-gradient(145deg,rgba(35,54,38,.5),rgba(12,22,36,.96))}
+    .series-card{border-color:rgba(195,237,89,.28);background:var(--card-grad)}
     .series-card:hover{border-color:rgba(195,237,89,.6)}
     .empty{padding:40px 24px;border:1px dashed var(--line);border-radius:18px;color:var(--muted);text-align:center}
-    .footer{display:flex;justify-content:space-between;gap:16px;margin-top:60px;padding-top:18px;border-top:1px solid var(--line);color:#8595a8;font-size:12px}
+    .footer{display:flex;justify-content:space-between;gap:16px;margin-top:60px;padding-top:18px;border-top:1px solid var(--line);color:var(--ink-3);font-size:12px}
     @media(max-width:680px){.wrap{padding-top:38px}.footer{display:block}.footer span{display:block;margin:5px 0}}
   </style>
   <link rel="stylesheet" href="{{ '/assets/css/subpage-shell.css?v=20261027' | relative_url }}">
