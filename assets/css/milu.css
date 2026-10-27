@@ -157,6 +157,17 @@ body {
 .github-link { display: block; width: fit-content; margin-top: 20px; color: rgba(255,255,255,.75) !important; font-size: 13px; }
 .site-footer { display: flex; justify-content: space-between; gap: 16px; padding: 20px var(--gutter); color: #d9e1d8; background: var(--forest-deep); font-size: 13px; }
 
+.journey-list { margin: 31px 0 0; padding: 0; list-style: none; display: grid; gap: 0; }
+.journey-list li { position: relative; display: grid; grid-template-columns: 110px 1fr; gap: 20px; padding: 22px 0; border-bottom: 1px solid var(--line); }
+.journey-list li:last-child { border-bottom: 0; }
+.journey-year { color: var(--moss); font-size: 13px; font-weight: 800; letter-spacing: .04em; padding-top: 3px; }
+.journey-list h3 { margin: -3px 0 4px; color: var(--ink); font-size: 17px; letter-spacing: -.02em; }
+.journey-list p { margin: 0; color: var(--muted); font-size: 14px; line-height: 1.7; max-width: 520px; }
+.visual-maudelclaw { display: grid; place-content: center; justify-items: center; gap: 8px; color: var(--lime); background: radial-gradient(ellipse at 30% 20%, rgba(195,237,89,.18), transparent 60%), var(--forest-deep); }
+.visual-maudelclaw .mc-wordmark { font-size: clamp(26px, 3.2vw, 40px); font-weight: 900; letter-spacing: -.04em; }
+.visual-maudelclaw .mc-sub { color: rgba(255,255,255,.62); font-size: 12px; font-weight: 700; letter-spacing: .14em; }
+@media (max-width: 900px) { .journey-list li { grid-template-columns: 1fr; gap: 6px; padding: 18px 0; } }
+
 /* 深色主题下三个常量深绿区块改用 panel 系，避免与页面底色糊成一片。 */
 html[data-theme="dark"] .work-section { background: var(--panel); }
 html[data-theme="dark"] .contact { background: var(--panel-2); }
