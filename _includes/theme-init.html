@@ -1,0 +1,32 @@
+{% comment %}
+  阻塞式主题预置脚本：必须在 <head> 里第一个 <link rel="stylesheet"> 之前，
+  防首屏闪白/闪黑。存储键 milu-theme：'auto' | 'light' | 'dark'，默认 'auto'。
+  全程 try/catch，任何异常不阻塞渲染，失败退化为跟随系统。
+{% endcomment %}
+<script>
+(function () {
+  var KEY = 'milu-theme', root = document.documentElement, pref = 'auto';
+  try {
+    var saved = localStorage.getItem(KEY);
+    if (saved === 'light' || saved === 'dark' || saved === 'auto') { pref = saved; }
+  } catch (e) {}
+  var resolved = pref;
+  try {
+    if (pref === 'auto') {
+      resolved = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    }
+  } catch (e) { if (pref === 'auto') { resolved = 'light'; } }
+  try {
+    root.dataset.theme = resolved;
+    root.dataset.themePref = pref;
+    root.style.colorScheme = resolved;
+    var m = document.querySelector('meta[name="theme-color"]');
+    if (!m) {
+      m = document.createElement('meta');
+      m.name = 'theme-color';
+      (document.head || document.documentElement).appendChild(m);
+    }
+    m.setAttribute('content', resolved === 'dark' ? '#0b1611' : '#f1f2ec');
+  } catch (e) {}
+})();
+</script>

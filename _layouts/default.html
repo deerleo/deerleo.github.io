@@ -1,6 +1,12 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="zh-CN"{% if page.theme_freeze %} data-theme="{{ page.theme_freeze }}" data-theme-frozen="1"{% endif %}>
 {% include head.html %}
+{% if page.theme_freeze %}
+<script>
+/* 冻结主题（{{ page.theme_freeze }}）：本页不接入三态切换，不读写 localStorage（工单 THEME-20261027 第五节） */
+(function(){var d=document.documentElement,c=d.getAttribute('data-theme');d.dataset.themePref=c;d.style.colorScheme=c;var m=document.querySelector('meta[name="theme-color"]');if(m){m.setAttribute('content',c==='dark'?'#0b1611':'#f1f2ec')}})();
+</script>
+{% endif %}
 
 <body>
   <div class="wrapper">

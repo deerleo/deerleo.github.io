@@ -1,25 +1,32 @@
-/* Shared shell for course and project pages. See docs/subpage-visual-standard.md. */
+/* Shared shell for course and project pages. See docs/subpage-visual-standard.md.
+   Colors come from the global tokens in assets/css/theme.css (dual theme). */
 .subpage-shell {
   position: sticky; top: 0; z-index: 50; min-height: 58px;
   display: flex; align-items: center; justify-content: space-between; gap: 18px;
   padding: 10px max(20px, calc((100vw - 1180px) / 2));
-  color: #eaf3ff; background: rgba(8, 16, 28, .82);
-  border-bottom: 1px solid rgba(148, 163, 184, .18);
+  color: var(--ink); background: var(--header-bg);
+  border-bottom: 1px solid var(--line);
   backdrop-filter: blur(16px);
 }
 .subpage-shell__identity { min-width: 0; color: inherit; text-decoration: none; font-size: 14px; font-weight: 800; letter-spacing: -.01em; }
-.subpage-shell__identity small { display: block; color: #9fb2c7; font-size: 10px; font-weight: 650; letter-spacing: .1em; text-transform: uppercase; }
-.subpage-shell__home { flex: 0 0 auto; padding: 6px 10px; color: #a8b7c9; border: 1px solid rgba(168,183,201,.22); border-radius: 999px; text-decoration: none; font-size: 12px; font-weight: 650; }
-.subpage-shell__home:hover, .subpage-shell__home:focus-visible { color: #fff; border-color: rgba(168,183,201,.5); }
+.subpage-shell__identity small { display: block; color: var(--ink-3); font-size: 10px; font-weight: 650; letter-spacing: .1em; text-transform: uppercase; }
+.subpage-shell__actions { display: flex; align-items: center; gap: 10px; flex: 0 0 auto; }
+.subpage-shell__home { flex: 0 0 auto; padding: 6px 10px; color: var(--ink-3); border: 1px solid var(--line); border-radius: 999px; text-decoration: none; font-size: 12px; font-weight: 650; }
+.subpage-shell__home:hover, .subpage-shell__home:focus-visible { color: var(--ink); border-color: var(--line-strong); }
 /* Some course indexes retain local section links inside the shared header shell. */
 .subpage-page-header .brand,
-.subpage-page-header .brand:visited { color: #eaf3ff; text-decoration: none; }
+.subpage-page-header .brand:visited { color: var(--ink); text-decoration: none; }
 .subpage-page-header .brand:hover,
-.subpage-page-header .brand:focus-visible { color: #fff; }
-.subpage-page-header .brand small { color: #9fb2c7; }
-.subpage-page-header .nav-links .home { color: #a8b7c9; border: 1px solid rgba(168,183,201,.18); }
+.subpage-page-header .brand:focus-visible { color: var(--ink); }
+.subpage-page-header .brand small { color: var(--ink-3); }
+.subpage-page-header .nav-links .home { color: var(--ink-3); border: 1px solid var(--line); }
 .subpage-page-header .nav-links .home:hover,
-.subpage-page-header .nav-links .home:focus-visible { color: #fff; background: rgba(168,183,201,.08); }
-.subpage-footer { max-width: 1180px; margin: 46px auto 0; padding: 18px 22px 30px; color: #9fb2c7; border-top: 1px solid rgba(148,163,184,.16); font-size: 12px; }
+.subpage-page-header .nav-links .home:focus-visible { color: var(--ink); background: var(--accent-soft); }
+.subpage-footer { max-width: 1180px; margin: 46px auto 0; padding: 18px 22px 30px; color: var(--ink-3); border-top: 1px solid var(--line); font-size: 12px; }
 .subpage-footer a { color: inherit; }
-@media (max-width: 600px) { .subpage-shell { min-height: 54px; padding: 8px 16px; } .subpage-shell__identity { font-size: 13px; } }
+@media (max-width: 600px) {
+  .subpage-shell { min-height: 54px; padding: 8px 16px; }
+  .subpage-shell__identity { font-size: 13px; }
+  /* Keep the theme switch at full size on small screens. */
+  .subpage-shell__actions { gap: 8px; }
+}
