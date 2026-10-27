@@ -1,0 +1,30 @@
+---
+---
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <title>{{ site.title | escape }}</title>
+  <subtitle>{{ site.description | escape }}</subtitle>
+  <link href="{{ '/feed.xml' | absolute_url }}" rel="self"/>
+  <link href="{{ site.url }}/"/>
+  <id>{{ site.url }}/</id>
+  <updated>{{ site.time | date_to_xmlschema }}</updated>
+  <author>
+    <name>Leo Lu</name>
+    <email>dearsuley@gmail.com</email>
+    <uri>{{ site.url }}/</uri>
+  </author>
+  {% for post in site.posts limit:20 %}
+  <entry>
+    <title>{{ post.title | escape }}</title>
+    <link href="{{ post.url | absolute_url }}"/>
+    <id>{{ post.url | absolute_url }}</id>
+    <published>{{ post.date | date_to_xmlschema }}</published>
+    <updated>{{ post.date | date_to_xmlschema }}</updated>
+    <summary>{{ post.description | default: post.excerpt | strip_html | escape }}</summary>
+    <author>
+      <name>Leo Lu</name>
+      <uri>{{ site.url }}/</uri>
+    </author>
+  </entry>
+  {% endfor %}
+</feed>

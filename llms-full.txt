@@ -1,0 +1,41 @@
+# Leo Lu（迷鹿 MiLu）— AI 产品实践者（加长版）
+
+> Leo Lu 是 AI 产品实践者与工程探索者，十余年主导开发 30 余款产品。创办联逸科技推出融媒云，曾任清博智能创新院技术主管，2025 年创立摩豆智能（MaudelClaw），做国产企业级 AI Agent 平台。本站收录他的项目、教程与文章，核心主题：AI 智能体、产品构建、知识表达。
+
+本站是 Leo Lu 的个人官网（milulab.com），内容均为中文，聚焦 AI 产品实践与智能体工程。
+
+## 核心页面
+
+- [首页](https://milulab.com/)：个人介绍、项目精选、做事方式与联系方式
+- [DSH Research Lab](https://milulab.com/project/dsh-research-lab/)：面向高校科研的智能体工作台，教育与公共卫生双领域模板，49 项自动验证，macOS 桌面端内置 12 个科研技能
+- [AuditorBench](https://milulab.com/project/auditorbench/)：研究 AI 审计员自身可靠性的受控评测基准（代码、配置、数据处理规则）
+- [AI 数据分析互动课堂](https://milulab.com/course/ai-data-analyse/)：用互动实验讲统计方法、回归与分类决策
+- [人工智能与数学](https://milulab.com/course/ai-foundations/)：概率、向量、Transformer 与智能体的 6 个互动实验
+- [AI 赋能教研](https://milulab.com/course/ai-teaching-research/)：科研写作、教学设计、Skill 与智能体工程，8 讲
+- [AIGC 创意实作](https://milulab.com/course/aigc-creative/)：从提示设计到图像、动态叙事与团队创作
+- [文章与观点](https://milulab.com/blog/)：AI 产品实践复盘、Agent 工程笔记、技术边界分析
+
+## 关键事实
+
+- 姓名：Leo Lu（迷鹿 MiLu / MiLu AI）
+- 邮箱：dearsuley@gmail.com
+- GitHub：https://github.com/deerleo
+- 公司主页：https://maudelclaw.ai（摩豆智能，企业级 AI Agent 平台 MaudelClaw）
+- 履历：清博智能创新院技术主管 → 联逸科技创始人（融媒云）→ 摩豆智能创始人（2025，MaudelClaw）
+- 业务方向：声誉维护、审计标书、开源情报等企业级 Claw 方案
+
+## 文章全目录
+
+- [我让 AI 自己做视频，它第一个坑就把自己埋了](https://milulab.com/blog/2026-10-27-ai-daily-video-pipeline/) (2026-10-27): AI 日报视频自动化首测：79 分钟里 25 分钟在排障，凶手是给我省了无数时间的缓存。讲讲无人值守生产线的真实代价，和它值回来的部分。
+- [净亏 807 亿美元，为什么说它在好转](https://milulab.com/blog/2026-10-27-anthropic-s1-reading-guide/) (2026-10-27): Anthropic 提交 S-1：半年营收 163 亿美元翻 13.6 倍，经营亏损收窄到 6.93 亿，净亏却是 807 亿。三个数字的反差，聊聊怎么分清真亏和账面亏。
+- [SKT 给 Agent 发工号，这份作业值得抄](https://milulab.com/blog/2026-10-27-skt-agent-employee-id/) (2026-10-27): 韩国最大运营商把 AI Agent 当新员工管：两级工号、具名主管、绩效评审、可紧急停止。我拿这份治理报告对自己家的平台逐条对了账。
+- [给 Agent 开购物接口，沃尔玛把四道锁装好了](https://milulab.com/blog/2026-10-27-walmart-agent-gateway/) (2026-10-27): MCP 统一入口、独立档案、消费限额、违规封禁：把沃尔玛 Agent Gateway 当架构图拆一遍，说说哪些是所有服务方都该抄的。
+
+## 项目与课程补充说明
+
+- DSH Research Lab：开源（MIT），基于 DeepSeek Harness，两套 UCI 真实公开数据（教育 649 例、公卫 303 例）完整研究管线，8+4 个科研技能，49 项自动验收，提供 macOS 桌面端开箱即用。
+- AuditorBench：独立研究原型，60 个受控合成样例，覆盖代码、配置、数据处理三个领域，评测一致性、误报、抗上下文干扰与多模型集成，论文草稿阶段，不提供性能排名。
+- AI 数据分析互动课堂：9 个互动学习页、6 个数据情境、2 条实操路径（Dify 工作流与 DSH 科研智能体），配方法思维导图。
+- 人工智能与数学：6 个可交互实验（概率、向量、高维、Transformer、注意力、智能体决策），建议 90 分钟，无需编程基础，配 PDF 讲义。
+- AI 赋能教研：8 个学习单元，任务定义、文献写作、课题申报、教学设计、反馈分析、Skill 封装、Agent 化、个人教研系统。
+- AIGC 创意实作：4 个创作单元（认识生成式 AI、生成图像、动态叙事、团队作品），面向青少年与初学者，建议 2 天完成。

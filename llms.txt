@@ -1,0 +1,25 @@
+# Leo Lu（迷鹿 MiLu）— AI 产品实践者
+
+> Leo Lu 是 AI 产品实践者与工程探索者，十余年主导开发 30 余款产品。创办联逸科技推出融媒云，曾任清博智能创新院技术主管，2025 年创立摩豆智能（MaudelClaw），做国产企业级 AI Agent 平台。本站收录他的项目、教程与文章，核心主题：AI 智能体、产品构建、知识表达。
+
+本站是 Leo Lu 的个人官网（milulab.com），内容均为中文，聚焦 AI 产品实践与智能体工程。
+
+## 核心页面
+
+- [首页](https://milulab.com/)：个人介绍、项目精选、做事方式与联系方式
+- [DSH Research Lab](https://milulab.com/project/dsh-research-lab/)：面向高校科研的智能体工作台，教育与公共卫生双领域模板，49 项自动验证，macOS 桌面端内置 12 个科研技能
+- [AuditorBench](https://milulab.com/project/auditorbench/)：研究 AI 审计员自身可靠性的受控评测基准（代码、配置、数据处理规则）
+- [AI 数据分析互动课堂](https://milulab.com/course/ai-data-analyse/)：用互动实验讲统计方法、回归与分类决策
+- [人工智能与数学](https://milulab.com/course/ai-foundations/)：概率、向量、Transformer 与智能体的 6 个互动实验
+- [AI 赋能教研](https://milulab.com/course/ai-teaching-research/)：科研写作、教学设计、Skill 与智能体工程，8 讲
+- [AIGC 创意实作](https://milulab.com/course/aigc-creative/)：从提示设计到图像、动态叙事与团队创作
+- [文章与观点](https://milulab.com/blog/)：AI 产品实践复盘、Agent 工程笔记、技术边界分析
+
+## 关键事实
+
+- 姓名：Leo Lu（迷鹿 MiLu / MiLu AI）
+- 邮箱：dearsuley@gmail.com
+- GitHub：https://github.com/deerleo
+- 公司主页：https://maudelclaw.ai（摩豆智能，企业级 AI Agent 平台 MaudelClaw）
+- 履历：清博智能创新院技术主管 → 联逸科技创始人（融媒云）→ 摩豆智能创始人（2025，MaudelClaw）
+- 业务方向：声誉维护、审计标书、开源情报等企业级 Claw 方案

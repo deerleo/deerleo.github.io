@@ -2,20 +2,31 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#173b2c">
+  <meta name="author" content="Leo Lu">
   <title>{% if page.title %}{{ page.title }}｜迷鹿 MiLu{% else %}{{ site.title }}{% endif %}</title>
   <meta name="description" content="{% if page.description %}{{ page.description }}{% else %}{{ site.description }}{% endif %}">
   <link rel="canonical" href="{{ site.url }}{{ page.url | default: '/' }}">
   {% if page.noindex or page.hidden %}
   <meta name="robots" content="noindex, nofollow">
   {% endif %}
+  <link rel="alternate" type="application/atom+xml" href="{{ '/feed.xml' | absolute_url }}">
 
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="迷鹿 MiLu">
+  <meta property="og:locale" content="zh_CN">
   <meta property="og:title" content="{% if page.title %}{{ page.title }}{% else %}{{ site.title }}{% endif %}">
   <meta property="og:description" content="{% if page.description %}{{ page.description }}{% else %}{{ site.description }}{% endif %}">
   <meta property="og:url" content="{{ site.url }}{{ page.url | default: '/' }}">
-  <meta property="og:image" content="{{ '/assets/images/avatar.jpg' | absolute_url }}">
+  {% assign og_image = page.og_image | default: '/assets/images/profile.jpg' %}
+  <meta property="og:image" content="{{ og_image | absolute_url }}">
+  <meta property="og:image:width" content="1170">
+  <meta property="og:image:height" content="1170">
+  <meta property="og:image:alt" content="Leo Lu（迷鹿 MiLu）头像">
   <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="{% if page.title %}{{ page.title }}{% else %}{{ site.title }}{% endif %}">
+  <meta name="twitter:description" content="{% if page.description %}{{ page.description }}{% else %}{{ site.description }}{% endif %}">
+  <meta name="twitter:image" content="{{ og_image | absolute_url }}">
+  <meta name="twitter:image:alt" content="Leo Lu（迷鹿 MiLu）头像">
 
   <link rel="icon" href="{{ '/assets/images/favicon.svg' | relative_url }}" type="image/svg+xml">
   <link rel="alternate icon" href="{{ '/favicon.ico' | relative_url }}">
@@ -26,5 +37,103 @@
   <link rel="stylesheet" href="{{ '/assets/plugins/bootstrap/css/bootstrap.min.css' | relative_url }}">
   <link rel="stylesheet" href="{{ '/assets/plugins/font-awesome/css/all.min.css' | relative_url }}">
   <link rel="stylesheet" href="{{ '/assets/css/main.css' | relative_url }}">
+  {% endif %}
+
+  {% assign page_url = page.url | default: '/' %}
+  {% assign url_head_course = page_url | slice: 0, 8 %}
+  {% assign url_head_project = page_url | slice: 0, 9 %}
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Person",
+    "@id": "{{ site.url }}/#person",
+    "name": "Leo Lu",
+    "alternateName": "迷鹿 MiLu",
+    "url": "{{ site.url }}/",
+    "email": "dearsuley@gmail.com",
+    "jobTitle": "AI 产品实践者",
+    "sameAs": ["https://github.com/deerleo", "https://maudelclaw.ai"],
+    "worksFor": {
+      "@type": "Organization",
+      "name": "摩豆智能",
+      "alternateName": "MaudelClaw",
+      "url": "https://maudelclaw.ai"
+    }
+  }
+  </script>
+
+  {% if page_url == '/' %}
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "name": "迷鹿 MiLu",
+    "alternateName": "milulab.com",
+    "url": "{{ site.url }}/",
+    "inLanguage": "zh-CN",
+    "publisher": { "@id": "{{ site.url }}/#person" }
+  }
+  </script>
+  {% endif %}
+
+  {% if page.layout == 'post' %}
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    "headline": "{{ page.title | json_escape }}",
+    "description": "{{ page.description | json_escape }}",
+    "inLanguage": "zh-CN",
+    "datePublished": "{{ page.date | date_to_xmlschema }}",
+    "dateModified": "{{ page.date | date_to_xmlschema }}",
+    "author": { "@id": "{{ site.url }}/#person" },
+    "publisher": { "@id": "{{ site.url }}/#person" },
+    "mainEntityOfPage": "{{ site.url }}{{ page_url }}",
+    {% if page.tags %}"keywords": "{{ page.tags | join: ', ' | json_escape }}",{% endif %}
+    "image": "{{ '/assets/images/profile.jpg' | absolute_url }}"
+  }
+  </script>
+  {% endif %}
+
+  {% if url_head_course == '/course/' %}
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Course",
+    "name": "{{ page.title | json_escape }}",
+    "description": "{% if page.description %}{{ page.description | json_escape }}{% else %}{{ site.description | json_escape }}{% endif %}",
+    "inLanguage": "zh-CN",
+    "educationalLevel": "入门（零基础可学）",
+    "provider": { "@id": "{{ site.url }}/#person" }
+  }
+  </script>
+  {% endif %}
+
+  {% if url_head_project == '/project/' %}
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "CreativeWork",
+    "name": "{{ page.title | json_escape }}",
+    "description": "{% if page.description %}{{ page.description | json_escape }}{% else %}{{ site.description | json_escape }}{% endif %}",
+    "inLanguage": "zh-CN",
+    "author": { "@id": "{{ site.url }}/#person" },
+    "url": "{{ site.url }}{{ page_url }}"
+  }
+  </script>
+  {% endif %}
+
+  {% if page_url != '/' %}
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      { "@type": "ListItem", "position": 1, "name": "首页", "item": "{{ site.url }}/" },
+      { "@type": "ListItem", "position": 2, "name": "{% if page.title %}{{ page.title | json_escape }}{% else %}{{ site.title | json_escape }}{% endif %}", "item": "{{ site.url }}{{ page_url }}" }
+    ]
+  }
+  </script>
   {% endif %}
 </head>
