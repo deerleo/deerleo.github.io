@@ -24,6 +24,7 @@ css: milu
         <a href="#work">项目作品</a>
         <a href="#tutorials">教程</a>
         <a href="#blog">文章</a>
+        <a href="#media">相关报道</a>
         <a href="#approach">做事方式</a>
         <a class="nav-contact" href="#contact">联系 ↗</a>
       </nav>
@@ -82,6 +83,16 @@ css: milu
           <span class="work-link">进入课堂 <b aria-hidden="true">↗</b></span>
         </a>
 
+        <a class="work-item" href="https://ysxw.cctv.cn/article.html?item_id=5445765608541005934" target="_blank" rel="noopener">
+          <div class="work-visual visual-cangbao">
+            <img src="{{ '/assets/images/cangbao-video-cover.png' | relative_url }}" width="600" height="338" loading="lazy" alt="联合国中文日数字虚拟形象"仓宝"：蓝色龟形神兽，头戴斗笠，背着甲骨文小书包">
+          </div>
+          <div class="work-meta"><span>IP 设计 · AI 驱动 · 央视新闻</span></div>
+          <h3>"仓宝"数字虚拟形象</h3>
+          <p>2022 年联合国中文日暨总台第二届海外影像节官方吉祥物。以龟为原型致敬仓颉造字，从创意原画到建模、骨骼绑定，再由清博智能 AI 技术实时驱动生成动画——"AI+VI+IP"融合的 3D 数字形象。</p>
+          <span class="work-link">看央视新闻报道 <b aria-hidden="true">↗</b></span>
+        </a>
+
         <a class="work-item" href="{{ '/beaker-mixer.html' | relative_url }}">
           <div class="work-visual visual-lab" role="img" aria-label="烧杯混合实验工具的色彩预览">
             <span class="beaker beaker-one"></span><span class="beaker beaker-two"></span><span class="beaker beaker-three"></span>
@@ -122,6 +133,131 @@ css: milu
         {% endfor %}{% endfor %}{% endif %}
       </div>
       <p class="tutorial-intro" style="margin-top:22px"><a href="{{ '/blog/' | relative_url }}" style="color:inherit;font-weight:700;text-decoration:none;border-bottom:1px solid rgba(195,237,89,.5)">全部文章 →</a></p>
+    </section>
+
+    <section class="approach-section media-section" id="media" aria-labelledby="media-title">
+      <h2 id="media-title">被媒体报道过的事。</h2>
+      <p class="tutorial-intro">产品与实践被主流媒体记录的瞬间。点击卡片阅读报道原文，视频留有本地存档。</p>
+
+      <div class="media-card" data-video="{{ '/assets/video/cctv-chaowen-2024.mp4' | relative_url }}">
+        <button class="media-poster" type="button" aria-label="播放央视《朝闻天下》报道视频">
+          <img src="{{ '/assets/images/cctv-media-2024.jpg' | relative_url }}" width="480" height="270" loading="lazy" alt="央视《朝闻天下》报道画面：媒体AI新应用，AI大模型分析海量信息、预判传播趋势">
+          <span class="media-play" aria-hidden="true">▶</span>
+          <span class="media-badge">视频存档 · 1′43″</span>
+        </button>
+        <div class="media-meta">
+          <span class="media-source">CCTV-13《朝闻天下》 · 2024-04-29</span>
+          <h3>媒体AI新应用：AI大模型分析海量信息，预判传播趋势</h3>
+          <p>报道展示了清博智能舆情大数据平台如何用 AI 大模型分析海量信息、预判传播趋势，Leo Lu 时任创新院技术主管，参与平台研发。</p>
+          <div class="media-links">
+            <a href="https://app.cctv.com/special/m/livevod/index.html?guid=ab8750c96e084f208399d79a43038d16&amp;vtype=2&amp;vsetId=C10598" target="_blank" rel="noopener">在央视影音观看原文 <b aria-hidden="true">↗</b></a>
+            <a class="media-download" href="{{ '/assets/video/cctv-chaowen-2024.mp4' | relative_url }}" download="CCTV朝闻天下-20240429-媒体AI新应用.mp4">下载视频存档 <b aria-hidden="true">↓</b></a>
+          </div>
+        </div>
+      </div>
+
+      <div class="media-card" data-video="{{ '/assets/video/cctv-cangbao-2022.mp4' | relative_url }}">
+        <button class="media-poster" type="button" aria-label="播放央视新闻"仓宝"发布报道视频">
+          <img src="{{ '/assets/images/cangbao-poster.jpg' | relative_url }}" width="800" height="533" loading="lazy" alt="央视新闻报道画面：数字虚拟形象"仓宝"挥手打招呼">
+          <span class="media-play" aria-hidden="true">▶</span>
+          <span class="media-badge">视频存档 · 0′56″</span>
+        </button>
+        <div class="media-meta">
+          <span class="media-source">央视新闻 · 2022-04-19</span>
+          <h3>2022 年联合国中文日暨总台第二届海外影像节数字虚拟形象"仓宝"正式发布</h3>
+          <p>"仓宝"以龟为原型，身背甲骨文小书包，是为纪念仓颉造字设计的上古神兽。基于清博智能 AI 技术实时驱动实现 3D 动画，Leo Lu 主导该数字化研发。</p>
+          <div class="media-links">
+            <a href="https://ysxw.cctv.cn/article.html?item_id=5445765608541005934" target="_blank" rel="noopener">在央视新闻阅读原文 <b aria-hidden="true">↗</b></a>
+            <a class="media-download" href="{{ '/assets/video/cctv-cangbao-2022.mp4' | relative_url }}" download="央视新闻-20220419-仓宽数字虚拟形象发布.mp4">下载视频存档 <b aria-hidden="true">↓</b></a>
+          </div>
+        </div>
+      </div>
+
+      <div class="media-card">
+        <a class="media-poster media-poster-link" href="https://baijiahao.baidu.com/s?id=1762309389765535583&amp;wfr=spider&amp;for=pc" target="_blank" rel="noopener" aria-label="阅读钱江晚报关于黄帝文化元宇宙研发的报道">
+          <img src="{{ '/assets/images/qjwb-huangdi-metaverse-2023.jpg' | relative_url }}" width="720" height="388" loading="lazy" alt="黄帝文化元宇宙场景：云海中的仙都黄帝祠宇悬浮仙山">
+          <span class="media-badge">文字报道</span>
+        </a>
+        <div class="media-meta">
+          <span class="media-source">钱江晚报 · 2023-04-05</span>
+          <h3>黄帝文化元宇宙是什么？你可以"亲身"体验仙都黄帝祭典全过程</h3>
+          <p>癸卯年清明缙云海峡两岸共祭轩辕黄帝大典报道，披露正在研发的黄帝文化元宇宙：以虚拟人物与场景再现祭典仪程，让用户"亲身"参与祭典全程。Leo Lu 主导该产品研发。</p>
+          <div class="media-links">
+            <a href="https://baijiahao.baidu.com/s?id=1762309389765535583&amp;wfr=spider&amp;for=pc" target="_blank" rel="noopener">在百家号阅读原文 <b aria-hidden="true">↗</b></a>
+          </div>
+        </div>
+      </div>
+
+      <div class="media-card" data-video="{{ '/assets/video/cnr-huangdi-metaverse-2023.mp4' | relative_url }}">
+        <button class="media-poster" type="button" aria-label="播放央广网黄帝元宇宙报道视频">
+          <img src="{{ '/assets/images/cnr-huangdi-metaverse-2023-poster.jpg' | relative_url }}" width="1920" height="1080" loading="lazy" alt="央广网报道画面：黄帝元宇宙对黄帝祠宇及鼎湖峰等实景进行数字孪生复刻">
+          <span class="media-play" aria-hidden="true">▶</span>
+          <span class="media-badge">视频存档 · 1′34″</span>
+        </button>
+        <div class="media-meta">
+          <span class="media-source">央广网浙江频道 · 2023-08-03</span>
+          <h3>浙江缙云黄帝元宇宙 APP 上线了！</h3>
+          <p>报道缙云黄帝元宇宙上线：对黄帝祠宇、鼎湖峰等实景数字孪生复刻，沉浸体验仙都黄帝祭典、与谢灵运李白超时空对话。作为首款大型文旅元宇宙应用，Leo Lu 主导该产品研发。</p>
+          <div class="media-links">
+            <a href="https://zj.cnr.cn/gedilianbo/ls/20230803/t20230803_526360863.shtml" target="_blank" rel="noopener">在央广网阅读原文 <b aria-hidden="true">↗</b></a>
+            <a class="media-download" href="{{ '/assets/video/cnr-huangdi-metaverse-2023.mp4' | relative_url }}" download="央广网-20230803-浙江缙云黄帝元宇宙APP上线.mp4">下载视频存档 <b aria-hidden="true">↓</b></a>
+          </div>
+        </div>
+      </div>
+
+      <div class="media-card">
+        <a class="media-poster media-poster-link" href="https://m.qlwb.com.cn/detail/27330504.html" target="_blank" rel="noopener" aria-label="阅读齐鲁晚报关于 MaudelClaw 发布的报道">
+          <span class="media-visual" role="img" aria-label="MaudelClaw 发布报道视觉">
+            <span class="media-wordmark">MaudelClaw</span>
+            <span class="media-visual-sub">国产企业级 AI Agent</span>
+          </span>
+          <span class="media-badge">文字报道</span>
+        </a>
+        <div class="media-meta">
+          <span class="media-source">齐鲁晚报 · 齐鲁壹点</span>
+          <h3>摩豆智能发布 MaudelClaw：从"技术可行"到"商业落地"</h3>
+          <p>报道 MaudelClaw 正式发布：首创"纯本地部署 + 业务系统深度集成"架构，覆盖审计风控、舆情处置、政法辅助与开源情报分析场景，Leo Lu 以创始人身份阐释"量产车"定位。</p>
+          <div class="media-links">
+            <a href="https://m.qlwb.com.cn/detail/27330504.html" target="_blank" rel="noopener">在齐鲁晚报阅读原文 <b aria-hidden="true">↗</b></a>
+          </div>
+        </div>
+      </div>
+
+      <div class="media-card">
+        <a class="media-poster media-poster-link" href="https://mp.weixin.qq.com/s/NiWbb7H0z6j-rcWbGr7TRg" target="_blank" rel="noopener" aria-label="阅读模态空间北京人工智能专场路演的报道">
+          <span class="media-visual media-visual-alt" role="img" aria-label="模态空间路演报道视觉">
+            <span class="media-wordmark">路演现场</span>
+            <span class="media-visual-sub">模态空间 · AI 专场</span>
+          </span>
+          <span class="media-badge">文字报道</span>
+        </a>
+        <div class="media-meta">
+          <span class="media-source">湖北科创供应链 · 模态空间（北京） · 2026-10-27</span>
+          <h3>模态空间（北京）人工智能专场路演成功举办</h3>
+          <p>8 支源自北大、清华、中科院等体系的 AI 团队集中路演，摩豆智能作为行业 AI 解决方案代表亮相，展示企业专属智能体开发与垂直领域定制化研发。</p>
+          <div class="media-links">
+            <a href="https://mp.weixin.qq.com/s/NiWbb7H0z6j-rcWbGr7TRg" target="_blank" rel="noopener">在微信公众号阅读原文 <b aria-hidden="true">↗</b></a>
+          </div>
+        </div>
+      </div>
+
+      <div class="media-card">
+        <a class="media-poster media-poster-link" href="https://m.weibo.cn/detail/5300765329458095" target="_blank" rel="noopener" aria-label="阅读扬子晚报关于豆包话题专家解读的报道">
+          <span class="media-visual media-visual-alt2" role="img" aria-label="扬子晚报豆包话题报道视觉">
+            <span class="media-wordmark">豆包热点</span>
+            <span class="media-visual-sub">扬子晚报 · 专家解读</span>
+          </span>
+          <span class="media-badge">文字报道</span>
+        </a>
+        <div class="media-meta">
+          <span class="media-source">扬子晚报 · 微博</span>
+          <h3>豆包话题报道：Leo Lu 以专家身份受访解读</h3>
+          <p>扬子晚报就 AI 助手热点话题采访行业专家，Leo Lu 作为 AI 产品专家出镜解读，从产品视角分析智能助手的能力边界与落地逻辑。</p>
+          <div class="media-links">
+            <a href="https://m.weibo.cn/detail/5300765329458095" target="_blank" rel="noopener">在微博查看原文 <b aria-hidden="true">↗</b></a>
+          </div>
+        </div>
+      </div>
     </section>
 
     <section class="approach-section" id="approach" aria-labelledby="approach-title">
@@ -175,3 +311,22 @@ css: milu
 </div>
 
 <script>document.getElementById('year').textContent = new Date().getFullYear();</script>
+<script>
+(function () {
+  var card = document.querySelector('.media-card');
+  if (!card) return;
+  var poster = card.querySelector('.media-poster');
+  var src = card.getAttribute('data-video');
+  poster.addEventListener('click', function () {
+    var video = document.createElement('video');
+    video.className = 'media-player';
+    video.src = src;
+    video.controls = true;
+    video.playsInline = true;
+    video.setAttribute('autoplay', '');
+    video.setAttribute('aria-label', '央视《朝闻天下》报道视频');
+    poster.replaceWith(video);
+    video.play().catch(function () {});
+  });
+})();
+</script>
