@@ -22,6 +22,7 @@ css: milu
       <nav class="nav-links" aria-label="页面导航">
         <a href="#about">关于我</a>
         <a href="#work">项目作品</a>
+        <a href="#journey">经历</a>
         <a href="#tutorials">教程</a>
         <a href="#blog">文章</a>
         <a href="#media">相关报道</a>
@@ -50,6 +51,17 @@ css: milu
       </div>
 
       <div class="work-list">
+        <a class="work-item work-featured" href="https://maudelclaw.ai" target="_blank" rel="noopener">
+          <div class="work-visual visual-maudelclaw">
+            <span class="mc-wordmark">MaudelClaw</span>
+            <span class="mc-sub">国产企业级 AI Agent 平台</span>
+          </div>
+          <div class="work-meta"><span>企业级 AI Agent · 当前主业</span></div>
+          <h3>MaudelClaw</h3>
+          <p>国产企业级 AI Agent 平台：纯本地部署 + 业务系统深度集成，覆盖声誉维护、审计标书、开源情报等场景，把大模型能力落进企业真实流程。</p>
+          <span class="work-link">访问 maudelclaw.ai <b aria-hidden="true">↗</b></span>
+        </a>
+
         <a class="work-item work-featured" href="{{ '/project/dsh-research-lab/' | relative_url }}">
           <div class="work-visual visual-research">
             <img src="{{ '/assets/images/edu-research-preview.png' | relative_url }}" width="960" height="640" loading="lazy" alt="教育科研数据分析图表预览">
@@ -104,10 +116,16 @@ css: milu
         </a>
       </div>
 
-      <div class="practice-note">
-        <span class="note-mark">+</span>
-        <p><strong>也在真实业务里打磨 AI。</strong><br>曾任清博智能创新院技术主管，主导全球舆论大数据平台与元宇宙项目无尽之塔；创办联逸科技，推出融媒云融媒体平台。2025 年创立摩豆智能，围绕 MaudelClaw 打造声誉维护、审计标书与开源情报等企业级 Claw 方案。</p>
-      </div>
+    </section>
+
+    <section class="approach-section journey-section" id="journey" aria-labelledby="journey-title">
+      <h2 id="journey-title">十余年，一条主线。</h2>
+      <p class="tutorial-intro">从融媒体到舆情大数据，再到企业级 AI Agent——一直在做同一件事：把新技术变成真实业务里能用的东西。</p>
+      <ol class="journey-list">
+        <li><span class="journey-year">2014–2019</span><div><h3>联逸科技 · 创办</h3><p>推出融媒云融媒体平台，服务媒体机构的内容生产与分发。</p></div></li>
+        <li><span class="journey-year">2019–2024</span><div><h3>清博智能 · 创新院技术主管</h3><p>主导全球舆论大数据平台与元宇宙项目无尽之塔、黄帝元宇宙；"仓宝"数字虚拟形象获央视新闻报道。</p></div></li>
+        <li><span class="journey-year">2025–至今</span><div><h3>摩豆智能 · 创始人</h3><p>打造国产企业级 AI Agent 平台 MaudelClaw，覆盖声誉维护、审计标书、开源情报等企业场景。</p></div></li>
+      </ol>
     </section>
 
     <section class="approach-section tutorial-section" id="tutorials" aria-labelledby="tutorials-title">
@@ -139,6 +157,24 @@ css: milu
       <h2 id="media-title">被媒体报道过的事。</h2>
       <p class="tutorial-intro">产品与实践被主流媒体记录的瞬间。点击卡片阅读报道原文，视频留有本地存档。</p>
 
+      <div class="media-card">
+        <a class="media-poster media-poster-link" href="https://mp.weixin.qq.com/s/NiWbb7H0z6j-rcWbGr7TRg" target="_blank" rel="noopener" aria-label="阅读模态空间北京人工智能专场路演的报道">
+          <span class="media-visual media-visual-alt" role="img" aria-label="模态空间路演报道视觉">
+            <span class="media-wordmark">路演现场</span>
+            <span class="media-visual-sub">模态空间 · AI 专场</span>
+          </span>
+          <span class="media-badge">文字报道</span>
+        </a>
+        <div class="media-meta">
+          <span class="media-source">湖北科创供应链 · 模态空间（北京） · 2026-10-27</span>
+          <h3>模态空间（北京）人工智能专场路演成功举办</h3>
+          <p>8 支源自北大、清华、中科院等体系的 AI 团队集中路演，摩豆智能作为行业 AI 解决方案代表亮相，展示企业专属智能体开发与垂直领域定制化研发。</p>
+          <div class="media-links">
+            <a href="https://mp.weixin.qq.com/s/NiWbb7H0z6j-rcWbGr7TRg" target="_blank" rel="noopener">在微信公众号阅读原文 <b aria-hidden="true">↗</b></a>
+          </div>
+        </div>
+      </div>
+
       <div class="media-card" data-video="{{ '/assets/video/cctv-chaowen-2024.mp4' | relative_url }}">
         <button class="media-poster" type="button" aria-label="播放央视《朝闻天下》报道视频">
           <img src="{{ '/assets/images/cctv-media-2024.jpg' | relative_url }}" width="480" height="270" loading="lazy" alt="央视《朝闻天下》报道画面：媒体AI新应用，AI大模型分析海量信息、预判传播趋势">
@@ -152,38 +188,6 @@ css: milu
           <div class="media-links">
             <a href="https://app.cctv.com/special/m/livevod/index.html?guid=ab8750c96e084f208399d79a43038d16&amp;vtype=2&amp;vsetId=C10598" target="_blank" rel="noopener">在央视影音观看原文 <b aria-hidden="true">↗</b></a>
             <a class="media-download" href="{{ '/assets/video/cctv-chaowen-2024.mp4' | relative_url }}" download="CCTV朝闻天下-20240429-媒体AI新应用.mp4">下载视频存档 <b aria-hidden="true">↓</b></a>
-          </div>
-        </div>
-      </div>
-
-      <div class="media-card" data-video="{{ '/assets/video/cctv-cangbao-2022.mp4' | relative_url }}">
-        <button class="media-poster" type="button" aria-label="播放央视新闻"仓宝"发布报道视频">
-          <img src="{{ '/assets/images/cangbao-poster.jpg' | relative_url }}" width="800" height="533" loading="lazy" alt="央视新闻报道画面：数字虚拟形象"仓宝"挥手打招呼">
-          <span class="media-play" aria-hidden="true">▶</span>
-          <span class="media-badge">视频存档 · 0′56″</span>
-        </button>
-        <div class="media-meta">
-          <span class="media-source">央视新闻 · 2022-04-19</span>
-          <h3>2022 年联合国中文日暨总台第二届海外影像节数字虚拟形象"仓宝"正式发布</h3>
-          <p>"仓宝"以龟为原型，身背甲骨文小书包，是为纪念仓颉造字设计的上古神兽。基于清博智能 AI 技术实时驱动实现 3D 动画，Leo Lu 主导该数字化研发。</p>
-          <div class="media-links">
-            <a href="https://ysxw.cctv.cn/article.html?item_id=5445765608541005934" target="_blank" rel="noopener">在央视新闻阅读原文 <b aria-hidden="true">↗</b></a>
-            <a class="media-download" href="{{ '/assets/video/cctv-cangbao-2022.mp4' | relative_url }}" download="央视新闻-20220419-仓宽数字虚拟形象发布.mp4">下载视频存档 <b aria-hidden="true">↓</b></a>
-          </div>
-        </div>
-      </div>
-
-      <div class="media-card">
-        <a class="media-poster media-poster-link" href="https://baijiahao.baidu.com/s?id=1762309389765535583&amp;wfr=spider&amp;for=pc" target="_blank" rel="noopener" aria-label="阅读钱江晚报关于黄帝文化元宇宙研发的报道">
-          <img src="{{ '/assets/images/qjwb-huangdi-metaverse-2023.jpg' | relative_url }}" width="720" height="388" loading="lazy" alt="黄帝文化元宇宙场景：云海中的仙都黄帝祠宇悬浮仙山">
-          <span class="media-badge">文字报道</span>
-        </a>
-        <div class="media-meta">
-          <span class="media-source">钱江晚报 · 2023-04-05</span>
-          <h3>黄帝文化元宇宙是什么？你可以"亲身"体验仙都黄帝祭典全过程</h3>
-          <p>癸卯年清明缙云海峡两岸共祭轩辕黄帝大典报道，披露正在研发的黄帝文化元宇宙：以虚拟人物与场景再现祭典仪程，让用户"亲身"参与祭典全程。Leo Lu 主导该产品研发。</p>
-          <div class="media-links">
-            <a href="https://baijiahao.baidu.com/s?id=1762309389765535583&amp;wfr=spider&amp;for=pc" target="_blank" rel="noopener">在百家号阅读原文 <b aria-hidden="true">↗</b></a>
           </div>
         </div>
       </div>
@@ -206,6 +210,38 @@ css: milu
       </div>
 
       <div class="media-card">
+        <a class="media-poster media-poster-link" href="https://baijiahao.baidu.com/s?id=1762309389765535583&amp;wfr=spider&amp;for=pc" target="_blank" rel="noopener" aria-label="阅读钱江晚报关于黄帝文化元宇宙研发的报道">
+          <img src="{{ '/assets/images/qjwb-huangdi-metaverse-2023.jpg' | relative_url }}" width="720" height="388" loading="lazy" alt="黄帝文化元宇宙场景：云海中的仙都黄帝祠宇悬浮仙山">
+          <span class="media-badge">文字报道</span>
+        </a>
+        <div class="media-meta">
+          <span class="media-source">钱江晚报 · 2023-04-05</span>
+          <h3>黄帝文化元宇宙是什么？你可以"亲身"体验仙都黄帝祭典全过程</h3>
+          <p>癸卯年清明缙云海峡两岸共祭轩辕黄帝大典报道，披露正在研发的黄帝文化元宇宙：以虚拟人物与场景再现祭典仪程，让用户"亲身"参与祭典全程。Leo Lu 主导该产品研发。</p>
+          <div class="media-links">
+            <a href="https://baijiahao.baidu.com/s?id=1762309389765535583&amp;wfr=spider&amp;for=pc" target="_blank" rel="noopener">在百家号阅读原文 <b aria-hidden="true">↗</b></a>
+          </div>
+        </div>
+      </div>
+
+      <div class="media-card" data-video="{{ '/assets/video/cctv-cangbao-2022.mp4' | relative_url }}">
+        <button class="media-poster" type="button" aria-label="播放央视新闻"仓宝"发布报道视频">
+          <img src="{{ '/assets/images/cangbao-poster.jpg' | relative_url }}" width="800" height="533" loading="lazy" alt="央视新闻报道画面：数字虚拟形象"仓宝"挥手打招呼">
+          <span class="media-play" aria-hidden="true">▶</span>
+          <span class="media-badge">视频存档 · 0′56″</span>
+        </button>
+        <div class="media-meta">
+          <span class="media-source">央视新闻 · 2022-04-19</span>
+          <h3>2022 年联合国中文日暨总台第二届海外影像节数字虚拟形象"仓宝"正式发布</h3>
+          <p>"仓宝"以龟为原型，身背甲骨文小书包，是为纪念仓颉造字设计的上古神兽。基于清博智能 AI 技术实时驱动实现 3D 动画，Leo Lu 主导该数字化研发。</p>
+          <div class="media-links">
+            <a href="https://ysxw.cctv.cn/article.html?item_id=5445765608541005934" target="_blank" rel="noopener">在央视新闻阅读原文 <b aria-hidden="true">↗</b></a>
+            <a class="media-download" href="{{ '/assets/video/cctv-cangbao-2022.mp4' | relative_url }}" download="央视新闻-20220419-仓宽数字虚拟形象发布.mp4">下载视频存档 <b aria-hidden="true">↓</b></a>
+          </div>
+        </div>
+      </div>
+
+      <div class="media-card">
         <a class="media-poster media-poster-link" href="https://m.qlwb.com.cn/detail/27330504.html" target="_blank" rel="noopener" aria-label="阅读齐鲁晚报关于 MaudelClaw 发布的报道">
           <span class="media-visual" role="img" aria-label="MaudelClaw 发布报道视觉">
             <span class="media-wordmark">MaudelClaw</span>
@@ -219,24 +255,6 @@ css: milu
           <p>报道 MaudelClaw 正式发布：首创"纯本地部署 + 业务系统深度集成"架构，覆盖审计风控、舆情处置、政法辅助与开源情报分析场景，Leo Lu 以创始人身份阐释"量产车"定位。</p>
           <div class="media-links">
             <a href="https://m.qlwb.com.cn/detail/27330504.html" target="_blank" rel="noopener">在齐鲁晚报阅读原文 <b aria-hidden="true">↗</b></a>
-          </div>
-        </div>
-      </div>
-
-      <div class="media-card">
-        <a class="media-poster media-poster-link" href="https://mp.weixin.qq.com/s/NiWbb7H0z6j-rcWbGr7TRg" target="_blank" rel="noopener" aria-label="阅读模态空间北京人工智能专场路演的报道">
-          <span class="media-visual media-visual-alt" role="img" aria-label="模态空间路演报道视觉">
-            <span class="media-wordmark">路演现场</span>
-            <span class="media-visual-sub">模态空间 · AI 专场</span>
-          </span>
-          <span class="media-badge">文字报道</span>
-        </a>
-        <div class="media-meta">
-          <span class="media-source">湖北科创供应链 · 模态空间（北京） · 2026-10-27</span>
-          <h3>模态空间（北京）人工智能专场路演成功举办</h3>
-          <p>8 支源自北大、清华、中科院等体系的 AI 团队集中路演，摩豆智能作为行业 AI 解决方案代表亮相，展示企业专属智能体开发与垂直领域定制化研发。</p>
-          <div class="media-links">
-            <a href="https://mp.weixin.qq.com/s/NiWbb7H0z6j-rcWbGr7TRg" target="_blank" rel="noopener">在微信公众号阅读原文 <b aria-hidden="true">↗</b></a>
           </div>
         </div>
       </div>
@@ -272,7 +290,7 @@ css: milu
     <section class="approach-section" id="faq" aria-labelledby="faq-title">
       <h2 id="faq-title">常见问题</h2>
       <div class="approach-list">
-        <article><div><h3>Leo Lu 是谁？</h3><p>Leo Lu（迷鹿 MiLu）是一名 AI 产品实践者与工程探索者：十余年主导开发 30 余款产品，创办联逸科技推出融媒云，2025 年创立摩豆智能，打造国产企业级 AI Agent 平台 MaudelClaw。</p></div></article>
+        <article><div><h3>Leo Lu 是谁？</h3><p>Leo Lu（迷鹿 MiLu）是一名 AI 产品实践者：十余年主导开发 30 余款产品，历任联逸科技创始人、清博智能创新院技术主管，2025 年创立摩豆智能。完整经历见上方时间线。</p></div></article>
         <article><div><h3>迷鹿 MiLu 是什么？</h3><p>迷鹿 MiLu 是 Leo Lu 的个人品牌与工作室名，主打 AI · Product · Making，覆盖 AI 产品实践、教程与开源项目，milulab.com 是它的主阵地。</p></div></article>
         <article><div><h3>MaudelClaw 是什么？</h3><p>MaudelClaw 是 Leo Lu 2025 年创立的摩豆智能推出的国产企业级 AI Agent 平台，提供声誉维护、审计标书、开源情报等企业级方案。</p></div></article>
         <article><div><h3>怎么联系 Leo Lu？</h3><p>发邮件到 dearsuley@gmail.com，或在 GitHub 上找 @deerleo。</p></div></article>
@@ -283,7 +301,7 @@ css: milu
         "@context": "https://schema.org",
         "@type": "FAQPage",
         "mainEntity": [
-          { "@type": "Question", "name": "Leo Lu 是谁？", "acceptedAnswer": { "@type": "Answer", "text": "Leo Lu（迷鹿 MiLu）是一名 AI 产品实践者与工程探索者：十余年主导开发 30 余款产品，创办联逸科技推出融媒云，2025 年创立摩豆智能，打造国产企业级 AI Agent 平台 MaudelClaw。" } },
+          { "@type": "Question", "name": "Leo Lu 是谁？", "acceptedAnswer": { "@type": "Answer", "text": "Leo Lu（迷鹿 MiLu）是一名 AI 产品实践者：十余年主导开发 30 余款产品，历任联逸科技创始人、清博智能创新院技术主管，2025 年创立摩豆智能。完整经历见上方时间线。" } },
           { "@type": "Question", "name": "迷鹿 MiLu 是什么？", "acceptedAnswer": { "@type": "Answer", "text": "迷鹿 MiLu 是 Leo Lu 的个人品牌与工作室名，主打 AI · Product · Making，覆盖 AI 产品实践、教程与开源项目，milulab.com 是它的主阵地。" } },
           { "@type": "Question", "name": "MaudelClaw 是什么？", "acceptedAnswer": { "@type": "Answer", "text": "MaudelClaw 是 Leo Lu 2025 年创立的摩豆智能推出的国产企业级 AI Agent 平台，提供声誉维护、审计标书、开源情报等企业级方案。" } },
           { "@type": "Question", "name": "怎么联系 Leo Lu？", "acceptedAnswer": { "@type": "Answer", "text": "发邮件到 dearsuley@gmail.com，或在 GitHub 上找 @deerleo。" } },
@@ -313,7 +331,7 @@ css: milu
 <script>document.getElementById('year').textContent = new Date().getFullYear();</script>
 <script>
 (function () {
-  var card = document.querySelector('.media-card');
+  var card = document.querySelector('.media-card[data-video]');
   if (!card) return;
   var poster = card.querySelector('.media-poster');
   var src = card.getAttribute('data-video');
