@@ -1,3 +1,5 @@
+---
+---
 <!doctype html>
 <html lang="zh-CN">
 <head>
@@ -29,8 +31,53 @@
     <section class="question"><h2>项目想说明什么</h2><p>“让第二个模型再检查一次”不自动构成可靠性保障。评测一个审计系统时，还需要看它在哪些类型上稳定出错、是否把偏好误当成缺陷，以及每个集成成员给结果带来的具体变化。</p></section>
     <section class="section limits"><h2>边界与下一步</h2><ul><li>当前是研究原型，使用受控合成样例，不等同于真实生产环境中的安全、合规或代码审计表现。</li><li>样例规模有限，类别设计和标注也会影响测量结果；更大规模的独立复核仍然重要。</li><li>部分 API 模型评测未完成，因此不把当前观察表述为对所有模型或部署方式的普遍结论。</li><li>论文仍在草稿阶段，结果尚未经过同行评审；本页面展示研究问题与方法，不提供未经复核的性能排名。</li></ul></section>
     <p class="status"><strong>公开范围：</strong>本页介绍研究问题、评测维度和限制。底层测试语料、模型原始响应、研究草稿及本地配置不随网站发布。</p>
+    <section class="section" id="faq"><h2>常见问题 FAQ</h2><div class="grid">
+      <article class="card"><small>01 · 项目</small><h3>AuditorBench 是什么？</h3><p>一个研究 AI 审计员自身可靠性的受控评测基准：用代码、安全配置和数据处理规则中有明确答案的受控样例，观察审计模型是否稳定、在哪些场景容易误报。</p></article>
+      <article class="card"><small>02 · 指标</small><h3>它测什么指标？</h3><p>四个维度：准确与误报、重复运行下结论的一致性、上下文影响（前面的审计记录是否会带偏判断），以及多模型集成（投票、并集、交集）是否真的更可靠。</p></article>
+      <article class="card"><small>03 · 数据</small><h3>样例怎么来的？</h3><p>60 个受控合成样例全部由人工编写和标注：要么包含一个已知问题，要么是干净样例；模型收到统一的任务指令，并用结构化结果报告判断。</p></article>
+      <article class="card"><small>04 · 边界</small><h3>结论可以怎么用？</h3><p>当前处于论文草稿阶段，结果未经同行评审，不提供性能排名；它更适合用来说明审计系统在哪些类型上稳定出错，以及评测审计系统时还需要看什么。</p></article>
+    </div></section>
     <div class="related"><a href="{{ '/' | relative_url }}#work">返回全部项目 →</a><a href="https://github.com/deerleo">查看 GitHub →</a></div>
     <footer class="subpage-footer">AuditorBench · 独立研究原型 · Leo Lu</footer>
   </main>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "CreativeWork",
+    "name": "AuditorBench",
+    "description": "AuditorBench：研究大语言模型审计员的稳定性、误报、上下文影响与集成可靠性的受控实验基准。",
+    "url": "https://milulab.com/project/auditorbench/",
+    "inLanguage": "zh-CN",
+    "author": {
+      "@type": "Person",
+      "name": "Leo Lu",
+      "alternateName": "迷鹿 MiLu",
+      "url": "https://milulab.com/",
+      "sameAs": ["https://github.com/deerleo", "https://maudelclaw.ai"]
+    }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      { "@type": "ListItem", "position": 1, "name": "首页", "item": "https://milulab.com/" },
+      { "@type": "ListItem", "position": 2, "name": "AuditorBench", "item": "https://milulab.com/project/auditorbench/" }
+    ]
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      { "@type": "Question", "name": "AuditorBench 是什么？", "acceptedAnswer": { "@type": "Answer", "text": "一个研究 AI 审计员自身可靠性的受控评测基准：用代码、安全配置和数据处理规则中有明确答案的受控样例，观察审计模型是否稳定、在哪些场景容易误报。" } },
+      { "@type": "Question", "name": "它测什么指标？", "acceptedAnswer": { "@type": "Answer", "text": "四个维度：准确与误报、重复运行下结论的一致性、上下文影响（前面的审计记录是否会带偏判断），以及多模型集成（投票、并集、交集）是否真的更可靠。" } },
+      { "@type": "Question", "name": "样例怎么来的？", "acceptedAnswer": { "@type": "Answer", "text": "60 个受控合成样例全部由人工编写和标注：要么包含一个已知问题，要么是干净样例；模型收到统一的任务指令，并用结构化结果报告判断。" } },
+      { "@type": "Question", "name": "结论可以怎么用？", "acceptedAnswer": { "@type": "Answer", "text": "当前处于论文草稿阶段，结果未经同行评审，不提供性能排名；它更适合用来说明审计系统在哪些类型上稳定出错，以及评测审计系统时还需要看什么。" } }
+    ]
+  }
+  </script>
 </body>
 </html>

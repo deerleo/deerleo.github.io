@@ -373,6 +373,18 @@ dsh web                                          <span class="cm"># 工作区指
   </ol>
 </section>
 
+<section id="faq">
+  <h2>常见问题 FAQ</h2>
+  <p class="sub">关于 DSH Research Lab 的常见疑问，一句话版本都在这里。</p>
+  <div class="grid">
+    <div class="card"><h3>DSH Research Lab 是什么？</h3><p>一套"下载即可运行"的高校科研智能体框架：macOS 桌面端开箱即用（内置真实 DeepSeek Harness、Node 22 与全部科研栈），也可源码接入，把数据审计、统计分析、报告生成串成可复核的研究流程。</p></div>
+    <div class="card"><h3>它支持哪些领域？</h3><p>内置教育与公共卫生两个完整领域模板：教育科研台基于 UCI Student Performance（649 名中学生真实数据），公卫科研台基于 UCI Heart Disease（303 例真实病例）；换学科等于换 Preset 配置，无需改计算层。</p></div>
+    <div class="card"><h3>它如何保证结果可复核？</h3><p>内置 verify.py 的 49 项自动验收：SHA256 完整性、确定性复跑、双独立实现交叉验证与协议断言；原始数据只读、数字只能来自真实执行、协议先于数据锁定。</p></div>
+    <div class="card"><h3>怎么安装运行？</h3><p>从 GitHub Releases 下载 macOS（Apple Silicon）桌面端 DMG，把 App 拖入「应用程序」即可，内置 12 个科研技能，无需预装 Node / Python；也可克隆源码后 pip install 依赖直接运行教育或公卫管线。</p></div>
+    <div class="card"><h3>是否开源？</h3><p>是。框架基于 DeepSeek Harness 构建，MIT 许可开源，数据为 CC BY 4.0 的 UCI 真实公开数据集，代码与文档在 GitHub 仓库 milulab/dsh-research-lab。</p></div>
+  </div>
+</section>
+
 <footer>
   <div style="max-width:820px;margin:0 auto 10px;text-align:left;color:var(--muted);font-size:12.5px;line-height:1.7;">
     <b>声明：</b>本项目为教学与研究辅助工具，全部统计结论须由领域专家复核后方可用于实际决策；
@@ -389,5 +401,49 @@ dsh web                                          <span class="cm"># 工作区指
     <a href="health-methodology.html">公卫方法论</a>
   </div>
 </footer>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "DSH Research Lab",
+  "description": "基于 DeepSeek Harness 的开源科研智能体框架：真实公开数据、分层 Preset/Skill/Tool 架构、49 项自动验收，支持按学科定制科研 Agent。",
+  "url": "https://milulab.com/project/dsh-research-lab/",
+  "softwareVersion": "0.3.1",
+  "operatingSystem": "macOS 11+ Apple Silicon",
+  "applicationCategory": "ScientificApplication",
+  "inLanguage": "zh-CN",
+  "author": {
+    "@type": "Person",
+    "name": "Leo Lu",
+    "alternateName": "迷鹿 MiLu",
+    "url": "https://milulab.com/",
+    "sameAs": ["https://github.com/deerleo", "https://maudelclaw.ai"]
+  },
+  "license": "https://opensource.org/licenses/MIT"
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    { "@type": "ListItem", "position": 1, "name": "首页", "item": "https://milulab.com/" },
+    { "@type": "ListItem", "position": 2, "name": "DSH Research Lab", "item": "https://milulab.com/project/dsh-research-lab/" }
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    { "@type": "Question", "name": "DSH Research Lab 是什么？", "acceptedAnswer": { "@type": "Answer", "text": "一套\"下载即可运行\"的高校科研智能体框架：macOS 桌面端开箱即用（内置真实 DeepSeek Harness、Node 22 与全部科研栈），也可源码接入，把数据审计、统计分析、报告生成串成可复核的研究流程。" } },
+    { "@type": "Question", "name": "它支持哪些领域？", "acceptedAnswer": { "@type": "Answer", "text": "内置教育与公共卫生两个完整领域模板：教育科研台基于 UCI Student Performance（649 名中学生真实数据），公卫科研台基于 UCI Heart Disease（303 例真实病例）；换学科等于换 Preset 配置，无需改计算层。" } },
+    { "@type": "Question", "name": "它如何保证结果可复核？", "acceptedAnswer": { "@type": "Answer", "text": "内置 verify.py 的 49 项自动验收：SHA256 完整性、确定性复跑、双独立实现交叉验证与协议断言；原始数据只读、数字只能来自真实执行、协议先于数据锁定。" } },
+    { "@type": "Question", "name": "怎么安装运行？", "acceptedAnswer": { "@type": "Answer", "text": "从 GitHub Releases 下载 macOS（Apple Silicon）桌面端 DMG，把 App 拖入「应用程序」即可，内置 12 个科研技能，无需预装 Node / Python；也可克隆源码后 pip install 依赖直接运行教育或公卫管线。" } },
+    { "@type": "Question", "name": "是否开源？", "acceptedAnswer": { "@type": "Answer", "text": "是。框架基于 DeepSeek Harness 构建，MIT 许可开源，数据为 CC BY 4.0 的 UCI 真实公开数据集，代码与文档在 GitHub 仓库 milulab/dsh-research-lab。" } }
+  ]
+}
+</script>
 </body>
 </html>

@@ -1,0 +1,20 @@
+---
+---
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  {% assign pages_to_include = site.html_pages | where_exp: "p", "p.url != '/print/' and p.url != '/print.html' and p.url != '/print' and p.url != '/404.html' and p.title != '打印版简历' and p.noindex != true and p.hidden != true" %}
+  {% for p in pages_to_include %}
+  <url>
+    <loc>{{ p.url | prepend: site.url | replace: '/index.html', '/' }}</loc>
+    {% if p.date %}<lastmod>{{ p.date | date_to_xmlschema }}</lastmod>{% elsif p.last_modified_at %}<lastmod>{{ p.last_modified_at | date_to_xmlschema }}</lastmod>{% endif %}
+    <changefreq>monthly</changefreq>
+    <priority>{{ forloop.index | plus: 7 | divided_by: 10.0 | at_most: 1.0 }}</priority>
+  </url>
+  {% endfor %}
+  {% for post in site.posts %}
+  <url>
+    <loc>{{ post.url | prepend: site.url }}</loc>
+    <lastmod>{{ post.date | date_to_xmlschema }}</lastmod>
+  </url>
+  {% endfor %}
+</urlset>
