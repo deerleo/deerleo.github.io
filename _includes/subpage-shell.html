@@ -3,7 +3,7 @@
   视觉规范见 docs/subpage-visual-standard.md，样式见 assets/css/subpage-shell.css。
 {% endcomment %}
 <header class="subpage-shell">
-  <a class="subpage-shell__identity" href="#top" aria-label="{{ include.identity | escape }}">
+  <a class="subpage-shell__identity" href="{% if include.link %}{{ include.link | relative_url }}{% else %}#top{% endif %}" aria-label="{% if include.link %}返回{{ include.identity | escape }}{% else %}{{ include.identity | escape }}{% endif %}">
     {{ include.identity | escape }}
     {% if include.descriptor %}<small>{{ include.descriptor | escape }}</small>{% endif %}
   </a>
