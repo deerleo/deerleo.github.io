@@ -27,11 +27,22 @@ layout: null
     .post-card h2{margin:0;font-size:22px;line-height:1.35;letter-spacing:-.02em}
     .post-card p{margin:0;color:var(--muted);font-size:14px}
     .post-card .read{color:var(--mint);font-size:13px;font-weight:800;margin-top:4px}
-    .series-card{border-color:rgba(195,237,89,.28);background:var(--card-grad)}
-    .series-card:hover{border-color:rgba(195,237,89,.6)}
+    .series-block{margin-bottom:16px}
+    .series-tags{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+    .series-prefix{color:var(--ink-3);font-size:12px;font-weight:650;letter-spacing:.04em;margin-right:2px}
+    .series-tag{display:inline-flex;align-items:center;padding:5px 12px;border:1px solid var(--line);border-radius:999px;background:var(--card-grad);color:var(--ink);font-family:inherit;font-size:12.5px;font-weight:650;letter-spacing:.02em;line-height:1.4;cursor:pointer;transition:border-color .15s ease,color .15s ease}
+    .series-tag:hover{border-color:var(--line-strong)}
+    .series-tag.active{border-color:rgba(195,237,89,.6);color:var(--mint)}
+    .series-panel{margin-top:12px;padding:20px 22px;border:1px solid var(--line);border-radius:16px;background:var(--card-grad)}
+    .series-panel h2{margin:0 0 12px;font-size:16px;line-height:1.4;letter-spacing:-.01em}
+    .series-panel ul{list-style:none;margin:0;padding:0;display:grid;gap:9px}
+    .series-panel li{display:flex;gap:12px;align-items:baseline}
+    .series-panel time{flex:none;color:var(--ink-3);font-size:12px;font-weight:650;letter-spacing:.04em}
+    .series-panel a{font-size:14px;text-decoration:none}
+    .series-panel a:hover{color:var(--mint)}
     .empty{padding:40px 24px;border:1px dashed var(--line);border-radius:18px;color:var(--muted);text-align:center}
     .footer{display:flex;justify-content:space-between;gap:16px;margin-top:60px;padding-top:18px;border-top:1px solid var(--line);color:var(--ink-3);font-size:12px}
-    @media(max-width:680px){.wrap{padding-top:38px}.footer{display:block}.footer span{display:block;margin:5px 0}}
+    @media(max-width:680px){.wrap{padding-top:38px}.series-panel{padding:16px 18px}.series-panel li{flex-direction:column;gap:2px}.footer{display:block}.footer span{display:block;margin:5px 0}}
   </style>
   <link rel="stylesheet" href="{{ '/assets/css/subpage-shell.css?v=20261027' | relative_url }}">
 </head>
@@ -44,23 +55,34 @@ layout: null
       <p>AI 产品实践复盘、Agent 工程笔记、技术边界分析与创业思考。只写亲手做过、验证过的事。</p>
     </header>
 
-    <section class="postlist" aria-label="专题系列">
+    <section class="series-block" aria-label="专题系列">
       {% assign seen = "" | split: "" %}
       {% for post in site.posts %}
         {% if post.series %}{% unless seen contains post.series %}{% assign seen = seen | push: post.series %}{% endunless %}{% endif %}
       {% endfor %}
+      {% if seen.size > 0 %}
+      <div class="series-tags">
+        <span class="series-prefix">专题</span>
+        {% for s in seen %}
+        {% assign s_posts = site.posts | where: "series", s %}
+        <button class="series-tag" type="button" data-series="s{{ forloop.index }}" aria-expanded="false" aria-controls="panel-s{{ forloop.index }}">📚 {{ s }} · {{ s_posts.size }}</button>
+        {% endfor %}
+      </div>
       {% for s in seen %}
       {% assign s_posts = site.posts | where: "series", s %}
-      <a class="post-card series-card" href="{{ s_posts.first.url | relative_url }}">
-        <div class="post-meta"><span>📚 专题</span><span>{{ s_posts.size }} 篇</span></div>
+      <div class="series-panel" id="panel-s{{ forloop.index }}" hidden>
         <h2>{{ s }}</h2>
-        <p>{% for p in s_posts limit:3 %}{{ p.title }}{% unless forloop.last %} · {% endunless %}{% endfor %}</p>
-        <span class="read">进入专题 →</span>
-      </a>
+        <ul>
+          {% for p in s_posts %}
+          <li><time datetime="{{ p.date | date_to_xmlschema }}">{{ p.date | date: "%Y-%m-%d" }}</time><a href="{{ p.url | relative_url }}">{{ p.title }}</a></li>
+          {% endfor %}
+        </ul>
+      </div>
       {% endfor %}
+      {% endif %}
     </section>
 
-    <section class="postlist" aria-label="文章列表" style="margin-top:34px">
+    <section class="postlist" aria-label="文章列表" style="margin-top:16px">
       {% for post in site.posts %}
       <a class="post-card" href="{{ post.url | relative_url }}">
         <div class="post-meta">
@@ -82,6 +104,20 @@ layout: null
       <span>把想法做成能用的东西</span>
     </footer>
   </main>
+  <script>
+  (function(){
+    var tags=document.querySelectorAll('.series-tag'),panels=document.querySelectorAll('.series-panel');
+    tags.forEach(function(tag){
+      tag.addEventListener('click',function(){
+        var panel=document.getElementById('panel-'+tag.getAttribute('data-series'));
+        var willOpen=panel.hidden;
+        panels.forEach(function(p){p.hidden=true});
+        tags.forEach(function(t){t.classList.remove('active');t.setAttribute('aria-expanded','false')});
+        if(willOpen){panel.hidden=false;tag.classList.add('active');tag.setAttribute('aria-expanded','true')}
+      });
+    });
+  })();
+  </script>
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
