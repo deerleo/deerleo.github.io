@@ -81,7 +81,8 @@
     a{color:var(--mint)}.wrap{max-width:760px;margin:auto;padding:48px 24px 88px}
     .post-head{margin-bottom:40px;padding-bottom:26px;border-bottom:1px solid var(--line)}
     .post-meta{display:flex;gap:10px;align-items:center;margin:0 0 4px;color:var(--cyan);font-size:12px;font-weight:850;letter-spacing:.08em;flex-wrap:wrap}
-    .post-meta .author{color:var(--ink-2);font-weight:700;letter-spacing:.02em}
+    .post-meta .author{display:inline-flex;align-items:center;gap:6px;color:var(--ink-2);font-weight:700;letter-spacing:.02em}
+    .author-avatar{width:20px;height:20px;border-radius:50%;object-fit:cover;object-position:50% 30%;flex:none;border:1px solid var(--line)}
     .post-meta time{color:var(--ink-3);font-weight:650;letter-spacing:.04em}
     .series-badge{display:inline-flex;align-items:center;gap:8px;margin-bottom:18px;padding:7px 14px;border:1px solid rgba(195,237,89,.4);border-radius:999px;color:var(--mint);font-size:12px;font-weight:800;text-decoration:none}
     .series-badge:hover{background:var(--accent-soft)}
@@ -127,7 +128,7 @@
         {% endif %}
         <h1 class="title">{{ page.title }}</h1>
         <div class="post-meta">
-          <span class="author">Leo Lu</span>
+          <span class="author"><img class="author-avatar" src="{{ '/assets/images/profile.jpg' | relative_url }}" alt="" width="20" height="20">Leo Lu</span>
           <time datetime="{{ page.date | date_to_xmlschema }}">{{ page.date | date: "%Y-%m-%d" }}</time>
           {% if page.tags %}{% for t in page.tags %}<span>{{ t }}</span>{% endfor %}{% endif %}
         </div>
