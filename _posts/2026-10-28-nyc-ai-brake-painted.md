@@ -63,7 +63,7 @@ series: 哟哟鹿鸣
 
 ![Public School。一年后评估报告出来时，这份名单的判定方法依然是黑箱。](/assets/images/2026-10-28-nyc-ai-ban/school-door.jpg)
 
-## 判词
+## 说到底，配不配管
 
 把三件事摞起来看：
 
