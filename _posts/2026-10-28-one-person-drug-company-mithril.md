@@ -7,6 +7,10 @@ series: "Agent 商业化基建"
 
 ![实验室里，一只黑色小鼠待在戴紫色手套的手心。这个故事的分水岭，最终落在这一层动物实验上。](/assets/images/2026-10-28-one-person-drug-company-mithril/hero-lab-mice.jpg)
 
+<video controls preload="metadata" style="display:block;max-width:100%;width:720px;margin:0 auto;" poster="/assets/images/2026-10-28-one-person-drug-company-mithril/hero-lab-mice.jpg" src="/assets/videos/mithril-video.mp4"></video>
+
+*视频版《一个人做药》：四段混合形态——真人开场收尾、实验室实拍图 Ken Burns、数据动画对比，45 秒讲完整个故事。*
+
 上周 Anthropic 说自己收购了一家公司。这家公司做罕见病药物研发，全职员工数量：1。
 
 创始人 Cody Tranbarger，团队就是他加一个 Claude。不到 18 个月，一种儿童罕见肌营养不良症的候选疗法，从纸面设想推到了小鼠活体实验出积极数据。
