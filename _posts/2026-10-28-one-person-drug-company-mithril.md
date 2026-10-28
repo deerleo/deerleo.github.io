@@ -5,6 +5,8 @@ tags: [Anthropic, Claude, 一人公司, AI制药, OPC]
 series: "Agent 商业化基建"
 ---
 
+![实验室里，一只黑色小鼠待在戴紫色手套的手心。这条故事的分水岭，最终落在这一层动物实验上。](/assets/images/2026-10-28-one-person-drug-company-mithril/hero-lab-mice.jpg)
+
 上周 Anthropic 发了篇博客，说他们收购了 Mithril Medicine。这家公司做罕见病药物研发，全职员工数量：1。
 
 创始人 Cody Tranbarger，加上 Claude。没了。不到 18 个月，两种罕见儿童肌营养不良症之一的候选疗法，从设想推进到小鼠活体实验出积极数据。等一处细节我后面再说——Anthropic 配着博客发了一份 38 页的技术报告，我把 PDF 拉下来拆了一遍，里面有个「一周实录」的案例，比新闻稿狠得多。
@@ -27,6 +29,10 @@ Mithril 把这个结构拆了。拆的方式值得仔细看。
 
 一整周下来，Claude 起草了 17 封邮件，Cody 发了 12 封（每封都改过）。起草时 Claude 附了 41 个它没找到书面依据的点，让 Cody 逐条确认。
 
+![一周实录的四个节点与三方分工。注意最右一列：Claude 起草了 17 封邮件，一封都没发出去，所有出站通信都过了人的手。](/assets/images/2026-10-28-one-person-drug-company-mithril/diag-collaboration-loop.png)
+
+![线性刻度下看得更清楚：96 秒和 10 分钟，在 8.5 小时面前几乎是一条线。](/assets/images/2026-10-28-one-person-drug-company-mithril/diag-response-time.png)
+
 ## 报告自己承认了错误
 
 这是我最意外的地方。报告专门有一段分析 Claude 犯的错，详查了 6 处：Claude 自己发现 5 处（其中 1 处是 CRO 问出来的，2 处在邮件发出前拦下），1 处 Cody 补了漏（有伤评估有效性的统计问题），还有 2 处藏在 Claude 对生产数据的复核陈述里，4 天没被发现，其中 1 处到报告提交时都没定论。
@@ -40,6 +46,8 @@ Mithril 把这个结构拆了。拆的方式值得仔细看。
 病是 LAMA2 相关先天性肌营养不良症（LAMA2-CMD），一种儿童罕见病，患病儿童从出生或婴儿期就肌无力，一个 42 人的队列里只有 1 个孩子能独立行走，六分之一活不到成年。没有疾病修饰类治疗手段。
 
 Mithril 的思路是双特异性桥接抗体：病人的肌肉缺 laminin-α2，但会代偿性保留一种相关的 laminin-α4，后者自己撑不起基底膜。那就造一个抗体，一头抓 laminin-α4，一头抓肌膜上的 β-dystroglycan，把两者重新桥接起来。
+
+![资料图：LAMA2-CMD 小鼠模型的股直肌 H&E 染色，左列野生型，右列 dy3K/dy3K 模型，从胚胎 18.5 天到出生 21 天。肌纤维坏死、炎症浸润与纤维化随日龄加重，这就是要拦下的进程。](/assets/images/2026-10-28-one-person-drug-company-mithril/lama2-muscle-he.jpg)
 
 结果：在 dyW 小鼠模型上，2+2 价的 construct 让小鼠的前肢峰值力和握力约为对照组的两倍。研究者自己也留了余地——这只是 pilot study，分组没随机化，还需要设盲的独立重复实验。报告里 Limitations 一节写得规规矩矩。
 
@@ -58,3 +66,12 @@ Mithril 的思路是双特异性桥接抗体：病人的肌肉缺 laminin-α2，
 上次类似的边界松动，还是独立开发者证明一个人能做出服务百万用户的产品。这次的量级不太一样——药，从小鼠到人体临床之间隔着著名的死亡之谷，18 个月只是刚出发。2028 年底见分晓，我到时候应该会再写一篇。
 
 数据来源：[Anthropic 博客](https://www.anthropic.com/research/early-progress-drug-development)（2026-10-27）；[技术报告 PDF](https://www-cdn.anthropic.com/52e1f5d50c47ca3818f56704c27cf19e59b62e77.pdf)（2026-10-26，Preclinical Characterization of a Bispecific Bridging Antibody for the Treatment of LAMA2-Related Congenital Muscular Dystrophy，未同行评审）。
+
+**图片使用清单**
+
+| 文件 | 位置 | 内容与图注摘要 | 来源与版权 |
+|---|---|---|---|
+| hero-lab-mice.jpg | 头图 | 实验室人员手持黑色小鼠 | Understanding Animal Research，Wikimedia Commons，CC BY-SA 4.0 |
+| diag-collaboration-loop.png | 「分工」节 | 一周实录四节点＋三方分工 | 自制（数据：技术报告 Fig.12） |
+| diag-response-time.png | 「分工」节 | 96 秒 / 10 分钟 / 8.5 小时对比 | 自制（数据：技术报告「Working with Claude」节） |
+| lama2-muscle-he.jpg | 「科学结果」节 | LAMA2-CMD 小鼠股直肌 H&E，WT vs dy3K/dy3K | Gawlik KI 等，Sci Rep 2019;9:14324，CC BY 4.0，资料图（非本项数据） |
