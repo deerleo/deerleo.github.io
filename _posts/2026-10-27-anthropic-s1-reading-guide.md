@@ -2,9 +2,14 @@
 title: "净亏 807 亿美元，为什么说它在好转"
 description: "Anthropic 提交 S-1：半年营收 163 亿美元翻 13.6 倍，经营亏损收窄到 6.93 亿，净亏却是 807 亿。三个数字的反差，聊聊怎么分清真亏和账面亏。"
 tags: [Anthropic, IPO, 财报]
+podcast: /assets/audio/2026-10-27-anthropic-s1-reading-guide.mp3
 ---
 
 一家公司，半年营收 163 亿美元，净亏 807 亿。亏损是营收的 5 倍。但我读完它本周一交出的招股书，第一反应是：这家公司在好转。
+
+<video controls preload="metadata" style="display:block;max-width:100%;width:720px;margin:0 auto;" poster="/assets/videos/2026-10-27-anthropic-s1-reading-guide-cover.jpg" src="/assets/videos/2026-10-27-anthropic-s1-reading-guide.mp4"></video>
+
+*这条视频是本文的讲解版：真人开场收尾加动画拆解三个数字。*
 
 不是我数学不好，是这些数字根本不在一个口径里。分清它们，可能是读 AI 公司财报最要紧的一门课。
 
