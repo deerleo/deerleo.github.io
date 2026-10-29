@@ -404,13 +404,15 @@ css: milu
 
     <style>
       .certificates-section h2 { color: var(--ink); }
-      .cert-grid { margin-top: 31px; display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 18px; }
+      .cert-grid { margin-top: 26px; display: grid; grid-template-columns: repeat(8, 1fr); gap: 12px; }
       .cert-cell { margin: 0; background: var(--panel-soft); border: 1px solid var(--line); border-radius: 14px; overflow: hidden; box-shadow: var(--shadow); transition: transform .18s ease, border-color .18s ease; }
       .cert-cell:hover { transform: translateY(-3px); border-color: var(--line-strong); }
       .cert-cell img { display: block; width: 100%; height: auto; background: var(--panel-2); }
       .cert-cap { padding: 11px 13px; font-size: 13px; color: var(--muted); line-height: 1.45; }
       .cert-cap b { display: block; color: var(--ink); font-size: 13.5px; margin-bottom: 3px; font-weight: 700; }
-      @media (max-width: 900px) { .cert-grid { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 12px; } .cert-cap { padding: 9px 10px; font-size: 12px; } }
+      @media (max-width: 1100px) { .cert-grid { grid-template-columns: repeat(6, 1fr); } }
+      @media (max-width: 760px) { .cert-grid { grid-template-columns: repeat(4, 1fr); } .cert-cap { font-size: 11.5px; } }
+      @media (max-width: 480px) { .cert-grid { grid-template-columns: repeat(3, 1fr); } .cert-cap { padding: 7px 8px; font-size: 11px; } }
     </style>
 
     <section class="approach-section certificates-section" id="certificates" aria-labelledby="certificates-title">
