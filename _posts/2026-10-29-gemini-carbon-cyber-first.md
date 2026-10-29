@@ -35,15 +35,3 @@ series: ""
 
 你信 59 分，还是等别人复测？
 
----
-
-## 图片使用清单（发布前核验，不对外渲染）
-
-| 文件 | 位置 | 图注 | 来源 | 版权注意 |
-|---|---|---|---|---|
-| cover-deepmind.jpg | 头图 | Google DeepMind 品牌实拍 | TechCrunch（techcrunch.com，2026-03-24 文章素材） | 媒体图个人博客引用惯例，低风险 |
-| tpu-datacenter.webp | 安全基准段后 | Google 官方 TPU 数据中心实拍 | Google 官方博客素材桶（storage.googleapis.com/gweb-uniblog-publish-prod） | 官方素材，风险最低 |
-| gemini-logo.png | 榜单段后 | Gemini 品牌标识 | the-decoder.com（2024-08 文章素材） | 媒体图低风险 |
-| gpu-datacenter.jpg | 定价段后 | GPU 数据中心机房 | ExtremeTech（extremetech.com） | 媒体图低风险 |
-
-检索与判定过程：`~/media/topics/_daily/20261029-carbon-blog/imgs/`（manifest.json + final.json + 各组 grid 直读记录）。淘汰：freepik AI 生成图整组、dreamstime/alamy/gettyimages 水印图。

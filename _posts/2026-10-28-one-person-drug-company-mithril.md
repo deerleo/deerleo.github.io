@@ -102,11 +102,3 @@ Mithril 的思路是双特异性桥接抗体。病人肌肉里缺 laminin-α2，
 
 数据来源：[Anthropic 博客](https://www.anthropic.com/research/early-progress-drug-development)（2026-10-27）；[技术报告 PDF](https://www-cdn.anthropic.com/52e1f5d50c47ca3818f56704c27cf19e59b62e77.pdf)（2026-10-26，Preclinical Characterization of a Bispecific Bridging Antibody for the Treatment of LAMA2-Related Congenital Muscular Dystrophy，未同行评审）。
 
-**图片使用清单**
-
-| 文件 | 位置 | 内容与图注摘要 | 来源与版权 |
-|---|---|---|---|
-| hero-lab-mice.jpg | 头图 | 实验室人员手持黑色小鼠 | Understanding Animal Research，Wikimedia Commons，CC BY-SA 4.0 |
-| diag-collaboration-loop.png | 「一周里」节 | 一周实录四节点＋三方分工 | 自制（数据：技术报告 Fig.12） |
-| diag-response-time.png | 「一周里」节 | 96 秒 / 10 分钟 / 8.5 小时对比 | 自制（数据：技术报告「Working with Claude」节） |
-| lama2-muscle-he.jpg | 「药本身」节 | LAMA2-CMD 小鼠股直肌 H&E，WT vs dy3K/dy3K | Gawlik KI 等，Sci Rep 2019;9:14324，CC BY 4.0，资料图（非本项数据） |
