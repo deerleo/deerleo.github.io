@@ -60,8 +60,7 @@ body {
 .cta-chunk { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; padding: 12px 15px; background: rgba(255,255,255,.72); font-size: 13px; color: var(--muted); line-height: 1.5; }
 .cta-chunk b { color: var(--forest); letter-spacing: .02em; padding-right: 8px; border-right: 2px solid var(--lime); }
 .cta-chunk a { color: #486c2a; font-weight: 800; white-space: nowrap; margin-left: auto; border-bottom: 1px solid rgba(72,108,42,.4); transition: border-color .2s ease; }
-.cta-chunk a:hover { border-color: #486c2a; }
-.button { display: inline-flex; align-items: center; justify-content: center; gap: 14px; min-height: 50px; padding: 0 20px; font-size: 14px; font-weight: 800; transition: background .2s ease, transform .2s ease; }
+.cta-chunk a:hover { border-color: #486c2a; }.button { display: inline-flex; align-items: center; justify-content: center; gap: 14px; min-height: 50px; padding: 0 20px; font-size: 14px; font-weight: 800; transition: background .2s ease, transform .2s ease; }
 .button:hover, .button:focus-visible { transform: translateY(-2px); }
 .button.primary { color: #14231a; background: var(--lime); }
 .button.primary:hover { background: #d1f477; }
@@ -177,10 +176,20 @@ body {
 html[data-theme="dark"] .work-section { background: var(--panel); }
 html[data-theme="dark"] .contact { background: var(--panel-2); }
 html[data-theme="dark"] .site-footer { background: var(--panel-2); }
+/* 深色主题下 hero 双 CTA 框：浅色玻璃底换深色面板底，
+   小字/标题/链接颜色同步换深底可读配色（修复小字浅字落浅底看不清）。 */
+html[data-theme="dark"] .cta-chunk { background: var(--panel-soft); color: var(--ink-2); }
+html[data-theme="dark"] .cta-chunk b { color: var(--lime); border-right-color: var(--line-strong); }
+html[data-theme="dark"] .cta-chunk a { color: var(--lime); border-bottom-color: rgba(195, 237, 89, .45); }
+html[data-theme="dark"] .cta-chunk a:hover { border-bottom-color: var(--lime); }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme]) .work-section { background: var(--panel); }
   :root:not([data-theme]) .contact { background: var(--panel-2); }
   :root:not([data-theme]) .site-footer { background: var(--panel-2); }
+  :root:not([data-theme]) .cta-chunk { background: var(--panel-soft); color: var(--ink-2); }
+  :root:not([data-theme]) .cta-chunk b { color: var(--lime); border-right-color: var(--line-strong); }
+  :root:not([data-theme]) .cta-chunk a { color: var(--lime); border-bottom-color: rgba(195, 237, 89, .45); }
+  :root:not([data-theme]) .cta-chunk a:hover { border-bottom-color: var(--lime); }
 }
 
 @supports (animation-timeline: scroll()) {
