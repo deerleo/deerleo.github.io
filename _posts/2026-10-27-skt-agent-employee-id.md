@@ -2,9 +2,14 @@
 title: "SKT 给 Agent 发工号，这份作业值得抄"
 description: "韩国最大运营商把 AI Agent 当新员工管：两级工号、具名主管、绩效评审、可紧急停止。我拿这份治理报告对自己家的平台逐条对了账。"
 tags: [AI Agent, Agent 治理, 企业服务]
+podcast: /assets/audio/2026-10-27-skt-agent-employee-id.mp3
 ---
 
 "Agent 出了事算谁的？"做企业级 Agent 平台这两年，这是我被问得最多的问题，比"用哪个模型"多得多。
+
+<video controls preload="metadata" style="display:block;max-width:100%;width:720px;margin:0 auto;" poster="/assets/videos/2026-10-27-skt-agent-employee-id-cover.jpg" src="/assets/videos/2026-10-27-skt-agent-employee-id.mp4"></video>
+
+*这条视频是本文的讲解版：真人开场收尾，动画拆解工号两级与落地五件事。*
 
 这个问题我答过很多遍，答案基本都是现凑的：这家说有人工审核兜底，那家说日志都在、可以追责。每家都答得对，每家都像临时补的。
 
