@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>EduLab · 交互式教学实验平台</title>
+<meta name="description" content="EduLab：面向地理、物理、化学、生物、数学课堂的三维交互教学实验平台。">
+<script>
+/* 主题首帧应用（浅/深，默认跟随系统） */
+(function(){try{var t=localStorage.getItem('edulab-theme');if(t!=='light'&&t!=='dark'){t=matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';}document.documentElement.setAttribute('data-theme',t);}catch(e){}})();
+</script>
+<link rel="stylesheet" href="assets/css/edu.css">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'%3E%3Cpath d='M19 6h10M21 6v12.5L9.8 37.2A4 4 0 0 0 13.3 43h21.4a4 4 0 0 0 3.5-5.8L27 18.5V6' stroke='%23e8674a' stroke-width='4' fill='none' stroke-linecap='round'/%3E%3C/svg%3E">
+</head>
+<body>
+
+<header class="edu-header">
+  <a class="edu-logo" href="./" aria-label="EduLab 首页">
+    <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M19 6h10M21 6v12.5L9.8 37.2A4 4 0 0 0 13.3 43h21.4a4 4 0 0 0 3.5-5.8L27 18.5V6" stroke="var(--accent)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/><path d="M15.5 30h17" stroke="var(--accent)" stroke-width="3" stroke-linecap="round"/><circle cx="21" cy="36.5" r="1.8" fill="var(--accent)"/><circle cx="27.5" cy="34.5" r="1.4" fill="var(--accent)"/><path d="M24 6V4" stroke="var(--accent)" stroke-width="3" stroke-linecap="round"/></svg>
+    <span>EduLab<span class="logo-sub">教学实验平台</span></span>
+  </a>
+  <span class="spacer"></span>
+  <a class="edu-header-btn" href="/">milulab.com</a>
+  <button class="edu-header-btn" id="themeBtn" type="button" aria-label="切换主题">☾</button>
+</header>
+
+<section class="hero">
+  <h1>把抽象的概念，放进<span class="accent">可以动手的三维课堂</span></h1>
+  <p>EduLab 是一套交互式教学实验平台：用三维场景演示地球运动、潮汐、水循环这些「讲起来费劲、看一眼就懂」的知识点。每个实验按章节组织，适合课堂投屏讲解，也适合学生自主探究。</p>
+  <div class="hero-meta">
+    <span><b id="statTotal">–</b> 个实验规划中</span>
+    <span><b id="statOpen">–</b> 个已开放</span>
+    <span>覆盖 <b id="statSubjects">–</b> 个学科</span>
+  </div>
+</section>
+
+<div class="toolbar">
+  <div class="tabs" id="tabs" role="tablist" aria-label="学科筛选"></div>
+  <label class="search-box">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.8-3.8"/></svg>
+    <input id="search" type="search" placeholder="搜索实验名或知识点…" autocomplete="off">
+  </label>
+</div>
+
+<main id="sections" aria-live="polite"></main>
+<div class="no-result" id="noResult">没有匹配的实验，换个关键词试试。</div>
+
+<footer class="edu-footer">
+  <span class="attr">3D 资源来源：<a href="https://wedulab.com" target="_blank" rel="noopener">WeduLab © WY · wedulab.com</a></span>
+  <span class="sep">|</span>
+  <span>EduLab · <a href="/">milulab.com</a></span>
+</footer>
+
+<script src="assets/js/edu-theme.js"></script>
+<script>
+(function () {
+  'use strict';
+
+  var SUBJECT_COLORS = {
+    '物理': '#4a90d9',
+    '化学': '#3fa96f',
+    '生物': '#9b6fd0',
+    '地理': '#2ea6a0',
+    '数学': '#e0913c',
+    '历史': '#b0764a',
+    '信息技术': '#6b7fd7'
+  };
+  function colorOf(subject) { return SUBJECT_COLORS[subject] || '#8899aa'; }
+
+  var state = { subject: '全部', query: '' };
+  var labs = [];
+
+  fetch('assets/data/cards.json').then(function (r) {
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    return r.json();
+  }).then(function (data) {
+    labs = data.labs;
+    document.getElementById('statTotal').textContent = data.total;
+    document.getElementById('statOpen').textContent = data.implemented.length;
+    document.getElementById('statSubjects').textContent = data.subjects.length;
+    buildTabs(data.subjects);
+    render();
+  }).catch(function (err) {
+    document.getElementById('sections').innerHTML =
+      '<div class="no-result" style="display:block">实验数据加载失败：' + err.message + '</div>';
+  });
+
+  function buildTabs(subjects) {
+    var box = document.getElementById('tabs');
+    var list = ['全部'].concat(subjects);
+    var counts = { '全部': labs.length };
+    subjects.forEach(function (s) {
+      counts[s] = labs.filter(function (l) { return l.subject === s; }).length;
+    });
+    box.innerHTML = '';
+    list.forEach(function (s) {
+      var b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'tab' + (s === state.subject ? ' active' : '');
+      b.setAttribute('role', 'tab');
+      b.setAttribute('aria-selected', s === state.subject ? 'true' : 'false');
+      b.innerHTML = s + '<span class="n">' + counts[s] + '</span>';
+      b.addEventListener('click', function () {
+        state.subject = s;
+        box.querySelectorAll('.tab').forEach(function (t) {
+          var on = t.textContent.indexOf(s) === 0;
+          t.classList.toggle('active', on);
+          t.setAttribute('aria-selected', on ? 'true' : 'false');
+        });
+        render();
+      });
+      box.appendChild(b);
+    });
+  }
+
+  function matches(lab) {
+    if (state.subject !== '全部' && lab.subject !== state.subject) return false;
+    var q = state.query.trim().toLowerCase();
+    if (!q) return true;
+    var hay = (lab.name + ' ' + lab.subtitle + ' ' + lab.fullname + ' ' + lab.desc + ' ' +
+      (lab.points || []).join(' ')).toLowerCase();
+    return hay.indexOf(q) !== -1;
+  }
+
+  function cardHTML(lab) {
+    var cls = lab.implemented ? 'card live' : 'card building';
+    var go = lab.implemented ? '<span class="card-go">进入实验 →</span>' : '<span class="card-go">查看计划 →</span>';
+    var tags = (lab.points || []).map(function (p) { return '<span class="tag">' + esc(p) + '</span>'; }).join('');
+    return '<a class="' + cls + '" style="--sc:' + colorOf(lab.subject) + '" href="' + lab.slug + '/">' +
+      '<div class="card-top"><span class="card-name">' + esc(lab.name || lab.subtitle) + '</span>' +
+      '<span class="card-subject">' + esc(lab.subject) + '</span></div>' +
+      '<div class="card-subtitle">' + esc(lab.subtitle) + '</div>' +
+      '<div class="card-desc">' + esc(lab.desc) + '</div>' +
+      '<div class="card-points">' + tags + '</div>' +
+      '<div class="card-foot"><span>' + (lab.implemented ? '可交互 · ' : '建设中 · ') + esc(lab.chapters) + ' 个章节</span>' + go + '</div>' +
+      '</a>';
+  }
+
+  function esc(s) {
+    return String(s == null ? '' : s)
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  }
+
+  function render() {
+    var host = document.getElementById('sections');
+    var visible = labs.filter(matches);
+    var bySubject = {};
+    var order = [];
+    visible.forEach(function (l) {
+      if (!bySubject[l.subject]) { bySubject[l.subject] = []; order.push(l.subject); }
+      bySubject[l.subject].push(l);
+    });
+    if (!visible.length) {
+      host.innerHTML = '';
+      document.getElementById('noResult').style.display = 'block';
+      return;
+    }
+    document.getElementById('noResult').style.display = 'none';
+    host.innerHTML = order.map(function (s) {
+      return '<section class="lab-section"><h2><span class="dot" style="background:' + colorOf(s) + '"></span>' +
+        esc(s) + '<span class="count">' + bySubject[s].length + ' 个实验</span></h2>' +
+        '<div class="grid">' + bySubject[s].map(cardHTML).join('') + '</div></section>';
+    }).join('');
+  }
+
+  document.getElementById('search').addEventListener('input', function (e) {
+    state.query = e.target.value;
+    render();
+  });
+
+  eduBindThemeToggle(document.getElementById('themeBtn'));
+})();
+</script>
+</body>
+</html>

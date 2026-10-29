@@ -1,0 +1,15 @@
+{
+  "name": "edulab",
+  "private": true,
+  "version": "0.1.0",
+  "description": "milulab.com 教学实验平台（/edulab）— 静态站点，无构建步骤，three.js 已本地化",
+  "type": "module",
+  "scripts": {
+    "dev": "python3 -m http.server 8901 --directory ..",
+    "cards": "node tools/build-cards.mjs",
+    "pages": "node tools/gen-placeholder.mjs"
+  },
+  "dependencies": {
+    "three": "0.170.0"
+  }
+}
