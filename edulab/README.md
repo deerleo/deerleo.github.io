@@ -40,3 +40,11 @@ edulab/
 - Three.js + 原生 ES Modules（或 Vite 构建），不引 React 以外的重运行时也可，尊重原站技术选型但代码全新。
 - 实验页统一模板：顶栏（返回/标题/章节切换）+ 主画布 + 底部控制条。
 - 移动端可用，适合投屏。
+
+## Tongjiang Lab 拓展线（2026-10-30）
+
+- 来源：https://github.com/smithjohn78390/tongjiang-lab （54 个实验：物理 10 / 化学 25 / 生物 5 / 地理 14）
+- 许可：CC BY-NC 4.0，署名 Tongjiang Lab (https://lab.tongjiang.app)，非商业使用
+- 每个实验为单文件自包含 HTML（three.js 内嵌），位于 edulab/<slug>/index.html
+- 原始 catalog 备份：assets/data/tongjiang-catalog.json
+- 与 WeduLab 自研线并存，卡片 source=tongjiang 区分
