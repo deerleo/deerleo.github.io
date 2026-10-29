@@ -7,6 +7,10 @@ podcast: /assets/audio/2026-10-28-ai-overseas-playbook-fact-check.mp3
 
 前阵子一份 AI 出海公司的招聘 JD 在圈子里传得挺广。有意思的地方在于，它招的不是程序员也不是 SEO 专员，而是一个"具备独立开发者思维"的人：自己发现需求，自己判断机会，自己快速做出产品，然后用真实的流量、注册、付费验证自己的判断。
 
+<video controls preload="metadata" style="display:block;max-width:100%;width:720px;margin:0 auto;" poster="/assets/videos/2026-10-28-ai-overseas-playbook-fact-check-cover.jpg" src="/assets/videos/2026-10-28-ai-overseas-playbook-fact-check.mp4"></video>
+
+*视频版：约 2 分钟，开头结尾真人出镜，数据与改法用动画过一遍。*
+
 有人把这份 JD 反向整理成了一套方法论，结构很漂亮：独立开发者思维打底，串起需求发现、MVP 验证、SEO 增长、实验复盘四个环节，最后落成一份"2 周找到并验证一个新机会"的自检清单。
 
 漂亮到我起疑了。
