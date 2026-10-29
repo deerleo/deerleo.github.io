@@ -3,6 +3,7 @@ title: "纽约给 AI 踩了脚刹车，然后发现刹车踏板是画的"
 description: "纽约市教育局点了 38 款教育软件的名，企业喊冤，判定标准不公开，连自家的助教机器人都进了名单。一份禁用名单，把「管 AI 的能力」这个问题暴露得干干净净。"
 tags: [AI教育, AI治理, 政策]
 series: 哟哟鹿鸣
+podcast: /assets/audio/2026-10-28-nyc-ai-brake-painted.mp3
 ---
 
 ![布鲁克林的纽约公立学校。美国最大学区这一年对 AI 踩了刹车。](/assets/images/2026-10-28-nyc-ai-ban/school-building.jpg)

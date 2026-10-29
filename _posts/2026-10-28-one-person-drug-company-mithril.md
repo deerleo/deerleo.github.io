@@ -3,6 +3,7 @@ title: "一个人做药，一人公司的边界松了"
 description: "Mithril Medicine 全职员工只有创始人一个，靠 Claude 协调 11 家外部实验室，不到 18 个月把一种儿童罕见病候选药推到小鼠实验出积极数据，然后被 Anthropic 收购。我把那份 38 页技术报告拆了一遍，最值钱的不是结果，是他们把分工和错误都写清楚了。"
 tags: [Anthropic, Claude, 一人公司, AI制药, OPC]
 series: "Agent 商业化基建"
+podcast: /assets/audio/2026-10-28-one-person-drug-company-mithril.mp3
 ---
 
 ![实验室里，一只黑色小鼠待在戴紫色手套的手心。这个故事的分水岭，最终落在这一层动物实验上。](/assets/images/2026-10-28-one-person-drug-company-mithril/hero-lab-mice.jpg)
