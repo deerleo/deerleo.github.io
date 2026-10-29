@@ -42,6 +42,36 @@ const cards = labs
     };
   });
 
+// Tongjiang Lab 拓展线（CC BY-NC 4.0，署名 Tongjiang Lab · lab.tongjiang.app）：
+// 上游 catalog 备份在 assets/data/tongjiang-catalog.json，追加在 WeduLab 条目之后，不打乱现有排序
+const TJ_SUBJECT = { phys: '物理', chem: '化学', bio: '生物', geo: '地理' };
+let tongjiang = [];
+const tjCatalogPath = join(root, 'assets', 'data', 'tongjiang-catalog.json');
+try {
+  const tj = JSON.parse(readFileSync(tjCatalogPath, 'utf8'));
+  const wedulabSlugs = new Set(cards.map((c) => c.slug));
+  tongjiang = tj.map((c) => {
+    // 与现有目录重名时上游 slug 加 -tj 后缀（与导入时目录名一致）
+    const slug = wedulabSlugs.has(c.slug) ? `${c.slug}-tj` : c.slug;
+    return {
+      slug,
+      name: c.title,
+      subtitle: c.type,
+      subject: TJ_SUBJECT[c.subject] || c.subject,
+      desc: c.question,
+      points: (c.steps || []).slice(0, 4),
+      fullname: `${c.title} · Tongjiang Lab`,
+      chapters: (c.steps || []).length,
+      implemented: true,
+      source: 'tongjiang',
+    };
+  });
+} catch {
+  console.warn('tongjiang-catalog.json 缺失或不可读，本次仅生成 WeduLab 条目');
+}
+
+cards.push(...tongjiang);
+
 const out = {
   generated: new Date().toISOString().slice(0, 10),
   total: cards.length,
