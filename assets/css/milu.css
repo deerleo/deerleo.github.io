@@ -107,6 +107,14 @@ body {
 .beaker-two::after { height: 58%; background: #d17b56; }
 .beaker-three { left: calc(50% + 38px); top: 77px; transform: rotate(9deg); }
 .beaker-three::after { background: #6cb6a3; }
+/* 首页模块限额：作品区只展示最新 5 张卡，其余完整保留在 DOM 里但隐藏，
+   全量列表走 /work/ 二级页；模块底部「查看更多」低强调链接行同款三处复用。 */
+.work-list .extra-item { display: none; }
+.more-link { display: inline-flex; align-items: center; gap: 8px; margin-top: 26px; color: var(--ink); font-size: 13px; font-weight: 800; text-decoration: none; padding-bottom: 3px; border-bottom: 1px solid rgba(195, 237, 89, .5); transition: color .2s ease, border-color .2s ease; }
+.more-link:hover, .more-link:focus-visible { color: var(--accent); border-bottom-color: var(--accent); }
+.work-section .more-link { color: rgba(255, 255, 255, .92); }
+.work-section .more-link:hover, .work-section .more-link:focus-visible { color: var(--lime); border-bottom-color: var(--lime); }
+
 .practice-note { display: grid; grid-template-columns: 34px 1fr; gap: 14px; align-items: start; margin-top: 54px; padding-top: 25px; }
 .note-mark { display: grid; place-items: center; width: 30px; height: 30px; color: var(--on-lime); background: var(--lime); border-radius: 50%; font-size: 21px; font-weight: 500; }
 .practice-note p { margin: 0; color: rgba(255,255,255,.8); font-size: 14px; }

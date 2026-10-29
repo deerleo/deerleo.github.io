@@ -1,0 +1,112 @@
+---
+layout: null
+---
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#f1f2ec">
+  {% include theme-init.html %}
+  <link rel="stylesheet" href="{{ '/assets/css/theme.css' | relative_url }}?v=20261027">
+  <script src="{{ '/assets/js/theme.js' | relative_url }}" defer></script>
+  <meta name="description" content="Leo Lu（迷鹿 MiLu）面向高校与企业的四门 AI 实战课：人工智能与数学、AI 数据分析互动课堂、AI 赋能教研、AIGC 创意实作。内训、工作坊与系列课可按需定制。">
+  <meta name="robots" content="index,follow">
+  <title>教程与课程 · 迷鹿 MiLu</title>
+  <style>
+    *{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:var(--page-glow),var(--bg);color:var(--ink);font:16px/1.7 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
+    a{color:inherit}.wrap{max-width:1100px;margin:auto;padding:48px 24px 88px}
+    .hero{max-width:760px;margin-bottom:44px}.eyebrow{color:var(--cyan);font-size:12px;font-weight:800;letter-spacing:.16em;text-transform:uppercase}
+    .hero h1{margin:10px 0 16px;font-size:clamp(36px,6vw,60px);line-height:1.08;letter-spacing:-.05em}.hero h1 em{color:var(--mint);font-style:normal}
+    .hero p{max-width:700px;color:var(--muted);font-size:17px}
+    .courselist{display:grid;gap:15px}
+    .course-card{display:flex;flex-direction:column;gap:10px;padding:26px;border:1px solid var(--line);border-radius:18px;background:var(--card-grad);text-decoration:none;transition:border-color .15s ease}
+    .course-card:hover{border-color:var(--line-strong)}
+    .course-top{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;color:var(--cyan);font-size:11px;font-weight:850;letter-spacing:.08em}
+    .course-top .level{padding:4px 10px;border:1px solid var(--line);border-radius:999px;color:var(--ink-2);font-size:11px;font-weight:700;letter-spacing:.04em}
+    .course-card h2{margin:2px 0 0;font-size:23px;line-height:1.3;letter-spacing:-.02em}
+    .course-card p{margin:0;color:var(--muted);font-size:14px;line-height:1.7}
+    .course-foot{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap;margin-top:8px}
+    .course-progress{color:var(--ink-3);font-size:12px;font-weight:650;letter-spacing:.04em}
+    .course-card .go{color:var(--mint);font-size:13px;font-weight:800}
+    .contact-line{margin-top:34px;padding:22px 24px;border:1px solid var(--line);border-radius:18px;background:var(--panel-soft);color:var(--muted);font-size:14px}
+    .contact-line a{color:var(--mint);font-weight:800;text-decoration:none;border-bottom:1px solid rgba(195,237,89,.5);padding-bottom:2px}
+    .footer{display:flex;justify-content:space-between;gap:16px;margin-top:60px;padding-top:18px;border-top:1px solid var(--line);color:var(--ink-3);font-size:12px}
+    @media (max-width:680px){.wrap{padding-top:38px}.course-card{padding:20px}.course-card h2{font-size:20px}.footer{display:block}.footer span{display:block;margin:5px 0}}
+  </style>
+  <link rel="stylesheet" href="{{ '/assets/css/subpage-shell.css?v=20261027' | relative_url }}">
+</head>
+<body id="top">
+  {% include subpage-shell.html identity="教程与课程" descriptor="Tutorials" %}
+  <main class="wrap">
+    <header class="hero">
+      <p class="eyebrow">Tutorials &amp; Courses</p>
+      <h1>找我上课：<br><em>四门从直觉到实战的 AI 课。</em></h1>
+      <p>面向高校与企业的内训、工作坊与系列课。全部内容来自真实项目，先建立直觉，再当堂动手实验，下课就能用到自己的业务里。可按需定制企业专场。</p>
+    </header>
+
+    <section class="courselist" aria-label="课程列表">
+      <a class="course-card" href="{{ '/course/ai-foundations/' | relative_url }}">
+        <div class="course-top"><span>01 · 互动系列</span><span class="level">入门</span></div>
+        <h2>人工智能与数学</h2>
+        <p>概率、向量、Transformer 与智能体。从蒙提霍尔到注意力机制，沿六个互动实验理解 AI 的数学基础与关键机制，无需编程基础。</p>
+        <div class="course-foot"><span class="course-progress">6 讲 · 全部发布</span><span class="go">进入课程 ↗</span></div>
+      </a>
+
+      <a class="course-card" href="{{ '/course/ai-data-analyse/' | relative_url }}">
+        <div class="course-top"><span>02 · 互动课堂</span><span class="level">入门到实战</span></div>
+        <h2>AI 数据分析互动课堂</h2>
+        <p>统计方法、实验设计、Dify 工作流与科研智能体。从选择统计方法到搭建可复核的分析流程，练习可解释、可复核的数据分析。</p>
+        <div class="course-foot"><span class="course-progress">4 讲 · 全部发布</span><span class="go">进入课堂 ↗</span></div>
+      </a>
+
+      <a class="course-card" href="{{ '/course/ai-teaching-research/' | relative_url }}">
+        <div class="course-top"><span>03 · 实战系列</span><span class="level">入门到进阶</span></div>
+        <h2>AI 赋能教研</h2>
+        <p>科研写作、教学设计、Skill 与智能体工程。围绕科研写作、项目申报、反馈分析与智能体工程，把 AI 使用变成可验证、可复用的工作流。</p>
+        <div class="course-foot"><span class="course-progress">8 讲 · 全部发布</span><span class="go">进入课程 ↗</span></div>
+      </a>
+
+      <a class="course-card" href="{{ '/course/aigc-creative/' | relative_url }}">
+        <div class="course-top"><span>04 · 创作系列</span><span class="level">入门</span></div>
+        <h2>AIGC 创意实作</h2>
+        <p>从提示设计到图像、动态叙事与团队创作。为青少年与创作者设计的生成式 AI 入门路径：理解模型能力、迭代图像与动态作品、完成小组创作。</p>
+        <div class="course-foot"><span class="course-progress">4 讲 · 全部发布</span><span class="go">进入课程 ↗</span></div>
+      </a>
+    </section>
+
+    <aside class="contact-line" aria-label="定制企业专场">
+      想为团队或课堂定制专场？发邮件到 <a href="mailto:dearsuley@gmail.com">dearsuley@gmail.com</a>，聊聊你的场景与目标。
+    </aside>
+
+    <footer class="subpage-footer">迷鹿 MiLu · 教程与课程 · 全部内容来自真实项目</footer>
+  </main>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "CollectionPage",
+    "name": "教程与课程",
+    "url": "{{ site.url }}/tutorials/",
+    "inLanguage": "zh-CN",
+    "description": "Leo Lu（迷鹿 MiLu）面向高校与企业的四门 AI 实战课：人工智能与数学、AI 数据分析互动课堂、AI 赋能教研、AIGC 创意实作。内训、工作坊与系列课可按需定制。",
+    "author": {
+      "@type": "Person",
+      "name": "Leo Lu",
+      "alternateName": "迷鹿 MiLu",
+      "url": "{{ site.url }}/",
+      "sameAs": ["https://github.com/deerleo", "https://maudelclaw.ai"]
+    },
+    "hasPart": {
+      "@type": "ItemList",
+      "name": "课程列表",
+      "itemListElement": [
+        { "@type": "ListItem", "position": 1, "name": "人工智能与数学", "url": "{{ site.url }}/course/ai-foundations/" },
+        { "@type": "ListItem", "position": 2, "name": "AI 数据分析互动课堂", "url": "{{ site.url }}/course/ai-data-analyse/" },
+        { "@type": "ListItem", "position": 3, "name": "AI 赋能教研", "url": "{{ site.url }}/course/ai-teaching-research/" },
+        { "@type": "ListItem", "position": 4, "name": "AIGC 创意实作", "url": "{{ site.url }}/course/aigc-creative/" }
+      ]
+    }
+  }
+  </script>
+</body>
+</html>
