@@ -3,6 +3,7 @@ title: "字节不缺卡，缺的是把卡借出去的安全感"
 description: "几万张 GPU 堆出来的不是模型，是资源孤岛。从 Seed 团队爆料到投毒事件，拆一拆赛马制和大模型到底哪里不对付。"
 tags: [AI大模型, 字节跳动, 组织管理, 哟哟鹿鸣]
 series: "哟哟鹿鸣"
+podcast: /assets/audio/2026-10-29-byte-seed-horse-racing.mp3
 ---
 
 ![GPU 数据中心机房实景（资料图，xAI Colossus 集群，摄于 2024 年 10 月）](/assets/images/byte-seed-horse-racing/datacenter.jpg)
