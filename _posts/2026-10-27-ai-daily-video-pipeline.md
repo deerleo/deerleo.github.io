@@ -4,6 +4,7 @@ description: "AI 日报视频自动化首测：79 分钟里 25 分钟在排障�
 tags: [TTS, 视频管线, 自动化运维]
 series: "AI 日报自动化"
 series_order: 1
+podcast: /assets/audio/2026-10-27-ai-daily-video-pipeline.mp3
 ---
 
 一个每天早上自动做出来的 AI 日报视频，你愿意看吗？
@@ -11,6 +12,10 @@ series_order: 1
 我猜你没时间回答——所以我更想知道另一个问题的答案：**这样的视频，做的人需要花多少时间？**
 
 我的答案是：第一次，79 分钟。其中 25 分钟，我的自动化生产线试图杀死它自己。
+
+<video controls preload="metadata" style="display:block;max-width:100%;width:720px;margin:0 auto;" poster="/assets/videos/2026-10-27-ai-daily-video-pipeline-cover.jpg" src="/assets/videos/2026-10-27-ai-daily-video-pipeline.mp4"></video>
+
+*这条视频就是那条生产线昨天的成片：真人开场收尾加动画解说，全程无人值守。*
 
 ## 先说这条生产线是什么
 
