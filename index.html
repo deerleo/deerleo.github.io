@@ -404,15 +404,13 @@ css: milu
 
     <style>
       .certificates-section h2 { color: var(--ink); }
-      .cert-grid { margin-top: 26px; display: grid; grid-template-columns: repeat(8, 1fr); gap: 12px; }
-      .cert-cell { margin: 0; background: var(--panel-soft); border: 1px solid var(--line); border-radius: 14px; overflow: hidden; box-shadow: var(--shadow); transition: transform .18s ease, border-color .18s ease; }
-      .cert-cell:hover { transform: translateY(-3px); border-color: var(--line-strong); }
-      .cert-cell img { display: block; width: 100%; height: auto; background: var(--panel-2); }
-      .cert-cap { padding: 11px 13px; font-size: 13px; color: var(--muted); line-height: 1.45; }
-      .cert-cap b { display: block; color: var(--ink); font-size: 13.5px; margin-bottom: 3px; font-weight: 700; }
-      @media (max-width: 1100px) { .cert-grid { grid-template-columns: repeat(6, 1fr); } }
-      @media (max-width: 760px) { .cert-grid { grid-template-columns: repeat(4, 1fr); } .cert-cap { font-size: 11.5px; } }
-      @media (max-width: 480px) { .cert-grid { grid-template-columns: repeat(3, 1fr); } .cert-cap { padding: 7px 8px; font-size: 11px; } }
+      .cert-grid { margin-top: 20px; display: grid; grid-template-columns: repeat(6, 1fr); gap: 0; align-items: start; }
+      .cert-cell { margin: 0; line-height: 0; }
+      .cert-cell img { display: block; width: 100%; height: auto; }
+      .cert-cap { margin: 0; padding: 5px 4px 9px; font-size: 11.5px; color: var(--muted); line-height: 1.4; text-align: center; }
+      .cert-cap b { display: block; color: var(--ink); font-size: 12px; margin-bottom: 2px; font-weight: 700; }
+      @media (max-width: 900px) { .cert-grid { grid-template-columns: repeat(4, 1fr); } }
+      @media (max-width: 560px) { .cert-grid { grid-template-columns: repeat(3, 1fr); } }
     </style>
 
     <section class="approach-section certificates-section" id="certificates" aria-labelledby="certificates-title">
@@ -421,17 +419,17 @@ css: milu
       <div class="cert-grid">
         <figure class="cert-cell"><img src="{{ '/assets/images/certificates/ITC-ILO_AI-Masterclass_2025.jpg' | relative_url }}" width="281" height="400" loading="lazy" alt="证书缩略图：ITC-ILO 人工智能大师课参与证书"><figcaption class="cert-cap"><b>ITC-ILO 人工智能大师课</b>国际培训中心（ITC-ILO）· 参与证书（2025）</figcaption></figure>
         <figure class="cert-cell"><img src="{{ '/assets/images/certificates/MIIT_Vocational-Technology.jpg' | relative_url }}" width="400" height="300" loading="lazy" alt="证书缩略图：工信部职业技术证书"><figcaption class="cert-cap"><b>工信部职业技术证书</b>工业和信息化部教育与考试中心</figcaption></figure>
-        <figure class="cert-cell"><img src="{{ '/assets/images/certificates/Datawhale-AntGroup.jpg' | relative_url }}" width="400" height="282" loading="lazy" alt="证书缩略图：Datawhale 与蚂蚁集团认证"><figcaption class="cert-cap"><b>Datawhale × 蚂蚁集团</b>百宝箱认证</figcaption></figure>
-        <figure class="cert-cell"><img src="{{ '/assets/images/certificates/Datawhale-Inspur.jpg' | relative_url }}" width="400" height="282" loading="lazy" alt="证书缩略图：Datawhale 与浪潮信息认证"><figcaption class="cert-cap"><b>Datawhale × 浪潮信息</b>认证</figcaption></figure>
-        <figure class="cert-cell"><img src="{{ '/assets/images/certificates/Datawhale-MarsCode_AI-Coding-Engineer_DWAC002162.jpg' | relative_url }}" width="400" height="282" loading="lazy" alt="证书缩略图：Datawhale 与豆包 MarsCode AI 编程工程师认证"><figcaption class="cert-cap"><b>Datawhale × 豆包 MarsCode</b>AI 编程工程师</figcaption></figure>
-        <figure class="cert-cell"><img src="{{ '/assets/images/certificates/Datawhale-iFLYTEK_LLM-Finetuning-Engineer_DWFT004748.jpg' | relative_url }}" width="400" height="282" loading="lazy" alt="证书缩略图：Datawhale 与科大讯飞 LLM 微调工程师认证"><figcaption class="cert-cap"><b>Datawhale × 科大讯飞</b>LLM 微调工程师</figcaption></figure>
-        <figure class="cert-cell"><img src="{{ '/assets/images/certificates/Datawhale-iFLYTEKSpark_Prompt-Engineer.jpg' | relative_url }}" width="400" height="282" loading="lazy" alt="证书缩略图：Datawhale 与讯飞星火 Prompt 工程师认证"><figcaption class="cert-cap"><b>Datawhale × 讯飞星火</b>Prompt 工程师</figcaption></figure>
-        <figure class="cert-cell"><img src="{{ '/assets/images/certificates/Datawhale-ModelScope_Agent-Engineer.jpg' | relative_url }}" width="400" height="279" loading="lazy" alt="证书缩略图：Datawhale 与魔搭 ModelScope Agent 工程师认证"><figcaption class="cert-cap"><b>Datawhale × 魔搭 ModelScope</b>Agent 工程师</figcaption></figure>
-        <figure class="cert-cell"><img src="{{ '/assets/images/certificates/Datawhale-MarsCode_AI-Programming.jpg' | relative_url }}" width="400" height="288" loading="lazy" alt="证书缩略图：Datawhale 与豆包 MarsCode AI 编程能力认证"><figcaption class="cert-cap"><b>Datawhale × 豆包 MarsCode</b>AI+ 编程能力认证</figcaption></figure>
-        <figure class="cert-cell"><img src="{{ '/assets/images/certificates/Datawhale-VirtAI-HAAI_LLM-Engineer_DWLLME0003441.jpg' | relative_url }}" width="400" height="296" loading="lazy" alt="证书缩略图：Datawhale 与趋动云 LLM 工程师认证"><figcaption class="cert-cap"><b>Datawhale × 趋动云</b>LLM 工程师</figcaption></figure>
+        <figure class="cert-cell"><img src="{{ '/assets/images/certificates/AntGroup.jpg' | relative_url }}" width="400" height="282" loading="lazy" alt="证书缩略图：蚂蚁集团百宝箱认证"><figcaption class="cert-cap"><b>蚂蚁集团</b>百宝箱认证</figcaption></figure>
+        <figure class="cert-cell"><img src="{{ '/assets/images/certificates/Inspur.jpg' | relative_url }}" width="400" height="282" loading="lazy" alt="证书缩略图：浪潮信息认证"><figcaption class="cert-cap"><b>浪潮信息</b>认证</figcaption></figure>
+        <figure class="cert-cell"><img src="{{ '/assets/images/certificates/MarsCode_AI-Coding-Engineer_DWAC002162.jpg' | relative_url }}" width="400" height="282" loading="lazy" alt="证书缩略图：豆包 MarsCode AI 编程工程师认证"><figcaption class="cert-cap"><b>豆包 MarsCode</b>AI 编程工程师</figcaption></figure>
+        <figure class="cert-cell"><img src="{{ '/assets/images/certificates/iFLYTEK_LLM-Finetuning-Engineer_DWFT004748.jpg' | relative_url }}" width="400" height="282" loading="lazy" alt="证书缩略图：科大讯飞 LLM 微调工程师认证"><figcaption class="cert-cap"><b>科大讯飞</b>LLM 微调工程师</figcaption></figure>
+        <figure class="cert-cell"><img src="{{ '/assets/images/certificates/iFLYTEKSpark_Prompt-Engineer.jpg' | relative_url }}" width="400" height="282" loading="lazy" alt="证书缩略图：讯飞星火 Prompt 工程师认证"><figcaption class="cert-cap"><b>讯飞星火</b>Prompt 工程师</figcaption></figure>
+        <figure class="cert-cell"><img src="{{ '/assets/images/certificates/ModelScope_Agent-Engineer.jpg' | relative_url }}" width="400" height="279" loading="lazy" alt="证书缩略图：魔搭 ModelScope Agent 工程师认证"><figcaption class="cert-cap"><b>魔搭 ModelScope</b>Agent 工程师</figcaption></figure>
+        <figure class="cert-cell"><img src="{{ '/assets/images/certificates/MarsCode_AI-Programming.jpg' | relative_url }}" width="400" height="288" loading="lazy" alt="证书缩略图：豆包 MarsCode AI 编程能力认证"><figcaption class="cert-cap"><b>豆包 MarsCode</b>AI+ 编程能力认证</figcaption></figure>
+        <figure class="cert-cell"><img src="{{ '/assets/images/certificates/VirtAI-HAAI_LLM-Engineer_DWLLME0003441.jpg' | relative_url }}" width="400" height="296" loading="lazy" alt="证书缩略图：趋动云 LLM 工程师认证"><figcaption class="cert-cap"><b>趋动云</b>LLM 工程师</figcaption></figure>
         <figure class="cert-cell"><img src="{{ '/assets/images/certificates/DAMO-AlibabaCloud_AI-Trainer-Advanced.jpg' | relative_url }}" width="400" height="282" loading="lazy" alt="证书缩略图：达摩院人工智能训练师高级认证"><figcaption class="cert-cap"><b>达摩院 · 人工智能训练师</b>高级</figcaption></figure>
         <figure class="cert-cell"><img src="{{ '/assets/images/certificates/DAMO-AlibabaCloud_AI-Trainer-Junior.jpg' | relative_url }}" width="400" height="282" loading="lazy" alt="证书缩略图：达摩院人工智能训练师初级认证"><figcaption class="cert-cap"><b>达摩院 · 人工智能训练师</b>初级</figcaption></figure>
-        <figure class="cert-cell"><img src="{{ '/assets/images/certificates/Datawhale-SenseTime_AI-DataAnalysis.jpg' | relative_url }}" width="400" height="288" loading="lazy" alt="证书缩略图：Datawhale 与商汤 AI 数据分析认证"><figcaption class="cert-cap"><b>Datawhale × 商汤</b>AI+ 数据分析认证</figcaption></figure>
+        <figure class="cert-cell"><img src="{{ '/assets/images/certificates/SenseTime_AI-DataAnalysis.jpg' | relative_url }}" width="400" height="288" loading="lazy" alt="证书缩略图：商汤 AI 数据分析认证"><figcaption class="cert-cap"><b>商汤</b>AI+ 数据分析认证</figcaption></figure>
       </div>
     </section>
 
