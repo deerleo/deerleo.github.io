@@ -3,6 +3,7 @@ title: "Google 发布 Gemini 4 Carbon：新榜首 59 分，但考卷没护栏，
 description: "Gemini 4 Carbon 三个外部安全基准第一，AA v5.0 拿 59 登顶，接 Opus 5.5 的 58。但分数是 Google 自己填的，模型发布当天普通用户还拿不到。拆一下这份成绩单里哪些是真的，哪些要等。"
 tags: [Gemini, Google DeepMind, AI安全, 模型评测]
 series: ""
+podcast: /assets/audio/2026-10-29-gemini-carbon-cyber-first.mp3
 ---
 
 ![Google DeepMind 品牌实拍（图源 TechCrunch）](/assets/images/2026-10-29-gemini-carbon-cyber-first/cover-deepmind.jpg)
