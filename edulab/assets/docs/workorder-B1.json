@@ -1,0 +1,208 @@
+{
+ "labs": [
+  {
+   "id": "contour-lab",
+   "href": "/labs/contour",
+   "name": "Contour 3D",
+   "subtitle": "等高线地形实验室",
+   "subject": "地理",
+   "desc": "等高线三维教学演示：水平面切割与投影动画、阶梯模型、同步地形图、剖面图绘制与随堂检测。",
+   "points": [
+    "等高线形成",
+    "山顶·山脊·山谷",
+    "鞍部·陡崖·盆地",
+    "地形剖面图"
+   ],
+   "preview": "contour",
+   "status": "live",
+   "slug": "contour",
+   "fullname": "等高线 3D 课堂",
+   "chapters": [
+    "认识等高线地形图",
+    "等高线的形成",
+    "海拔与相对高度",
+    "等高距与坡度",
+    "山顶与盆地",
+    "山脊与山谷",
+    "鞍部",
+    "陡崖",
+    "地形剖面图",
+    "随堂检测"
+   ]
+  },
+  {
+   "id": "atmos-lab",
+   "href": "/labs/atmos",
+   "name": "AtmosFlow",
+   "subtitle": "大气环流实验室",
+   "subject": "地理",
+   "desc": "大气环流粒子演示：热力环流四步拆解、城市热岛与污染扩散实验、海陆风、山谷风，三维地球上的三圈环流、气压带风带及其季节移动。",
+   "points": [
+    "热力环流",
+    "海陆风·山谷风",
+    "三圈环流",
+    "气压带风带"
+   ],
+   "preview": "atmos",
+   "status": "live",
+   "slug": "atmos",
+   "fullname": "大气环流粒子课堂",
+   "chapters": [
+    "大气运动总览",
+    "热力环流原理",
+    "城市热岛环流",
+    "海陆风",
+    "山谷风",
+    "单圈环流",
+    "三圈环流",
+    "气压带与风带",
+    "季节移动",
+    "海陆分布与季风",
+    "随堂检测"
+   ]
+  },
+  {
+   "id": "drift-lab",
+   "href": "/labs/drift",
+   "name": "TerraDrift",
+   "subtitle": "海陆变迁实验室",
+   "subject": "地理",
+   "desc": "海陆的变迁：喜马拉雅海洋化石的剖面动画、台湾海峡冰期陆桥、魏格纳大陆漂移证据、泛大陆分裂的三维重建、六大板块与两大火山地震带。",
+   "points": [
+    "沧海桑田",
+    "大陆漂移",
+    "板块构造",
+    "火山地震带"
+   ],
+   "preview": "drift",
+   "status": "live",
+   "slug": "drift",
+   "fullname": "海陆的变迁",
+   "chapters": [
+    "沧海桑田",
+    "高山上的海洋化石",
+    "海峡下的古河道",
+    "大陆漂移假说",
+    "泛大陆的分裂",
+    "六大板块",
+    "火山与地震",
+    "张裂与碰撞",
+    "随堂检测"
+   ]
+  },
+  {
+   "id": "war-lab",
+   "href": "/labs/war",
+   "name": "WarTable",
+   "subtitle": "真实地形上的著名战役",
+   "subject": "历史",
+   "desc": "中外古代著名战役的真实地形战役图：长平、巨鹿、官渡、赤壁、淝水，以及温泉关、高加米拉、坎尼、黑斯廷斯等世界古代与中世纪战役，在真实高程地形上用发光光点群推演兵团行军、交战与火攻夜袭，字幕逐句解说战局，附兵力变化、战役概况、胜负原因与随堂检测。",
+   "points": [
+    "分阶段推演",
+    "以少胜多",
+    "地形与战法",
+    "胜负原因"
+   ],
+   "preview": "war",
+   "status": "live",
+   "slug": "war",
+   "fullname": "著名战役沙盘 · WarTable",
+   "chapters": [
+    "长平之战",
+    "巨鹿之战",
+    "官渡之战",
+    "赤壁之战",
+    "淝水之战",
+    "温泉关之战",
+    "高加米拉战役",
+    "坎尼会战",
+    "黑斯廷斯战役"
+   ]
+  },
+  {
+   "id": "atlas-lab",
+   "href": "/labs/atlas",
+   "name": "HistoryAtlas",
+   "subtitle": "历代中国疆域变迁",
+   "subject": "历史",
+   "desc": "中国历代疆域变迁的真实地形动态地图：从秦统一到清朝前期，选取 16 个关键年份，把历代王朝与周边政权的疆域画在东亚真实地形上，两个时期之间的边界连续变形。可拖动时间轴或自动播放字幕解说，实时显示疆域面积与面积曲线，叠加都城、长城、都护府与行省注记，并能从战役标记进入战役沙盘。",
+   "points": [
+    "疆域变迁",
+    "并立政权",
+    "都护府与行省",
+    "疆域面积"
+   ],
+   "preview": "atlas",
+   "status": "live",
+   "slug": "atlas",
+   "fullname": "疆域变迁 · HistoryAtlas",
+   "chapters": [
+    "秦朝疆域",
+    "西汉疆域",
+    "东汉疆域",
+    "三国鼎立",
+    "西晋统一",
+    "东晋与十六国",
+    "南北朝对峙",
+    "隋朝疆域",
+    "唐朝前期疆域",
+    "唐朝后期形势",
+    "五代十国",
+    "北宋、辽、西夏并立",
+    "南宋、金、西夏并立",
+    "元朝疆域",
+    "明朝疆域",
+    "清朝疆域"
+   ]
+  },
+  {
+   "id": "neuro-lab",
+   "href": "/labs/neuro",
+   "name": "NeuroLab",
+   "subtitle": "机器怎样认出数字",
+   "subject": "信息技术",
+   "desc": "神经网络识别手写数字：在手写板上写一个数字，看信号在三维神经网络里逐层点亮、给出答案；亲手给一个神经元画权重，在浏览器里从随机权重开始现场训练，看卷积核扫过整张图，再看 AI 在旋转、平移和噪点面前怎样认错。",
+   "points": [
+    "图像的数字化",
+    "神经元与权重",
+    "训练与梯度下降",
+    "卷积网络"
+   ],
+   "preview": "neuro",
+   "status": "live",
+   "slug": "neuro",
+   "fullname": "神经网络识数字 · NeuroLab",
+   "chapters": [
+    "图像就是数字",
+    "一个神经元",
+    "多层网络",
+    "现场训练",
+    "卷积网络",
+    "AI 也会犯错"
+   ]
+  }
+ ],
+ "media": {
+  "sky": [
+   "sky_court-BLHJ2ADI.hdr",
+   "sky_harbor-BruSQyW8.hdr",
+   "sky_site-C35ymwQp.hdr",
+   "sky_court-BKHrsJQE.webp",
+   "sky_harbor-LXJSRKim.webp",
+   "sky_site-Co0CA3Qo.webp"
+  ],
+  "earth": [
+   "day-DmukkgAy.webp",
+   "night-7j0D73E-.webp",
+   "clouds-DTkGUc9f.webp",
+   "water-CiZebwCi.webp",
+   "earth_normal_2048-BD2vMuPH.jpg",
+   "earth_specular_2048-6aAFN27D.jpg",
+   "earth_lights_2048-DB_KwUMR.webp",
+   "earth_bm_01-yIuzfkz1.webp",
+   "earth_bm_07-BDPAypd3.webp",
+   "earth_clouds_1024-CKDLEBqO.png"
+  ],
+  "pbr_count": 66
+ }
+}
