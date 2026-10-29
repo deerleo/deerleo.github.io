@@ -27,6 +27,7 @@ css: milu
         <a href="#blog">文章</a>
         <a href="#media">相关报道</a>
         <a href="#approach">做事方式</a>
+        <a href="#certificates">证书</a>
         <a class="nav-contact" href="#contact">联系 ↗</a>
       </nav>
       {% include theme-toggle.html %}
@@ -399,6 +400,37 @@ css: milu
         <a class="github-link" href="https://github.com/deerleo" target="_blank" rel="noopener">也可以在 GitHub 找到我 →</a>
         <a class="github-link" href="https://maudelclaw.ai" target="_blank" rel="noopener">或在 maudelclaw.ai 了解 MaudelClaw →</a>
       </address>
+    </section>
+
+    <style>
+      .certificates-section h2 { color: var(--ink); }
+      .cert-grid { margin-top: 31px; display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 18px; }
+      .cert-cell { margin: 0; background: var(--panel-soft); border: 1px solid var(--line); border-radius: 14px; overflow: hidden; box-shadow: var(--shadow); transition: transform .18s ease, border-color .18s ease; }
+      .cert-cell:hover { transform: translateY(-3px); border-color: var(--line-strong); }
+      .cert-cell img { display: block; width: 100%; height: auto; background: var(--panel-2); }
+      .cert-cap { padding: 11px 13px; font-size: 13px; color: var(--muted); line-height: 1.45; }
+      .cert-cap b { display: block; color: var(--ink); font-size: 13.5px; margin-bottom: 3px; font-weight: 700; }
+      @media (max-width: 900px) { .cert-grid { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 12px; } .cert-cap { padding: 9px 10px; font-size: 12px; } }
+    </style>
+
+    <section class="approach-section certificates-section" id="certificates" aria-labelledby="certificates-title">
+      <h2 id="certificates-title">相关证书</h2>
+      <p class="tutorial-intro">部分专业认证与培训证书（仅展示缩略图，原图留存本地，不对外提供高清版本）。</p>
+      <div class="cert-grid">
+        <figure class="cert-cell"><img src="{{ '/assets/images/certificates/ITC-ILO_AI-Masterclass_2025.jpg' | relative_url }}" width="281" height="400" loading="lazy" alt="证书缩略图：ITC-ILO 人工智能大师课参与证书"><figcaption class="cert-cap"><b>ITC-ILO 人工智能大师课</b>国际培训中心（ITC-ILO）· 参与证书（2025）</figcaption></figure>
+        <figure class="cert-cell"><img src="{{ '/assets/images/certificates/MIIT_Vocational-Technology.jpg' | relative_url }}" width="400" height="300" loading="lazy" alt="证书缩略图：工信部职业技术证书"><figcaption class="cert-cap"><b>工信部职业技术证书</b>工业和信息化部教育与考试中心</figcaption></figure>
+        <figure class="cert-cell"><img src="{{ '/assets/images/certificates/Datawhale-AntGroup.jpg' | relative_url }}" width="400" height="282" loading="lazy" alt="证书缩略图：Datawhale 与蚂蚁集团认证"><figcaption class="cert-cap"><b>Datawhale × 蚂蚁集团</b>百宝箱认证</figcaption></figure>
+        <figure class="cert-cell"><img src="{{ '/assets/images/certificates/Datawhale-Inspur.jpg' | relative_url }}" width="400" height="282" loading="lazy" alt="证书缩略图：Datawhale 与浪潮信息认证"><figcaption class="cert-cap"><b>Datawhale × 浪潮信息</b>认证</figcaption></figure>
+        <figure class="cert-cell"><img src="{{ '/assets/images/certificates/Datawhale-MarsCode_AI-Coding-Engineer_DWAC002162.jpg' | relative_url }}" width="400" height="282" loading="lazy" alt="证书缩略图：Datawhale 与豆包 MarsCode AI 编程工程师认证"><figcaption class="cert-cap"><b>Datawhale × 豆包 MarsCode</b>AI 编程工程师</figcaption></figure>
+        <figure class="cert-cell"><img src="{{ '/assets/images/certificates/Datawhale-iFLYTEK_LLM-Finetuning-Engineer_DWFT004748.jpg' | relative_url }}" width="400" height="282" loading="lazy" alt="证书缩略图：Datawhale 与科大讯飞 LLM 微调工程师认证"><figcaption class="cert-cap"><b>Datawhale × 科大讯飞</b>LLM 微调工程师</figcaption></figure>
+        <figure class="cert-cell"><img src="{{ '/assets/images/certificates/Datawhale-iFLYTEKSpark_Prompt-Engineer.jpg' | relative_url }}" width="400" height="282" loading="lazy" alt="证书缩略图：Datawhale 与讯飞星火 Prompt 工程师认证"><figcaption class="cert-cap"><b>Datawhale × 讯飞星火</b>Prompt 工程师</figcaption></figure>
+        <figure class="cert-cell"><img src="{{ '/assets/images/certificates/Datawhale-ModelScope_Agent-Engineer.jpg' | relative_url }}" width="400" height="279" loading="lazy" alt="证书缩略图：Datawhale 与魔搭 ModelScope Agent 工程师认证"><figcaption class="cert-cap"><b>Datawhale × 魔搭 ModelScope</b>Agent 工程师</figcaption></figure>
+        <figure class="cert-cell"><img src="{{ '/assets/images/certificates/Datawhale-MarsCode_AI-Programming.jpg' | relative_url }}" width="400" height="288" loading="lazy" alt="证书缩略图：Datawhale 与豆包 MarsCode AI 编程能力认证"><figcaption class="cert-cap"><b>Datawhale × 豆包 MarsCode</b>AI+ 编程能力认证</figcaption></figure>
+        <figure class="cert-cell"><img src="{{ '/assets/images/certificates/Datawhale-VirtAI-HAAI_LLM-Engineer_DWLLME0003441.jpg' | relative_url }}" width="400" height="296" loading="lazy" alt="证书缩略图：Datawhale 与趋动云 LLM 工程师认证"><figcaption class="cert-cap"><b>Datawhale × 趋动云</b>LLM 工程师</figcaption></figure>
+        <figure class="cert-cell"><img src="{{ '/assets/images/certificates/DAMO-AlibabaCloud_AI-Trainer-Advanced.jpg' | relative_url }}" width="400" height="282" loading="lazy" alt="证书缩略图：达摩院人工智能训练师高级认证"><figcaption class="cert-cap"><b>达摩院 · 人工智能训练师</b>高级</figcaption></figure>
+        <figure class="cert-cell"><img src="{{ '/assets/images/certificates/DAMO-AlibabaCloud_AI-Trainer-Junior.jpg' | relative_url }}" width="400" height="282" loading="lazy" alt="证书缩略图：达摩院人工智能训练师初级认证"><figcaption class="cert-cap"><b>达摩院 · 人工智能训练师</b>初级</figcaption></figure>
+        <figure class="cert-cell"><img src="{{ '/assets/images/certificates/Datawhale-SenseTime_AI-DataAnalysis.jpg' | relative_url }}" width="400" height="288" loading="lazy" alt="证书缩略图：Datawhale 与商汤 AI 数据分析认证"><figcaption class="cert-cap"><b>Datawhale × 商汤</b>AI+ 数据分析认证</figcaption></figure>
+      </div>
     </section>
 
     <footer class="site-footer">
