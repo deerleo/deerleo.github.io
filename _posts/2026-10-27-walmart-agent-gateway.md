@@ -4,6 +4,7 @@ description: "MCP 统一入口、独立档案、消费限额、违规封禁：�
 tags: [MCP, AI Agent, 工程拆解]
 series: "Agent 商业化基建"
 series_order: 1
+podcast: /assets/audio/2026-10-27-walmart-agent-gateway.mp3
 ---
 
 上个月，Amazon 把 Meta 的购物 Agent 拦在了门外。据 TechCrunch 报道，理由有三条：没提前通知、不亮明身份、疑似存了客户凭证。Meta 否认。

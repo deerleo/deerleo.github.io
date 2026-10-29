@@ -3,6 +3,7 @@ title: "文心 OCR 2 的「无限」值几个钱：真突破一个，跑分打�
 description: "百度开源了能一口气读 3600 页的 OCR 模型。拆开看：KV 缓存砍 96% 是架构级的真突破；77 分对 33 分的跑分差距，一半来自自建基准和不对等的比法。单页精度反而不是它的活。"
 tags: [AI应用, 开源]
 series: 哟哟鹿鸣
+podcast: /assets/audio/2026-10-28-wenxin-ocr2-unlimited-worth.mp3
 ---
 
 ![办公桌上的成堆文件。几百页的合同、财报、卷宗，是每家公司的日常。](/assets/images/2026-10-28-ernie-ocr2/documents-pile.jpg)
