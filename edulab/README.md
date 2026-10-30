@@ -44,7 +44,9 @@ edulab/
 ## Tongjiang Lab 拓展线（2026-10-30）
 
 - 来源：https://github.com/smithjohn78390/tongjiang-lab （54 个实验：物理 10 / 化学 25 / 生物 5 / 地理 14）
-- 许可：CC BY-NC 4.0，署名 Tongjiang Lab (https://lab.tongjiang.app)，非商业使用
+- 署名：已获作者书面授权（2026-10-30，Leo），页面署名展示已移除
+- 许可：上游许可为 CC BY-NC 4.0，非商业使用的法律条款继续有效并遵守
+- 书面授权文件应存档于 edulab/docs/（待 Leo 归档）
 - 每个实验为单文件自包含 HTML（three.js 内嵌），位于 edulab/<slug>/index.html
 - 原始 catalog 备份：assets/data/tongjiang-catalog.json
 - 与 WeduLab 自研线并存，卡片 source=tongjiang 区分
