@@ -5,14 +5,17 @@
  * 视觉工艺（edu-vfx 接入）：
  *       - 后处理管线：暖调工作室背景 + bloom + 暗角 + 颗粒
  *       - 布局：全屏画布铺底 + 左课题卡（章节下拉/上下章/折叠/控件/数据坞）+ 右目镜栏
- *       - 显微镜建模：C 形挤出镜臂（倒角 + 品牌贴花）/ 奶油烤漆 clearcoat + 噪点粗糙度 /
+ *       - 显微镜建模：CatmullRom 中心线放样 C 形弯臂（自研变宽度截面 sweep：金属根/烤漆身/托架三段
+ *         质感 + 握持内凹垫 + 横担托架与枢轴轴座）/ 奶油烤漆 clearcoat + 噪点粗糙度 /
  *         物镜 4 枚独立车削造型（铭牌套筒 + 色环 + 油镜环 + 滚花环 + 前透镜）/
  *         同轴粗细准焦旋钮（程序化滚花法线贴图 + 指示点）/ 黄铜压片夹（弹片 + 螺栓）/
  *         双面可翻转反光镜 / 阶梯聚光器 + 光圈拨杆 / 阶梯底座 + 橡胶脚垫
- *       - 桌面道具：试剂瓶阵列 / 开盖载玻片盒（玻片叠）/ 抽纸擦镜纸盒 / 叠放培养皿 / 白瓷滴板
+ *       - 桌面道具：试剂瓶阵列（弧面标签：试剂名大字+浓度小字；双层内液+液面高光）/ 开盖载玻片盒
+ *         （薄盒体+端部斜切挡板+磨砂端玻片叠）/ 抽纸擦镜纸盒 / 叠放培养皿（微透明皿盖+琼脂面）/ 白瓷滴板
  *       - 接触阴影：程序化径向渐变贴片（免实时 shadowMap）
  *       - 目镜视野：样品离屏画布 + 明场/暗场(反相)/相差(光晕) 合成 + 非线性离焦 + 油镜增亮；
- *         虚拟粗/细准焦旋钮拖拽与 3D 镜身旋钮联动
+ *         真实感层：暖白照明 + 聚光器光锥渐晕 + 字形墨迹（浸润缘/纤维/针孔）+ 载膜纤维 +
+ *         微尘气泡静物 + 半对焦双影；虚拟粗/细准焦旋钮拖拽与 3D 镜身旋钮联动
  * 章节结构 / 交互逻辑 / 随堂检测与旧版一致。
  */
 import {
@@ -267,62 +270,122 @@ function matKnurl(color, metal = 0.4, cols = 64) {
   edge2.position.set(0, -0.42, -3.3);
   scene.add(top, edge, edge2);
 }
-/* 试剂瓶（LatheGeometry 瓶身 + 液体 + 瓶盖 + 化学式标签 + 接触阴影） */
-function makeBottle(x, z, liquidColor, labelText, heightScale = 1) {
+/* 试剂瓶（LatheGeometry 瓶身 + 双层内液 + 液面高光片 + 弧面标签 + 瓶盖 + 接触阴影）
+ * o: { liquid 液色, surf 液面色, name 试剂名, sub 浓度小字, level 液面高度 } */
+function makeBottle(x, z, o, heightScale = 1) {
   const g = new THREE.Group();
   g.position.set(x, 0, z);
   /* 瓶身旋转轮廓：底 → 鼓腹 → 收肩 → 颈口 */
   const prof = [
     [0.0, 0], [0.26, 0], [0.3, 0.03], [0.36, 0.18], [0.4, 0.42], [0.36, 0.62], [0.2, 0.78], [0.14, 0.88], [0.14, 1.0], [0.17, 1.04],
   ].map(([r, y]) => new THREE.Vector2(r, y));
-  const glass = matCoat(0xdfeae8, { roughness: 0.08, opacity: 0.4 });
+  const glass = matCoat(0xdfeae8, { roughness: 0.08, opacity: 0.3 });
   const body = mesh(new THREE.LatheGeometry(prof, 26), glass);
   g.add(body);
-  /* 内液（饱和色 + 自发光，玻璃罩着也读得出色相） */
-  const liquid = mesh(new THREE.CylinderGeometry(0.3, 0.3, 0.5, 20), matStd(liquidColor, { roughness: 0.3, emissive: liquidColor, emissiveIntensity: 0.38 }));
-  liquid.position.y = 0.4;
-  g.add(liquid);
+  /* 内液：双层圆柱（底部缓升段 + 主体）+ 液面圆片（低于瓶肩，高光泽） */
+  const lv = o.level ?? 0.52;
+  const liqMat = matStd(o.liquid, { roughness: 0.25, emissive: o.liquid, emissiveIntensity: o.glow ?? 0.32 });
+  const liqLow = mesh(new THREE.CylinderGeometry(0.26, 0.21, 0.1, 20), liqMat);
+  liqLow.position.y = 0.1;
+  const liqMain = mesh(new THREE.CylinderGeometry(0.295, 0.26, lv - 0.16, 20), liqMat);
+  liqMain.position.y = 0.15 + (lv - 0.16) / 2;
+  /* 液面圆片：低 env/clearcoat 防白_env 漂白，靠自发光保住色相 */
+  const surf = mesh(new THREE.CircleGeometry(0.295, 22), matCoat(o.surf ?? o.liquid, {
+    roughness: 0.14, clearcoat: 0.35, emissive: o.liquid, emissiveIntensity: (o.glow ?? 0.32) * 1.5, envMapIntensity: 0.55,
+  }));
+  surf.rotation.x = -TAU / 4;
+  surf.position.y = lv + 0.002;
+  /* 液面弯月面高光：斜置细长亮条贴片 */
+  const gleamTex = canvasTex(128, 64, (ctx) => {
+    ctx.clearRect(0, 0, 128, 64);
+    const gg = ctx.createRadialGradient(40, 32, 2, 40, 32, 46);
+    gg.addColorStop(0, 'rgba(255,255,250,0.85)');
+    gg.addColorStop(0.5, 'rgba(255,255,250,0.25)');
+    gg.addColorStop(1, 'rgba(255,255,250,0)');
+    ctx.save();
+    ctx.translate(64, 32);
+    ctx.scale(1.35, 0.42);
+    ctx.translate(-64, -32);
+    ctx.fillStyle = gg;
+    ctx.fillRect(0, 0, 128, 64);
+    ctx.restore();
+  });
+  const gleam = mesh(new THREE.PlaneGeometry(0.3, 0.14), new THREE.MeshBasicMaterial({
+    map: gleamTex, transparent: true, depthWrite: false,
+  }));
+  gleam.rotation.x = -TAU / 4;
+  gleam.position.set(-0.05, lv + 0.006, 0.1);
+  g.add(liqLow, liqMain, surf, gleam);
   /* 瓶盖 */
   const cap = mesh(new THREE.CylinderGeometry(0.16, 0.16, 0.12, 16), M_RUBBER);
   cap.position.y = 1.1;
   g.add(cap);
-  /* 标签（纸面贴在瓶身前侧） */
-  const lbMat = matStd(0xffffff, { roughness: 0.8 });
-  lbMat.map = makeLabelTexture(labelText, { w: 220, h: 140 });
-  lbMat.transparent = true;
-  const lb = mesh(new THREE.PlaneGeometry(0.42, 0.28), lbMat);
-  lb.position.set(0, 0.45, 0.38);
-  lb.rotation.x = -0.06;
+  /* 标签：弧面圆柱贴片（贴合瓶身曲率）+ 试剂名大字 + 浓度小字 + 边框
+   * （Cylinder 侧面 u 沿 θ 从观察者左到右递增，贴图天然正向，无需翻转） */
+  const lblTex = makeLabelTexture([o.name, o.sub], { w: 320, h: 200, lineSizes: [58, 30] });
+  const lbMat = matStd(0xffffff, { roughness: 0.85, metalness: 0 });
+  lbMat.map = lblTex;
+  const lb = mesh(new THREE.CylinderGeometry(0.378, 0.396, 0.3, 18, 1, true, -0.52, 1.04), lbMat);
+  lb.position.y = 0.42;
   g.add(lb);
   bakeContactShadow(x, z, 1.0 * heightScale + 0.25, 1.0 * heightScale + 0.25, 0.3);
   g.scale.setScalar(heightScale);
   return g;
 }
-scene.add(makeBottle(-3.3, -1.7, 0xd8c890, ['蔗糖溶液', '0.3 g/mL']));
-scene.add(makeBottle(-2.5, -2.0, 0xb08850, ['碘液', ' Lugol']));
-scene.add(makeBottle(-1.7, -1.75, 0x4a6ac0, ['亚甲基蓝', '染色剂'], 0.85));
-scene.add(makeBottle(-2.9, -1.0, 0xd8b868, ['香柏油', 'n=1.515'], 0.7));
-scene.add(makeBottle(-1.9, -1.05, 0xd8e0d8, ['清水', '蒸馏水'], 0.75));
-/* 载玻片盒：开盖露出内部玻片叠 */
+scene.add(makeBottle(-3.3, -1.7, { liquid: 0xd8c890, name: '蔗糖溶液', sub: '0.3 g/mL' }));
+scene.add(makeBottle(-2.5, -2.0, { liquid: 0x96591a, surf: 0xa4641e, glow: 0.85, name: '碘液', sub: 'Lugol' }));
+scene.add(makeBottle(-1.7, -1.75, { liquid: 0x2b4bb8, surf: 0x3a5cc8, glow: 0.4, name: '亚甲基蓝', sub: '染色剂' }, 0.85));
+scene.add(makeBottle(-2.9, -1.0, { liquid: 0xc09838, surf: 0xd0a848, glow: 0.3, name: '香柏油', sub: 'n=1.515' }, 0.7));
+scene.add(makeBottle(-1.9, -1.05, { liquid: 0xcfe2ea, surf: 0xe4eff4, glow: 0.1, name: '清水', sub: '蒸馏水' }, 0.75));
+/* 载玻片盒：开盖态，薄盒体 + 端部斜切挡板 + 内部 4 片玻片（磨砂端朝外） */
 {
   const g = new THREE.Group();
   g.position.set(2.75, 0, -2.25);
   g.rotation.y = -0.25;
   const boxMat = matStd(0x8a4a34, { roughness: 0.55 });
-  /* 盒底（带内腔暗底） */
-  const base = mesh(new THREE.BoxGeometry(1.7, 0.14, 1.05), boxMat);
-  base.position.y = 0.07;
-  const cavity = mesh(new THREE.BoxGeometry(1.56, 0.02, 0.9), matStd(0x241610, { roughness: 0.9 }));
-  cavity.position.y = 0.145;
-  /* 玻片叠（玻璃薄片交替错位） */
-  for (let i = 0; i < 7; i++) {
-    const s = mesh(new THREE.BoxGeometry(1.34, 0.014, 0.4), matCoat(0xe8f2f4, { roughness: 0.04, opacity: 0.55 }));
-    s.position.set((i % 2) * 0.05 - 0.02, 0.16 + i * 0.015, (i % 3) * 0.02 - 0.02);
-    s.rotation.y = (i % 2) * 0.03;
-    g.add(s);
+  /* 薄盒底（带内腔暗底） */
+  const base = mesh(new THREE.BoxGeometry(1.7, 0.12, 1.02), boxMat);
+  base.position.y = 0.06;
+  const cavity = mesh(new THREE.BoxGeometry(1.56, 0.02, 0.88), matStd(0x241610, { roughness: 0.9 }));
+  cavity.position.y = 0.125;
+  g.add(base, cavity);
+  /* 端部斜切挡板：梯形轮廓挤出（外沿压低，方便抽插玻片） */
+  const endShape = new THREE.Shape();
+  endShape.moveTo(-0.44, 0);
+  endShape.lineTo(0.44, 0);
+  endShape.lineTo(0.44, 0.24);
+  endShape.lineTo(-0.44, 0.34);
+  endShape.lineTo(-0.44, 0);
+  const endGeo = new THREE.ExtrudeGeometry(endShape, { depth: 0.05, bevelEnabled: false });
+  for (const s of [-1, 1]) {
+    const wall = mesh(endGeo, boxMat);
+    wall.rotation.y = Math.PI / 2;          /* 轮廓面朝 ±X，斜肩沿盒宽向 */
+    wall.position.set(s * 0.83, 0.12, 0);
+    if (s > 0) wall.rotation.y += Math.PI;  /* 两端斜肩镜像：外侧低、内侧高 */
+    g.add(wall);
+  }
+  /* 侧挡板 */
+  for (const s of [-1, 1]) {
+    const side = mesh(new THREE.BoxGeometry(1.66, 0.3, 0.05), boxMat);
+    side.position.set(0, 0.24, s * 0.5);
+    g.add(side);
+  }
+  /* 玻片 ×4：玻璃片身 + 磨砂端（错位叠放） */
+  const slideGlass = matCoat(0xe8f2f4, { roughness: 0.04, opacity: 0.55 });
+  const frosted = matStd(0xe8e4da, { roughness: 0.9 });
+  for (let i = 0; i < 4; i++) {
+    const sg = new THREE.Group();
+    const body = mesh(new THREE.BoxGeometry(1.05, 0.012, 0.4), slideGlass);
+    body.position.x = -0.13;
+    const end = mesh(new THREE.BoxGeometry(0.26, 0.013, 0.4), frosted);
+    end.position.x = 0.6;
+    sg.add(body, end);
+    sg.position.set((i % 2) * 0.06 - 0.03, 0.14 + i * 0.016, (i % 3) * 0.03 - 0.03);
+    sg.rotation.y = (i % 2) * 0.04;
+    g.add(sg);
   }
   /* 盒盖：铰链在后排，翻开立起 */
-  const lid = mesh(new THREE.BoxGeometry(1.7, 0.045, 1.05), boxMat);
+  const lid = mesh(new THREE.BoxGeometry(1.7, 0.045, 1.02), boxMat);
   lid.position.set(0, 0.42, -0.5);
   lid.rotation.x = -1.35;
   /* 前侧标签 */
@@ -332,7 +395,7 @@ scene.add(makeBottle(-1.9, -1.05, 0xd8e0d8, ['清水', '蒸馏水'], 0.75));
   lb.position.set(0, 0.09, 0.53);
   lb.rotation.x = -0.5;
   bakeContactShadow(2.75, -2.25, 2.0, 1.3, 0.34);
-  g.add(base, cavity, lid, lb);
+  g.add(lid, lb);
   scene.add(g);
 }
 /* 擦镜纸盒：抽纸状态 */
@@ -355,10 +418,11 @@ scene.add(makeBottle(-1.9, -1.05, 0xd8e0d8, ['清水', '蒸馏水'], 0.75));
   g.add(box, slot, t1, t2);
   scene.add(g);
 }
-/* 培养皿 ×2（叠放：玻璃皿壁 + 皿盖 + 底皿琼脂） */
+/* 培养皿 ×2（叠放：玻璃皿壁 + 微透明皿盖 + 淡黄琼脂面） */
 function makePetriDish(withAgar) {
   const g = new THREE.Group();
   const glass = matCoat(0xe2ecee, { roughness: 0.05, opacity: 0.4 });
+  const lidGlass = matCoat(0xe2ecee, { roughness: 0.05, opacity: 0.22 });   /* 皿盖更通透 */
   const bottom = mesh(new THREE.CylinderGeometry(0.56, 0.56, 0.025, 36), glass);
   bottom.position.y = 0.05;
   const wall = mesh(new THREE.CylinderGeometry(0.56, 0.56, 0.09, 36, 1, true), glass);
@@ -368,14 +432,33 @@ function makePetriDish(withAgar) {
   rim.position.y = 0.14;
   g.add(bottom, wall, rim);
   if (withAgar) {
-    const agar = mesh(new THREE.CylinderGeometry(0.48, 0.48, 0.014, 30), matStd(0xe8ddc0, { roughness: 0.5 }));
+    /* 琼脂面：淡黄圆片 + 稀疏菌落斑点纹理 */
+    const agarTex = canvasTex(256, 256, (ctx) => {
+      ctx.fillStyle = '#e8ddc0';
+      ctx.fillRect(0, 0, 256, 256);
+      const rnd = mulberry32(43);
+      for (let i = 0; i < 14; i++) {
+        const a = rnd() * TAU, r = rnd() * 95;
+        ctx.fillStyle = `rgba(196,168,120,${0.18 + rnd() * 0.22})`;
+        ctx.beginPath();
+        ctx.arc(128 + Math.cos(a) * r, 128 + Math.sin(a) * r, 1.5 + rnd() * 4.5, 0, TAU);
+        ctx.fill();
+      }
+      for (let i = 0; i < 40; i++) {
+        ctx.fillStyle = 'rgba(255,250,232,0.12)';
+        ctx.fillRect(rnd() * 256, rnd() * 256, 3, 3);
+      }
+    });
+    const agarMat = matStd(0xffffff, { roughness: 0.55 });
+    agarMat.map = agarTex;
+    const agar = mesh(new THREE.CylinderGeometry(0.48, 0.48, 0.014, 30), agarMat);
     agar.position.y = 0.072;
     g.add(agar);
   }
-  /* 皿盖（更浅的一圈） */
-  const lidWall = mesh(new THREE.CylinderGeometry(0.575, 0.575, 0.045, 36, 1, true), glass);
+  /* 皿盖（更浅的一圈，微透明） */
+  const lidWall = mesh(new THREE.CylinderGeometry(0.575, 0.575, 0.045, 36, 1, true), lidGlass);
   lidWall.position.y = 0.155;
-  const lidTop = mesh(new THREE.CylinderGeometry(0.575, 0.575, 0.02, 36), glass);
+  const lidTop = mesh(new THREE.CylinderGeometry(0.575, 0.575, 0.02, 36), lidGlass);
   lidTop.position.y = 0.185;
   g.add(lidWall, lidTop);
   return g;
@@ -384,7 +467,7 @@ function makePetriDish(withAgar) {
   const d1 = makePetriDish(true);
   d1.position.set(3.95, 0, 0.5);
   d1.rotation.y = 0.4;
-  const d2 = makePetriDish(false);
+  const d2 = makePetriDish(true);
   d2.position.set(4.05, 0.2, 0.62);
   d2.rotation.y = 0.9;
   bakeContactShadow(4.0, 0.55, 1.7, 1.7, 0.3);
@@ -468,36 +551,133 @@ const parts = {};
   dimKnob.position.set(0.85, 0.33, 0.62);
   gScope.add(dimKnob);
 
-  /* ---- 镜臂：C 形单臂（Shape 沿曲线路径挤出 + 倒角 + 哑光烤漆） ---- */
-  const armShape = new THREE.Shape();
-  armShape.moveTo(-0.62, 0.14);
-  armShape.lineTo(-0.26, 0.14);
-  armShape.bezierCurveTo(0.02, 0.16, 0.14, 0.38, 0.15, 0.66);
-  armShape.bezierCurveTo(0.16, 1.02, 0.08, 1.34, 0.0, 1.62);
-  armShape.bezierCurveTo(-0.07, 1.86, -0.05, 2.06, 0.16, 2.18);
-  armShape.lineTo(0.36, 2.3);
-  armShape.bezierCurveTo(0.54, 2.42, 0.56, 2.62, 0.42, 2.76);
-  armShape.bezierCurveTo(0.2, 2.96, -0.34, 2.98, -0.58, 2.74);
-  armShape.bezierCurveTo(-0.8, 2.5, -0.86, 2.08, -0.86, 1.52);
-  armShape.bezierCurveTo(-0.86, 0.98, -0.83, 0.42, -0.62, 0.14);
-  const armGeo = new THREE.ExtrudeGeometry(armShape, {
-    depth: 0.52, bevelEnabled: true, bevelThickness: 0.05, bevelSize: 0.05,
-    bevelSegments: 4, curveSegments: 24,
-  });
-  armGeo.rotateY(-Math.PI / 2);        /* 轮廓面朝 ±X，挤出沿 -X */
-  armGeo.translate(-0.5, 0, 0);        /* 占位 x ≈ [-1.07, -0.45] */
-  const arm = mesh(armGeo, M_PAINT);
-  gScope.add(arm);
-  /* 镜臂两侧品牌铭牌贴花（法线朝外，两侧面文字均正向） */
-  const brandTex = brandDecalTexture();
+  /* ---- 镜臂：CatmullRom 中心线放样 C 形弯臂（变宽度截面 sweep + 三段质感） ---- */
+  /* 中心线：底座后部生根 → 向上后弯 → 背点 → 回弯前倾 → 顶端抱向镜筒（微 X 内收增强立体感） */
+  const armCurve = new THREE.CatmullRomCurve3([
+    new THREE.Vector3(-0.58, 0.16, -0.54),
+    new THREE.Vector3(-0.72, 0.72, -0.66),
+    new THREE.Vector3(-0.78, 1.44, -0.72),
+    new THREE.Vector3(-0.73, 2.04, -0.58),
+    new THREE.Vector3(-0.62, 2.40, -0.28),
+    new THREE.Vector3(-0.50, 2.58, 0.14),
+  ], false, 'catmullrom', 0.6);
+  /* 截面宽度/深度沿弧长参数的关键帧（根部金属套座 → 握持段收窄 → 上端再展宽接托架） */
+  const armWKeys = [[0, 0.38], [0.06, 0.36], [0.10, 0.30], [0.32, 0.235], [0.46, 0.225], [0.62, 0.25], [0.82, 0.29], [1, 0.33]];
+  const armDKeys = [[0, 0.32], [0.06, 0.30], [0.10, 0.26], [0.32, 0.21], [0.46, 0.20], [0.62, 0.22], [0.82, 0.245], [1, 0.27]];
+  const keyLerp = (keys, t) => {
+    for (let i = 0; i < keys.length - 1; i++) {
+      if (t <= keys[i + 1][0]) {
+        const [t0, v0] = keys[i], [t1, v1] = keys[i + 1];
+        const k = (t - t0) / Math.max(t1 - t0, 1e-6);
+        const s = k * k * (3 - 2 * k);           /* smoothstep 缓动，避免折角 */
+        return v0 + (v1 - v0) * s;
+      }
+    }
+    return keys[keys.length - 1][1];
+  };
+  /* 圆角矩形截面轮廓（单位宽深，角部圆弧采样点，闭环） */
+  const armRing = (() => {
+    const rc = 0.30, seg = 5, pts = [];
+    const cs = [[0.5 - rc, 0.5 - rc, 0], [0.5 - rc, -0.5 + rc, Math.PI / 2], [-0.5 + rc, -0.5 + rc, Math.PI], [-0.5 + rc, 0.5 - rc, Math.PI * 1.5]];
+    for (const [cx, cy, a0] of cs) {
+      for (let k = 0; k <= seg; k++) {
+        const a = a0 + (k / seg) * (Math.PI / 2);
+        pts.push([cx + Math.cos(a) * rc, cy + Math.sin(a) * rc]);
+      }
+    }
+    return pts;
+  })();
+  /* 自研 sweep：沿曲线取 frame（宽度轴固定 X，深度轴取切线叉乘），逐环缩放截面并缝合；
+   * 单一 geometry + 三段材质分组：根部连接件(金属深灰) / 中段烤漆 / 上端托架(缎面金属) */
+  function buildArmGeometry(curve, segs) {
+    const pts = curve.getSpacedPoints(segs);
+    const ringM = armRing.length;
+    const pos = [], idx = [];
+    const breaks = [Math.round(segs * 0.045), Math.round(segs * 0.82)];
+    const vAt = (i3) => new THREE.Vector3(pos[i3], pos[i3 + 1], pos[i3 + 2]);
+    for (let i = 0; i <= segs; i++) {
+      const t = i / segs;
+      const p = pts[i];
+      const pPrev = pts[Math.max(0, i - 1)], pNext = pts[Math.min(segs, i + 1)];
+      const T = new THREE.Vector3().subVectors(pNext, pPrev).normalize();
+      const Nn = new THREE.Vector3().crossVectors(T, new THREE.Vector3(1, 0, 0)).normalize();
+      const w = keyLerp(armWKeys, t), d = keyLerp(armDKeys, t);
+      for (let k = 0; k < ringM; k++) {
+        const [ux, vy] = armRing[k];
+        pos.push(p.x + ux * w, p.y + vy * d * Nn.y, p.z + vy * d * Nn.z);
+      }
+    }
+    for (let i = 0; i < segs; i++) {
+      for (let k = 0; k < ringM; k++) {
+        const k1 = (k + 1) % ringM;
+        const a = i * ringM + k, b = (i + 1) * ringM + k, c = (i + 1) * ringM + k1, dd = i * ringM + k1;
+        idx.push(a, b, c, a, c, dd);
+      }
+      /* 端帽：扇面封口，按法线朝向自动翻转绕序 */
+      if (i === 0 || i === segs - 1) {
+        const centerBase = pos.length / 3;
+        const p = pts[i === 0 ? 0 : segs];
+        pos.push(p.x, p.y, p.z);
+        const T = new THREE.Vector3().subVectors(pts[Math.min(segs, i + 1)], pts[Math.max(0, i - 1)]).normalize();
+        const ringBase = i * ringM;
+        for (let k = 0; k < ringM; k++) {
+          const k1 = (k + 1) % ringM;
+          const tri = [centerBase, ringBase + k, ringBase + k1];
+          const n = new THREE.Vector3().subVectors(vAt(tri[1] * 3), vAt(tri[0] * 3))
+            .cross(new THREE.Vector3().subVectors(vAt(tri[2] * 3), vAt(tri[0] * 3)));
+          idx.push(...(n.dot(T) < 0 ? tri : [tri[0], tri[2], tri[1]]));
+        }
+      }
+    }
+    /* 三段分组（三角索引切分）：[0, br0) 金属 / [br0, br1) 烤漆 / [br1, end) 托架
+     * 索引累计：段 0 含端帽 9·ringM，其后每段 6·ringM → 段 k 结束于 ringM·(6k+3) */
+    const br0 = ringM * (6 * breaks[0] + 3);
+    const br1 = ringM * (6 * breaks[1] + 3);
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+    geo.setIndex(idx);
+    geo.clearGroups();
+    geo.addGroup(0, br0, 0);
+    geo.addGroup(br0, br1 - br0, 1);
+    geo.addGroup(br1, idx.length - br1, 2);
+    geo.computeVertexNormals();
+    return geo;
+  }
+  /* 根部金属段压入基座内（不外露），外露臂身整体烤漆；基座衔接用亮色金属圈套座表达 */
+  const armMesh = new THREE.Mesh(
+    buildArmGeometry(armCurve, 64),
+    [M_STEEL_DARK, M_PAINT, M_SATIN],
+  );
+  gScope.add(armMesh);
   {
-    const dL = decalPlane(brandTex, 0.9, 0.28);
-    dL.rotation.y = -Math.PI / 2;
-    dL.position.set(-1.095, 1.35, 0.18);
-    const dR = decalPlane(brandTex, 0.9, 0.28);
-    dR.rotation.y = Math.PI / 2;
-    dR.position.set(-0.445, 1.35, 0.18);
-    gScope.add(dL, dR);
+    const fp = armCurve.getPoint(0.05);
+    const ferrule = mesh(new THREE.CylinderGeometry(0.24, 0.27, 0.08, 22), M_SATIN);
+    ferrule.position.set(fp.x, 0.30, fp.z);
+    gScope.add(ferrule);
+  }
+  gScope.add(armMesh);
+  /* 握持段内凹弧（人机工学暗示）：外侧面橡胶握垫，随曲线最窄处内嵌 */
+  {
+    const gp = armCurve.getPoint(0.42);
+    const pad = roundedSlab(0.32, 0.16, 0.045, 0.05, M_RUBBER, 0.012);
+    pad.rotation.z = -Math.PI / 2;               /* 厚度沿 X，长度顺臂身 */
+    pad.position.set(gp.x - keyLerp(armWKeys, 0.42) / 2 - 0.012, gp.y, gp.z);
+    gScope.add(pad);
+  }
+  /* 上端托架：横担 + 枢轴轴座 + 锁紧螺钉（镜臂与镜头的机械衔接件） */
+  const yoke = mesh(new THREE.BoxGeometry(0.95, 0.16, 0.26), M_SATIN);
+  yoke.position.set(-0.13, 2.56, 0.22);
+  const pivotHub = mesh(new THREE.CylinderGeometry(0.13, 0.13, 0.44, 22), M_CHROME);
+  pivotHub.rotation.z = TAU / 4;
+  pivotHub.position.set(0.25, 2.5, 0.33);
+  const clampScrew = mesh(new THREE.CylinderGeometry(0.03, 0.034, 0.06, 12), M_CHROME);
+  clampScrew.position.set(-0.1, 2.68, 0.22);
+  gScope.add(yoke, pivotHub, clampScrew);
+  /* 品牌铭牌：横担前面板（默认机位直读，避开曲面臂身） */
+  {
+    const dF = decalPlane(brandDecalTexture(), 0.6, 0.19);
+    dF.position.set(-0.16, 2.56, 0.355);
+    gScope.add(dF);
   }
 
   /* ---- 双面反光镜（平面/凹面 + 镜柄，可翻转） ---- */
@@ -757,6 +937,128 @@ const sCv = document.createElement('canvas');
 sCv.width = sCv.height = S;
 const sCtx = sCv.getContext('2d');
 
+/* ---- 视野真实感基建：种子随机 / 纤维贴样 / 字形墨迹画布 / 视野静物装饰 ---- */
+
+/* 可播种伪随机（mulberry32）：装饰与纹理逐帧一致，截图可复现 */
+function mulberry32(seed) {
+  let a = seed >>> 0;
+  return () => {
+    a |= 0; a = (a + 0x6D2B79F5) | 0;
+    let t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+/* 载膜纤维纹理：白底 + 随机弯折短纤维（灰阶），平铺后叠给样品/字形 */
+const fiberTex = (() => {
+  const c = document.createElement('canvas');
+  c.width = c.height = 256;
+  const x = c.getContext('2d');
+  x.fillStyle = '#ffffff';
+  x.fillRect(0, 0, 256, 256);
+  const rnd = mulberry32(71);
+  x.lineCap = 'round';
+  for (let i = 0; i < 130; i++) {
+    let px = rnd() * 256, py = rnd() * 256;
+    const a = rnd() * TAU, len = 14 + rnd() * 46, bend = (rnd() - 0.5) * 0.6;
+    const g = Math.round(232 - rnd() * 44);
+    x.strokeStyle = `rgb(${g},${g - 4},${g - 9})`;
+    x.lineWidth = 0.8 + rnd() * 1.6;
+    x.beginPath();
+    x.moveTo(px, py);
+    const steps = 4 + ((rnd() * 4) | 0);
+    for (let s2 = 1; s2 <= steps; s2++) {
+      const f = s2 / steps;
+      px += Math.cos(a + bend * f) * (len / steps);
+      py += Math.sin(a + bend * f) * (len / steps);
+      x.lineTo(px, py);
+    }
+    x.stroke();
+  }
+  return c;
+})();
+const sFiberPat = sCtx.createPattern(fiberTex, 'repeat');
+
+/* 字形墨迹画布（缓存）：柔焦晕染底层 + 多次微位移叠印（边缘参差）+
+ * 纤维纹理（source-atop 只染字形像素）+ 针孔侵蚀（destination-out 微点） */
+const glyphCache = new Map();
+function glyphCanvas(ch, font, size) {
+  const key = ch + '|' + font + size;
+  if (glyphCache.has(key)) return glyphCache.get(key);
+  const c = document.createElement('canvas');
+  c.width = c.height = S;
+  const x = c.getContext('2d');
+  const rnd = mulberry32(ch.charCodeAt(0) * 131 + 7);
+  x.textAlign = 'center';
+  x.textBaseline = 'middle';
+  x.font = `900 ${size}px ${font}`;
+  /* 墨水浸润：两级柔焦晕染垫底 */
+  x.filter = 'blur(5px)';
+  x.fillStyle = 'rgba(38, 44, 56, 0.30)';
+  x.fillText(ch, S / 2, S / 2);
+  x.filter = 'blur(2px)';
+  x.fillStyle = 'rgba(38, 44, 56, 0.35)';
+  x.fillText(ch, S / 2, S / 2);
+  x.filter = 'none';
+  /* 主体：多次微位移叠印出参差墨缘 */
+  for (let k = 0; k < 6; k++) {
+    x.fillStyle = `rgba(38, 44, 56, ${(0.16 + rnd() * 0.06).toFixed(3)})`;
+    x.fillText(ch, S / 2 + (rnd() - 0.5) * 3.2, S / 2 + (rnd() - 0.5) * 3.2);
+  }
+  x.fillStyle = 'rgba(30, 35, 45, 0.9)';
+  x.fillText(ch, S / 2, S / 2);
+  /* 纤维纹理：只染字形像素 */
+  x.globalCompositeOperation = 'source-atop';
+  x.globalAlpha = 0.4;
+  x.fillStyle = x.createPattern(fiberTex, 'repeat');
+  x.fillRect(0, 0, S, S);
+  /* 针孔侵蚀：墨膜深浅斑驳 */
+  x.globalCompositeOperation = 'destination-out';
+  for (let i = 0; i < 900; i++) {
+    x.globalAlpha = 0.05 + rnd() * 0.12;
+    x.beginPath();
+    x.arc(rnd() * S, rnd() * S, 0.6 + rnd() * 1.8, 0, TAU);
+    x.fill();
+  }
+  x.globalCompositeOperation = 'source-over';
+  x.globalAlpha = 1;
+  glyphCache.set(key, c);
+  return c;
+}
+
+/* 视野静物装饰：微尘颗粒 + 气泡环（固定种子；读数类玻片跳过，防干扰计数/污点判断） */
+const FIELD_DECOR = (() => {
+  const rnd = mulberry32(2026);
+  const dust = [];
+  for (let i = 0; i < 5; i++) {
+    const a = rnd() * TAU, r = S * (0.18 + rnd() * 0.24);
+    dust.push([S / 2 + Math.cos(a) * r, S / 2 + Math.sin(a) * r, 1 + rnd() * 2.2, 0.10 + rnd() * 0.14]);
+  }
+  return { dust, bubbles: [[S * 0.68, S * 0.30, 9], [S * 0.26, S * 0.74, 6]] };
+})();
+function drawFieldDecor(ctx) {
+  if (optic.slide === 'counter' || optic.slide === 'dust') return;
+  for (const [x, y, r, a] of FIELD_DECOR.dust) {
+    ctx.fillStyle = `rgba(84, 74, 58, ${a})`;
+    ctx.beginPath();
+    ctx.arc(x, y, r, 0, TAU);
+    ctx.fill();
+  }
+  for (const [x, y, r] of FIELD_DECOR.bubbles) {
+    ctx.strokeStyle = 'rgba(96, 88, 70, 0.34)';
+    ctx.lineWidth = 1.6;
+    ctx.beginPath();
+    ctx.arc(x, y, r, 0, TAU);
+    ctx.stroke();
+    ctx.strokeStyle = 'rgba(255, 252, 240, 0.5)';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.arc(x - r * 0.3, y - r * 0.3, r * 0.55, 0, TAU);
+    ctx.stroke();
+  }
+}
+
 /* 显微镜状态 */
 const optic = {
   slide: 'letter', obj: 1, focus: 62, light: 'bright', oil: false,
@@ -826,11 +1128,8 @@ const SLIDES = {
       ctx.save();
       ctx.translate(S / 2, S / 2);
       ctx.rotate(o.letterRot || 0);
-      ctx.fillStyle = 'rgba(38, 44, 56, 0.88)';
-      ctx.font = '900 210px Georgia, serif';
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      ctx.fillText('e', o.pan.x * 1.2, o.pan.y * 1.2);
+      /* 墨迹字形画布：浸润边缘 + 纤维纹理 + 针孔侵蚀（glyphCanvas 缓存，逐帧仅 drawImage） */
+      ctx.drawImage(glyphCanvas('e', 'Georgia, serif', 210), -S / 2 + o.pan.x * 1.2, -S / 2 + o.pan.y * 1.2);
       ctx.restore();
     },
   },
@@ -1143,11 +1442,7 @@ const SLIDES = {
   dust: {
     name: '污点检测片（含噪点）',
     draw(ctx, o) {
-      ctx.fillStyle = 'rgba(38, 44, 56, 0.88)';
-      ctx.font = '900 150px Georgia, serif';
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      ctx.fillText('p', S / 2, S / 2);
+      ctx.drawImage(glyphCanvas('p', 'Georgia, serif', 150), 0, 0);
       const sp = o.speck;
       if (!sp) return;
       let sx = S / 2 + 110, sy = S / 2 - 80;
@@ -1235,14 +1530,14 @@ const SLIDES = {
   },
 };
 
-/* 每帧渲染目镜视野：样品离屏 → 合成（明/暗/相差） → 遮罩装饰（写入右栏画布） */
+/* 每帧渲染目镜视野：样品离屏（含真实感装饰）→ 合成（明/暗/相差 + 光锥渐晕 + 半焦双影） → 遮罩装饰 */
 function renderEyepiece(t) {
   const mode = optic.lampOn ? optic.light : 'off';
   const isDark = mode === 'dark';
   const isPhase = mode === 'phase';
-  /* 离屏样品底色：暗场用浅底（反相后变黑），相差用灰绿底 */
+  /* 离屏样品底色：暖白照明（明场）/ 暗场浅底（反相后变黑）/ 相差灰绿底 */
   sCtx.setTransform(1, 0, 0, 1, 0, 0);
-  sCtx.fillStyle = isDark ? '#f2ede0' : isPhase ? '#d4d8cc' : '#f2ede0';
+  sCtx.fillStyle = isDark ? '#f2ede0' : isPhase ? '#d4d8cc' : '#fdf6e6';
   sCtx.fillRect(0, 0, S, S);
 
   const mag = OBJ_MAGS[optic.obj];
@@ -1254,11 +1549,19 @@ function renderEyepiece(t) {
   sCtx.translate(-S / 2, -S / 2);    /* 绘制器按画布坐标作画：补中心枢轴，绕中点反转缩放 */
   sCtx.translate(-optic.pan.x, -optic.pan.y);
   SLIDES[optic.slide].draw(sCtx, optic, t);
+  drawFieldDecor(sCtx);              /* 微尘 + 气泡随玻片移动 */
   sCtx.restore();
+  /* 载膜纤维：整幅低对比平铺（有机质感底层） */
+  sCtx.globalCompositeOperation = 'multiply';
+  sCtx.globalAlpha = 0.06;
+  sCtx.fillStyle = sFiberPat;
+  sCtx.fillRect(0, 0, S, S);
+  sCtx.globalAlpha = 1;
+  sCtx.globalCompositeOperation = 'source-over';
 
   /* 主画布：背景 + 圆形视野裁剪 */
   eCtx.setTransform(1, 0, 0, 1, 0, 0);
-  eCtx.fillStyle = isDark ? '#050608' : isPhase ? '#c9cec2' : mode === 'off' ? '#101216' : '#f2ede0';
+  eCtx.fillStyle = isDark ? '#050608' : isPhase ? '#c9cec2' : mode === 'off' ? '#101216' : '#fdf6e6';
   eCtx.fillRect(0, 0, S, S);
   eCtx.save();
   eCtx.beginPath();
@@ -1272,6 +1575,15 @@ function renderEyepiece(t) {
   eCtx.filter = blur > 0.4 ? `blur(${Math.min(blur, 15).toFixed(1)}px)` : 'none';
   eCtx.drawImage(sCv, 0, 0);
   eCtx.filter = 'none';
+  /* 半对焦双影：主像 + 低位移低透明重像（钟形窗口，全焦/重糊时消退） */
+  const dFocus = optic.focus - idealFocus();
+  const ghostA = Math.exp(-Math.pow((Math.abs(dFocus) - 3.2) / 2.6, 2)) * 0.26;
+  if (ghostA > 0.02 && blur < 4.5) {
+    const off = 1 + Math.min(Math.abs(dFocus), 8) * 0.18;
+    eCtx.globalAlpha = ghostA;
+    eCtx.drawImage(sCv, dFocus > 0 ? off : -off, dFocus > 0 ? off * 0.6 : -off * 0.6);
+    eCtx.globalAlpha = 1;
+  }
 
   /* 暗场：整圆反相 → 样品亮起、视野变黑（difference 白场） */
   if (isDark) {
@@ -1301,6 +1613,24 @@ function renderEyepiece(t) {
     eCtx.fillRect(0, 0, S, S);
     eCtx.globalCompositeOperation = 'source-over';
     eCtx.filter = 'none';
+  }
+  /* 聚光器光锥：中心暖白提升 + 边缘暗角过渡（明场暖调 / 相差中性 / 暗场只留轻暗角） */
+  if (optic.lampOn) {
+    if (!isDark) {
+      const hg = eCtx.createRadialGradient(S / 2, S / 2, 0, S / 2, S / 2, S * 0.30);
+      hg.addColorStop(0, isPhase ? 'rgba(255, 250, 238, 0.06)' : 'rgba(255, 246, 220, 0.10)');
+      hg.addColorStop(1, 'rgba(255, 246, 220, 0)');
+      eCtx.fillStyle = hg;
+      eCtx.fillRect(0, 0, S, S);
+    }
+    const vg = eCtx.createRadialGradient(S / 2, S / 2, S * 0.06, S / 2, S / 2, S * 0.47);
+    vg.addColorStop(0, 'rgba(150, 132, 105, 0)');
+    vg.addColorStop(0.55, `rgba(150, 132, 105, ${isDark ? 0.06 : 0.10})`);
+    vg.addColorStop(1, `rgba(150, 132, 105, ${isDark ? 0.30 : 0.62})`);
+    eCtx.globalCompositeOperation = 'multiply';
+    eCtx.fillStyle = vg;
+    eCtx.fillRect(0, 0, S, S);
+    eCtx.globalCompositeOperation = 'source-over';
   }
   /* 视野亮度：离焦发散 + 关灯 + 油镜缺油都压暗 */
   const dim = clamp(blur * 0.035 + (mode === 'off' ? 0.68 : 0) + (optic.obj === 3 && !optic.oil ? 0.34 : 0), 0, 0.8);
