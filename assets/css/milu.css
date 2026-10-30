@@ -330,3 +330,34 @@ html[data-theme="dark"] .archive-modal__close { background: var(--panel-2); bord
   line-height: 1.75;
   color: var(--ink);
 }
+
+/* 模态框：原文摘录引用块 */
+.arch-quote {
+  margin: 16px 0 0;
+  padding: 14px 16px 14px 18px;
+  border-left: 4px solid var(--forest);
+  background: var(--panel-soft);
+  border-radius: var(--radius);
+}
+.arch-quote-label {
+  margin: 0 0 8px;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: .08em;
+  color: var(--forest);
+}
+.arch-quote-text {
+  margin: 0;
+  font-size: 13.5px;
+  line-height: 1.85;
+  color: var(--ink);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+.arch-quote-src {
+  display: block;
+  margin-top: 10px;
+  font-size: 12px;
+  font-style: normal;
+  color: var(--ink-2);
+}

@@ -72,12 +72,40 @@
     var desc = card ? card.querySelector('.media-meta p') : null;
     title.textContent = (h3 ? h3.textContent : '本地存档') + (src ? ' · ' + src.textContent : '');
     body.innerHTML = render(items);
-    // 把报道的文字说明一并带进模态框，避免单图存档“只有一张图没文字”
-    if (desc && desc.textContent.trim()) {
-      var dp = document.createElement('p');
-      dp.className = 'arch-desc';
-      dp.textContent = desc.textContent.trim();
-      body.appendChild(dp);
+    var quote = (data.quotes && data.quotes[cardKey]) || null;
+    var quoteEl = null;
+    if (quote && quote.text && quote.text.trim()) {
+      // 有原文：展示“原文摘录”引用块（优先于我的转述说明）
+      quoteEl = document.createElement('blockquote');
+      quoteEl.className = 'arch-quote';
+      var qLabel = document.createElement('p');
+      qLabel.className = 'arch-quote-label';
+      qLabel.textContent = '原文摘录';
+      quoteEl.appendChild(qLabel);
+      var qp = document.createElement('p');
+      qp.className = 'arch-quote-text';
+      qp.textContent = quote.text.trim();
+      quoteEl.appendChild(qp);
+      if (quote.source) {
+        var qc = document.createElement('cite');
+        qc.className = 'arch-quote-src';
+        qc.textContent = '— ' + quote.source;
+        quoteEl.appendChild(qc);
+      }
+    } else if (desc && desc.textContent.trim()) {
+      // 无原文（视频 / 纯图片 PDF / 微博等）：保留转述说明兜底
+      quoteEl = document.createElement('p');
+      quoteEl.className = 'arch-desc';
+      quoteEl.textContent = desc.textContent.trim();
+    }
+    if (quoteEl) {
+      // 有原文：摘录置顶，媒体原件（图/视频/PDF）放下方，保证原文一眼可见、无需滚动
+      // 无原文（转述说明兜底）：放在媒体下方
+      if (quoteEl.classList.contains('arch-quote')) {
+        body.insertBefore(quoteEl, body.firstChild);
+      } else {
+        body.appendChild(quoteEl);
+      }
     }
 
     var main = document.getElementById('archMain');
