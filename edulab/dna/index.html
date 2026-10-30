@@ -4,41 +4,65 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex,nofollow">
-<title>DNA 的结构 · DNALab · 建设中 — EduLab</title>
+<title>DNA 的结构 · DNALab — EduLab</title>
+<script type="importmap">
+{
+  "imports": {
+    "three": "../assets/lib/three/three.module.js",
+    "three/addons/": "../assets/lib/three/addons/"
+  }
+}
+</script>
 <script>
 /* 主题首帧应用（浅/深，默认跟随系统） */
 (function(){try{var t=localStorage.getItem('edulab-theme');if(t!=='light'&&t!=='dark'){t=matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';}document.documentElement.setAttribute('data-theme',t);}catch(e){}})();
 </script>
 <link rel="stylesheet" href="../assets/css/edu.css">
+<link rel="stylesheet" href="../assets/css/lab.css">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'%3E%3Cpath d='M19 6h10M21 6v12.5L9.8 37.2A4 4 0 0 0 13.3 43h21.4a4 4 0 0 0 3.5-5.8L27 18.5V6' stroke='%23e8674a' stroke-width='4' fill='none' stroke-linecap='round'/%3E%3C/svg%3E">
 </head>
-<body>
-<header class="edu-header">
-  <a class="edu-logo" href="../"><svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M19 6h10M21 6v12.5L9.8 37.2A4 4 0 0 0 13.3 43h21.4a4 4 0 0 0 3.5-5.8L27 18.5V6" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/><path d="M15.5 30h17" stroke="currentColor" stroke-width="3" stroke-linecap="round"/><circle cx="21" cy="36.5" r="1.8" fill="currentColor"/><circle cx="27.5" cy="34.5" r="1.4" fill="currentColor"/><path d="M24 6v-2" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></svg><span>EduLab<span class="logo-sub">教学实验平台</span></span></a>
+<body class="lab">
+
+<header class="lab-topbar">
+  <a class="edu-logo" href="../" aria-label="返回实验目录">
+    <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M19 6h10M21 6v12.5L9.8 37.2A4 4 0 0 0 13.3 43h21.4a4 4 0 0 0 3.5-5.8L27 18.5V6" stroke="var(--accent)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/><path d="M15.5 30h17" stroke="var(--accent)" stroke-width="3" stroke-linecap="round"/><circle cx="21" cy="36.5" r="1.8" fill="var(--accent)"/><circle cx="27.5" cy="34.5" r="1.4" fill="var(--accent)"/></svg>
+  </a>
+  <button class="edu-header-btn side-toggle" id="sideToggle" type="button" aria-label="章节目录">☰ 章节</button>
+  <div class="lab-title"><b>DNA 的结构 · DNALab</b><span>照片 51 号 · 动手搭 DNA 模型 · DNA 双螺旋的结构 · 碱基互补配对</span></div>
   <span class="spacer"></span>
-  <a class="edu-header-btn" href="../">← 返回实验目录</a>
+  <a class="edu-header-btn" href="../">← 实验目录</a>
   <button class="edu-header-btn" id="themeBtn" type="button" aria-label="切换主题">☾</button>
 </header>
 
-<main class="placeholder-wrap">
-  <div class="placeholder-icon">
-    <svg viewBox="0 0 48 48" fill="none" aria-hidden="true"><path d="M19 6h10M21 6v12.5L9.8 37.2A4 4 0 0 0 13.3 43h21.4a4 4 0 0 0 3.5-5.8L27 18.5V6" stroke="#e8674a" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/><path d="M15.5 30h17" stroke="#e8674a" stroke-width="3" stroke-linecap="round"/><circle cx="21" cy="36.5" r="1.8" fill="#e8674a"/><circle cx="27.5" cy="34.5" r="1.4" fill="#e8674a"/></svg>
+<div class="lab-body">
+  <nav class="lab-side" id="sideNav" aria-label="章节目录">
+    <div class="side-label">章节 · CHAPTERS</div>
+  </nav>
+  <div class="lab-stage" id="stage">
+    <div class="lab-desc" id="descPanel">
+      <div class="desc-head">
+        <h2>章节说明</h2>
+        <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+      </div>
+      <div class="desc-body"></div>
+    </div>
+    <div class="lab-controls" id="controls"></div>
   </div>
-  <h1>DNA 的结构 · DNALab</h1>
-  <div class="sub">DNA 双螺旋实验室 · 生物</div>
-  <p class="desc">DNA 双螺旋结构：像沃森和克里克一样，调节螺距、半径和链数，让计算的 X 射线衍射图样与照片 51 号吻合；亲手组装脱氧核苷酸、按互补配对补全另一条链，再把“梯子”扭成右手双螺旋；按 PDB 1BNA 晶体结构生成任意序列的原子模型，点碱基对看氢键，碱基计算器实时验证查哥夫规则。</p>
-  <div class="placeholder-points"><span class="tag">照片 51 号</span><span class="tag">动手搭 DNA 模型</span><span class="tag">DNA 双螺旋的结构</span><span class="tag">随堂检测</span></div>
-  <div class="placeholder-points"><span class="tag">DNA 双螺旋结构</span><span class="tag">碱基互补配对</span><span class="tag">照片 51 号</span><span class="tag">碱基比例计算</span></div>
-  <div class="badge-building"><span class="pulse"></span>该实验正在建设中，敬请期待</div>
-</main>
+</div>
 
-<footer class="edu-footer">
+<footer class="lab-footer">
   <span class="attr">3D 资源来源：<a href="https://wedulab.com" target="_blank" rel="noopener">WeduLab © WY · wedulab.com</a></span>
   <span class="sep">|</span>
   <span>EduLab · <a href="/">milulab.com</a></span>
 </footer>
 
 <script src="../assets/js/edu-theme.js"></script>
-<script>eduBindThemeToggle(document.getElementById('themeBtn'));</script>
+<script type="module" src="../assets/js/lab-dna.js"></script>
+<script>
+eduBindThemeToggle(document.getElementById('themeBtn'));
+document.getElementById('sideToggle').addEventListener('click', function () {
+  document.getElementById('sideNav').classList.toggle('open');
+});
+</script>
 </body>
 </html>

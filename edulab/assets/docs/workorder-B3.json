@@ -1,0 +1,204 @@
+{
+ "labs": [
+  {
+   "id": "heat-lab",
+   "href": "/labs/heat",
+   "name": "HeatLab",
+   "subtitle": "热与物态变化",
+   "subject": "物理",
+   "desc": "正午白色展厅里的传热与物态变化实验台：温度计的使用、海波与石蜡的熔化曲线、水的沸腾与气压、酒精蒸发致冷、碘锤升华凝华、比热容、铜铝铁玻璃棒的热传导、高锰酸钾画出的对流、黑罐白罐与保温瓶的热辐射。一键切换热成像看温度怎么传，或者切到原理线稿看标注。",
+   "points": [
+    "熔化和凝固",
+    "水的沸腾",
+    "比热容",
+    "热传递的三种方式"
+   ],
+   "preview": "heat",
+   "status": "live",
+   "slug": "heat",
+   "fullname": "传热与物态变化 · HeatLab",
+   "chapters": [
+    "温度计的使用",
+    "摄氏温度",
+    "熔化和凝固",
+    "水的沸腾",
+    "蒸发和液化",
+    "升华和凝华",
+    "比较不同物质的吸热能力",
+    "热传导",
+    "热对流",
+    "热辐射",
+    "从冰到沸腾"
+   ]
+  },
+  {
+   "id": "optics-lab",
+   "href": "/labs/optics",
+   "name": "OpticsLab",
+   "subtitle": "光学实验室",
+   "subject": "物理",
+   "desc": "暗室光学实验台：激光、量角盘、半圆砖、三棱镜、光具座与光屏，12 个课题覆盖反射与折射、全反射与光纤、色散、凸透镜成像、眼睛与视力矫正、双缝干涉、衍射与光栅、薄膜干涉和偏振。",
+   "points": [
+    "折射定律",
+    "凸透镜成像",
+    "双缝干涉",
+    "光的偏振"
+   ],
+   "preview": "optics",
+   "status": "live",
+   "slug": "optics",
+   "fullname": "光学实验台 · OpticsLab",
+   "chapters": [
+    "光的反射定律",
+    "平面镜成像",
+    "光的折射",
+    "全反射与光纤",
+    "棱镜色散",
+    "凸透镜成像规律",
+    "眼睛与视力矫正",
+    "双缝干涉",
+    "单缝衍射与光栅",
+    "薄膜干涉",
+    "光的偏振",
+    "自由光学台"
+   ]
+  },
+  {
+   "id": "wave-lab",
+   "href": "/labs/waves",
+   "name": "WaveLab",
+   "subtitle": "振动与波实验室",
+   "subject": "物理",
+   "desc": "振动与波三维实验：弹簧振子与纸带记录、单摆测 g、受迫振动与共振曲线、绳波的形成与反射、驻波、水波槽干涉与衍射、多普勒效应（可听）、示波器与共鸣管，共 11 个课题。",
+   "points": [
+    "简谐运动",
+    "共振",
+    "驻波",
+    "多普勒效应"
+   ],
+   "preview": "waves",
+   "status": "live",
+   "slug": "waves",
+   "fullname": "振动与波 · WaveLab",
+   "chapters": [
+    "弹簧振子",
+    "单摆",
+    "简谐运动的能量",
+    "受迫振动与共振",
+    "机械波的形成",
+    "波的反射",
+    "波的叠加与驻波",
+    "水波的干涉与衍射",
+    "多普勒效应",
+    "声音的特性与共鸣",
+    "自由实验"
+   ]
+  },
+  {
+   "id": "field-lab",
+   "href": "/labs/fields",
+   "name": "FieldLab",
+   "subtitle": "电场与磁场实验室",
+   "subject": "物理",
+   "desc": "电场与磁场三维实验：可拖动电荷的电场线与等势面、电容器、示波管、铁屑显示的磁感线、安培力、洛伦兹力、质谱仪与回旋加速器、电磁感应与楞次定律、交流发电机，共 11 个课题。",
+   "points": [
+    "电场线",
+    "洛伦兹力",
+    "电磁感应",
+    "交流电"
+   ],
+   "preview": "fields",
+   "status": "live",
+   "slug": "fields",
+   "fullname": "电场与磁场 · FieldLab",
+   "chapters": [
+    "电场线与等势面",
+    "电场力做功与电势能",
+    "平行板电容器",
+    "示波管",
+    "磁感线",
+    "安培力",
+    "洛伦兹力",
+    "质谱仪与回旋加速器",
+    "电磁感应与楞次定律",
+    "交流发电机",
+    "自由实验"
+   ]
+  },
+  {
+   "id": "periodic-lab",
+   "href": "/labs/periodic",
+   "name": "PeriodicLab",
+   "subtitle": "元素周期表实验室",
+   "subject": "化学",
+   "desc": "三维元素周期表：118 种元素升起成柱，看原子半径、电负性、电离能的周期律；拖动温度看物态变化，播放元素发现史，在长式表、螺旋与同心环之间变形，点开任一元素看原子结构与单质。",
+   "points": [
+    "周期律",
+    "电子层",
+    "物态与温度",
+    "元素发现史"
+   ],
+   "preview": "periodic",
+   "status": "live",
+   "slug": "periodic",
+   "fullname": "元素周期表 · PeriodicLab",
+   "chapters": [
+    "认识周期表",
+    "电子层与周期",
+    "原子半径与电负性",
+    "电离能的锯齿",
+    "物态与温度",
+    "元素发现史",
+    "螺旋与同心环"
+   ]
+  },
+  {
+   "id": "gas-lab",
+   "href": "/labs/gas",
+   "name": "GasLab",
+   "subtitle": "气体制备实验室",
+   "subject": "化学",
+   "desc": "写实的化学实验台：加热高锰酸钾、分解过氧化氢制氧气，大理石与稀盐酸制二氧化碳。按“查装定点收离熄”一步步操作，故意做错会看到试管炸裂、倒吸；最后检验并验证两种气体的性质。",
+   "points": [
+    "氧气的实验室制法",
+    "二氧化碳的实验室制法",
+    "排水法与排空气法",
+    "气体的检验与验满"
+   ],
+   "preview": "gas",
+   "status": "live",
+   "slug": "gas",
+   "fullname": "实验室制取气体 · GasLab",
+   "chapters": [
+    "加热高锰酸钾制氧气",
+    "分解过氧化氢制氧气",
+    "制取二氧化碳",
+    "氧气与二氧化碳的性质",
+    "随堂检测"
+   ]
+  }
+ ],
+ "media": {
+  "sky": [
+   "sky_court-BLHJ2ADI.hdr",
+   "sky_harbor-BruSQyW8.hdr",
+   "sky_site-C35ymwQp.hdr",
+   "sky_court-BKHrsJQE.webp",
+   "sky_harbor-LXJSRKim.webp",
+   "sky_site-Co0CA3Qo.webp"
+  ],
+  "earth": [
+   "day-DmukkgAy.webp",
+   "night-7j0D73E-.webp",
+   "clouds-DTkGUc9f.webp",
+   "water-CiZebwCi.webp",
+   "earth_normal_2048-BD2vMuPH.jpg",
+   "earth_specular_2048-6aAFN27D.jpg",
+   "earth_lights_2048-DB_KwUMR.webp",
+   "earth_bm_01-yIuzfkz1.webp",
+   "earth_bm_07-BDPAypd3.webp",
+   "earth_clouds_1024-CKDLEBqO.png"
+  ],
+  "pbr_count": 66
+ }
+}

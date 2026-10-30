@@ -1,0 +1,192 @@
+{
+ "labs": [
+  {
+   "id": "plant-lab",
+   "href": "/labs/plant",
+   "name": "PlantLab",
+   "subtitle": "一颗豆子的一生",
+   "subject": "生物",
+   "desc": "玻璃温室里的根箱实验台，按真实生理模型延时摄影一株菜豆的一生：种子吸胀萌发、弯钩顶土、根沿玻璃向地生长，长出单叶与三出复叶，开蝶形花、结荚鼓粒。做萌发条件对照、黄化、根的向地性、金鱼藻放氧、绿叶在光下制造淀粉、套袋看蒸腾、达尔文与温特的胚芽鞘实验，光、水、温度、CO₂ 和肥料都会改变植株的样子。",
+   "points": [
+    "种子萌发的条件",
+    "光合作用",
+    "蒸腾作用",
+    "植物的向性"
+   ],
+   "preview": "plant",
+   "status": "live",
+   "slug": "plant",
+   "fullname": "植物的一生 · PlantLab",
+   "chapters": [
+    "一株菜豆",
+    "种子萌发的条件",
+    "幼苗出土与黄化",
+    "根的生长与向地性",
+    "光照强度与光合作用",
+    "绿叶在光下制造淀粉",
+    "蒸腾作用",
+    "向光性与生长素",
+    "开花与结果",
+    "自由培养"
+   ]
+  },
+  {
+   "id": "geo-lab",
+   "href": "/labs/geo",
+   "name": "GeoSpace",
+   "subtitle": "立体几何实验室",
+   "subject": "数学",
+   "desc": "立体几何三维演示：几何体与欧拉公式、展开与折叠（正方体 11 种展开图）、三视图与斜二测画法、拖动三点截正方体、空间角的几何法与向量法对照、外接球与内切球（11 + 7 种模型）、正四面体专题，附随堂检测。",
+   "points": [
+    "展开图",
+    "截面",
+    "空间角",
+    "空间向量"
+   ],
+   "preview": "geo",
+   "status": "live",
+   "slug": "geo",
+   "fullname": "立体几何 · GeoSpace",
+   "chapters": [
+    "几何体认识",
+    "展开与折叠",
+    "三视图与直观图",
+    "截面",
+    "空间角",
+    "空间向量与坐标",
+    "外接球与内切球",
+    "正四面体",
+    "随堂检测"
+   ]
+  },
+  {
+   "id": "conic-lab",
+   "href": "/labs/conic",
+   "name": "ConicLab",
+   "subtitle": "圆锥曲线实验室",
+   "subject": "数学",
+   "desc": "圆锥曲线演示：平面截对顶圆锥得到圆、椭圆、抛物线、双曲线，Dandelin 双球揭示焦点的来历；三种曲线的定义与方程、离心率连续变化、光学性质、直线与圆锥曲线的判别式。",
+   "points": [
+    "圆锥截线",
+    "焦点与离心率",
+    "光学性质",
+    "判别式"
+   ],
+   "preview": "conic",
+   "status": "live",
+   "slug": "conic",
+   "fullname": "圆锥曲线 · ConicLab",
+   "chapters": [
+    "圆锥的截线",
+    "Dandelin 双球",
+    "椭圆",
+    "双曲线",
+    "抛物线",
+    "离心率",
+    "光学性质",
+    "直线与圆锥曲线"
+   ]
+  },
+  {
+   "id": "func-lab",
+   "href": "/labs/func",
+   "name": "FuncLab",
+   "subtitle": "函数图像实验室",
+   "subject": "数学",
+   "desc": "函数图像演示：参数一拖，图像怎么平移、伸缩、翻折；指数与对数互为反函数；单位圆展开成正弦曲线与五点法；割线逼近切线、导函数与单调性极值；二分法求零点与定积分的黎曼和。",
+   "points": [
+    "图像变换",
+    "三角函数",
+    "导数",
+    "二分法"
+   ],
+   "preview": "func",
+   "status": "live",
+   "slug": "func",
+   "fullname": "函数图像 · FuncLab",
+   "chapters": [
+    "图像变换",
+    "指数与对数",
+    "单位圆与三角函数",
+    "正弦型函数",
+    "导数的几何意义",
+    "单调性与极值",
+    "零点与二分法",
+    "定积分（拓展）"
+   ]
+  },
+  {
+   "id": "construct-lab",
+   "href": "/labs/construct",
+   "name": "ConstructLab",
+   "subtitle": "尺规作图实验室",
+   "subject": "数学",
+   "desc": "尺规作图闯关：只用圆规和直尺完成 12 个经典作图，交点自动生成，按步数评星，可回放最少步数解法；全等判定的翻折叠合演示与 SSA 反例；位似与相似比。",
+   "points": [
+    "尺规作图",
+    "全等判定",
+    "相似",
+    "闯关"
+   ],
+   "preview": "construct",
+   "status": "live",
+   "slug": "construct",
+   "fullname": "尺规作图 · ConstructLab",
+   "chapters": [
+    "尺规闯关",
+    "作图回放",
+    "全等判定",
+    "相似与位似"
+   ]
+  },
+  {
+   "id": "pythagoras-lab",
+   "href": "/labs/pythagoras",
+   "name": "PythagoLab",
+   "subtitle": "勾股定理实验室",
+   "subject": "数学",
+   "desc": "勾股定理：亲手把碎片拼进斜边上的正方形，赵爽弦图与刘徽出入相补，欧几里得证明的剪切变换，转动水槽让 a² 和 b² 的水倒满 c²，勾股数散点图。",
+   "points": [
+    "拼图证明",
+    "出入相补",
+    "欧几里得",
+    "勾股数"
+   ],
+   "preview": "pythagoras",
+   "status": "live",
+   "slug": "pythagoras",
+   "fullname": "勾股定理 · PythagoLab",
+   "chapters": [
+    "拼图挑战",
+    "出入相补",
+    "欧几里得的证明",
+    "更多证法",
+    "倒水",
+    "勾股数"
+   ]
+  }
+ ],
+ "media": {
+  "sky": [
+   "sky_court-BLHJ2ADI.hdr",
+   "sky_harbor-BruSQyW8.hdr",
+   "sky_site-C35ymwQp.hdr",
+   "sky_court-BKHrsJQE.webp",
+   "sky_harbor-LXJSRKim.webp",
+   "sky_site-Co0CA3Qo.webp"
+  ],
+  "earth": [
+   "day-DmukkgAy.webp",
+   "night-7j0D73E-.webp",
+   "clouds-DTkGUc9f.webp",
+   "water-CiZebwCi.webp",
+   "earth_normal_2048-BD2vMuPH.jpg",
+   "earth_specular_2048-6aAFN27D.jpg",
+   "earth_lights_2048-DB_KwUMR.webp",
+   "earth_bm_01-yIuzfkz1.webp",
+   "earth_bm_07-BDPAypd3.webp",
+   "earth_clouds_1024-CKDLEBqO.png"
+  ],
+  "pbr_count": 66
+ }
+}

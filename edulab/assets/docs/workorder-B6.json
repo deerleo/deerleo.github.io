@@ -1,0 +1,203 @@
+{
+ "labs": [
+  {
+   "id": "wonder-lab",
+   "href": "/labs/wonder",
+   "name": "WonderLab",
+   "subtitle": "数学奇观实验室",
+   "subject": "数学",
+   "desc": "趣味数学：随机跳跃长出谢尔宾斯基三角形，科赫雪花的无限周长，随风摇摆的分形树，三维莫比乌斯带上的蚂蚁、涂色与剪开，黄金分割小游戏与无限放大的螺旋，向日葵的黄金角。",
+   "points": [
+    "分形",
+    "莫比乌斯带",
+    "黄金分割",
+    "叶序"
+   ],
+   "preview": "wonder",
+   "status": "live",
+   "slug": "wonder",
+   "fullname": "趣味数学 · WonderLab",
+   "chapters": [
+    "谢尔宾斯基三角形",
+    "科赫雪花",
+    "分形树",
+    "莫比乌斯带",
+    "黄金分割",
+    "向日葵的种子"
+   ]
+  },
+  {
+   "id": "analysis-lab",
+   "href": "/labs/analysis",
+   "name": "AnalytLab",
+   "subtitle": "化学分析实验室",
+   "subject": "化学",
+   "desc": "夜间分析实验室：亲手拧活塞控制滴速、半滴、摇瓶，在背光板前找酚酞终点，自己平视读数、填写记录本，平行测定盐酸浓度；pH 滴定曲线与误差分析；任意试剂滴进任意试管做离子检验，焰色反应透过钴玻璃看钾，最后鉴定一种未知的盐。",
+   "points": [
+    "酸碱中和滴定",
+    "滴定曲线与误差分析",
+    "离子的检验",
+    "焰色反应"
+   ],
+   "preview": "analysis",
+   "status": "live",
+   "slug": "analysis",
+   "fullname": "化学分析实验台 · AnalytLab",
+   "chapters": [
+    "认识滴定管与移液管",
+    "中和滴定：测定盐酸的浓度",
+    "指示剂与滴定曲线",
+    "误差分析",
+    "阳离子的检验",
+    "阴离子的检验",
+    "焰色反应",
+    "鉴定一种未知的盐",
+    "随堂检测"
+   ]
+  },
+  {
+   "id": "mechanism-lab",
+   "href": "/labs/mechanism",
+   "name": "Mechanism",
+   "subtitle": "反应机理实验室",
+   "subject": "化学",
+   "desc": "反应机理三维动画：19 个反应逐步拆解——弯箭头表示电子转移，虚线表示过渡态，¹⁸O 同位素示踪酯化反应，覆盖高中有机、离子反应、氧化还原与大学有机机理。",
+   "points": [
+    "酯化反应",
+    "同位素示踪",
+    "电子转移",
+    "反应机理"
+   ],
+   "preview": "mechanism",
+   "status": "live",
+   "slug": "mechanism",
+   "fullname": "反应机理 · 分子动画",
+   "chapters": [
+    "酯化反应",
+    "酯的碱性水解",
+    "乙烯与溴的加成",
+    "乙烯的加聚反应",
+    "甲烷与氯气的取代",
+    "乙醇的催化氧化",
+    "乙醇的消去反应",
+    "苯的溴代反应",
+    "酸碱中和",
+    "生成氯化银沉淀",
+    "锌置换铜",
+    "钠与水反应",
+    "甲烷燃烧",
+    "氢气在氯气中燃烧",
+    "铝热反应",
+    "SN2 反应",
+    "SN1 反应",
+    "E2 消除",
+    "酯化反应完整机理"
+   ]
+  },
+  {
+   "id": "vsepr-lab",
+   "href": "/labs/vsepr",
+   "name": "MoleCraft",
+   "subtitle": "分子构型实验室",
+   "subject": "化学",
+   "desc": "分子构型三维演示：价层电子对斥力沙盒、孤对电子与键角、杂化轨道、分子极性、扩展八隅体与手性分子，内置近 30 个分子。",
+   "points": [
+    "价层电子对互斥",
+    "杂化轨道",
+    "分子极性",
+    "手性分子"
+   ],
+   "preview": "vsepr",
+   "status": "live",
+   "slug": "vsepr",
+   "fullname": "分子构型 · VSEPR",
+   "chapters": [
+    "价层电子对互斥",
+    "电子对构型与分子构型",
+    "键角比较",
+    "杂化轨道",
+    "分子极性",
+    "扩展八隅体",
+    "手性分子",
+    "分子库"
+   ]
+  },
+  {
+   "id": "orbital-lab",
+   "href": "/labs/orbital",
+   "name": "OrbitalLab",
+   "subtitle": "原子轨道实验室",
+   "subject": "化学",
+   "desc": "原子轨道三维演示：电子云逐点“曝光”、s/p/d/f 轨道形状与相位、径向分布与节面、构造原理逐个填电子、1–36 号元素电子排布与量子数。",
+   "points": [
+    "电子云",
+    "轨道形状",
+    "构造原理",
+    "量子数"
+   ],
+   "preview": "orbital",
+   "status": "live",
+   "slug": "orbital",
+   "fullname": "原子轨道 · 电子云",
+   "chapters": [
+    "电子云",
+    "轨道形状",
+    "径向分布与节面",
+    "能级与构造原理",
+    "电子排布",
+    "量子数",
+    "轨道库"
+   ]
+  },
+  {
+   "id": "reaction-lab",
+   "href": "/labs/reaction",
+   "name": "ReactionLab",
+   "subtitle": "微型反应实验室",
+   "subject": "化学",
+   "desc": "化学反应微观演示：有效碰撞与取向、麦克斯韦–玻尔兹曼分布与活化分子、催化剂表面、浓度与压强、平衡的建立与移动、光照引发的链式爆炸。",
+   "points": [
+    "有效碰撞",
+    "反应速率",
+    "化学平衡",
+    "链式反应"
+   ],
+   "preview": "reaction",
+   "status": "live",
+   "slug": "reaction",
+   "fullname": "化学反应 · 微观世界",
+   "chapters": [
+    "有效碰撞",
+    "温度与活化分子",
+    "催化剂",
+    "浓度与压强",
+    "化学平衡的建立",
+    "平衡移动",
+    "链式反应"
+   ]
+  }
+ ],
+ "media": {
+  "sky": [
+   "sky_court-BLHJ2ADI.hdr",
+   "sky_harbor-BruSQyW8.hdr",
+   "sky_site-C35ymwQp.hdr",
+   "sky_court-BKHrsJQE.webp",
+   "sky_harbor-LXJSRKim.webp",
+   "sky_site-Co0CA3Qo.webp"
+  ],
+  "earth": [
+   "day-DmukkgAy.webp",
+   "night-7j0D73E-.webp",
+   "clouds-DTkGUc9f.webp",
+   "water-CiZebwCi.webp",
+   "earth_normal_2048-BD2vMuPH.jpg",
+   "earth_specular_2048-6aAFN27D.jpg",
+   "earth_lights_2048-DB_KwUMR.webp",
+   "earth_bm_01-yIuzfkz1.webp",
+   "earth_bm_07-BDPAypd3.webp",
+   "earth_clouds_1024-CKDLEBqO.png"
+  ],
+  "pbr_count": 66
+ }
+}
