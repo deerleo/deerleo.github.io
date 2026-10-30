@@ -4,7 +4,8 @@
  *       明场暗场与相差 / 自由观察
  * 视觉工艺（edu-vfx 接入）：
  *       - 后处理管线：暖调工作室背景 + bloom + 暗角 + 颗粒
- *       - 布局：全屏画布铺底 + 左课题卡（章节下拉/上下章/折叠/控件/数据坞）+ 右目镜栏
+ *       - 布局：真·三栏教学布局——左栏课程大纲列表（点击切章）/ 中栏 3D 舞台（相机飞行）/
+ *         右栏知识点详解 + 本章控件 + 数据读数；目镜视野窗浮于中栏右上；专注模式隐藏两栏
  *       - 显微镜建模：CatmullRom 中心线放样 C 形弯臂（自研变宽度截面 sweep：金属根/烤漆身/托架三段
  *         质感 + 握持内凹垫 + 横担托架与枢轴轴座）/ 奶油烤漆 clearcoat + 噪点粗糙度 /
  *         物镜 4 枚独立车削造型（铭牌套筒 + 色环 + 油镜环 + 滚花环 + 前透镜）/
@@ -2319,49 +2320,65 @@ const SECTIONS = [
 
 const DEG_R = TAU / 360;
 
-/* ================= 章节管理（左课题卡：下拉 + 上下章 + 折叠） ================= */
+/* ================= 章节管理（左栏课程大纲列表驱动） ================= */
 
-const lessonEl = document.getElementById('lesson');
-const chapSel = document.getElementById('chapSel');
+const chapNav = document.getElementById('chapNav');
 const chapCount = document.getElementById('chapCount');
-const btnPrev = document.getElementById('chapPrev');
-const btnNext = document.getElementById('chapNext');
-const lessonCard = document.getElementById('lessonCard');
+const detailNo = document.getElementById('detailNo');
+const detailTitle = document.getElementById('detailTitle');
+const lessonEl = document.getElementById('lesson');
+const detailBody = document.getElementById('detailBody');
 let chapterIdx = 0;
+
+/* 16 章竖排按钮：序号 + 标题，点击切章，当前章 .on 高亮 */
+const chapBtns = SECTIONS.map((s, i) => {
+  const b = document.createElement('button');
+  b.type = 'button';
+  b.className = 'chap-btn';
+  b.dataset.idx = String(i);
+  const n = document.createElement('span');
+  n.className = 'chap-n';
+  n.textContent = String(i + 1).padStart(2, '0');
+  const t = document.createElement('span');
+  t.className = 'chap-t';
+  t.textContent = s.title;
+  b.append(n, t);
+  b.addEventListener('click', () => selectChapter(i));
+  chapNav.appendChild(b);
+  return b;
+});
 
 function selectChapter(i) {
   chapterIdx = clamp(i, 0, SECTIONS.length - 1);
   const sec = SECTIONS[chapterIdx];
-  chapSel.value = String(chapterIdx);
+  chapBtns.forEach((b, j) => {
+    const on = j === chapterIdx;
+    b.classList.toggle('on', on);
+    if (on) {
+      b.setAttribute('aria-current', 'true');
+      b.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+    } else {
+      b.removeAttribute('aria-current');
+    }
+  });
   chapCount.textContent = `${String(chapterIdx + 1).padStart(2, '0')}/${SECTIONS.length}`;
-  btnPrev.disabled = chapterIdx === 0;
-  btnNext.disabled = chapterIdx === SECTIONS.length - 1;
+  detailNo.textContent = String(chapterIdx + 1).padStart(2, '0');
+  detailTitle.textContent = sec.title;
   lessonEl.innerHTML = sec.html || '';
-  lessonEl.scrollTop = 0;
   if (activeCleanup) { activeCleanup(); activeCleanup = null; }
   if (sec.id !== 'imaging') optic.letterRot = 0;
   activeSectionId = sec.id;
   sec.enter();
-  document.getElementById('lcData').scrollTop = 0;
+  detailBody.scrollTop = 0;
 }
-chapSel.addEventListener('change', () => selectChapter(parseInt(chapSel.value, 10)));
-btnPrev.addEventListener('click', () => selectChapter(chapterIdx - 1));
-btnNext.addEventListener('click', () => selectChapter(chapterIdx + 1));
-document.getElementById('lcMinBtn').addEventListener('click', () => {
-  const min = lessonCard.classList.toggle('lc-min');
-  document.getElementById('lcMinBtn').textContent = min ? '+' : '—';
-  document.getElementById('lcMinBtn').setAttribute('aria-label', min ? '展开课题卡' : '折叠课题卡');
-});
-/* 窄屏默认收起课题卡（抽屉态） */
-if (window.matchMedia('(max-width: 560px)').matches) {
-  lessonCard.classList.add('lc-min');
-  document.getElementById('lcMinBtn').textContent = '+';
-}
-SECTIONS.forEach((s, i) => {
-  const o = document.createElement('option');
-  o.value = String(i);
-  o.textContent = `${String(i + 1).padStart(2, '0')} · ${s.title}`;
-  chapSel.appendChild(o);
+
+/* 专注模式：隐藏左右两栏，3D 独占（再点恢复） */
+const microShell = document.getElementById('microShell');
+const focusBtn = document.getElementById('focusBtn');
+focusBtn.addEventListener('click', () => {
+  const on = microShell.classList.toggle('focus-mode');
+  focusBtn.textContent = on ? '退出专注' : '专注模式';
+  focusBtn.setAttribute('aria-pressed', String(on));
 });
 
 /* ================= 主循环 ================= */

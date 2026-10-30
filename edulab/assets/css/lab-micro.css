@@ -1,5 +1,5 @@
-/* EduLab · micro 显微镜实验台专用布局（全屏画布 + 悬浮双卡）
-   依赖 edu.css 的主题变量与 lab.css 的通用控件（ctl/quiz/loader）样式。
+/* EduLab · micro 显微镜实验台布局（真·三栏：左课程大纲 / 中 3D 舞台 / 右知识点详解）
+   依赖 edu.css 的主题变量与 lab.css 的通用控件（ctl/quiz/loader/chap 视觉）。
    本文件只管 micro 页面骨架，不动共享布局。 */
 
 html, body { height: 100%; }
@@ -9,30 +9,29 @@ body.lab.micro {
   overflow: hidden;
 }
 
-/* ---------- 全屏画布（页面即实验台） ---------- */
+/* ---------- 三栏骨架（顶栏细条 + 左大纲 / 中舞台 / 右详解） ---------- */
 
-.micro-stage {
-  position: fixed;
-  inset: 0;
-  width: 100%;
+.micro-shell {
+  display: grid;
+  grid-template-columns: 246px minmax(0, 1fr) 352px;
+  grid-template-rows: auto minmax(0, 1fr);
+  grid-template-areas:
+    "top      top   top"
+    "chapters stage detail";
   height: 100dvh;
 }
-.micro-stage canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; outline: none; }
 
-/* ---------- 左上角标题行 ---------- */
+/* ---------- 顶栏细条 ---------- */
 
 .micro-toprow {
-  position: fixed;
-  top: 16px;
-  left: 24px;
-  right: 418px;   /* 避开右目镜栏 */
-  z-index: 30;
+  grid-area: top;
   display: flex;
   align-items: center;
   gap: 12px;
-  pointer-events: none;
+  padding: 9px 16px;
+  border-bottom: 1px solid var(--card-border);
+  background: color-mix(in srgb, var(--card) 60%, transparent);
 }
-.micro-toprow > * { pointer-events: auto; }
 .micro-toprow .edu-logo { flex: none; }
 .micro-toprow .lab-title {
   display: flex;
@@ -40,121 +39,150 @@ body.lab.micro {
   gap: 10px;
   min-width: 0;
   color: var(--text);
-  text-shadow: 0 1px 8px rgba(0, 0, 0, 0.25);
 }
-.micro-toprow .lab-title b { font-size: 16.5px; white-space: nowrap; }
+.micro-toprow .lab-title b { font-size: 16px; white-space: nowrap; }
 .micro-toprow .lab-title span {
   font-size: 12.5px;
-  color: var(--text-dim);
+  color: var(--text-faint);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 .micro-toprow .spacer { flex: 1; }
+.micro-toprow .edu-header-btn { white-space: nowrap; }
 
-/* 深色画布上按钮透出一点底 */
-.micro-toprow .edu-header-btn {
-  background: color-mix(in srgb, var(--card) 62%, transparent);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  white-space: nowrap;
-}
+/* ---------- 左栏：课程大纲 ---------- */
 
-/* ---------- 悬浮卡公共（毛玻璃） ---------- */
-
-.micro-lesson, .micro-eye {
-  position: fixed;
-  z-index: 25;
+.lab-chapters {
+  grid-area: chapters;
   display: flex;
   flex-direction: column;
-  background: color-mix(in srgb, var(--card) 78%, transparent);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
-  border: 1px solid var(--card-border);
-  border-radius: 16px;
-  box-shadow: var(--shadow-hover);
-  overflow: hidden;
+  min-height: 0;
+  background: var(--bg-soft);
+  border-right: 1px solid var(--card-border);
 }
-
-/* ---------- 左：课题卡 ---------- */
-
-.micro-lesson {
-  left: 24px;
-  bottom: 44px;
-  width: 410px;
-  max-height: calc(100% - 274px);
-  min-height: 52px;
-}
-
-.lc-h {
+.chap-head {
   flex: none;
   display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 10px 12px;
-  border-bottom: 1px solid var(--card-border);
+  align-items: baseline;
+  justify-content: space-between;
+  padding: 13px 14px 7px;
 }
-.lc-h .lc-sel { flex: 1; min-width: 0; position: relative; }
-.lc-h select {
-  appearance: none;
-  -webkit-appearance: none;
-  width: 100%;
-  font-family: inherit;
-  font-size: 14px;
+.chap-head .chap-title {
+  font-size: 11.5px;
   font-weight: 600;
-  color: var(--text);
-  background: var(--chip-bg);
-  border: 1px solid var(--card-border);
-  border-radius: 10px;
-  padding: 7px 30px 7px 12px;
-  cursor: pointer;
-  outline: none;
+  letter-spacing: 0.1em;
+  color: var(--text-faint);
 }
-.lc-h select:focus { border-color: var(--accent); }
-.lc-h .lc-sel::after {
-  content: "";
-  position: absolute;
-  right: 12px;
-  top: 50%;
-  width: 8px;
-  height: 8px;
-  border-right: 2px solid var(--text-faint);
-  border-bottom: 2px solid var(--text-faint);
-  transform: translateY(-70%) rotate(45deg);
-  pointer-events: none;
-}
-.lc-h .lc-count {
+.chap-count {
   font-size: 11.5px;
   color: var(--text-faint);
   font-variant-numeric: tabular-nums;
-  white-space: nowrap;
 }
-.lc-nav, .lc-min {
-  appearance: none;
-  flex: none;
-  width: 30px;
-  height: 30px;
-  border-radius: 9px;
-  border: 1px solid var(--card-border);
-  background: var(--chip-bg);
-  color: var(--text-dim);
-  font-size: 15px;
-  line-height: 1;
-  cursor: pointer;
-  transition: all 0.15s;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-}
-.lc-nav:hover, .lc-min:hover { color: var(--accent); border-color: var(--accent); }
-.lc-nav:disabled { opacity: 0.35; cursor: default; }
-.lc-nav:disabled:hover { color: var(--text-dim); border-color: var(--card-border); }
-
-.lc-b {
+.chap-list {
   flex: 1;
   min-height: 0;
   overflow-y: auto;
-  padding: 12px 14px 14px;
+  padding: 2px 8px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+/* 当前章高亮态（基础视觉复用 lab.css 的 .chap-btn，这里只补 .on） */
+.chap-list .chap-btn.on {
+  color: var(--accent);
+  background: var(--accent-soft);
+  border-color: color-mix(in srgb, var(--accent) 35%, transparent);
+  font-weight: 600;
+}
+.chap-list .chap-btn.on .chap-n { color: var(--accent); }
+
+/* ---------- 中栏：3D 舞台 ---------- */
+
+.lab-stage3d {
+  grid-area: stage;
+  position: relative;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  background: var(--bg);
+}
+.micro-stage {
+  position: absolute;
+  inset: 0;
+}
+.micro-stage canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; outline: none; }
+.micro-stage .lab-loader { position: absolute; }
+.micro-stage .quiz-panel { z-index: 28; }   /* 压过目镜浮窗，测验时全覆盖中栏 */
+
+/* 专注模式按钮（中栏左下角） */
+.stage-focus-btn {
+  position: absolute;
+  left: 14px;
+  bottom: 14px;
+  z-index: 24;
+  appearance: none;
+  font-family: inherit;
+  font-size: 12px;
+  line-height: 1;
+  padding: 7px 13px;
+  border-radius: 999px;
+  border: 1px solid var(--card-border);
+  background: color-mix(in srgb, var(--card) 74%, transparent);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  color: var(--text-dim);
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s;
+}
+.stage-focus-btn:hover { color: var(--accent); border-color: var(--accent); }
+
+.micro-foot {
+  position: absolute;
+  right: 16px;
+  bottom: 14px;
+  z-index: 24;
+  font-size: 11.5px;
+  color: var(--text-faint);
+}
+.micro-foot a { color: var(--text-faint); text-decoration: underline; text-underline-offset: 2px; }
+
+/* 专注模式：隐藏左右两栏，3D 独占 */
+.micro-shell.focus-mode { grid-template-columns: 0px minmax(0, 1fr) 0px; }
+.micro-shell.focus-mode .lab-chapters,
+.micro-shell.focus-mode .lab-detail { display: none; }
+
+/* ---------- 右栏：知识点详解 + 控件 + 读数 ---------- */
+
+.lab-detail {
+  grid-area: detail;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  background: var(--bg-soft);
+  border-left: 1px solid var(--card-border);
+}
+.detail-head {
+  flex: none;
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  padding: 14px 16px 11px;
+  border-bottom: 1px solid var(--card-border);
+}
+.detail-no {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--accent);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.02em;
+}
+.detail-title { margin: 0; font-size: 16px; color: var(--text); }
+.detail-body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 14px 16px 16px;
   display: flex;
   flex-direction: column;
   gap: 12px;
@@ -174,7 +202,7 @@ body.lab.micro {
 .lc-controls .ctl-sep { flex: 1 1 100%; width: auto; height: 1px; background: var(--card-border); }
 .lc-controls:empty { display: none; }
 
-/* 数据坞（读数卡收纳进卡内） */
+/* 数据坞（读数卡收纳进栏内） */
 .lc-data .hud-card {
   background: var(--chip-bg);
   backdrop-filter: none;
@@ -186,18 +214,23 @@ body.lab.micro {
 }
 .lc-data .hud-card:empty { display: none; }
 
-/* 折叠态：只留头部条 */
-.micro-lesson.lc-min { max-height: 52px; }
-.micro-lesson.lc-min .lc-b { display: none; }
-.micro-lesson.lc-min .lc-h { border-bottom: none; }
-
-/* ---------- 右：目镜栏 ---------- */
+/* ---------- 中栏浮动：目镜视野窗（读数 + 虚拟准焦旋钮） ---------- */
 
 .micro-eye {
-  right: 18px;
-  top: 18px;
-  bottom: 62px;
-  width: 376px;
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  z-index: 25;
+  width: 272px;
+  display: flex;
+  flex-direction: column;
+  background: color-mix(in srgb, var(--card) 88%, transparent);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid var(--card-border);
+  border-radius: 16px;
+  box-shadow: var(--shadow-hover);
+  overflow: hidden;
 }
 
 .sec-h {
@@ -229,7 +262,7 @@ body.lab.micro {
 .eye-wrap {
   position: relative;
   width: 100%;
-  max-width: 344px;
+  max-width: 236px;
   aspect-ratio: 1;
   border-radius: 50%;
   overflow: hidden;
@@ -312,68 +345,66 @@ body.lab.micro {
 .eye-exit:hover { color: var(--accent); border-color: var(--accent); }
 
 /* 放大目镜态（ESC 或按钮退出） */
-.micro-eye.expanded { width: min(94vw, 720px); }
-.micro-eye.expanded .eye-wrap { max-width: 560px; }
+.micro-eye.expanded { width: min(92%, 560px); }
+.micro-eye.expanded .eye-wrap { max-width: 480px; }
 .micro-eye.expanded .eye-exit { display: inline-flex; }
 
-/* ---------- 页脚角标 ---------- */
+/* ---------- 移动端（≤860px）：纵向堆叠（章节横滚条 / 3D / 知识点在下） ---------- */
 
-.micro-foot {
-  position: fixed;
-  right: 20px;
-  bottom: 16px;
-  z-index: 24;
-  font-size: 11.5px;
-  color: var(--text-faint);
-}
-.micro-foot a { color: var(--text-faint); text-decoration: underline; text-underline-offset: 2px; }
+@media (max-width: 860px) {
+  .micro-shell {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto auto minmax(230px, 42dvh) minmax(0, 1fr);
+    grid-template-areas:
+      "top"
+      "chapters"
+      "stage"
+      "detail";
+  }
 
-/* ---------- 随堂检测面板浮层适配（quiz 样式在 lab.css） ---------- */
-
-/* ---------- 加载遮罩 ---------- */
-.micro-stage .lab-loader { position: absolute; }
-
-/* ---------- 移动端（≤560px）：上下堆叠抽屉 ---------- */
-
-@media (max-width: 560px) {
   .micro-toprow {
-    left: 10px;
-    right: 10px;
-    top: 10px;
+    padding: 8px 10px;
     gap: 8px;
   }
   .micro-toprow .lab-title span { display: none; }
   .micro-toprow .lab-title b { font-size: 14.5px; }
   .micro-toprow a.edu-header-btn[href='../'] { display: none; }
 
-  .micro-eye {
-    top: 52px;
-    right: 10px;
-    bottom: auto;
-    width: 236px;
-    border-radius: 14px;
+  /* 章节列表 → 顶部横向滚动条 */
+  .lab-chapters { border-right: none; border-bottom: 1px solid var(--card-border); }
+  .chap-head { padding: 8px 12px 2px; }
+  .chap-list {
+    flex-direction: row;
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding: 5px 8px 8px;
+    gap: 4px;
+    scrollbar-width: none;
   }
+  .chap-list::-webkit-scrollbar { display: none; }
+  .chap-list .chap-btn { flex: none; padding: 6px 10px; font-size: 12.5px; white-space: nowrap; }
+  .chap-list .chap-btn .chap-n { width: auto; margin-right: 4px; }
+
+  .lab-detail { border-left: none; border-top: 1px solid var(--card-border); }
+  .detail-head { padding: 10px 12px 8px; }
+  .detail-no { font-size: 18px; }
+  .detail-title { font-size: 14.5px; }
+  .detail-body { padding: 10px 12px 14px; }
+  .lc-lesson { font-size: 12.5px; }
+
+  /* 目镜窗收小，仍浮在中栏右上 */
+  .micro-eye { top: 8px; right: 8px; width: 196px; border-radius: 14px; }
   .sec-h { padding: 9px 12px 8px; }
   .sec-h .mag-big { font-size: 18px; }
   .eye-body { padding: 10px 12px 12px; gap: 8px; }
-  .eye-hints { font-size: 10.5px; }
+  .eye-wrap { max-width: 168px; border-width: 4px; }
+  .eye-hints { display: none; }
   .eye-knobs { gap: 14px; }
-  .vknob .knob-dial { width: 46px; height: 46px; }
-  .vknob.small .knob-dial { width: 34px; height: 34px; }
-
-  .micro-lesson {
-    left: 10px;
-    right: 10px;
-    bottom: 10px;
-    width: auto;
-    max-height: 46dvh;
-  }
-  .lc-h { padding: 8px 10px; }
-  .lc-h select { font-size: 13px; }
-  .lc-b { padding: 10px 12px 12px; }
-  .lc-lesson { font-size: 12.5px; }
-
-  .micro-foot { display: none; }
-  .micro-eye.expanded { width: min(94vw, 420px); }
+  .vknob .knob-dial { width: 44px; height: 44px; }
+  .vknob.small .knob-dial { width: 32px; height: 32px; }
+  .micro-eye.expanded { width: min(94%, 420px); }
   .micro-eye.expanded .eye-wrap { max-width: 330px; }
+
+  .stage-focus-btn { left: 8px; bottom: 8px; }
+  .micro-foot { display: none; }
 }
