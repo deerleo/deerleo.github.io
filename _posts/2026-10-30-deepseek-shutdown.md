@@ -7,6 +7,10 @@ series: "哟哟鹿鸣"
 
 ![数据中心机房，机柜指示灯连成红色长廊（图源 freepik 编辑素材）](/assets/images/2026-10-30-deepseek-shutdown/final_01_serverroom.jpg)
 
+<video controls preload="metadata" style="display:block;max-width:100%;width:720px;margin:0 auto;" poster="/assets/videos/2026-10-30-deepseek-shutdown-cover.jpg" src="/assets/videos/2026-10-30-deepseek-shutdown.mp4"></video>
+
+*本文视频版：真人开场收尾加动画拆解，140 秒讲完这份评估。*
+
 老话说，刀越快，越要看握刀的手稳不稳。
 
 10 月 29 日，路透报道了一份来自国内安全机构的评估。做评估的叫方寸 AI（Fangcun AI），北京的一家独立第三方安全组织，核心成员来自清华；被评估的是 DeepSeek。这家机构干了一件国内很少有人干的事：公开点名评测国产头部模型的安全短板。测的还不是答题耍赖那种安全，是更根本的一件事：这个模型带的 agent，肯不肯在自己该停的时候停下来。
