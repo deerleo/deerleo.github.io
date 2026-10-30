@@ -1,0 +1,379 @@
+/* EduLab · micro 显微镜实验台专用布局（全屏画布 + 悬浮双卡）
+   依赖 edu.css 的主题变量与 lab.css 的通用控件（ctl/quiz/loader）样式。
+   本文件只管 micro 页面骨架，不动共享布局。 */
+
+html, body { height: 100%; }
+
+body.lab.micro {
+  display: block;
+  overflow: hidden;
+}
+
+/* ---------- 全屏画布（页面即实验台） ---------- */
+
+.micro-stage {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100dvh;
+}
+.micro-stage canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; outline: none; }
+
+/* ---------- 左上角标题行 ---------- */
+
+.micro-toprow {
+  position: fixed;
+  top: 16px;
+  left: 24px;
+  right: 418px;   /* 避开右目镜栏 */
+  z-index: 30;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  pointer-events: none;
+}
+.micro-toprow > * { pointer-events: auto; }
+.micro-toprow .edu-logo { flex: none; }
+.micro-toprow .lab-title {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  min-width: 0;
+  color: var(--text);
+  text-shadow: 0 1px 8px rgba(0, 0, 0, 0.25);
+}
+.micro-toprow .lab-title b { font-size: 16.5px; white-space: nowrap; }
+.micro-toprow .lab-title span {
+  font-size: 12.5px;
+  color: var(--text-dim);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.micro-toprow .spacer { flex: 1; }
+
+/* 深色画布上按钮透出一点底 */
+.micro-toprow .edu-header-btn {
+  background: color-mix(in srgb, var(--card) 62%, transparent);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  white-space: nowrap;
+}
+
+/* ---------- 悬浮卡公共（毛玻璃） ---------- */
+
+.micro-lesson, .micro-eye {
+  position: fixed;
+  z-index: 25;
+  display: flex;
+  flex-direction: column;
+  background: color-mix(in srgb, var(--card) 78%, transparent);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid var(--card-border);
+  border-radius: 16px;
+  box-shadow: var(--shadow-hover);
+  overflow: hidden;
+}
+
+/* ---------- 左：课题卡 ---------- */
+
+.micro-lesson {
+  left: 24px;
+  bottom: 44px;
+  width: 410px;
+  max-height: calc(100% - 274px);
+  min-height: 52px;
+}
+
+.lc-h {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--card-border);
+}
+.lc-h .lc-sel { flex: 1; min-width: 0; position: relative; }
+.lc-h select {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 100%;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+  background: var(--chip-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 10px;
+  padding: 7px 30px 7px 12px;
+  cursor: pointer;
+  outline: none;
+}
+.lc-h select:focus { border-color: var(--accent); }
+.lc-h .lc-sel::after {
+  content: "";
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  width: 8px;
+  height: 8px;
+  border-right: 2px solid var(--text-faint);
+  border-bottom: 2px solid var(--text-faint);
+  transform: translateY(-70%) rotate(45deg);
+  pointer-events: none;
+}
+.lc-h .lc-count {
+  font-size: 11.5px;
+  color: var(--text-faint);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.lc-nav, .lc-min {
+  appearance: none;
+  flex: none;
+  width: 30px;
+  height: 30px;
+  border-radius: 9px;
+  border: 1px solid var(--card-border);
+  background: var(--chip-bg);
+  color: var(--text-dim);
+  font-size: 15px;
+  line-height: 1;
+  cursor: pointer;
+  transition: all 0.15s;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.lc-nav:hover, .lc-min:hover { color: var(--accent); border-color: var(--accent); }
+.lc-nav:disabled { opacity: 0.35; cursor: default; }
+.lc-nav:disabled:hover { color: var(--text-dim); border-color: var(--card-border); }
+
+.lc-b {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 12px 14px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* 知识点正文 */
+.lc-lesson { font-size: 13.5px; line-height: 1.7; color: var(--text-dim); }
+.lc-lesson p { margin: 0 0 8px; }
+.lc-lesson p:last-child { margin-bottom: 0; }
+.lc-lesson b { color: var(--text); }
+.lc-lesson .hl { color: var(--accent); font-weight: 600; }
+
+/* 本章控件（复用 lab.css 的 ctl 组件，纵向排列） */
+.lc-controls { display: flex; flex-flow: row wrap; gap: 8px 10px; align-items: center; }
+.lc-controls .ctl, .lc-controls .ctl-toggle { flex: 1 1 100%; }
+.lc-controls .ctl input[type="range"] { flex: 1; width: auto; }
+.lc-controls .ctl-sep { flex: 1 1 100%; width: auto; height: 1px; background: var(--card-border); }
+.lc-controls:empty { display: none; }
+
+/* 数据坞（读数卡收纳进卡内） */
+.lc-data .hud-card {
+  background: var(--chip-bg);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  border: 1px solid var(--card-border);
+  box-shadow: none;
+  min-width: 0;
+  width: 100%;
+}
+.lc-data .hud-card:empty { display: none; }
+
+/* 折叠态：只留头部条 */
+.micro-lesson.lc-min { max-height: 52px; }
+.micro-lesson.lc-min .lc-b { display: none; }
+.micro-lesson.lc-min .lc-h { border-bottom: none; }
+
+/* ---------- 右：目镜栏 ---------- */
+
+.micro-eye {
+  right: 18px;
+  top: 18px;
+  bottom: 62px;
+  width: 376px;
+}
+
+.sec-h {
+  flex: none;
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  padding: 12px 16px 10px;
+  border-bottom: 1px solid var(--card-border);
+}
+.sec-h .sec-t { font-size: 14.5px; font-weight: 600; color: var(--text); flex: 1; }
+.sec-h .mag-big {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--accent);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.02em;
+}
+
+.eye-body {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 16px 16px;
+}
+.eye-wrap {
+  position: relative;
+  width: 100%;
+  max-width: 344px;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 6px solid #14171c;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.45), inset 0 0 30px rgba(0, 0, 0, 0.6);
+  background: #101216;
+  cursor: grab;
+  touch-action: none;
+  flex: none;
+}
+.eye-wrap:active { cursor: grabbing; }
+.eye-wrap canvas { width: 100%; height: 100%; display: block; }
+
+.eye-hints {
+  flex: none;
+  font-size: 12px;
+  color: var(--text-faint);
+  text-align: center;
+  line-height: 1.6;
+}
+
+/* 虚拟准焦旋钮 */
+.eye-knobs {
+  flex: none;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 22px;
+  padding-top: 2px;
+}
+.vknob {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  user-select: none;
+}
+.vknob .knob-dial {
+  width: 58px;
+  height: 58px;
+  border-radius: 50%;
+  position: relative;
+  cursor: ns-resize;
+  touch-action: none;
+  background:
+    repeating-conic-gradient(rgba(255, 255, 255, 0.10) 0deg 5deg, rgba(0, 0, 0, 0.16) 5deg 10deg),
+    radial-gradient(circle at 34% 30%, #4a5058, #23272d 68%, #171a1f);
+  border: 2px solid rgba(255, 255, 255, 0.10);
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.45), inset 0 1px 2px rgba(255, 255, 255, 0.14);
+  transition: box-shadow 0.15s;
+}
+.vknob .knob-dial:hover { box-shadow: 0 3px 14px rgba(0, 0, 0, 0.55), inset 0 1px 2px rgba(255, 255, 255, 0.2); }
+.vknob.small .knob-dial { width: 40px; height: 40px; }
+.vknob .knob-dial i {
+  position: absolute;
+  left: 50%;
+  top: 4px;
+  width: 3px;
+  height: 12px;
+  border-radius: 2px;
+  background: var(--accent);
+  transform: translateX(-50%);
+  box-shadow: 0 0 5px color-mix(in srgb, var(--accent) 60%, transparent);
+}
+.vknob small { font-size: 11px; color: var(--text-faint); letter-spacing: 0.06em; }
+.eye-exit {
+  appearance: none;
+  align-self: flex-end;
+  margin-left: auto;
+  font-family: inherit;
+  font-size: 11.5px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--card-border);
+  background: var(--chip-bg);
+  color: var(--text-faint);
+  cursor: pointer;
+  display: none;
+}
+.eye-exit:hover { color: var(--accent); border-color: var(--accent); }
+
+/* 放大目镜态（ESC 或按钮退出） */
+.micro-eye.expanded { width: min(94vw, 720px); }
+.micro-eye.expanded .eye-wrap { max-width: 560px; }
+.micro-eye.expanded .eye-exit { display: inline-flex; }
+
+/* ---------- 页脚角标 ---------- */
+
+.micro-foot {
+  position: fixed;
+  right: 20px;
+  bottom: 16px;
+  z-index: 24;
+  font-size: 11.5px;
+  color: var(--text-faint);
+}
+.micro-foot a { color: var(--text-faint); text-decoration: underline; text-underline-offset: 2px; }
+
+/* ---------- 随堂检测面板浮层适配（quiz 样式在 lab.css） ---------- */
+
+/* ---------- 加载遮罩 ---------- */
+.micro-stage .lab-loader { position: absolute; }
+
+/* ---------- 移动端（≤560px）：上下堆叠抽屉 ---------- */
+
+@media (max-width: 560px) {
+  .micro-toprow {
+    left: 10px;
+    right: 10px;
+    top: 10px;
+    gap: 8px;
+  }
+  .micro-toprow .lab-title span { display: none; }
+  .micro-toprow .lab-title b { font-size: 14.5px; }
+  .micro-toprow a.edu-header-btn[href='../'] { display: none; }
+
+  .micro-eye {
+    top: 52px;
+    right: 10px;
+    bottom: auto;
+    width: 236px;
+    border-radius: 14px;
+  }
+  .sec-h { padding: 9px 12px 8px; }
+  .sec-h .mag-big { font-size: 18px; }
+  .eye-body { padding: 10px 12px 12px; gap: 8px; }
+  .eye-hints { font-size: 10.5px; }
+  .eye-knobs { gap: 14px; }
+  .vknob .knob-dial { width: 46px; height: 46px; }
+  .vknob.small .knob-dial { width: 34px; height: 34px; }
+
+  .micro-lesson {
+    left: 10px;
+    right: 10px;
+    bottom: 10px;
+    width: auto;
+    max-height: 46dvh;
+  }
+  .lc-h { padding: 8px 10px; }
+  .lc-h select { font-size: 13px; }
+  .lc-b { padding: 10px 12px 12px; }
+  .lc-lesson { font-size: 12.5px; }
+
+  .micro-foot { display: none; }
+  .micro-eye.expanded { width: min(94vw, 420px); }
+  .micro-eye.expanded .eye-wrap { max-width: 330px; }
+}
