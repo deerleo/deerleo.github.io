@@ -1,0 +1,18 @@
+---
+# 白皮书布局：打印优先的浅色文档（工单 WHITEPAPER-20261030）
+# 独立文档气质，不复用 CV 侧边栏；品牌墨绿主色见 assets/css/whitepaper.css。
+# 冻结主题（light）写法对齐 _layouts/print.html（工单 THEME-20261027 第五节）：
+# 页面 front matter 须设 theme_freeze: light，head.html 即不加载主题系统与切换脚本。
+---
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="light" data-theme-frozen="1">
+{% include head.html %}
+<script>
+/* 冻结主题（light）：白皮书为打印优先文档，固定浅色，不读写 localStorage */
+(function(){var d=document.documentElement;d.dataset.themePref='light';d.style.colorScheme='light';var m=document.querySelector('meta[name="theme-color"]');if(m){m.setAttribute('content','#f1f2ec')}})();
+</script>
+<body class="wp-body">
+  {{ content }}
+</body>
+
+</html>

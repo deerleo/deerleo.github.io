@@ -1,0 +1,97 @@
+# ============================================================
+# whitepaper.yml — 个人白皮书（/whitepaper/）专属叙事与精选
+#
+# 单一事实源约定（工单 WHITEPAPER-20261030）：
+#   - 本文件只存「镜像自站点现有资料的白皮书叙事」：定位段 / 方法论 / FAQ /
+#     媒体报道精选。源头分别是 index.html 的 hero-summary / #approach / #faq /
+#     #media——源头更新后这里同步镜像，不在页面里硬编码。
+#   - 其余结构化数据（履历 / 作品 / 课程 / 技能 / 证书 / 文章 / 联系方式）
+#     不在本文件复制，布局里直接读 site.data.data / site.data.milu / site.posts。
+# ============================================================
+
+meta:
+  name: Leo Lu
+  brand: 迷鹿 MiLu
+  tagline: AI · Product · Making
+  label: 个人白皮书
+  motto: 好用，才算做完。
+  site: milulab.com
+
+# 定位段：镜像 index.html hero-summary 核心句（2026-10-30 版）
+positioning: >-
+  Leo Lu（迷鹿 MiLu），北交所上市公司青矩技术研究院 AI 总监、人工智能系统架构师，摩豆智能创始人。
+  北京科技大学计算机专业毕业，深耕互联网与 AI 产品研发十余年，持工信部高级 AI 创新应用工程师、
+  阿里达摩院高级人工智能训练师等多项认证。主导总台首个 AI 超仿真主播「AI 王冠」、黄帝文化元宇宙、
+  学习强国声誉系统与辟谣助手、AI 智能审计与投标平台等产品研发，创立企业级 AI Agent 平台
+  MaudelClaw，获央视《朝闻天下》、央广网等媒体报道，同时面向高校与企业开设四门 AI 实战课。
+  做事一条原则：好用，才算做完。
+
+# 内容支柱：直接复用 milu.yml 的 about.cards（不在本文件复制，布局读 site.data.milu.about.cards）
+
+# 做事方法论：镜像 index.html #approach 三条（2026-10-30 版）
+methodology:
+  - title: 先找到真问题
+    text: 把需求放回使用场景，厘清谁在什么时候需要什么结果。
+  - title: 用原型快速验证
+    text: 先做出能跑的版本，让流程、体验和技术选择接受实际检验。
+  - title: 把可靠性做进去
+    text: 重视数据来源、过程留痕、结果复核和交付后的持续改进。
+
+# 常见问题：复用 index.html #faq 的 5 条 Q&A（2026-10-30 版）
+faq:
+  - q: Leo Lu 是谁？
+    a: >-
+      Leo Lu（迷鹿 MiLu）是一名 AI 产品人与系统架构师：北交所上市公司青矩技术研究院 AI 总监、
+      摩豆智能创始人，北京科技大学计算机专业毕业，持工信部高级 AI 创新应用工程师、阿里达摩院
+      高级人工智能训练师等认证。十余年主导上线 30 余款产品——总台首个 AI 超仿真主播「AI 王冠」、
+      黄帝文化元宇宙、学习强国声誉系统与辟谣助手都出自我手，央视《朝闻天下》、央广网做过报道；
+      历任联逸科技创始人、清博智能创新院技术主管、墨子AI 技术负责人。
+  - q: 迷鹿 MiLu 是什么？
+    a: >-
+      迷鹿 MiLu 是 Leo Lu 的个人品牌与工作室名，主打 AI · Product · Making，
+      覆盖 AI 产品实践、教程与开源项目，milulab.com 是它的主阵地。
+  - q: MaudelClaw 是什么？
+    a: >-
+      MaudelClaw 是 Leo Lu 2025 年创立的摩豆智能推出的国产企业级 AI Agent 平台，
+      提供声誉维护、审计标书、开源情报等企业级方案。
+  - q: 怎么联系 Leo Lu？
+    a: 发邮件到 dearsuley@gmail.com，或在 GitHub 上找 @deerleo。
+  - q: Leo Lu 的做事方式是什么？
+    a: >-
+      先找到真问题，用原型快速验证，再把可靠性做进去：数据来源、过程留痕、结果复核、持续改进。
+      好用，才算做完。
+
+# 媒体报道精选 8 条：从 index.html #media 区精选（时间倒序，2026-10-30 版）
+media_highlights:
+  - source: 湖北科创供应链 · 模态空间（北京）
+    date: 2026-10-27
+    title: 模态空间（北京）人工智能专场路演成功举办
+    url: https://mp.weixin.qq.com/s/NiWbb7H0z6j-rcWbGr7TRg
+  - source: 中国信息化周报
+    date: 2026-03-23
+    title: 专访摩豆智能 CEO 卢章：AI 智能体「养虾」热潮下的理性祛魅
+    url: https://www.ccidgroup.com/dfiles/wbsk/zhongguoxinxihuazhoubao2026niandi09qi.pdf
+  - source: 齐鲁晚报 · 齐鲁壹点
+    date: 2025
+    title: 摩豆智能发布 MaudelClaw：从「技术可行」到「商业落地」
+    url: https://m.qlwb.com.cn/detail/27330504.html
+  - source: 墨子艺海（湖南卫视 & 芒果TV《2024 蓝月亮中秋之夜》合作复盘）
+    date: 2024-09-19
+    title: 《2024 蓝月亮中秋之夜》：AI 助力湖南卫视 & 芒果TV
+    url: https://mp.weixin.qq.com/s/kTf1j2GoqDOAtfgUNNgwmQ
+  - source: CCTV-13《朝闻天下》
+    date: 2024-04-29
+    title: 媒体 AI 新应用：AI 大模型分析海量信息，预判传播趋势
+    url: https://app.cctv.com/special/m/livevod/index.html?guid=ab8750c96e084f208399d79a43038d16&vtype=2&vsetId=C10598
+  - source: 央广网浙江频道
+    date: 2023-08-03
+    title: 浙江缙云黄帝元宇宙 APP 上线了！
+    url: https://zj.cnr.cn/gedilianbo/ls/20230803/t20230803_526360863.shtml
+  - source: 央视新闻
+    date: 2022-04-19
+    title: 2022 年联合国中文日暨总台第二届海外影像节数字虚拟形象「仓宝」正式发布
+    url: https://ysxw.cctv.cn/article.html?item_id=5445765608541005934
+  - source: 人民日报客户端
+    date: 2022-03
+    title: 科技赋能想象出猛招：「AI 王冠」带来新型主持人猜想
+    url: https://www.peopleapp.com/rmharticle/30026752439
