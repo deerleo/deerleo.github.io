@@ -22,9 +22,6 @@ const labs = JSON.parse(readFileSync(join(docs, 'wedulab_labs.json'), 'utf8'));
 const fullnames = JSON.parse(readFileSync(join(docs, 'wedulab_fullnames.json'), 'utf8'));
 const sections = JSON.parse(readFileSync(join(docs, 'wedulab_sections.json'), 'utf8'));
 
-// 本次（P1）已实现的实验；其余进入「建设中」占位页
-const IMPLEMENTED = new Set(['earth', 'tide', 'water']);
-
 const cards = labs
   .filter((l) => l.status === 'live')
   .map((l) => {
@@ -38,7 +35,8 @@ const cards = labs
       points: l.points,
       fullname: fullnames[slug] || l.name || l.subtitle,
       chapters: sections[slug] ? sections[slug].length : 0,
-      implemented: IMPLEMENTED.has(slug),
+      // 2026-10-30 P2 全量实装后所有 live 实验均已上线，全部置 true（labs 过滤 status==='live' 已保证都是真实验）
+      implemented: true,
     };
   });
 
