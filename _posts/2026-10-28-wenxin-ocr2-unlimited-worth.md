@@ -8,6 +8,10 @@ podcast: /assets/audio/2026-10-28-wenxin-ocr2-unlimited-worth.mp3
 
 ![办公桌上的成堆文件。几百页的合同、财报、卷宗，是每家公司的日常。](/assets/images/2026-10-28-ernie-ocr2/documents-pile.jpg)
 
+<video controls preload="metadata" style="display:block;max-width:100%;width:720px;margin:0 auto;" poster="/assets/videos/2026-10-28-wenxin-ocr2-unlimited-worth-cover.jpg" src="/assets/videos/2026-10-28-wenxin-ocr2-unlimited-worth.mp4"></video>
+
+*本文视频版：真人开场收尾加动画拆解，170 秒讲清「无限」二字的成色。*
+
 10 月 27 日，百度开源了文心 Unlimited OCR 2。宣传语很唬人：任意页数文档解析，实测一口气读完 3600 页《哈利·波特》全集，5000 页四大名著不断片。上一代还是"连续数十页"，这一代直接"无限"。
 
 「无限」这两个字，值得拆开看。拆完的结论先放这：**架构上的突破是真的，跑分上的领先要打折，单页精度压根不是它的活。**
