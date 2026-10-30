@@ -103,7 +103,10 @@ export function createApp(opts = {}) {
     const dt = Math.min(clock.getDelta(), 0.1);
     if (!paused) for (const cb of frameCbs) cb(dt, clock.elapsedTime);
     controls.update();
-    renderer.render(scene, camera);
+    /* 渲染钩子：attachVFX() 等后处理管线接管输出时设置 app._renderHook；
+     * 未设置时保持默认直渲（向后兼容，其余实验零影响）。 */
+    if (app._renderHook) app._renderHook(dt, clock.elapsedTime);
+    else renderer.render(scene, camera);
   });
 
   function applyTheme(t) {

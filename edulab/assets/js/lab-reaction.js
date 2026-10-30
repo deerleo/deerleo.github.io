@@ -1048,10 +1048,10 @@ CHG.push(st5.g);
 st5.box = makeGlassBox(st5.g, { w: 3.0, h: 1.7, d: 2.0 });
 const S5 = { parts: R.parts, min: st5.box.min, max: st5.box.max, wall: 0, s0: 0.62 };
 
-function reset5() {
+function reset5(kind) {
   R.parts.length = 0;
   for (let i = 0; i < 60; i++) {
-    const p = makeParticle('A', 0, 0, 0);
+    const p = makeParticle(kind || 'A', 0, 0, 0);
     randPosIn(S5, p.p);
   }
   setBoxSpeeds(R.parts, S5.s0);
@@ -1617,6 +1617,7 @@ const SECTIONS = [
     title: '浓度与压强',
     html: `<p>恒容下增大<b>浓度</b>（滑杆调分子数 N），或用<b>活塞压缩</b>增大压强，本质相同：<span class="hl">单位体积内分子数增多 → 碰撞频率升高 → 有效碰撞频率升高 → 反应速率加快</span>。</p>
 <p>HUD 实时统计两个读数：<b>壁面碰撞频率</b>（分子撞器壁的次数/秒）和<b>有效碰撞频率</b>（A、B 分子间相对动能达标的碰撞，黄色闪光），它们就是速率的微观标志。</p>
+<p>关键辨析：<span class="hl">温度不变时，活化分子的<b>百分数</b>没有变——变的是单位体积内活化分子的<b>数目</b></span>。浓度（压强）只靠"人多"提速，升温靠"个体更强"提速，两条路不同。</p>
 <p>试试：N 不变时拖动活塞压缩——两个频率读数同步上升；再增大 N 对比。</p>`,
     enter() {
       hideAll();
@@ -1654,7 +1655,8 @@ const SECTIONS = [
     title: '化学平衡的建立',
     html: `<p><b>可逆反应</b> A ⇌ B：正反应 A→B 速率 v正 = k正·c(A)，逆反应 B→A 速率 v逆 = k逆·c(B)。初始全为 A，此时 v正 最大、v逆 为 0。</p>
 <p>随着 A 消耗、B 生成，v正 减小、v逆 增大，直到 <span class="hl">v正 = v逆</span>——达到<b>化学平衡</b>：各组分浓度不再随时间变化，但微观上双向转化仍在进行（动态平衡）。</p>
-<p>平衡时 [B]/[A] = k正/k逆 = K。上图画 c(A)/c(B) 曲线，下图 v正/v逆 两线<b>汇聚到相等</b>；顶部同时读出 K 实测与 K 理论。拖动 k正/k逆 滑杆，曲线会趋向新的平衡点。</p>`,
+<p>平衡时 [B]/[A] = k正/k逆 = K。上图画 c(A)/c(B) 曲线，下图 v正/v逆 两线<b>汇聚到相等</b>；顶部同时读出 K 实测与 K 理论。拖动 k正/k逆 滑杆，曲线会趋向新的平衡点。</p>
+<p><span class="hl">无论从纯 A 还是从纯 B 出发，只要温度不变（k 正、k 逆 不变），最终都到达同一个平衡</span>——点「从全 B 开始」亲手验证。</p>`,
     enter() {
       hideAll();
       cur = 4;
@@ -1683,11 +1685,22 @@ const SECTIONS = [
       });
       ctl.toggle({ label: '暂停', value: false, onChange: (v) => app.setPaused(v) });
       ctl.toggle({ label: '显示速率曲线', value: true, onChange: (v) => { st5.showV = v; } });
+      const clear5 = () => {
+        [tChart.cfg.sA, tChart.cfg.sB, tChart.cfg.vF, tChart.cfg.vR].forEach((s) => { s.pts.length = 0; });
+      };
       ctl.button({
         label: '↺ 重置（全 A）',
         onClick: () => {
-          reset5();
-          [tChart.cfg.sA, tChart.cfg.sB, tChart.cfg.vF, tChart.cfg.vR].forEach((s) => { s.pts.length = 0; });
+          reset5('A');
+          clear5();
+        },
+      });
+      ctl.button({
+        label: '↺ 从全 B 开始',
+        onClick: () => {
+          reset5('B');
+          clear5();
+          toast('从纯 B 出发：v逆 最大、v正 为 0，最终到达同一个平衡（K 只与 k 正/k 逆 有关）。', 'ok');
         },
       });
       setLegend([
@@ -1698,6 +1711,7 @@ const SECTIONS = [
   {
     title: '平衡移动',
     html: `<p>模型：<b>2NO₂ ⇌ N₂O₄</b>（正反应放热 ΔH&lt;0）。NO₂ 是<b>红棕色</b>气体，N₂O₄ 无色——盒内颜色深浅直接反映 [NO₂] 的高低。</p>
+<p><b>勒夏特列原理</b>：改变条件，平衡会向<span class="hl">减弱这种改变</span>的方向移动。</p>
 <p>三个扰动：① <b>增加 NO₂</b>：Q&lt;K，平衡右移；② <b>升温</b>：放热反应 K 随 T 减小，平衡左移，红棕色<b>加深</b>；③ <b>压缩体积</b>：NO₂ 浓度瞬间增大（颜色<b>先变深</b>），随后平衡向气体分子数减小的方向（右）移动，NO₂ 减少、颜色<b>再变浅</b>——但仍比压缩前深。</p>
 <p>右图记录每次扰动后的浓度-时间曲线，竖虚线为扰动时刻。也可直接拖动活塞与温度滑杆连续扰动。</p>`,
     enter() {
@@ -1766,6 +1780,10 @@ const SECTIONS = [
       hud7.el.style.display = '';
       ctl.clear();
       ctl.button({ label: '⚡ 光照引爆', onClick: light7 });
+      ctl.button({
+        label: '💡 电火花点燃',
+        onClick: () => { toast('电火花同样把 Cl₂ 拆成自由基——本质都是提供断键能量。', 'ok'); light7(); },
+      });
       ctl.slider({
         label: 'Cl₂ 分子数', min: 3, max: 12, step: 1, value: 8,
         fmt: (v) => Math.round(v) + ' 个',

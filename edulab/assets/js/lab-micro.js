@@ -2,40 +2,149 @@
  * 章节：认识显微镜 / 规范操作 / 成像特点 / 低倍换高倍 / 判断污点位置 / 植物细胞 / 动物细胞 /
  *       草履虫 / 叶片与叶绿体 / 质壁分离与复原 / 有丝分裂 / 血涂片与油镜 / 测微尺 / 血球计数板 /
  *       明场暗场与相差 / 自由观察
- * 场景：3D 写实显微镜（转换器/准焦螺旋/遮光器可操作）+ 目镜视野模拟画布
- *       （倒像、景深离焦、分辨率随倍率、明场/暗场/相差、油镜），12 种玻片程序化绘制。
+ * 视觉工艺（edu-vfx 接入）：
+ *       - 后处理管线：暖调工作室背景 + bloom + 暗角 + 颗粒
+ *       - 场景叙事：程序化木纹实验桌 + 试剂瓶阵列（LatheGeometry + 标签贴图）+
+ *         载玻片盒 / 擦镜纸盒，显微镜为绝对主角
+ *       - 金属分层：烤漆 clearcoat / 哑光镜臂 / 橡胶旋钮 / 镀铬面 / 黄铜压片 / transmission 镜片
+ *       - 目镜视野：样品离屏画布 + 明场/暗场(反相)/相差(光晕) 合成 + 非线性离焦 + 油镜增亮
+ * 章节结构 / 交互逻辑 / 随堂检测与旧版一致。
  */
 import {
   THREE, TAU, clamp,
-  createApp, cameraTweenTick, makeLoader,
-  createSections, createControlsPanel, makeHUD, makeTextSprite, setSpriteText,
+  createApp, makeLoader,
+  createSections, createControlsPanel, makeHUD, makeTextSprite,
 } from './edu-core.js';
+import {
+  PAL, attachVFX, makeStudioEnvironment,
+  matSheen, matCoat, matStd, matGlass,
+  makeWoodTexture, makeLabelTexture,
+} from './edu-vfx.js';
 
-/* ---------------- 基础 ---------------- */
+/* ---------------- 基础与工艺接入 ---------------- */
 
 const stage = document.getElementById('stage');
 const loader = makeLoader(stage, '正在组装显微镜…');
 const app = createApp({
   container: stage,
   fov: 42, near: 0.1, far: 100,
-  cameraPos: [2.2, 2.6, 7.2], target: [0.4, 1.5, 0],
+  cameraPos: [6.2, 7.0, 12.8], target: [0.75, 1.0, -0.25],
   minDistance: 0.9, maxDistance: 30,
+  keepBackground: true,
 });
-const { scene, camera, controls } = app;
+const { scene } = app;
+const vfx = attachVFX(app, 'illus', { bg: 'studio-warm' });
+scene.environment = makeStudioEnvironment(app.renderer);
 
-scene.add(new THREE.AmbientLight(0xe8eef5, 1.05));
-const key = new THREE.DirectionalLight(0xfff2e0, 1.9);
-key.position.set(4, 7, 5);
-scene.add(key);
-const fill = new THREE.DirectionalLight(0xbcd4ff, 0.5);
-fill.position.set(-5, 4, -4);
-scene.add(fill);
+/* 灯光：暖主光 + 冷补光 + 低环境 + 台下光源点光 */
+const keyLight = new THREE.DirectionalLight(0xffdcae, 3.2);
+keyLight.position.set(4.5, 7.5, 6);
+scene.add(keyLight);
+const frontLight = new THREE.DirectionalLight(0xe8f0ff, 1.0);
+frontLight.position.set(1.5, 3, 9);
+scene.add(frontLight);
+const fillLight = new THREE.DirectionalLight(0x9ab6cc, 0.6);
+fillLight.position.set(-5.5, 4, -4);
+scene.add(fillLight);
+const ambLight = new THREE.AmbientLight(0x9a948a, 0.5);
+scene.add(ambLight);
+const lampPoint = new THREE.PointLight(0xffd9a0, 2.2, 5, 1.6);
+lampPoint.position.set(0, 0.55, 0.6);
+scene.add(lampPoint);
 
-const M = (color, rough = 0.6, metal = 0.15, extra = {}) =>
-  new THREE.MeshStandardMaterial({ color, roughness: rough, metalness: metal, ...extra });
 const mesh = (geo, mat) => new THREE.Mesh(geo, mat);
-function label(text, color = '#ffffff', scale = 0.0042, bg = 'rgba(10,16,24,0.72)') {
+function label(text, color = '#ffffff', scale = 0.0042, bg = 'rgba(8,12,18,0.72)') {
   return makeTextSprite(text, { fontSize: 32, color, scale, bg });
+}
+
+/* ---------------- 材质分层（金属工艺） ---------------- */
+
+const M_ENAMEL = matCoat(0x3a414c, { roughness: 0.34, metalness: 0.12, clearcoat: 0.8, clearcoatRoughness: 0.16 });
+const M_ARM = matStd(0x3f4652, { roughness: 0.52, metalness: 0.1 });           // 哑光漆镜臂
+const M_DARK = matStd(0x1f242b, { roughness: 0.42, metalness: 0.42 });         // 深色饰件
+const M_RUBBER = matStd(0x1d2126, { roughness: 0.88, metalness: 0.04 });       // 橡胶握纹
+const M_CHROME = matStd(0xbcc4cc, { roughness: 0.16, metalness: 1 });          // 镀铬面
+const M_BRASS = matStd(PAL.brass, { roughness: 0.3, metalness: 1 });           // 黄铜压片
+const M_GLASS = matGlass(0xe6f0f2, { transmission: 0.92, thickness: 0.35, roughness: 0.05 }); // 镜片
+
+/* ================= 木纹实验桌 + 桌面道具 ================= */
+
+{
+  const woodTop = makeWoodTexture({ base: '#7c5533', dark: '#58391f', light: '#96703f', streaks: 110, bands: 8, seed: 23 });
+  woodTop.repeat.set(2.2, 1.6);
+  const tableMat = matStd(0xffffff, { roughness: 0.62, metalness: 0.04 });
+  tableMat.map = woodTop;
+  const tableMatSide = matStd(0x4e341e, { roughness: 0.7 });
+  /* 桌面主体：顶面 y=0 */
+  const top = mesh(new THREE.BoxGeometry(9.6, 0.16, 6.6), tableMat);
+  top.position.set(0, -0.08, 0);
+  /* 前缘封边 */
+  const edge = mesh(new THREE.BoxGeometry(9.6, 0.5, 0.16), tableMatSide);
+  edge.position.set(0, -0.42, 3.3);
+  const edge2 = mesh(new THREE.BoxGeometry(9.6, 0.5, 0.16), tableMatSide);
+  edge2.position.set(0, -0.42, -3.3);
+  scene.add(top, edge, edge2);
+}
+/* 试剂瓶（LatheGeometry 瓶身 + 液体 + 瓶盖 + 化学式标签） */
+function makeBottle(x, z, liquidColor, labelText, heightScale = 1) {
+  const g = new THREE.Group();
+  g.position.set(x, 0, z);
+  /* 瓶身旋转轮廓：底 → 鼓腹 → 收肩 → 颈口 */
+  const prof = [
+    [0.0, 0], [0.26, 0], [0.3, 0.03], [0.36, 0.18], [0.4, 0.42], [0.36, 0.62], [0.2, 0.78], [0.14, 0.88], [0.14, 1.0], [0.17, 1.04],
+  ].map(([r, y]) => new THREE.Vector2(r, y));
+  const glass = matGlass(0xdfeae8, { transmission: 0.85, thickness: 0.25, roughness: 0.08, opacity: 0.42 });
+  const body = mesh(new THREE.LatheGeometry(prof, 26), glass);
+  g.add(body);
+  /* 内液（饱和色 + 自发光，玻璃罩着也读得出色相） */
+  const liquid = mesh(new THREE.CylinderGeometry(0.3, 0.3, 0.5, 20), matStd(liquidColor, { roughness: 0.3, emissive: liquidColor, emissiveIntensity: 0.38 }));
+  liquid.position.y = 0.4;
+  g.add(liquid);
+  /* 瓶盖 */
+  const cap = mesh(new THREE.CylinderGeometry(0.16, 0.16, 0.12, 16), M_RUBBER);
+  cap.position.y = 1.1;
+  g.add(cap);
+  /* 标签（纸面贴在瓶身前侧） */
+  const lbTex = makeLabelTexture(labelText, { w: 220, h: 140 });
+  const lbMat = matStd(0xffffff, { roughness: 0.8 });
+  lbMat.map = lbTex;
+  lbMat.transparent = true;
+  const lb = mesh(new THREE.PlaneGeometry(0.42, 0.28), lbMat);
+  lb.position.set(0, 0.45, 0.38);
+  lb.rotation.x = -0.06;
+  g.add(lb);
+  g.scale.setScalar(heightScale);
+  return g;
+}
+scene.add(makeBottle(-3.3, -1.7, 0xd8c890, ['蔗糖溶液', '0.3 g/mL']));
+scene.add(makeBottle(-2.5, -2.0, 0xb08850, ['碘液', ' Lugol']));
+scene.add(makeBottle(-1.7, -1.75, 0x4a6ac0, ['亚甲基蓝', '染色剂'], 0.85));
+scene.add(makeBottle(-2.9, -1.0, 0xd8b868, ['香柏油', 'n=1.515'], 0.7));
+scene.add(makeBottle(-1.9, -1.05, 0xd8e0d8, ['清水', '蒸馏水'], 0.75));
+/* 载玻片盒 */
+{
+  const boxMat = matStd(0x8a4a34, { roughness: 0.55 });
+  const box = mesh(new THREE.BoxGeometry(1.7, 0.36, 1.05), boxMat);
+  box.position.set(2.6, 0.18, -2.2);
+  const lidLine = mesh(new THREE.BoxGeometry(1.74, 0.02, 1.08), M_DARK);
+  lidLine.position.set(2.6, 0.36, -2.2);
+  const lbMat = matStd(0xffffff, { roughness: 0.8 });
+  lbMat.map = makeLabelTexture(['载玻片'], { w: 180, h: 100 });
+  const lb = mesh(new THREE.PlaneGeometry(0.5, 0.28), lbMat);
+  lb.position.set(2.6, 0.2, -1.66);
+  lb.rotation.x = -0.5;
+  scene.add(box, lidLine, lb);
+}
+/* 擦镜纸盒 */
+{
+  const boxMat = matStd(0xe4ddd0, { roughness: 0.7 });
+  const box = mesh(new THREE.BoxGeometry(0.95, 0.5, 0.7), boxMat);
+  box.position.set(-4.1, 0.25, -0.6);
+  box.rotation.y = 0.3;
+  const paper = mesh(new THREE.BoxGeometry(0.6, 0.08, 0.42), matStd(0xf4efe4, { roughness: 0.9 }));
+  paper.position.set(-4.1, 0.52, -0.6);
+  paper.rotation.y = 0.3;
+  scene.add(box, paper);
 }
 
 /* ================= 3D 显微镜 ================= */
@@ -44,106 +153,144 @@ const gScope = new THREE.Group();
 scene.add(gScope);
 const parts = {};
 {
-  const BODY = M(0x535d6b, 0.45, 0.3);
-  const DARK = M(0x39414d, 0.5, 0.3);
-  // 底座
-  const base = mesh(new THREE.BoxGeometry(2.6, 0.3, 2.1), BODY);
+  /* 底座 + 防滑脚垫 */
+  const base = mesh(new THREE.BoxGeometry(2.6, 0.3, 2.1), M_ENAMEL);
   base.position.y = 0.15;
-  const footPad = mesh(new THREE.BoxGeometry(2.8, 0.12, 2.3), DARK);
+  const footPad = mesh(new THREE.BoxGeometry(2.8, 0.12, 2.3), M_RUBBER);
   footPad.position.y = 0.06;
-  gScope.add(base, footPad);
-  // 灯源（底座前孔）
-  const lampHousing = mesh(new THREE.CylinderGeometry(0.28, 0.34, 0.18, 20), DARK);
+  /* 底座侧面镀铬饰线 */
+  const trim = mesh(new THREE.BoxGeometry(2.62, 0.03, 2.12), M_CHROME);
+  trim.position.y = 0.28;
+  gScope.add(base, footPad, trim);
+  /* 透射光源（底座前孔）：暖色发光面 */
+  const lampHousing = mesh(new THREE.CylinderGeometry(0.28, 0.34, 0.18, 22), M_DARK);
   lampHousing.position.set(0, 0.28, 0.55);
-  const lamp = mesh(new THREE.CircleGeometry(0.22, 20), new THREE.MeshBasicMaterial({ color: 0xffe9b0 }));
+  const lampRing = mesh(new THREE.TorusGeometry(0.24, 0.02, 8, 22), M_BRASS);
+  lampRing.rotation.x = TAU / 4;
+  lampRing.position.set(0, 0.375, 0.55);
+  const lamp = mesh(new THREE.CircleGeometry(0.22, 22), new THREE.MeshBasicMaterial({ color: 0xffe9b0 }));
   lamp.rotation.x = -TAU / 4;
   lamp.position.set(0, 0.38, 0.55);
-  gScope.add(lampHousing, lamp);
+  gScope.add(lampHousing, lampRing, lamp);
   parts.lamp = lamp;
-  // 镜臂
-  const arm = mesh(new THREE.BoxGeometry(0.62, 2.6, 0.6), BODY);
+  /* 镜臂：哑光漆立柱 + 顶部斜撑连到镜筒 */
+  const arm = mesh(new THREE.BoxGeometry(0.62, 2.6, 0.6), M_ARM);
   arm.position.set(-0.85, 1.55, 0);
-  gScope.add(arm);
-  // 载物台
-  const table = mesh(new THREE.BoxGeometry(2.0, 0.1, 1.8), BODY);
+  const armNeck = mesh(new THREE.BoxGeometry(0.5, 0.34, 0.5), M_ARM);
+  armNeck.position.set(-0.55, 2.9, 0);
+  armNeck.rotation.z = 0.5;
+  gScope.add(arm, armNeck);
+  /* 载物台总成（调焦时整体微升降） */
+  const stageAsm = new THREE.Group();
+  parts.stageAsm = stageAsm;
+  parts.stageBaseY = 0;
+  const table = mesh(new THREE.BoxGeometry(2.0, 0.1, 1.8), M_ENAMEL);
   table.position.set(0.25, 1.28, 0);
-  const aperture = mesh(new THREE.CylinderGeometry(0.14, 0.14, 0.12, 16), new THREE.MeshBasicMaterial({ color: 0x10141a }));
+  const aperture = mesh(new THREE.CylinderGeometry(0.14, 0.14, 0.12, 18), new THREE.MeshBasicMaterial({ color: 0x0c0e12 }));
   aperture.position.set(0.25, 1.28, 0);
-  gScope.add(table, aperture);
-  // 压片夹 ×2
+  stageAsm.add(table, aperture);
+  /* 黄铜压片夹 ×2 */
   for (const dx of [-0.55, 0.55]) {
-    const clip = mesh(new THREE.BoxGeometry(0.1, 0.05, 0.4), DARK);
-    clip.position.set(0.25 + dx, 1.36, -0.5);
-    gScope.add(clip);
+    const clipArm = mesh(new THREE.BoxGeometry(0.09, 0.04, 0.4), M_BRASS);
+    clipArm.position.set(0.25 + dx, 1.35, -0.52);
+    const clipTip = mesh(new THREE.SphereGeometry(0.045, 10, 8), M_BRASS);
+    clipTip.position.set(0.25 + dx, 1.36, -0.32);
+    stageAsm.add(clipArm, clipTip);
   }
-  // 玻片
-  const slide = mesh(new THREE.BoxGeometry(1.1, 0.03, 0.62), M(0xdfe8f0, 0.2, 0, { transparent: true, opacity: 0.75 }));
+  /* 玻片：透射玻璃 */
+  const slide = mesh(new THREE.BoxGeometry(1.1, 0.03, 0.62), matGlass(0xe8f2f4, { transmission: 0.9, thickness: 0.1, roughness: 0.03, opacity: 0.7 }));
   slide.position.set(0.25, 1.35, 0);
-  gScope.add(slide);
+  stageAsm.add(slide);
   parts.slide = slide;
-  // 聚光器 + 遮光器（载物台下方）
-  const condenser = mesh(new THREE.CylinderGeometry(0.18, 0.24, 0.28, 16), DARK);
+  /* 聚光器 + 遮光器（带黄铜调节环） */
+  const condenser = mesh(new THREE.CylinderGeometry(0.18, 0.24, 0.28, 18), M_DARK);
   condenser.position.set(0.25, 1.02, 0);
-  const iris = mesh(new THREE.CylinderGeometry(0.24, 0.24, 0.05, 20), M(0x8a94a3, 0.4, 0.4));
+  const iris = mesh(new THREE.CylinderGeometry(0.24, 0.24, 0.05, 22), M_CHROME);
   iris.position.set(0.25, 0.9, 0);
-  gScope.add(condenser, iris);
+  stageAsm.add(condenser, iris);
   parts.iris = iris;
-  // 镜筒 + 目镜
-  const tube = mesh(new THREE.CylinderGeometry(0.16, 0.16, 1.0, 16), BODY);
+  gScope.add(stageAsm);
+  /* 镜筒 + 目镜（镜筒高光烤漆 + 目镜橡胶护眼杯 + 玻璃目镜片） */
+  const tube = mesh(new THREE.CylinderGeometry(0.16, 0.16, 1.0, 20), M_ENAMEL);
   tube.position.set(0.25, 2.6, 0);
   tube.rotation.x = 0.35;
-  const eyeTop = mesh(new THREE.CylinderGeometry(0.13, 0.18, 0.35, 16), DARK);
-  eyeTop.position.set(0.25, 3.06, 0.18);
+  const eyeTop = mesh(new THREE.CylinderGeometry(0.13, 0.18, 0.3, 18), M_RUBBER);
+  eyeTop.position.set(0.25, 3.05, 0.17);
   eyeTop.rotation.x = 0.35;
-  const eyeRim = mesh(new THREE.TorusGeometry(0.14, 0.025, 8, 20), M(0x2c3442, 0.4));
-  eyeRim.position.set(0.25, 3.24, 0.24);
+  const eyeLens = mesh(new THREE.CylinderGeometry(0.105, 0.105, 0.03, 18), M_GLASS);
+  eyeLens.position.set(0.25, 3.19, 0.22);
+  eyeLens.rotation.x = 0.35;
+  const eyeRim = mesh(new THREE.TorusGeometry(0.13, 0.02, 8, 20), M_CHROME);
+  eyeRim.position.set(0.25, 3.2, 0.23);
   eyeRim.rotation.x = TAU / 4 + 0.35;
-  gScope.add(tube, eyeTop, eyeRim);
-  // 转换器 + 物镜 ×4
+  gScope.add(tube, eyeTop, eyeLens, eyeRim);
+  /* 转换器 + 物镜 ×4（物镜带滚花环 + 前透镜玻璃） */
   const nose = new THREE.Group();
   nose.position.set(0.25, 2.2, -0.02);
-  const noseDisc = mesh(new THREE.CylinderGeometry(0.3, 0.3, 0.12, 20), BODY);
-  nose.add(noseDisc);
+  const noseDisc = mesh(new THREE.CylinderGeometry(0.3, 0.3, 0.12, 22), M_ENAMEL);
+  const noseTrim = mesh(new THREE.TorusGeometry(0.3, 0.015, 8, 22), M_CHROME);
+  noseTrim.rotation.x = TAU / 4;
+  noseTrim.position.y = -0.06;
+  nose.add(noseDisc, noseTrim);
   parts.nose = nose;
   gScope.add(nose);
   parts.objectives = [];
   const OBJ_SPEC = [
-    { mag: 4, len: 0.42, r: 0.09, color: 0xb44a3e },
-    { mag: 10, len: 0.5, r: 0.08, color: 0xb4a23e },
-    { mag: 40, len: 0.56, r: 0.065, color: 0x3e8ab4 },
-    { mag: 100, len: 0.6, r: 0.055, color: 0x2c3442 },
+    { mag: 4, len: 0.42, r: 0.09, color: 0xc85a4e },
+    { mag: 10, len: 0.5, r: 0.08, color: 0xc4b24e },
+    { mag: 40, len: 0.56, r: 0.065, color: 0x4e9ac4 },
+    { mag: 100, len: 0.6, r: 0.055, color: 0x39404a },
   ];
   OBJ_SPEC.forEach((s, i) => {
     const a = (i / 4) * TAU;
     const holder = new THREE.Group();
     holder.rotation.y = a;
-    const barrel = mesh(new THREE.CylinderGeometry(s.r, s.r * 1.5, s.len, 12), M(s.color, 0.4, 0.2));
+    const barrel = mesh(new THREE.CylinderGeometry(s.r, s.r * 1.4, s.len, 14), matCoat(s.color, { roughness: 0.3, metalness: 0.05, clearcoat: 0.5, clearcoatRoughness: 0.2 }));
     barrel.position.y = -s.len / 2;
-    const tip = mesh(new THREE.CylinderGeometry(s.r * 0.55, s.r * 0.55, 0.08, 10), M(0x1d232c, 0.3, 0.3));
-    tip.position.y = -s.len;
-    holder.add(barrel, tip);
+    holder.add(barrel);
+    /* 黑色环带 ×2（色环标识 + 滚花暗示） */
+    for (const dy of [-0.14, -0.28]) {
+      const ring = mesh(new THREE.CylinderGeometry(s.r * 1.32 + 0.012, s.r * 1.32 + 0.012, 0.03, 14), M_DARK);
+      ring.position.y = -s.len / 2 + dy * (s.len / 0.5);
+      holder.add(ring);
+    }
+    /* 前透镜 */
+    const tipGlass = mesh(new THREE.SphereGeometry(s.r * 0.5, 12, 8, 0, TAU, 0, Math.PI / 2), M_GLASS);
+    tipGlass.rotation.x = Math.PI;
+    tipGlass.position.y = -s.len + 0.005;
+    holder.add(tipGlass);
     holder.position.set(Math.sin(a) * 0.2, -0.1, Math.cos(a) * 0.2);
     nose.add(holder);
     parts.objectives.push(holder);
   });
-  // 粗/细准焦螺旋（镜臂侧面）
-  const knobCoarse = mesh(new THREE.CylinderGeometry(0.22, 0.22, 0.16, 20), M(0xd9dde5, 0.35, 0.3));
-  knobCoarse.rotation.z = TAU / 4;
+  /* 粗/细准焦螺旋：橡胶握纹 + 镀铬端面 */
+  const knobCoarse = new THREE.Group();
   knobCoarse.position.set(-1.2, 2.2, 0.12);
-  const knobFine = mesh(new THREE.CylinderGeometry(0.13, 0.13, 0.14, 20), M(0xb9c2cf, 0.35, 0.4));
-  knobFine.rotation.z = TAU / 4;
+  const kcGrip = mesh(new THREE.CylinderGeometry(0.22, 0.22, 0.15, 22), M_RUBBER);
+  kcGrip.rotation.z = TAU / 4;
+  const kcFace = mesh(new THREE.CylinderGeometry(0.1, 0.1, 0.17, 14), M_CHROME);
+  kcFace.rotation.z = TAU / 4;
+  knobCoarse.add(kcGrip, kcFace);
+  const knobFine = new THREE.Group();
   knobFine.position.set(-1.2, 1.8, 0.14);
+  const kfGrip = mesh(new THREE.CylinderGeometry(0.13, 0.13, 0.13, 18), M_RUBBER);
+  kfGrip.rotation.z = TAU / 4;
+  const kfFace = mesh(new THREE.CylinderGeometry(0.06, 0.06, 0.15, 12), M_CHROME);
+  kfFace.rotation.z = TAU / 4;
+  knobFine.add(kfGrip, kfFace);
   gScope.add(knobCoarse, knobFine);
   parts.knobCoarse = knobCoarse;
   parts.knobFine = knobFine;
-  // 遮光器拨杆 + 反光镜
-  const mirror = mesh(new THREE.CircleGeometry(0.2, 20), M(0xd6e4f0, 0.1, 0.9));
+  /* 反光镜：镀铬镜面 + 底座枢轴 */
+  const mirror = mesh(new THREE.CircleGeometry(0.2, 22), matStd(0xd6e4f0, { roughness: 0.08, metalness: 0.95 }));
   mirror.rotation.x = -TAU / 4 + 0.4;
   mirror.position.set(0.25, 0.42, 0.45);
-  gScope.add(mirror);
+  const mirrorHub = mesh(new THREE.CylinderGeometry(0.03, 0.03, 0.1, 10), M_BRASS);
+  mirrorHub.position.set(0.25, 0.38, 0.5);
+  gScope.add(mirror, mirrorHub);
   parts.mirror = mirror;
 
-  // 部件标注
+  /* 部件标注 */
   const partLabels = [
     ['目镜', [0.25, 3.5, -0.19]], ['镜筒', [0.25, 2.9, 0.2]], ['转换器', [0.25, 2.45, 0.35]],
     ['物镜', [0.7, 1.75, 0.2]], ['载物台', [1.15, 1.5, 0.3]], ['压片夹', [-0.3, 1.5, -0.5]],
@@ -151,36 +298,43 @@ const parts = {};
     ['细准焦螺旋', [-1.45, 1.78, 0.14]], ['镜臂', [-1.1, 2.0, -0.5]], ['镜座', [0, 0.1, -1.2]],
   ];
   parts.labels = partLabels.map(([t, p]) => {
-    const l = label(t, '#dfe9f5', 0.0032);
+    const l = label(t, '#e2ebf5', 0.0032);
     l.position.set(...p);
     l.visible = false;
     gScope.add(l);
     return l;
   });
-  // 移动载物台升降（调焦视觉）
-  parts.stageY = 1.28;
 }
 
-/* ================= 目镜视野画布（模拟成像） ================= */
+/* ================= 目镜视野画布（离屏样品 + 合成管线） ================= */
 
 const EYE_MAG = 10;
 const OBJ_MAGS = [4, 10, 40, 100];
-const S = 512;                                   // 画布尺寸
+const S = 512;
 const eCv = document.createElement('canvas');
 eCv.width = eCv.height = S;
 const eCtx = eCv.getContext('2d');
 const eTex = new THREE.CanvasTexture(eCv);
 eTex.colorSpace = THREE.SRGBColorSpace;
-const screen = mesh(new THREE.PlaneGeometry(4.4, 4.4), new THREE.MeshBasicMaterial({ map: eTex }));
-screen.position.set(4.6, 2.5, 0);
+
+/* 样品离屏画布：先按照明模式画样品，再统一合成（暗场反相 / 相差光晕） */
+const sCv = document.createElement('canvas');
+sCv.width = sCv.height = S;
+const sCtx = sCv.getContext('2d');
+
+const screen = mesh(new THREE.PlaneGeometry(3.9, 3.9), new THREE.MeshBasicMaterial({ map: eTex, color: 0xdddbd2 }));
+screen.position.set(5.1, 2.45, 0);
 screen.rotation.y = -0.16;
 scene.add(screen);
-const screenFrame = mesh(new THREE.BoxGeometry(4.7, 4.7, 0.07), M(0x2c3442, 0.6));
-screenFrame.position.set(4.6, 2.5, -0.05);
+const screenFrame = mesh(new THREE.BoxGeometry(4.15, 4.15, 0.07), M_DARK);
+screenFrame.position.set(5.1, 2.45, -0.05);
 screenFrame.rotation.y = -0.16;
-scene.add(screenFrame);
-const screenLbl = label('目镜视野（模拟成像）', '#cfdcee', 0.004);
-screenLbl.position.set(4.6, 0.1, 0);
+const frameTrim = mesh(new THREE.BoxGeometry(4.02, 4.02, 0.075), M_BRASS);
+frameTrim.position.set(5.1, 2.45, -0.048);
+frameTrim.rotation.y = -0.16;
+scene.add(screenFrame, frameTrim);
+const screenLbl = label('目镜视野（模拟成像）', '#d5dfee', 0.004);
+screenLbl.position.set(5.1, 0.25, 0);
 scene.add(screenLbl);
 
 /* 显微镜状态 */
@@ -189,40 +343,62 @@ const optic = {
   pan: { x: 0, y: 0 }, labels: false, running: true,
   paraAngle: 0, plasm: 0, plasmT: 0, phaseHi: -1, countSq: -1,
   speck: null, speckMoves: { pan: false, rotate: false, obj: false },
-  lampOn: true, stageH: 0,     // 调焦量（负=物镜离片远）
+  lampOn: true, stageH: 0,
 };
 
 function totalMag() { return EYE_MAG * OBJ_MAGS[optic.obj]; }
 function idealFocus() { return 58 + optic.obj * 7; }
+/* 非线性离焦：焦距差越远糊得越快（1.6 次幂） */
 function blurPx() {
   const d = Math.abs(optic.focus - idealFocus());
-  return d * 0.055 * (0.4 + OBJ_MAGS[optic.obj] / 100);
+  return 0.9 * Math.pow(d / 10, 1.6) * (0.55 + OBJ_MAGS[optic.obj] / 120);
 }
 
-/* 通用细胞绘制工具 */
+/* 红细胞精灵（双凹圆盘：径向渐变一次烘焙，逐帧 drawImage） */
+const rbcSprite = (() => {
+  const c = document.createElement('canvas');
+  c.width = c.height = 48;
+  const x = c.getContext('2d');
+  const g = x.createRadialGradient(24, 24, 4, 24, 24, 22);
+  g.addColorStop(0, 'rgba(238,168,162,0.62)');   // 中央浅染（凹）
+  g.addColorStop(0.45, 'rgba(208,96,90,0.72)');
+  g.addColorStop(0.85, 'rgba(172,58,54,0.85)');  // 边缘厚环
+  g.addColorStop(1, 'rgba(150,46,44,0.5)');
+  x.fillStyle = g;
+  x.beginPath();
+  x.arc(24, 24, 22, 0, TAU);
+  x.fill();
+  return c;
+})();
+
+/* 通用绘制工具（画布坐标 0..S，中心 S/2） */
 function drawCellWall(ctx, x, y, w, h, opts = {}) {
-  const lw = 2.5;
-  ctx.fillStyle = opts.wall || 'rgba(120, 150, 110, 0.28)';
-  ctx.strokeStyle = opts.line || 'rgba(60, 90, 55, 0.8)';
+  const lw = opts.lw || 2.6;
+  ctx.fillStyle = opts.wall || 'rgba(122, 152, 112, 0.3)';
+  ctx.strokeStyle = opts.line || 'rgba(58, 88, 52, 0.85)';
   ctx.lineWidth = lw;
   ctx.beginPath();
   ctx.rect(x, y, w, h);
   ctx.fill(); ctx.stroke();
-  ctx.fillStyle = opts.cyto || 'rgba(190, 214, 190, 0.5)';
+  /* 内壁第二道细线（双线细胞壁质感） */
+  ctx.strokeStyle = opts.line || 'rgba(58, 88, 52, 0.4)';
+  ctx.lineWidth = 1;
+  ctx.strokeRect(x + lw + 1.5, y + lw + 1.5, w - (lw + 1.5) * 2, h - (lw + 1.5) * 2);
+  ctx.fillStyle = opts.cyto || 'rgba(190, 214, 190, 0.42)';
   ctx.fillRect(x + lw, y + lw, w - lw * 2, h - lw * 2);
 }
 function drawNucleus(ctx, cx, cy, r, opts = {}) {
-  ctx.fillStyle = opts.nuc || 'rgba(96, 74, 150, 0.75)';
+  ctx.fillStyle = opts.nuc || 'rgba(96, 74, 150, 0.78)';
   ctx.beginPath();
   ctx.arc(cx, cy, r, 0, TAU);
   ctx.fill();
-  ctx.fillStyle = 'rgba(60, 44, 100, 0.9)';
+  ctx.fillStyle = 'rgba(58, 42, 98, 0.92)';
   ctx.beginPath();
   ctx.arc(cx + r * 0.3, cy - r * 0.2, r * 0.38, 0, TAU);
   ctx.fill();
 }
 
-/* 各玻片绘制器（画布坐标 0..S，中心 S/2） */
+/* 各玻片绘制器 */
 const SLIDES = {
   letter: {
     name: '字母 e 切片',
@@ -230,8 +406,8 @@ const SLIDES = {
       ctx.save();
       ctx.translate(S / 2, S / 2);
       ctx.rotate(o.letterRot || 0);
-      ctx.fillStyle = 'rgba(40, 46, 58, 0.85)';
-      ctx.font = '900 200px Georgia, serif';
+      ctx.fillStyle = 'rgba(38, 44, 56, 0.88)';
+      ctx.font = '900 210px Georgia, serif';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
       ctx.fillText('e', o.pan.x * 1.2, o.pan.y * 1.2);
@@ -241,13 +417,36 @@ const SLIDES = {
   onion: {
     name: '洋葱鳞片叶表皮',
     draw(ctx, o) {
-      const cw = 105, ch = 68;
+      const cw = 108, ch = 70;
+      const mag = OBJ_MAGS[o.obj];
       for (let gy = 0; gy < Math.ceil(S / ch) + 1; gy++) {
-        const off = (gy % 2) * cw * 0.4;
+        const off = (gy % 2) * cw * 0.42;
         for (let gx = -1; gx < Math.ceil(S / cw) + 1; gx++) {
           const x = gx * cw + off, y = gy * ch;
           drawCellWall(ctx, x, y, cw - 4, ch - 4);
-          if (OBJ_MAGS[o.obj] >= 10) drawNucleus(ctx, x + cw / 2 - 14, y + ch / 2 - 10, 13);
+          const cx = x + (cw - 4) / 2, cy = y + (ch - 4) / 2;
+          /* 中央大液泡：浅色软边圆角区 */
+          const vg = ctx.createRadialGradient(cx, cy, 6, cx, cy, (cw - 12) / 2);
+          vg.addColorStop(0, 'rgba(224, 238, 228, 0.34)');
+          vg.addColorStop(0.82, 'rgba(214, 234, 222, 0.26)');
+          vg.addColorStop(1, 'rgba(214, 234, 222, 0)');
+          ctx.fillStyle = vg;
+          ctx.beginPath();
+          ctx.roundRect(x + 9, y + 8, cw - 22, ch - 16, 10);
+          ctx.fill();
+          /* 细胞核：被液泡挤到侧壁 */
+          if (mag >= 10) drawNucleus(ctx, x + 16, y + ch / 2 - 6, 12);
+          /* 40× 可见液泡纹理线 */
+          if (mag >= 40) {
+            ctx.strokeStyle = 'rgba(120, 160, 150, 0.22)';
+            ctx.lineWidth = 1;
+            for (let k = 0; k < 3; k++) {
+              ctx.beginPath();
+              ctx.moveTo(x + 14, y + 18 + k * 14);
+              ctx.bezierCurveTo(x + cw * 0.4, y + 12 + k * 16, x + cw * 0.6, y + 24 + k * 14, x + cw - 14, y + 18 + k * 15);
+              ctx.stroke();
+            }
+          }
         }
       }
     },
@@ -260,12 +459,21 @@ const SLIDES = {
         ctx.save();
         ctx.translate(x, y);
         ctx.rotate(a);
-        ctx.fillStyle = 'rgba(214, 200, 224, 0.6)';
-        ctx.strokeStyle = 'rgba(120, 96, 140, 0.85)';
-        ctx.lineWidth = 2.4;
+        const g = ctx.createRadialGradient(-r * 0.2, -r * 0.2, r * 0.2, 0, 0, r);
+        g.addColorStop(0, 'rgba(222, 210, 228, 0.66)');
+        g.addColorStop(1, 'rgba(196, 182, 208, 0.52)');
+        ctx.fillStyle = g;
+        ctx.strokeStyle = 'rgba(118, 94, 138, 0.9)';
+        ctx.lineWidth = 2.6;
         ctx.beginPath();
         ctx.ellipse(0, 0, r, r * 0.76, 0, 0, TAU);
         ctx.fill(); ctx.stroke();
+        /* 膜缘高光弧 */
+        ctx.strokeStyle = 'rgba(240, 232, 246, 0.5)';
+        ctx.lineWidth = 1.4;
+        ctx.beginPath();
+        ctx.ellipse(0, 0, r * 0.94, r * 0.68, 0, Math.PI * 1.1, Math.PI * 1.7);
+        ctx.stroke();
         drawNucleus(ctx, 0, 0, r * 0.3);
         ctx.restore();
       });
@@ -281,29 +489,59 @@ const SLIDES = {
         ctx.save();
         ctx.translate(bx + Math.cos(ang) * wob, by + Math.sin(ang * 1.3) * wob);
         ctx.rotate(ang);
-        // 沟口
-        ctx.fillStyle = 'rgba(188, 204, 214, 0.55)';
-        ctx.strokeStyle = 'rgba(70, 84, 96, 0.9)';
-        ctx.lineWidth = 2.2;
+        /* 纤毛：周缘短线按相位波动（摆动动画帧） */
+        if (OBJ_MAGS[o.obj] >= 10) {
+          ctx.strokeStyle = 'rgba(64, 80, 92, 0.6)';
+          ctx.lineWidth = 1.2;
+          const NC = 30;
+          for (let k = 0; k < NC; k++) {
+            const a = (k / NC) * TAU;
+            const wave = Math.sin(o.t * 9 + a * 3.2 + ph) * 0.5;
+            const x0 = Math.cos(a) * 51, y0 = Math.sin(a) * 30;
+            const x1 = x0 + Math.cos(a + wave) * 8, y1 = y0 + Math.sin(a + wave) * 6;
+            ctx.beginPath();
+            ctx.moveTo(x0, y0);
+            ctx.quadraticCurveTo((x0 + x1) / 2 + Math.cos(a) * 3, (y0 + y1) / 2 + Math.sin(a) * 3, x1, y1);
+            ctx.stroke();
+          }
+        }
+        /* 体表 */
+        ctx.fillStyle = 'rgba(190, 206, 216, 0.55)';
+        ctx.strokeStyle = 'rgba(66, 82, 94, 0.92)';
+        ctx.lineWidth = 2.4;
         ctx.beginPath();
         ctx.ellipse(0, 0, 52, 32, 0, 0, TAU);
         ctx.fill(); ctx.stroke();
+        /* 口沟：一侧斜凹槽 */
+        ctx.strokeStyle = 'rgba(52, 66, 78, 0.85)';
+        ctx.lineWidth = 4;
+        ctx.beginPath();
+        ctx.moveTo(-14, -20);
+        ctx.quadraticCurveTo(8, -6, 16, 16);
+        ctx.stroke();
         if (OBJ_MAGS[o.obj] >= 10) {
-          ctx.strokeStyle = 'rgba(60, 74, 86, 0.7)';
-          ctx.lineWidth = 1.1;
-          for (let k = 0; k < 26; k++) {
-            const a = (k / 26) * TAU;
-            ctx.beginPath();
-            ctx.moveTo(Math.cos(a) * 50, Math.sin(a) * 30);
-            ctx.lineTo(Math.cos(a) * 56, Math.sin(a) * 34);
-            ctx.stroke();
-          }
-          drawNucleus(ctx, 8, -4, 9);
-          ctx.fillStyle = 'rgba(214, 160, 90, 0.5)';
+          drawNucleus(ctx, 10, -6, 9);
+          /* 食物泡 */
+          ctx.fillStyle = 'rgba(210, 158, 88, 0.55)';
           for (let k = 0; k < 8; k++) {
             ctx.beginPath();
-            ctx.arc(-30 + (k % 4) * 14, k < 4 ? -10 : 12, 3.5, 0, TAU);
+            ctx.arc(-30 + (k % 4) * 15, k < 4 ? -10 : 12, 3.6, 0, TAU);
             ctx.fill();
+          }
+          /* 伸缩泡（星状） */
+          if (OBJ_MAGS[o.obj] >= 40) {
+            ctx.strokeStyle = 'rgba(90, 110, 130, 0.6)';
+            ctx.lineWidth = 1.2;
+            ctx.beginPath();
+            ctx.arc(-38, 4, 6, 0, TAU);
+            ctx.stroke();
+            for (let k = 0; k < 5; k++) {
+              const a = (k / 5) * TAU + 0.4;
+              ctx.beginPath();
+              ctx.moveTo(-38 + Math.cos(a) * 6, 4 + Math.sin(a) * 6);
+              ctx.lineTo(-38 + Math.cos(a) * 12, 4 + Math.sin(a) * 12);
+              ctx.stroke();
+            }
           }
         }
         ctx.restore();
@@ -313,34 +551,44 @@ const SLIDES = {
   leaf: {
     name: '菠菜叶下表皮',
     draw(ctx, o) {
-      // 保卫细胞气孔器 + 叶肉细胞叶绿体
       const cw = 130, ch = 84;
       for (let gy = 0; gy < Math.ceil(S / ch) + 1; gy++) {
         for (let gx = -1; gx < Math.ceil(S / cw) + 1; gx++) {
-          drawCellWall(ctx, gx * cw + (gy % 2) * 40, gy * ch, cw - 5, ch - 5, { wall: 'rgba(96, 140, 88, 0.3)' });
+          drawCellWall(ctx, gx * cw + (gy % 2) * 40, gy * ch, cw - 5, ch - 5, { wall: 'rgba(98, 142, 90, 0.3)' });
         }
       }
-      // 气孔（两个保卫细胞）
+      /* 气孔器：两个肾形保卫细胞 */
       ctx.save();
       ctx.translate(S / 2 + 60, S / 2 + 40);
       for (const s of [-1, 1]) {
-        ctx.fillStyle = 'rgba(120, 190, 110, 0.75)';
-        ctx.strokeStyle = 'rgba(44, 90, 44, 0.9)';
-        ctx.lineWidth = 2.2;
+        const g = ctx.createRadialGradient(s * 13, 0, 4, s * 13, 0, 26);
+        g.addColorStop(0, 'rgba(130, 200, 118, 0.8)');
+        g.addColorStop(1, 'rgba(90, 158, 84, 0.7)');
+        ctx.fillStyle = g;
+        ctx.strokeStyle = 'rgba(42, 88, 42, 0.92)';
+        ctx.lineWidth = 2.4;
         ctx.beginPath();
         ctx.ellipse(s * 13, 0, 26, 11, s * 0.22, 0, TAU);
         ctx.fill(); ctx.stroke();
+        /* 保卫细胞内的核 */
+        ctx.fillStyle = 'rgba(90, 70, 140, 0.7)';
+        ctx.beginPath();
+        ctx.arc(s * 20, s * 3, 4.5, 0, TAU);
+        ctx.fill();
       }
-      ctx.fillStyle = 'rgba(20, 30, 22, 0.9)';
+      ctx.fillStyle = 'rgba(18, 28, 20, 0.92)';
       ctx.beginPath();
       ctx.ellipse(0, 0, 10, 5, 0, 0, TAU);
       ctx.fill();
       ctx.restore();
-      // 叶绿体（高倍可见）
+      /* 叶肉叶绿体（高倍可见） */
       if (OBJ_MAGS[o.obj] >= 40) {
-        ctx.fillStyle = 'rgba(64, 150, 62, 0.8)';
         for (let i = 0; i < 46; i++) {
           const x = (i * 97) % S, y = (i * 173) % S;
+          const g = ctx.createRadialGradient(x, y, 1, x, y, 6);
+          g.addColorStop(0, 'rgba(80, 178, 74, 0.85)');
+          g.addColorStop(1, 'rgba(46, 122, 48, 0.6)');
+          ctx.fillStyle = g;
           ctx.beginPath();
           ctx.ellipse(x, y, 5.5, 3.4, i, 0, TAU);
           ctx.fill();
@@ -351,7 +599,6 @@ const SLIDES = {
   plasm: {
     name: '洋葱表皮 · 渗透实验',
     draw(ctx, o) {
-      // 质壁分离程度 plasmT 0..1
       const k = o.plasmT;
       const cw = 118, ch = 76;
       for (let gy = 0; gy < Math.ceil(S / ch) + 1; gy++) {
@@ -359,22 +606,19 @@ const SLIDES = {
         for (let gx = -1; gx < Math.ceil(S / cw) + 1; gx++) {
           const x = gx * cw + off, y = gy * ch, w = cw - 4, h = ch - 4;
           drawCellWall(ctx, x, y, w, h);
-          // 原生质体收缩
           const shrink = k * 0.62;
           const pw = w * (1 - shrink), ph2 = h * (1 - shrink);
-          ctx.fillStyle = k > 0.05 ? 'rgba(150, 190, 160, 0.72)' : 'rgba(190, 214, 190, 0.5)';
-          ctx.strokeStyle = 'rgba(60, 90, 55, 0.85)';
+          /* 分离后：壁与原生质体之间的空隙填充高渗液（微暗） */
+          if (k > 0.05) {
+            ctx.fillStyle = `rgba(150, 170, 158, ${0.2 + k * 0.2})`;
+            ctx.fillRect(x + 3, y + 3, w - 6, h - 6);
+          }
+          ctx.fillStyle = k > 0.05 ? 'rgba(148, 188, 158, 0.75)' : 'rgba(190, 214, 190, 0.5)';
+          ctx.strokeStyle = 'rgba(58, 88, 52, 0.88)';
           ctx.lineWidth = 2;
           ctx.beginPath();
           ctx.ellipse(x + w / 2, y + h / 2, pw / 2, ph2 / 2, 0, 0, TAU);
           ctx.fill(); ctx.stroke();
-          if (k > 0.15) {
-            ctx.strokeStyle = 'rgba(88, 60, 140, 0.35)';
-            ctx.beginPath();
-            ctx.moveTo(x + w / 2 - pw / 2, y + h / 2);
-            ctx.lineTo(x + w / 2 - w / 2, y + h / 2);
-            ctx.stroke();
-          }
           drawNucleus(ctx, x + w / 2, y + h / 2, 10 * (1 - k * 0.4));
         }
       }
@@ -383,9 +627,8 @@ const SLIDES = {
   mitosis: {
     name: '洋葱根尖分生区纵切',
     draw(ctx, o) {
-      // 分生区细胞小而方，各期染色体
       const cw = 64, ch = 58;
-      const phaseOf = (i) => (i * 7 + 3) % 5;   // 0 间期 1 前期 2 中期 3 后期 4 末期
+      const phaseOf = (i) => (i * 7 + 3) % 5;
       let idx = 0;
       for (let gy = 0; gy < Math.ceil(S / ch) + 1; gy++) {
         for (let gx = -1; gx < Math.ceil(S / cw) + 1; gx++) {
@@ -393,17 +636,29 @@ const SLIDES = {
           const ph = phaseOf(idx++);
           const hl = o.phaseHi === ph;
           drawCellWall(ctx, x, y, cw - 4, ch - 4, {
-            wall: hl ? 'rgba(224, 160, 60, 0.45)' : 'rgba(120, 150, 110, 0.3)',
+            wall: hl ? 'rgba(224, 160, 60, 0.45)' : 'rgba(122, 152, 112, 0.3)',
             line: hl ? 'rgba(180, 110, 20, 1)' : undefined,
           });
           const cx = x + cw / 2, cy = y + ch / 2;
-          ctx.strokeStyle = 'rgba(140, 40, 40, 0.95)';
-          ctx.fillStyle = 'rgba(140, 40, 40, 0.95)';
+          ctx.strokeStyle = 'rgba(138, 42, 42, 0.95)';
+          ctx.fillStyle = 'rgba(138, 42, 42, 0.95)';
           ctx.lineWidth = 3;
           if (OBJ_MAGS[o.obj] >= 10 || hl) {
             if (ph === 0) { drawNucleus(ctx, cx, cy, 12); }
             else if (ph === 1) { for (let k = 0; k < 5; k++) { ctx.beginPath(); ctx.arc(cx - 10 + k * 5, cy + Math.sin(k) * 5, 3.4, 0, TAU); ctx.fill(); } }
-            else if (ph === 2) { ctx.beginPath(); ctx.moveTo(cx - 14, cy - 10); ctx.lineTo(cx + 14, cy + 10); ctx.stroke(); for (let k = 0; k < 4; k++) { ctx.beginPath(); ctx.arc(cx - 10 + k * 7, cy - 4 + (k % 2) * 8, 3, 0, TAU); ctx.fill(); } }
+            else if (ph === 2) {
+              ctx.beginPath(); ctx.moveTo(cx - 14, cy - 10); ctx.lineTo(cx + 14, cy + 10); ctx.stroke();
+              /* 赤道板上的 X 形染色体 */
+              for (let k = 0; k < 4; k++) {
+                const px = cx - 11 + k * 7;
+                ctx.lineWidth = 2.6;
+                ctx.beginPath();
+                ctx.moveTo(px - 4, cy - 5 + (k % 2) * 9); ctx.lineTo(px + 4, cy + 4 + (k % 2) * 9);
+                ctx.moveTo(px + 4, cy - 5 + (k % 2) * 9); ctx.lineTo(px - 4, cy + 4 + (k % 2) * 9);
+                ctx.stroke();
+                ctx.lineWidth = 3;
+              }
+            }
             else if (ph === 3) { for (let k = 0; k < 3; k++) { ctx.beginPath(); ctx.arc(cx - 8, cy - 9 + k * 5, 2.8, 0, TAU); ctx.fill(); ctx.beginPath(); ctx.arc(cx + 8, cy - 9 + k * 5, 2.8, 0, TAU); ctx.fill(); } }
             else { drawNucleus(ctx, cx - 9, cy, 8); drawNucleus(ctx, cx + 9, cy, 8); }
           }
@@ -414,43 +669,50 @@ const SLIDES = {
   blood: {
     name: '人血涂片（瑞氏染色）',
     draw(ctx, o) {
-      // 红细胞 + 白细胞（100× 油镜才能看清白细跑分叶核）
-      ctx.fillStyle = 'rgba(200, 96, 92, 0.5)';
+      /* 红细胞：双凹圆盘精灵（中央浅染）；高倍时中央补密植细胞保证视野有内容 */
       const cells = [];
       for (let i = 0; i < 90; i++) cells.push([(i * 131) % S, (i * 71) % S]);
-      cells.forEach(([x, y]) => {
-        ctx.beginPath();
-        ctx.arc(x, y, 15, 0, TAU);
-        ctx.fill();
-        ctx.fillStyle = 'rgba(226, 132, 126, 0.45)';
+      if (OBJ_MAGS[o.obj] >= 40) {
+        for (let i = 0; i < 26; i++) {
+          const a = (i / 26) * TAU;
+          const r = 18 + (i % 5) * 11;
+          cells.push([S / 2 + Math.cos(a) * r, S / 2 + Math.sin(a) * r * 0.9]);
+        }
+      }
+      cells.forEach(([x, y], i) => {
+        const s = 30 + (i % 3) * 2;
+        ctx.drawImage(rbcSprite, x - s / 2, y - s / 2, s, s);
       });
-      // 中央浅染
-      ctx.fillStyle = 'rgba(240, 190, 186, 0.5)';
-      cells.forEach(([x, y]) => {
+      /* 血小板小点 */
+      ctx.fillStyle = 'rgba(150, 110, 140, 0.55)';
+      for (let i = 0; i < 12; i++) {
         ctx.beginPath();
-        ctx.arc(x, y, 6, 0, TAU);
+        ctx.arc((i * 211) % S, (i * 149) % S, 2.2, 0, TAU);
         ctx.fill();
-        ctx.fillStyle = 'rgba(240, 190, 186, 0.5)';
-      });
-      // 白细胞
-      const wbs = [[130, 150], [360, 300], [420, 110]];
+      }
+      /* 白细胞：大、紫色分叶核（一枚固定在视野中部附近，保证高倍可见） */
+      const wbs = [[130, 150], [360, 300], [420, 110], [268, 240]];
       wbs.forEach(([x, y]) => {
-        ctx.fillStyle = 'rgba(222, 214, 240, 0.9)';
-        ctx.strokeStyle = 'rgba(120, 100, 160, 0.9)';
-        ctx.lineWidth = 2.2;
+        const g = ctx.createRadialGradient(x - 6, y - 6, 6, x, y, 28);
+        g.addColorStop(0, 'rgba(228, 222, 244, 0.92)');
+        g.addColorStop(1, 'rgba(188, 178, 216, 0.8)');
+        ctx.fillStyle = g;
+        ctx.strokeStyle = 'rgba(116, 96, 158, 0.92)';
+        ctx.lineWidth = 2.4;
         ctx.beginPath();
         ctx.arc(x, y, 28, 0, TAU);
         ctx.fill(); ctx.stroke();
         if (OBJ_MAGS[o.obj] >= 100 && o.oil) {
-          ctx.fillStyle = 'rgba(110, 60, 150, 0.9)';
+          /* 分叶核清晰（油镜） */
+          ctx.fillStyle = 'rgba(108, 58, 150, 0.92)';
           for (let k = 0; k < 4; k++) {
             const a = (k / 4) * TAU + 0.5;
             ctx.beginPath();
-            ctx.arc(x + Math.cos(a) * 8, y + Math.sin(a) * 8, 6.5, 0, TAU);
+            ctx.ellipse(x + Math.cos(a) * 9, y + Math.sin(a) * 9, 7.5, 5.5, a, 0, TAU);
             ctx.fill();
           }
         } else {
-          ctx.fillStyle = 'rgba(150, 130, 180, 0.55)';
+          ctx.fillStyle = 'rgba(148, 128, 180, 0.55)';
           ctx.beginPath();
           ctx.arc(x, y, 12, 0, TAU);
           ctx.fill();
@@ -461,12 +723,11 @@ const SLIDES = {
   dust: {
     name: '污点检测片（含噪点）',
     draw(ctx, o) {
-      ctx.fillStyle = 'rgba(40, 46, 58, 0.85)';
+      ctx.fillStyle = 'rgba(38, 44, 56, 0.88)';
       ctx.font = '900 150px Georgia, serif';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
       ctx.fillText('p', S / 2, S / 2);
-      // 污点
       const sp = o.speck;
       if (!sp) return;
       let sx = S / 2 + 110, sy = S / 2 - 80;
@@ -479,13 +740,13 @@ const SLIDES = {
         if (o.speckMoves.obj) sx = -999;
       }
       if (sx > 0) {
-        ctx.fillStyle = 'rgba(20, 16, 12, 0.95)';
+        const g = ctx.createRadialGradient(sx, sy, 1, sx, sy, 14);
+        g.addColorStop(0, 'rgba(18, 14, 10, 0.95)');
+        g.addColorStop(0.5, 'rgba(52, 44, 36, 0.7)');
+        g.addColorStop(1, 'rgba(52, 44, 36, 0)');
+        ctx.fillStyle = g;
         ctx.beginPath();
-        ctx.arc(sx, sy, 9, 0, TAU);
-        ctx.fill();
-        ctx.fillStyle = 'rgba(70, 60, 50, 0.5)';
-        ctx.beginPath();
-        ctx.arc(sx + 6, sy + 4, 14, 0, TAU);
+        ctx.arc(sx, sy, 14, 0, TAU);
         ctx.fill();
       }
     },
@@ -493,9 +754,8 @@ const SLIDES = {
   micrometer: {
     name: '目镜测微尺校准片',
     draw(ctx, o) {
-      // 台式测微尺：每小格 10 μm（画成刻度尺）
       const pxPerUm = 2.2 * (OBJ_MAGS[o.obj] / 40);
-      ctx.strokeStyle = 'rgba(30, 36, 44, 0.9)';
+      ctx.strokeStyle = 'rgba(28, 34, 42, 0.9)';
       ctx.lineWidth = 2;
       ctx.beginPath();
       ctx.moveTo(S * 0.08, S / 2);
@@ -509,14 +769,13 @@ const SLIDES = {
         ctx.lineTo(x, S / 2);
         ctx.stroke();
         if (i % 5 === 0) {
-          ctx.fillStyle = 'rgba(30, 36, 44, 0.9)';
+          ctx.fillStyle = 'rgba(28, 34, 42, 0.9)';
           ctx.font = '600 13px sans-serif';
           ctx.fillText(i * 10 + '', x, S / 2 + 18);
         }
       }
-      // 示例细胞（测它有多宽）
-      ctx.fillStyle = 'rgba(180, 200, 220, 0.65)';
-      ctx.strokeStyle = 'rgba(80, 100, 120, 0.9)';
+      ctx.fillStyle = 'rgba(178, 198, 218, 0.65)';
+      ctx.strokeStyle = 'rgba(78, 98, 118, 0.9)';
       ctx.lineWidth = 2.4;
       const cellW = 50 * pxPerUm * 0.1 * 10;
       ctx.beginPath();
@@ -527,9 +786,8 @@ const SLIDES = {
   counter: {
     name: '血球计数板（计数室）',
     draw(ctx, o) {
-      // 大格 1mm，25 中格；画 5×5 中格
       const cell = 74, x0 = S / 2 - cell * 2.5, y0 = S / 2 - cell * 2.5;
-      ctx.strokeStyle = 'rgba(50, 60, 72, 0.9)';
+      ctx.strokeStyle = 'rgba(48, 58, 70, 0.9)';
       ctx.lineWidth = 2;
       ctx.strokeRect(x0, y0, cell * 5, cell * 5);
       for (let i = 1; i < 5; i++) {
@@ -538,11 +796,9 @@ const SLIDES = {
         ctx.moveTo(x0, y0 + i * cell); ctx.lineTo(x0 + cell * 5, y0 + i * cell);
         ctx.stroke();
       }
-      // 双线框
       ctx.lineWidth = 4;
-      ctx.strokeStyle = 'rgba(50, 60, 72, 0.5)';
+      ctx.strokeStyle = 'rgba(48, 58, 70, 0.5)';
       ctx.strokeRect(x0 - 6, y0 - 6, cell * 5 + 12, cell * 5 + 12);
-      // 细胞（随机但按格子归属）
       ctx.fillStyle = 'rgba(200, 96, 92, 0.75)';
       for (let i = 0; i < 60; i++) {
         const gx = Math.floor((i * 37) % 5), gy = Math.floor((i * 53) % 5);
@@ -559,63 +815,85 @@ const SLIDES = {
   },
 };
 
-/* 每帧渲染目镜视野 */
-let renderQueued = true;
+/* 每帧渲染目镜视野：样品离屏 → 合成（明/暗/相差） → 遮罩装饰 */
 function renderEyepiece(t) {
-  const light = optic.lampOn ? optic.light : 'dark';
-  const BG = { bright: '#f2ede0', dark: '#07090d', phase: '#9aa0a8' };
-  eCtx.setTransform(1, 0, 0, 1, 0, 0);
-  eCtx.fillStyle = BG[light] || BG.bright;
-  eCtx.fillRect(0, 0, S, S);
+  const mode = optic.lampOn ? optic.light : 'off';
+  const isDark = mode === 'dark';
+  const isPhase = mode === 'phase';
+  /* 离屏样品底色：暗场用浅底（反相后变黑），相差用灰绿底 */
+  sCtx.setTransform(1, 0, 0, 1, 0, 0);
+  sCtx.fillStyle = isDark ? '#f2ede0' : isPhase ? '#d4d8cc' : '#f2ede0';
+  sCtx.fillRect(0, 0, S, S);
 
   const mag = OBJ_MAGS[optic.obj];
   const scale = 0.62 * (mag / 10) + 0.35;
+  sCtx.save();
+  sCtx.translate(S / 2, S / 2);
+  sCtx.scale(scale, scale);
+  sCtx.rotate(Math.PI);              /* 显微像是倒像 */
+  sCtx.translate(-S / 2, -S / 2);    /* 绘制器按画布坐标作画：补中心枢轴，绕中点反转缩放 */
+  sCtx.translate(-optic.pan.x, -optic.pan.y);
+  SLIDES[optic.slide].draw(sCtx, optic, t);
+  sCtx.restore();
+
+  /* 主画布：背景 + 圆形视野裁剪 */
+  eCtx.setTransform(1, 0, 0, 1, 0, 0);
+  eCtx.fillStyle = isDark ? '#050608' : isPhase ? '#c9cec2' : mode === 'off' ? '#101216' : '#f2ede0';
+  eCtx.fillRect(0, 0, S, S);
   eCtx.save();
-  // 圆形视野
   eCtx.beginPath();
   eCtx.arc(S / 2, S / 2, S * 0.46, 0, TAU);
   eCtx.clip();
+
   const blur = blurPx();
-  if (blur > 0.5) eCtx.filter = `blur(${Math.min(blur, 14).toFixed(1)}px)`;
-  else eCtx.filter = 'none';
-  eCtx.translate(S / 2, S / 2);
-  eCtx.scale(scale, scale);
-  // 显微像是倒像
-  eCtx.rotate(Math.PI);
-  eCtx.translate(-optic.pan.x, -optic.pan.y);
-  SLIDES[optic.slide].draw(eCtx, optic, t);
-  eCtx.restore();
+  const oilOn = optic.obj === 3 && optic.oil;
+  /* 油镜未加油：昏暗一片（光线全反射损失）；加油：对比度与亮度双升 */
+  if (optic.obj === 3 && !optic.oil) blur += 2.5;
+  eCtx.filter = blur > 0.4 ? `blur(${Math.min(blur, 15).toFixed(1)}px)` : 'none';
+  eCtx.drawImage(sCv, 0, 0);
   eCtx.filter = 'none';
-  // 暗场/相差效果
-  if (light === 'dark') {
-    eCtx.globalCompositeOperation = 'lighter';
-    eCtx.globalAlpha = 0.14;
-    eCtx.strokeStyle = '#aef0ff';
-    eCtx.lineWidth = 5;
-    eCtx.beginPath();
-    eCtx.arc(S / 2, S / 2, S * 0.42, 0, TAU);
-    eCtx.stroke();
-    eCtx.globalAlpha = 1;
+
+  /* 暗场：整圆反相 → 样品亮起、视野变黑（difference 白场） */
+  if (isDark) {
+    eCtx.globalCompositeOperation = 'difference';
+    eCtx.fillStyle = '#ffffff';
+    eCtx.fillRect(0, 0, S, S);
     eCtx.globalCompositeOperation = 'source-over';
-  } else if (light === 'phase') {
-    eCtx.globalAlpha = 0.16;
-    eCtx.fillStyle = '#dce4ee';
-    eCtx.beginPath();
-    eCtx.arc(S / 2 + 14, S / 2 + 14, S * 0.44, 0, TAU);
-    eCtx.fill();
-    eCtx.globalAlpha = 1;
+    /* 冷色调 + 中心暗场斑 */
+    eCtx.globalCompositeOperation = 'multiply';
+    eCtx.fillStyle = 'rgba(150, 200, 225, 0.35)';
+    eCtx.fillRect(0, 0, S, S);
+    eCtx.globalCompositeOperation = 'source-over';
   }
-  // 视野亮度（离焦+低光圈变暗）
-  const dim = clamp(blur * 0.05 + (optic.lampOn ? 0 : 0.5), 0, 0.75);
-  eCtx.fillStyle = `rgba(6, 8, 12, ${dim})`;
+  /* 相差：再叠一层模糊提亮的样品 → 相位光晕 */
+  if (isPhase) {
+    eCtx.globalCompositeOperation = 'lighten';
+    eCtx.filter = 'blur(8px) brightness(1.45)';
+    eCtx.drawImage(sCv, 0, 0);
+    eCtx.filter = 'none';
+    eCtx.globalCompositeOperation = 'source-over';
+  }
+  /* 油镜折射率修正：对比↑ 亮度↑ */
+  if (oilOn) {
+    eCtx.filter = 'contrast(1.22) brightness(1.15)';
+    eCtx.globalCompositeOperation = 'source-atop';
+    eCtx.fillStyle = 'rgba(255,244,214,0.05)';
+    eCtx.fillRect(0, 0, S, S);
+    eCtx.globalCompositeOperation = 'source-over';
+    eCtx.filter = 'none';
+  }
+  /* 视野亮度：离焦发散 + 关灯 + 油镜缺油都压暗 */
+  const dim = clamp(blur * 0.035 + (mode === 'off' ? 0.68 : 0) + (optic.obj === 3 && !optic.oil ? 0.34 : 0), 0, 0.8);
+  eCtx.fillStyle = `rgba(5, 7, 10, ${dim})`;
   eCtx.fillRect(0, 0, S, S);
-  // 目镜边缘
-  eCtx.strokeStyle = 'rgba(16, 20, 26, 0.9)';
+  eCtx.restore();
+
+  /* 目镜边缘环 + 十字准星 */
+  eCtx.strokeStyle = 'rgba(14, 18, 24, 0.92)';
   eCtx.lineWidth = 26;
   eCtx.beginPath();
   eCtx.arc(S / 2, S / 2, S * 0.47 + 8, 0, TAU);
   eCtx.stroke();
-  // 十字准星
   eCtx.strokeStyle = 'rgba(120, 132, 148, 0.25)';
   eCtx.lineWidth = 1.4;
   eCtx.beginPath();
@@ -685,7 +963,7 @@ const SECTIONS = [
 <p>打开「标注」用按钮飞到各部件特写。</p>`,
     enter() {
       optic.slide = 'letter';
-      app.setCamera([3.3, 3.1, 11.6], [1.5, 1.8, 0]);
+      app.setCamera([6.2, 7.0, 12.8], [0.75, 1.0, -0.25]);
       hud.visibleNow = true;
       ctl.clear();
       ctl.toggle({
@@ -694,7 +972,7 @@ const SECTIONS = [
       });
       ctl.sep();
       [
-        ['整体', [2.6, 2.8, 7.6], [0.3, 1.5, 0]],
+        ['整体', [6.2, 7.0, 12.8], [0.75, 1.0, -0.25]],
         ['目镜与镜筒', [1.5, 4.4, 2.6], [0.25, 3.0, -0.1]],
         ['转换器与物镜', [1.8, 1.6, 3.2], [0.25, 2.0, 0]],
         ['准焦螺旋', [-3.0, 2.3, 1.8], [-1.2, 2.0, 0]],
@@ -719,7 +997,7 @@ const SECTIONS = [
       optic.focus = 12;
       optic.obj = 1;
       setObj(1);
-      app.setCamera([3.3, 3.1, 11.6], [1.5, 1.8, 0]);
+      app.setCamera([6.2, 7.0, 12.8], [0.75, 1.0, -0.25]);
       hud.visibleNow = true;
       ctl.clear();
       const steps = [
@@ -758,7 +1036,7 @@ const SECTIONS = [
       optic.obj = 1;
       setObj(1);
       optic.focus = idealFocus() + 18;
-      app.setCamera([3.3, 3.1, 11.6], [1.5, 1.8, 0]);
+      app.setCamera([6.2, 7.0, 12.8], [0.75, 1.0, -0.25]);
       hud.visibleNow = true;
       ctl.clear();
       ctl.slider({
@@ -790,7 +1068,7 @@ const SECTIONS = [
       setObj(1);
       optic.focus = idealFocus() - 10;
       optic.pan = { x: 90, y: 60 };
-      app.setCamera([3.3, 3.1, 11.6], [1.5, 1.8, 0]);
+      app.setCamera([6.2, 7.0, 12.8], [0.75, 1.0, -0.25]);
       hud.visibleNow = true;
       ctl.clear();
       ctl.button({
@@ -825,7 +1103,7 @@ const SECTIONS = [
       optic.speck = { where };
       optic.speckMoves = { pan: false, rotate: false, obj: false };
       optic.speckTried = {};
-      app.setCamera([3.3, 3.1, 11.6], [1.5, 1.8, 0]);
+      app.setCamera([6.2, 7.0, 12.8], [0.75, 1.0, -0.25]);
       hud.visibleNow = true;
       ctl.clear();
       ctl.button({
@@ -887,7 +1165,7 @@ const SECTIONS = [
       optic.obj = 1;
       setObj(1);
       optic.focus = idealFocus() - 8;
-      app.setCamera([3.3, 3.1, 11.6], [1.5, 1.8, 0]);
+      app.setCamera([6.2, 7.0, 12.8], [0.75, 1.0, -0.25]);
       hud.visibleNow = true;
       ctl.clear();
       ctl.toggle({
@@ -914,7 +1192,7 @@ const SECTIONS = [
       optic.obj = 2;
       setObj(2);
       optic.focus = idealFocus() - 6;
-      app.setCamera([3.3, 3.1, 11.6], [1.5, 1.8, 0]);
+      app.setCamera([6.2, 7.0, 12.8], [0.75, 1.0, -0.25]);
       hud.visibleNow = true;
       ctl.clear();
       baseOpticsCtl();
@@ -934,7 +1212,7 @@ const SECTIONS = [
       optic.obj = 2;
       setObj(2);
       optic.focus = idealFocus() - 4;
-      app.setCamera([3.3, 3.1, 11.6], [1.5, 1.8, 0]);
+      app.setCamera([6.2, 7.0, 12.8], [0.75, 1.0, -0.25]);
       hud.visibleNow = true;
       ctl.clear();
       ctl.slider({
@@ -960,7 +1238,7 @@ const SECTIONS = [
       optic.obj = 1;
       setObj(1);
       optic.focus = idealFocus() - 6;
-      app.setCamera([3.3, 3.1, 11.6], [1.5, 1.8, 0]);
+      app.setCamera([6.2, 7.0, 12.8], [0.75, 1.0, -0.25]);
       hud.visibleNow = true;
       ctl.clear();
       ctl.toggle({
@@ -988,7 +1266,7 @@ const SECTIONS = [
       optic.focus = idealFocus();
       optic.plasm = 0;
       optic.plasmT = 0;
-      app.setCamera([3.3, 3.1, 11.6], [1.5, 1.8, 0]);
+      app.setCamera([6.2, 7.0, 12.8], [0.75, 1.0, -0.25]);
       hud.visibleNow = true;
       ctl.clear();
       ctl.button({
@@ -1025,7 +1303,7 @@ const SECTIONS = [
       setObj(2);
       optic.focus = idealFocus();
       optic.phaseHi = -1;
-      app.setCamera([3.3, 3.1, 11.6], [1.5, 1.8, 0]);
+      app.setCamera([6.2, 7.0, 12.8], [0.75, 1.0, -0.25]);
       hud.visibleNow = true;
       ctl.clear();
       ['间期', '前期', '中期', '后期', '末期'].forEach((n, i) => {
@@ -1062,7 +1340,7 @@ const SECTIONS = [
       setObj(2);
       optic.focus = idealFocus();
       optic.oil = false;
-      app.setCamera([3.3, 3.1, 11.6], [1.5, 1.8, 0]);
+      app.setCamera([6.2, 7.0, 12.8], [0.75, 1.0, -0.25]);
       hud.visibleNow = true;
       ctl.clear();
       ctl.button({
@@ -1098,7 +1376,7 @@ const SECTIONS = [
       optic.obj = 2;
       setObj(2);
       optic.focus = idealFocus();
-      app.setCamera([3.3, 3.1, 11.6], [1.5, 1.8, 0]);
+      app.setCamera([6.2, 7.0, 12.8], [0.75, 1.0, -0.25]);
       hud.visibleNow = true;
       ctl.clear();
       baseOpticsCtl();
@@ -1125,7 +1403,7 @@ const SECTIONS = [
       setObj(2);
       optic.focus = idealFocus();
       optic.countSq = -1;
-      app.setCamera([3.3, 3.1, 11.6], [1.5, 1.8, 0]);
+      app.setCamera([6.2, 7.0, 12.8], [0.75, 1.0, -0.25]);
       hud.visibleNow = true;
       ctl.clear();
       ctl.button({
@@ -1163,7 +1441,7 @@ const SECTIONS = [
       optic.obj = 2;
       setObj(2);
       optic.focus = idealFocus();
-      app.setCamera([3.3, 3.1, 11.6], [1.5, 1.8, 0]);
+      app.setCamera([6.2, 7.0, 12.8], [0.75, 1.0, -0.25]);
       hud.visibleNow = true;
       ctl.clear();
       baseOpticsCtl({ withLight: true });
@@ -1183,7 +1461,7 @@ const SECTIONS = [
       optic.obj = 1;
       setObj(1);
       optic.focus = idealFocus() - 8;
-      app.setCamera([3.3, 3.1, 11.6], [1.5, 1.8, 0]);
+      app.setCamera([6.2, 7.0, 12.8], [0.75, 1.0, -0.25]);
       hud.visibleNow = true;
       ctl.clear();
       ctl.seg({
@@ -1216,30 +1494,32 @@ const SECTIONS = [
 
 const DEG_R = TAU / 360;
 
-function showOnly() { /* 单场景 */ }
-
 /* ================= 主循环 ================= */
 
 app.onFrame((dt, t) => {
-  cameraTweenTick(app, dt);
   hud.el.style.display = hud.visibleNow ? '' : 'none';
-  // 调焦旋钮联动
+  /* 调焦旋钮联动 + 载物台微升降 */
   if (parts.knobCoarse) {
     parts.knobCoarse.rotation.y = optic.focus * 0.08;
     parts.knobFine.rotation.y = -optic.focus * 0.14;
   }
-  // 遮光器联动光强
-  if (parts.lamp) parts.lamp.material.color.setScalar(optic.lampOn ? 1 : 0.18);
-  // 目镜视野
-  renderQueued = true;
+  if (parts.stageAsm) {
+    parts.stageAsm.position.y = (62 - optic.focus) * 0.0009;
+  }
+  /* 台下光源联动 */
+  if (parts.lamp) {
+    parts.lamp.material.color.setScalar(optic.lampOn ? 1 : 0.18);
+    lampPoint.intensity = optic.lampOn ? 2.2 : 0.3;
+  }
+  /* 目镜视野 */
   renderEyepiece(t);
-  // 质壁分离动力学
+  /* 质壁分离动力学 */
   if (activeSectionId === 'plasmolysis' && optic.plasm !== 0) {
     const sp = dt * (optic.plasmSpeed || 1);
     if (optic.plasm > 0) optic.plasmT = clamp(optic.plasmT + sp * 0.22, 0, 1);
     else optic.plasmT = clamp(optic.plasmT - sp * 0.22, 0, 1);
   }
-  // 章节读数刷新
+  /* 章节读数刷新 */
   if (activeSectionId === 'low-to-high' && optic.objChanged) optic.objChanged();
 });
 
@@ -1376,5 +1656,7 @@ const sections = createSections({
   },
 });
 window.__eduSections = sections;
+/* 调试句柄（自动化截图/像素级自查用） */
+window.__microDebug = { optic, renderEyepiece: (t = 1) => renderEyepiece(t), sampleCanvas: sCv, eyeCanvas: eCv, vfx };
 loader.hide();
 sections.select(0);

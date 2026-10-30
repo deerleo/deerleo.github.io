@@ -38,6 +38,7 @@ const GEOM = {
   4: { name: '正四面体', dirs: [[1, 1, 1], [-1, -1, 1], [-1, 1, -1], [1, -1, -1]] },
   5: { name: '三角双锥', dirs: [[1, 0, 0], [-0.5, 0, 0.866], [-0.5, 0, -0.866], [0, 1, 0], [0, -1, 0]] },
   6: { name: '正八面体', dirs: [[0, -1, 0], [0, 1, 0], [1, 0, 0], [-1, 0, 0], [0, 0, 1], [0, 0, -1]] },
+  7: { name: '五角双锥', dirs: [[0, 1, 0], [0, -1, 0], [1, 0, 0], [0.309, 0, 0.951], [-0.809, 0, 0.588], [-0.809, 0, -0.588], [0.309, 0, -0.951]] },
 };
 
 // AXnEm → 电子对构型 / 分子构型 / 键角 / 杂化 / 实例
@@ -121,6 +122,9 @@ const fmtF = (f) => f.replace('^2-', '²⁻').replace('^-', '⁻').replace(/(\d)
   reg(mol('XeF2', '二氟化氙', 'Xe', 'F', GEOM[5].dirs.map(nd), [1.98, 1.98],
     [nd([1, 0, 0]), nd([-0.5, 0, 0.866]), nd([-0.5, 0, -0.866])],
     { axe: 'AX2E3', eg: '三角双锥', mg: '直线形', ang: '180°', hyb: 'sp³d', polar: '非极性', bond: 'Xe–F 198 pm', mu: '0', note: '3 对孤对占赤道位，两 F 在轴向' }, { bondIdx: [3, 4] }), '直线形');
+  reg(mol('I3^-', '三碘离子', 'I', 'I', [[1, 0, 0], [-1, 0, 0]], 2.9,
+    [nd([1, 0, 0]), nd([-0.5, 0, 0.866]), nd([-0.5, 0, -0.866])],
+    { axe: 'AX2E3', eg: '三角双锥', mg: '直线形', ang: '180°', hyb: 'sp³d', polar: '非极性（对称离子）', bond: 'I–I 290 pm（比 I₂ 的 267 pm 长）', mu: '0', note: '与 XeF₂ 同为 AX₂E₃ 直线形；由 I₂ 与 I⁻ 结合而成（淀粉遇碘显蓝色的原因）' }), '直线形');
   { // HCN
     const atoms = [{ e: 'C', p: V(0, 0, 0) }, { e: 'N', p: V(1.16, 0, 0) }, { e: 'H', p: V(-1.06, 0, 0) }];
     reg({ f: 'HCN', name: '氰化氢', atoms, bonds: [{ a: 0, b: 1, o: 3 }, { a: 0, b: 2, o: 1 }],
@@ -207,6 +211,14 @@ const fmtF = (f) => f.replace('^2-', '²⁻').replace('^-', '⁻').replace(/(\d)
     { axe: 'AX6', eg: '正八面体', mg: '正八面体形', ang: '90°', hyb: 'sp³d²', polar: '非极性', bond: 'S–F 156 pm', mu: '0', note: '第三周期起可容纳 12 电子（扩展八隅体）' }), '八面体家族');
   reg(mol('XeF4', '四氟化氙', 'Xe', 'F', GEOM[6].dirs.map(nd), 1.95, [nd(GEOM[6].dirs[0]), nd(GEOM[6].dirs[1])],
     { axe: 'AX4E2', eg: '正八面体', mg: '平面正方形', ang: '90°', hyb: 'sp³d²', polar: '非极性', bond: 'Xe–F 195 pm', mu: '0', note: '2 对孤对占对位（反位），4 个 F 共平面' }, { bondIdx: [2, 3, 4, 5] }), '八面体家族');
+  { // BrF5 四方锥：1 对孤对占一个轴向位，4 个底面 F 被压向另一侧
+    const tilt = Math.sin(94.5 * DEG), down = Math.cos(94.5 * DEG);
+    const dirs = [V(0, -1, 0),
+      V(tilt, down, 0), V(0, down, tilt), V(-tilt, down, 0), V(0, down, -tilt)];
+    reg(mol('BrF5', '五氟化溴', 'Br', 'F', dirs, [1.69, 1.78, 1.78, 1.78, 1.78], [V(0, 1, 0)],
+      { axe: 'AX5E', eg: '正八面体', mg: '四方锥形', ang: '底面 F–Br–F ≈85°（略＜90°）', hyb: 'sp³d²', polar: '极性', bond: 'Br–F(顶) 169 pm · Br–F(底) 178 pm', mu: '1.51 D', note: '孤对占一个轴向位，把 4 个底面 F 推向另一侧——四方锥略呈"伞"形' }), '八面体家族'); }
+  reg(mol('IF7', '七氟化碘', 'I', 'F', GEOM[7].dirs.map(nd), [1.86, 1.86, 1.79, 1.79, 1.79, 1.79, 1.79], null,
+    { axe: 'AX7', eg: '五角双锥', mg: '五角双锥形', ang: '72°（赤道间）/ 90°（轴-赤道）', hyb: 'sp³d³', polar: '非极性', bond: 'I–F(轴) 186 pm · I–F(赤道) 179 pm', mu: '0', note: '7 个电子域——扩展八隅体的极限（14 电子），赤道面上 5 个 F 互成 72°' }), '八面体家族');
 }
 { // ---- 有机多中心 ----
   { // C2H6 乙烷（交错构象）
@@ -912,14 +924,17 @@ function polarEnter() {
 }
 /* ================= 章节六：扩展八隅体 ================= */
 
-const OCT = ['PCl5', 'SF6', 'XeF2', 'XeF4', 'ClF3'];
+const OCT = ['PCl5', 'SF6', 'XeF2', 'XeF4', 'ClF3', 'BrF5', 'IF7'];
 const OCT_NOTE = {
   PCl5: 'P 价电子 5 → 5 对成键电子（10 电子）；第三周期起可用 d 轨道容纳超过 8 电子',
   SF6: 'S 价电子 6 → 6 对成键电子（12 电子），正八面体骨架',
   XeF2: 'Xe 价电子 8 = 2 成键 + 3 孤对（10 电子）；3 孤对占赤道位 → 直线形',
   XeF4: 'Xe 价电子 8 = 4 成键 + 2 孤对（12 电子）；孤对占对位 → 平面正方形',
   ClF3: 'Cl 价电子 7 = 3 成键 + 2 孤对（10 电子）；2 孤对占赤道位 → T 形',
+  BrF5: 'Br 价电子 7 = 5 成键 + 1 孤对（12 电子）；孤对占一个轴向位 → 四方锥',
+  IF7: 'I 价电子 7 → 7 对成键电子（14 电子）——扩展八隅体的极限；五角双锥',
 };
+const OCT_LP_POS = { XeF4: '反位（相对的两轴向）', XeF2: '赤道位', SF4: '赤道位', ClF3: '赤道位', BrF5: '轴向位（其余轴向被底面 F 占据）' };
 
 function buildOct(key, showLP, labels) {
   clearMol();
@@ -929,7 +944,7 @@ function buildOct(key, showLP, labels) {
   fitView(def, 1.5);
   hud.set('mol', `${def.f}（${def.name}）`);
   hud.set('axe', `${def.info.axe} · ${def.info.mg}`);
-  hud.set('lp', def.lp && def.lp.length ? `${def.lp.length} 对孤对（${key === 'XeF4' ? '反位·轴向' : '赤道位'}）` : '无孤对');
+  hud.set('lp', def.lp && def.lp.length ? `${def.lp.length} 对孤对（${OCT_LP_POS[key] || '赤道位'}）` : '无孤对');
   hud.set('note', OCT_NOTE[key]);
 }
 
@@ -940,7 +955,7 @@ function octEnter() {
   ctl.seg({
     options: [
       { label: 'PCl₅', value: 'PCl5' }, { label: 'SF₆', value: 'SF6' }, { label: 'XeF₂', value: 'XeF2' },
-      { label: 'XeF₄', value: 'XeF4' }, { label: 'ClF₃', value: 'ClF3' },
+      { label: 'XeF₄', value: 'XeF4' }, { label: 'ClF₃', value: 'ClF3' }, { label: 'BrF₅', value: 'BrF5' }, { label: 'IF₇', value: 'IF7' },
     ],
     value: st.octKey,
     onChange: (v) => { st.octKey = v; rebuild(); },
@@ -1430,8 +1445,8 @@ const SECTIONS = [
   {
     title: '扩展八隅体',
     html: `<p>第二周期原子最外层只有 2s 2p 四个轨道，最多 8 电子；<span class="hl">第三周期起（P、S、Cl、Xe…）可利用 d 轨道，容纳 10~12 个电子</span>——这就是扩展八隅体。</p>
-<p>PCl₅（10 电子，三角双锥）、SF₆（12 电子，正八面体）。稀有气体 Xe 也能成键：XeF₂ 三对孤对占赤道位 → 直线形；XeF₄ 两对孤对占对位 → <span class="hl">平面正方形</span>。</p>
-<p>切换五个分子，注意孤对的占位规律与键长的差别（轴向键比赤道键长）。</p>`,
+<p>PCl₅（10 电子，三角双锥）、SF₆（12 电子，正八面体）、IF₇（14 电子，<span class="hl">五角双锥</span>——扩展八隅体的极限）。稀有气体 Xe 也能成键：XeF₂ 三对孤对占赤道位 → 直线形；XeF₄ 两对孤对占对位 → <span class="hl">平面正方形</span>。</p>
+<p>三角双锥中<b>赤道位</b>只有两个 90° 邻居、轴向位有三个，所以孤对电子总是先占赤道位（SF₄、ClF₃）；八面体中两对孤对取<b>反式</b>（XeF₄）。切换分子，注意孤对的占位规律与键长的差别（轴向键比赤道键长）。</p>`,
     enter() { octEnter(); },
   },
   {
@@ -1443,7 +1458,7 @@ const SECTIONS = [
   },
   {
     title: '分子库',
-    html: `<p>收录 <b>31 个常见分子/离子</b>：直线形、平面构型、四面体家族、三角双锥、八面体与有机多中心分子。</p>
+    html: `<p>收录 <b>34 个常见分子/离子</b>：直线形、平面构型、四面体家族、三角双锥、八面体与有机多中心分子。</p>
 <p>点击左侧列表（或控制条的 ‹ ›）切换，右侧信息卡给出每个分子的 <span class="hl">AXE 类、电子对/分子构型、键角、杂化、极性、键长参考值</span>。拖拽旋转、滚轮缩放任意观察。</p>`,
     enter() { libEnter(); },
   },

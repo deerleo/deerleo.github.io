@@ -140,16 +140,17 @@ function solveCircuit() {
   const hasNL = els.some((e) => e.kind === 'dio' || e.kind === 'zen');
   if (!hasNL) { solveOnce(); return; }
   els.forEach((e) => {
-    if (e.kind === 'dio' && e.vd === undefined) e.vd = 0.75;
+    if (e.kind === 'dio' && e.vd === undefined) e.vd = (e.VF || 0.7) + 0.05;
     if (e.kind === 'zen' && e.vd === undefined) e.vd = -(e.VZ || 5.1) - 0.3;
   });
   for (let it = 0; it < 24; it++) {
     els.forEach((e) => {
       if (e.kind === 'dio') {
-        // 分段线性：正向 0.7V 门槛 + 5Ω 动态电阻；反向截止
-        const vd = e.vd !== undefined ? e.vd : 0.75;
+        // 分段线性：正向 VF 门槛 + 5Ω 动态电阻；反向截止（硅管 0.7V，LED 约 1.8~3V）
+        const VF = e.VF || 0.7;
+        const vd = e.vd !== undefined ? e.vd : VF + 0.05;
         let g, i;
-        if (vd > 0.7) { g = 1 / 5; i = (vd - 0.7) / 5; }
+        if (vd > VF) { g = 1 / 5; i = (vd - VF) / 5; }
         else { g = G_MIN; i = 0; }
         e.gN = g; e.iEq = i - g * vd; e._i = i;
       } else if (e.kind === 'zen') {
@@ -431,6 +432,7 @@ function addElement(g, spec) {
       const coil = cyl(0.085, 0.085, 0.2, M(0xa06838, 0.7, 0.1), 16);
       coil.position.y = 0.2;
       grp.add(core, coil);
+      parts.core = core;
       const nails = [];
       for (let i = 0; i < 6; i++) {
         const nail = cyl(0.012, 0.012, 0.14, MATS.metal(), 8);
@@ -800,7 +802,7 @@ function addEl(id, spec) {
     R: spec.R !== undefined ? spec.R : (kind === 'vol' ? 1e7 : 1),
     E: spec.E || 0, r: spec.r || 0,
     C: spec.C || 0, L: spec.L || 0,
-    VZ: spec.VZ, IS: spec.IS, rs: spec.rs,
+    VZ: spec.VZ, IS: spec.IS, rs: spec.rs, VF: spec.VF, Ir: spec.Ir,
     vc: spec.vc0 || 0, iL: spec.iL0 || 0,
   };
   CIR.els.set(id, el);
@@ -898,7 +900,7 @@ function updSerPar() {
 chap({
   id: 'serpar', title: '串联与并联电路',
   html: `<p><b>串联</b>：用电器首尾相连，电流只有一条路——各处电流相等；一灯断，全路断。<b>并联</b>：用电器并列接在同两点间——各支路电压相等、干路电流等于各支路之和；一灯断了，另一盏照常亮。</p>
-<p>切换「串联/并联」重新接线，开合开关，比较两灯亮度与电流表读数。</p>`,
+<p>切换「串联/并联」重新接线，开合开关，比较两灯亮度与电流表读数。（实际灯泡的灯丝电阻随温度升高而变大，冷态只有热态的约 1/9——「伏安特性」一章可亲手测。）</p>`,
   enter() {
     serparRebuild();
     app.setCamera([-0.3, 3.2, 4.6], [-0.2, 1.3, 0]);
@@ -1082,50 +1084,63 @@ function updEmfr() {
 }
 
 /* ---------- 04 伏安特性 ---------- */
-const S4 = { U: 2.0, pts: [], T: 293 };
+const S4 = { pos: 0, pts: [], T: 300 };
+const VAH_R = { Rr: 15, Tr: 2800, T0: 300, Pr: 2.4 };   // 灯丝额定参数（辐射热平衡模型）
 chap({
   id: 'vah', title: '描绘小灯泡的伏安特性曲线',
-  html: `<p>金属的电阻随温度升高而增大。灯泡电压升高 → 灯丝温度飙升 → <b>电阻变大</b>，所以 I–U 曲线向电压轴弯曲——<b>不是直线</b>！</p>
-<p>这提醒我们：<span class="hl">欧姆定律只对电阻不变的导体成立</span>；对灯泡这类元件，「电阻」是随状态变化的。</p>
-<p>从 0 缓缓调高电压，点「记录数据点」，看曲线怎么弯。</p>`,
+  html: `<p>金属的电阻随温度升高而增大。灯泡电压升高 → 灯丝温度飙升（可到上千 K）→ <b>电阻变大</b>，所以 I–U 曲线向电压轴弯曲——<b>不是直线</b>！冷态灯丝电阻只有热态的约 1/9，所以灯丝常在开灯一瞬间烧断。</p>
+<p>本电路用滑动变阻器的<b>分压式接法</b>：A、B 两端接电源，从一端 A 与滑片 D 之间取电压——滑片从 A 端起调，灯泡电压能<b>从 0 连续调到电源电压</b>（限流接法做不到从 0 起）。</p>
+<p>缓缓右移滑片，每停一处点「记录数据点」，看曲线怎么弯；再对比「探究欧姆定律」里定值电阻的直线。</p>`,
   enter() {
     enterBench(() => {
-      addEl('bat1', { t: 'bat', x: -2.0, z: 0.4, label: '可调电源', E: S4.U, r: 0.3, a: 1, b: 0 });
-      addEl('am', { t: 'gauge', sub: 'A', x: -1.0, z: 0.4, label: '电流表', R: 1e-3, a: 1, b: 2 });
-      addEl('bl', { t: 'bulb', x: 0, z: 0.4, label: '小灯泡', R: 9, a: 2, b: 3 });
+      addEl('bat1', { t: 'bat', x: -2.0, z: 0.4, label: '电源 4.5V', E: 4.5, r: 0.2, a: 1, b: 0 });
+      addEl('rh', { t: 'rheo', x: -0.5, z: 0.4, label: '滑动变阻器（分压式）', R: 20, a: 0, b: 0 });
+      addEl('pA', { t: 'res', x: 0, z: 0, label: '', R: 0.01, a: 1, b: 2 });
+      addEl('pB', { t: 'res', x: 0, z: 0, label: '', R: 20, a: 2, b: 0 });
+      addEl('bl', { t: 'bulb', x: 0.3, z: 0.4, label: '小灯泡', R: 2, a: 2, b: 3 });
+      addEl('am', { t: 'gauge', sub: 'A', x: 1.9, z: 0.4, label: '电流表', R: 1e-3, a: 3, b: 0 });
       addEl('vol', { t: 'gauge', sub: 'V', x: 1.0, z: -0.5, label: '电压表', R: 1e7, a: 2, b: 3, ry: Math.PI });
-      addEl('res0', { t: 'res', x: 1.9, z: 0.4, label: '保护电阻', R: 4, a: 3, b: 0 });
       const y0 = TABLE_Y + 0.06;
-      W_([[-2.22, TABLE_Y + 0.34, 0.4], [-2.55, y0, 0.4], [-2.55, y0, 0.66], [2.55, y0, 0.66], [2.55, y0, 0.4], [2.1, y0, 0.4]], 'bat1');
-      W_([[-1.78, TABLE_Y + 0.34, 0.4], [-1.45, y0, 0.4], [-1.15, TABLE_Y + 0.16, 0.4]], 'bat1');
-      W_([[-0.85, TABLE_Y + 0.16, 0.4], [-0.5, y0, 0.4], [-0.15, TABLE_Y + 0.4, 0.4]], 'am');
-      W_([[0.15, TABLE_Y + 0.4, 0.4], [0.5, y0, 0.4], [1.4, y0, 0.4], [1.7, y0, 0.4]], 'bl');
+      W_([[-1.78, TABLE_Y + 0.34, 0.4], [-1.3, y0, 0.4], [-1.3, y0, 0.66], [-0.9, y0, 0.66], [-0.85, TABLE_Y + 0.16, 0.55]], 'bat1');
+      W_([[-2.22, TABLE_Y + 0.34, 0.4], [-2.6, y0, 0.4], [-2.6, y0, -0.7], [2.4, y0, -0.7]], 'bat1');
+      W_([[-0.15, TABLE_Y + 0.18, 0.4], [0.14, TABLE_Y + 0.2, 0.4]], 'pA');
+      W_([[0.46, TABLE_Y + 0.4, 0.4], [0.9, y0, 0.4], [1.55, TABLE_Y + 0.16, 0.4]], 'bl');
+      W_([[2.25, TABLE_Y + 0.16, 0.4], [2.4, y0, 0.4], [2.4, y0, -0.7]], 'am');
       W_([[0.5, TABLE_Y + 0.1, -0.46], [0.5, y0, -0.5], [0.62, y0, -0.5]], 'bl');
       W_([[0.74, y0, -0.5], [1.4, y0, -0.5]], 'bl');
       drawSchem([
-        { kind: 'wire', x1: 20, y1: 114, x2: 42, y2: 114 },
-        { kind: 'bat', sx: 52, sy: 114, dir: 'v' },
-        { kind: 'wire', x1: 52, y1: 90, x2: 52, y2: 40 },
-        { kind: 'am', sx: 64, sy: 32, dir: 'v', sub: 'A' },
-        { kind: 'wire', x1: 52, y1: 40, x2: 52, y2: 44 },
-        { kind: 'wire', x1: 52, y1: 46, x2: 110, y2: 46 },
-        { kind: 'bulb', sx: 124, sy: 46, dir: 'h', sub: '灯' },
-        { kind: 'wire', x1: 136, y1: 46, x2: 168, y2: 46 },
-        { kind: 'res', sx: 182, sy: 46, dir: 'h', sub: 'R₀' },
-        { kind: 'wire', x1: 194, y1: 46, x2: 206, y2: 46 },
-        { kind: 'wire', x1: 206, y1: 46, x2: 206, y2: 114 },
-        { kind: 'wire', x1: 206, y1: 114, x2: 20, y2: 114 },
-        { kind: 'vol', sx: 124, sy: 82, dir: 'h', sub: 'V' },
-        { kind: 'wire', x1: 110, y1: 46, x2: 110, y2: 82 },
-        { kind: 'wire', x1: 136, y1: 82, x2: 206, y2: 82 },
+        { kind: 'wire', x1: 36, y1: 116, x2: 60, y2: 116 },
+        { kind: 'bat', sx: 70, sy: 116, dir: 'v', sub: '4.5V' },
+        { kind: 'wire', x1: 70, y1: 92, x2: 70, y2: 30 },
+        { kind: 'wire', x1: 70, y1: 30, x2: 96, y2: 30 },
+        { kind: 'wire', x1: 96, y1: 30, x2: 96, y2: 38 },
+        { kind: 'res', sx: 96, sy: 50, dir: 'v', sub: 'RA' },
+        { kind: 'wire', x1: 96, y1: 62, x2: 96, y2: 76 },
+        { kind: 'node', sx: 96, sy: 64 },
+        { kind: 'res', sx: 96, sy: 88, dir: 'v', sub: 'RB' },
+        { kind: 'wire', x1: 96, y1: 100, x2: 96, y2: 116 },
+        { kind: 'node', sx: 96, sy: 116 },
+        { kind: 'wire', x1: 36, y1: 116, x2: 226, y2: 116 },
+        { kind: 'wire', x1: 96, y1: 64, x2: 130, y2: 64 },
+        { kind: 'bulb', sx: 144, sy: 64, dir: 'h', sub: '灯' },
+        { kind: 'wire', x1: 156, y1: 64, x2: 186, y2: 64 },
+        { kind: 'am', sx: 200, sy: 64, dir: 'h', sub: 'A' },
+        { kind: 'wire', x1: 212, y1: 64, x2: 226, y2: 64 },
+        { kind: 'wire', x1: 226, y1: 64, x2: 226, y2: 116 },
+        { kind: 'node', sx: 226, sy: 116 },
+        { kind: 'vol', sx: 144, sy: 30, dir: 'h', sub: 'V' },
+        { kind: 'wire', x1: 130, y1: 64, x2: 130, y2: 30 },
+        { kind: 'wire', x1: 158, y1: 30, x2: 186, y2: 30 },
+        { kind: 'node', sx: 186, sy: 64 },
+        { kind: 'wire', x1: 186, y1: 30, x2: 186, y2: 64 },
       ]);
     });
     app.setCamera([-0.2, 3.3, 4.8], [0, 1.3, 0]);
     ctl.clear();
-    ctl.slider({ label: '电压 U', min: 0, max: 4, step: 0.1, value: S4.U, fmt: (v) => v.toFixed(1) + ' V', onInput: (v) => { S4.U = v; CIR.els.get('bat1').E = v; solveNow(); updVah(); } });
+    ctl.slider({ label: '滑片位置 A→B（分压）', min: 0, max: 1, step: 0.02, value: S4.pos, fmt: (v) => Math.round(v * 100) + '%', onInput: (v) => { S4.pos = v; updVah(); } });
     ctl.sep();
     ctl.button({ label: '⌘ 记录数据点', onClick() { S4.pts.push([CIR.els.get('vol').V, Math.abs(CIR.els.get('am').I)]); if (S4.pts.length > 24) S4.pts.shift(); updVah(); } });
-    ctl.button({ label: '✕ 清除', onClick() { S4.pts.length = 0; S4.T = 293; updVah(); } });
+    ctl.button({ label: '✕ 清除', onClick() { S4.pts.length = 0; S4.T = 300; S4.pos = 0; updVah(); } });
     setHUD([['iu', 'U / I'], ['r', '灯丝电阻'], ['t', '灯丝温度'], ['note', '曲线向 U 轴弯曲']]);
     solveNow();
     updVah();
@@ -1133,23 +1148,35 @@ chap({
 });
 function updVah() {
   const am = CIR.els.get('am'), vol = CIR.els.get('vol'), bl = CIR.els.get('bl');
+  // 分压式：上段 RA = pos·20Ω，下段 RB = (1−pos)·20Ω，滑片从 0 起调
+  const Rmax = 20;
+  const ra = CIR.els.get('pA'), rb = CIR.els.get('pB');
+  ra.R = clamp(S4.pos * Rmax, 0.01, Rmax);
+  rb.R = clamp((1 - S4.pos) * Rmax, 0.01, Rmax);
+  setSliderVisual('rh', S4.pos);
+  solveNow();
   const i = Math.abs(am.I), u = Math.abs(vol.V);
   const p = i * u;
-  // 灯丝热平衡：C dT/dt = P − k(T−T0)，R = R0(1+α(T−T0))
-  const T = S4.T;
-  const k = 0.045, Cth = 0.018, alpha = 0.0045, R0 = 6;
-  const T2 = T + (p - k * (T - 293)) / Cth * 0.016;
-  S4.T = clamp(T2, 293, 2400);
-  bl.R = clamp(R0 * (1 + alpha * (S4.T - 293)), 4, 60);
+  // 灯丝辐射热平衡：C dT/dt = P − k(T⁴−T₀⁴)，R = Rr·T/Tr（钨丝，冷态≈热态 1/9）
+  const { Rr, Tr, T0, Pr } = VAH_R;
+  const kk = Pr / (Tr ** 4 - T0 ** 4), Cth = 0.05 * 4 * kk * Tr ** 3;
+  let T = S4.T;
+  const sub = 4, h = 0.016 / sub;
+  for (let k = 0; k < sub; k++) {
+    T += (p - kk * (T ** 4 - T0 ** 4)) / Cth * h;
+    T = clamp(T, T0, 3300);
+  }
+  S4.T = T;
+  bl.R = clamp(Rr * T / Tr, 1.2, 40);
   bulbGlow('bl', p / 0.5);
-  setNeedle('am', i / 0.5); setNeedle('vol', u / 4);
+  setNeedle('am', i / 0.5); setNeedle('vol', u / 4.6);
   hset('iu', `${u.toFixed(2)} V / ${i.toFixed(3)} A`);
   hset('r', bl.R.toFixed(1) + ' Ω');
-  hset('t', (S4.T - 273).toFixed(0) + ' °C');
+  hset('t', Math.round(S4.T) + ' K');
   const sc = makeScope('小灯泡 I–U 特性');
   scopeBase('U/V', 'I/A');
   const ctx = sc.ctx;
-  const toX = (U) => 24 + clamp(U / 4, 0, 1) * 180;
+  const toX = (U) => 24 + clamp(U / 4.6, 0, 1) * 180;
   const toY = (I) => 112 - clamp(I / 0.6, 0, 1) * 98;
   ctx.fillStyle = '#ff9b5e';
   S4.pts.forEach(([U, I]) => { ctx.beginPath(); ctx.arc(toX(U), toY(I), 2.6, 0, TAU); ctx.fill(); });
@@ -1331,7 +1358,7 @@ const S7 = { running: false, trace: [] };
 chap({
   id: 'lc', title: 'LC 振荡电路',
   html: `<p>充了电的电容通过电感放电：电容的<b>电场能</b>与电感的<b>磁场能</b>来回转化，电流和电压按正弦规律振荡——<span class="hl">f = 1 / (2π√(LC))</span>。</p>
-<p>理想 LC 回路振荡不停；实际上有电阻，振荡逐渐衰减（阻尼振荡）。无线电广播正来自这类振荡。</p>
+<p>理想 LC 回路振荡不停；实际上线圈总有电阻，振荡逐渐衰减（阻尼振荡）——<b>线圈电阻越大，衰减越快</b>。无线电广播正来自这类振荡。</p>
 <p>点「合上开关」看电压表指针摆动与波形（慢放 ×0.1）。</p>`,
   enter() {
     enterBench(() => {
@@ -1382,7 +1409,7 @@ function updLc() {
 }
 
 /* ---------- 08 桥式整流与电容滤波 ---------- */
-const S8 = { filt: true, trace: [], tt: 0 };
+const S8 = { filt: false, trace: [], tt: 0 };
 chap({
   id: 'bridge', title: '桥式整流与电容滤波',
   html: `<p>四只二极管组成<b>电桥</b>：正半周 D₁D₃ 导通，负半周 D₂D₄ 导通——两只「轮流值班」，把交流变成<b>脉动直流</b>（方向不变、大小变化）。</p>
@@ -1447,6 +1474,7 @@ chap({
     app.setCamera([-0.3, 3.4, 5.0], [0, 1.3, 0]);
     ctl.clear();
     ctl.toggle({ label: '滤波电容', value: S8.filt, onChange: (v) => { S8.filt = v; CIR.els.get('cf').blown = !v; CIR.els.get('cf').vc = 0; solveNow(); } });
+    CIR.els.get('cf').blown = !S8.filt;   // 初始先看未滤波的脉动直流
     ctl.sep();
     ctl.button({ label: '↺ 复位', onClick() { S8.trace.length = 0; S8.tt = 0; } });
     setHUD([['d', '二极管导通'], ['u2', '输出电压'], ['rip', '纹波'], ['note', 'AC → 脉动直流 → 平滑直流']]);
@@ -1543,8 +1571,8 @@ const S10 = { f: 60, U: 4 };
 chap({
   id: 'rlc', title: 'RLC 串联谐振',
   html: `<p>R、L、C 串联后接交流电源：感抗 X_L = 2πfL 随频率升高而增大，容抗 X_C = 1/(2πfC) 随频率升高而减小。当 <span class="hl">X_L = X_C</span> 时二者抵消，阻抗最小（= R），<b>电流最大</b>——这就是谐振，f₀ = 1/(2π√(LC))。</p>
-<p>收音机的调台，就是靠可变电容改变 f₀ 来选台。</p>
-<p>扫频率旋钮，找电流表读数的峰。</p>`,
+<p>谐振时电容/电感两端电压可达电源电压的 <b>Q 倍</b>（品质因数 Q = √(L/C)/R，本电路 Q ≈ 10，电容上电压可到几十伏——远超电源！）Q 越大，谐振曲线越尖锐、选频越好。收音机的调台，就是靠可变电容改变 f₀ 来选台。</p>
+<p>拖频率滑杆，找电流表读数的峰。</p>`,
   enter() {
     enterBench(() => {
       CIR.dt = 0.002;
@@ -1583,7 +1611,7 @@ chap({
     ctl.slider({ label: '电源电压', min: 1, max: 6, step: 0.5, value: S10.U, fmt: (v) => v.toFixed(1) + ' V', onInput: (v) => { S10.U = v; updRlc(); } });
     ctl.sep();
     ctl.button({ label: '⇦ 调到 f₀', onClick() { S10.f = 159; const sl = document.querySelector('#controls input[type=range]'); sl.value = 159; sl.dispatchEvent(new Event('input', { bubbles: true })); } });
-    setHUD([['f0', '谐振频率'], ['xl', '感抗 X_L'], ['xc', '容抗 X_C'], ['i', '电流 I']]);
+    setHUD([['f0', '谐振频率'], ['xl', '感抗 X_L'], ['xc', '容抗 X_C'], ['i', '电流 I'], ['q', '品质因数 Q']]);
     updRlc();
   },
 });
@@ -1592,11 +1620,13 @@ function updRlc() {
   const XL = w * 0.1, XC = 1 / (w * 1e-5);
   const Z = Math.sqrt(100 + (XL - XC) ** 2);
   const i = S10.U / Z;
+  const Q = Math.sqrt(0.1 / 1e-5) / 10;
   setNeedle('am', i / 0.5);
   hset('f0', (1 / (2 * Math.PI * Math.sqrt(0.1 * 1e-5))).toFixed(0) + ' Hz');
   hset('xl', XL.toFixed(1) + ' Ω');
   hset('xc', XC.toFixed(1) + ' Ω');
   hset('i', i.toFixed(3) + ' A' + (Math.abs(S10.f - 159) < 6 ? ' ← 谐振峰！' : ''));
+  hset('q', `Q = ${Q.toFixed(0)}；谐振时 U_C ≈ Q·U = ${(Q * S10.U).toFixed(0)} V`);
   const sc = makeScope('I – f 谐振曲线');
   scopeBase('f/Hz', 'I/A');
   const ctx = sc.ctx;
@@ -1621,7 +1651,7 @@ const S11 = { N1: 400, N2: 200, RL: 40 };
 chap({
   id: 'xfmr', title: '变压器原理',
   html: `<p>两个线圈绕在同一铁芯上：原线圈通入交流，铁芯中产生<b>变化的磁通</b>，副线圈因<b>电磁感应</b>产生电压。理想变压器：</p>
-<p><span class="hl">U₂ / U₁ = N₂ / N₁</span>（变压比 = 匝数比），且 I₁N₁ ≈ I₂N₂（输入功率 ≈ 输出功率）。升压变压器 N₂&gt;N₁，降压则反之。输电网上用升压减损耗、再用降压送到用户。</p>
+<p><span class="hl">U₂ / U₁ = N₂ / N₁</span>（变压比 = 匝数比），且 I₁N₁ ≈ I₂N₂（输入功率 ≈ 输出功率）。升压变压器 N₂&gt;N₁，降压则反之。输电网上用升压减损耗、再用降压送到用户。注意：变压器<b>不能改变恒定电压</b>——直流不产生变化的磁通，副线圈没有感应电压。</p>
 <p>拧两个匝数旋钮，看副线圈电压与电流怎么变。</p>`,
   enter() {
     enterBench(() => {
@@ -1704,16 +1734,16 @@ function updXfmr() {
 const S12 = { rev: false };
 chap({
   id: 'diode', title: '二极管单向导电性',
-  html: `<p>二极管只让电流单方向通过：<b>正向偏置</b>（正极接高电位）约 0.7 V 后导通；<b>反向偏置</b>时截止（只有极小的漏电流）。发光二极管 LED 一样单向导通，通电就亮。</p>
+  html: `<p>二极管只让电流单方向通过：<b>正向偏置</b>（正极接高电位）约 0.7 V 后导通；<b>反向偏置</b>时截止（只有极小的漏电流）。发光二极管 LED 一样单向导通，但<b>导通电压更高</b>：红色约 1.8 V，蓝色约 3 V——不同颜色禁带宽度不同，导通电压也不同。</p>
 <p>这就是「交流变直流」的基础——整流用的正是二极管的这个脾气。</p>
-<p>点「电池反接」，看灯（LED）和电流表读数的变化。</p>`,
+<p>点「电池反接」，看 LED 和电流表读数的变化。</p>`,
   enter() {
     enterBench(() => {
       CIR.dt = 0.002;
       addEl('bat1', { t: 'bat', x: -2.0, z: 0.4, label: '电源 3V', E: 3, r: 0.3, a: 1, b: 0 });
       addEl('sw', { t: 'sw', x: -1.1, z: 0.4, label: '开关', R: 1e-4, a: 1, b: 2 });
-      addEl('dio', { t: 'dio', x: -0.2, z: 0.4, label: '二极管', a: 2, b: 3 });
-      addEl('led', { t: 'led', x: 0.7, z: 0.4, label: '发光二极管', a: 3, b: 4 });
+      addEl('dio', { t: 'dio', x: -0.2, z: 0.4, label: '二极管（硅 0.7V）', a: 2, b: 3 });
+      addEl('led', { t: 'led', x: 0.7, z: 0.4, label: '发光二极管（红 1.8V）', VF: 1.8, a: 3, b: 4 });
       addEl('res', { t: 'res', x: 1.5, z: 0.4, label: '限流电阻', R: 90, a: 4, b: 5 });
       addEl('am', { t: 'gauge', sub: 'mA', x: 2.2, z: -0.5, label: '毫安表', R: 1, a: 5, b: 0, ry: Math.PI });
       CIR.N = 6;
@@ -1781,8 +1811,8 @@ chap({
     enterBench(() => {
       CIR.dt = 0.002;
       addEl('bat1', { t: 'bat', x: -2.0, z: 0.4, label: '电源 6V', E: 6, r: 0.2, a: 1, b: 0 });
-      addEl('ldr', { t: 'res', x: -1.1, z: 0.4, label: '光敏电阻 LDR', R: 2000, a: 1, b: 2 });
-      addEl('r2', { t: 'res', x: -0.3, z: 0.4, label: '灵敏度 R₂', R: S13.R2 * 1000, a: 2, b: 0 });
+      addEl('r2', { t: 'res', x: -1.1, z: 0.4, label: '上偏置电阻 R₂', R: S13.R2 * 1000, a: 1, b: 2 });
+      addEl('ldr', { t: 'res', x: -0.3, z: 0.4, label: '光敏电阻 LDR', R: 2000, a: 2, b: 0 });
       addEl('npn', { t: 'npn', x: 0.5, z: 0.4, label: '三极管 β=100', a: 0, b: 0, R: 1e9 });
       addEl('lamp', { t: 'lamp', x: 1.5, z: 0.2, label: '路灯', a: 0, b: 0, R: 1e9 });
       addEl('rlamp', { t: 'res', x: 1.0, z: 0.62, label: '灯限流电阻', R: 24, a: 3, b: 4 });
@@ -1790,19 +1820,18 @@ chap({
       CIR.N = 5;
       const y0 = TABLE_Y + 0.06;
       W_([[-2.22, TABLE_Y + 0.34, 0.4], [-2.5, y0, 0.4], [-2.5, y0, 0.62], [2.6, y0, 0.62]], 'bat1');
-      W_([[-1.78, TABLE_Y + 0.34, 0.4], [-1.4, y0, 0.4], [-1.28, TABLE_Y + 0.16, 0.4]], 'bat1');
-      W_([[-0.92, TABLE_Y + 0.16, 0.4], [-0.6, y0, 0.4], [-0.44, TABLE_Y + 0.16, 0.4]], 'ldr');
-      W_([[-0.16, TABLE_Y + 0.16, 0.4], [0.3, y0, 0.4], [0.3, y0, 0.16], [0.3, TABLE_Y + 0.2, 0.16]], 'r2');
-      W_([[0.3, y0, 0.16], [0.3, y0, 0.0], [0.44, TABLE_Y + 0.2, 0.0]], 'r2');
-      W_([[2.6, y0, 0.62], [2.6, y0, -0.7], [1.72, TABLE_Y + 0.5, 0.2]], 'bat1');
+      W_([[-1.78, TABLE_Y + 0.34, 0.4], [-1.4, y0, 0.4], [-1.4, y0, -0.7], [2.6, y0, -0.7]], 'bat1');
+      W_([[-1.1, TABLE_Y + 0.24, 0.62], [-1.1, y0, 0.58], [-0.98, TABLE_Y + 0.16, 0.44]], 'r2');
+      W_([[-0.98, TABLE_Y + 0.16, 0.4], [-0.6, y0, 0.4], [-0.3, y0, 0.4], [-0.3, y0, 0.16], [-0.3, TABLE_Y + 0.2, 0.16]], 'r2');
+      W_([[-0.3, TABLE_Y + 0.16, 0.4], [-0.3, y0, 0.3], [-0.55, y0, 0.0], [-0.55, y0, -0.7]], 'ldr');
       W_([[2.4, y0, 0.62], [2.4, y0, -0.55], [2.0, y0, -0.55], [2.0, TABLE_Y + 0.2, -0.5]], 'rlamp');
       drawSchem([
         { kind: 'wire', x1: 30, y1: 30, x2: 216, y2: 30 },
         { kind: 'wire', x1: 40, y1: 30, x2: 40, y2: 60 },
-        { kind: 'rheo', sx: 40, sy: 76, dir: 'v', sub: 'LDR' },
+        { kind: 'rheo', sx: 40, sy: 76, dir: 'v', sub: 'R2' },
         { kind: 'wire', x1: 40, y1: 92, x2: 40, y2: 100 },
         { kind: 'node', sx: 40, sy: 100 },
-        { kind: 'rheo', sx: 40, sy: 116, dir: 'v', sub: 'R2' },
+        { kind: 'rheo', sx: 40, sy: 116, dir: 'v', sub: 'LDR' },
         { kind: 'wire', x1: 40, y1: 132, x2: 216, y2: 132 },
         { kind: 'wire', x1: 40, y1: 100, x2: 80, y2: 100 },
         { kind: 'wire', x1: 80, y1: 100, x2: 80, y2: 64 },
@@ -1841,21 +1870,24 @@ function updPhoto() {
   const rldr = clamp(60000 / (1 + S13.lux / 12), 400, 80000);
   CIR.els.get('ldr').R = rldr;
   CIR.els.get('r2').R = S13.R2 * 1000;
-  const vb = 6 * (S13.R2 * 1000) / (rldr + S13.R2 * 1000);
-  const ib = Math.max((vb - 0.7) / (S13.R2 * 1000), 0);
+  // 戴维南等效：Vth = 6·R_LDR/(R₂+R_LDR)，Rth = R₂∥R_LDR；基极 0.7V 钳位
+  const R2v = S13.R2 * 1000;
+  const vth = 6 * rldr / (R2v + rldr);
+  const rth = (R2v * rldr) / (R2v + rldr);
+  const ib = Math.max((vth - 0.7) / rth, 0);
   const ic = Math.min(ib * 100, 0.25);
-  const on = ic > 0.03;
+  const on = ic > 0.02;
   const rec = ELVIS.get('lamp');
   if (rec && rec.parts.bulb) rec.parts.bulb.material.emissiveIntensity = clamp(ic / 0.12, 0, 1.6);
   setNeedle('am', ic / 0.3);
   hset('rldr', (rldr / 1000).toFixed(1) + ' kΩ');
-  hset('vb', vb.toFixed(2) + ' V');
+  hset('vb', vth.toFixed(2) + ' V');
   hset('ib', (ib * 1000).toFixed(3) + ' mA');
   hset('lamp', on ? `💡 点亮（β·I_B = ${(ic * 1000).toFixed(0)} mA）` : '熄灭');
 }
 
 /* ---------- 14 直流电动机 ---------- */
-const S14 = { E: 4, R: 2, omega: 0 };
+const S14 = { E: 4, R: 2, TL: 0, omega: 0 };
 chap({
   id: 'motor', title: '直流电动机',
   html: `<p>通电线圈在磁场中受力转动——这就是电动机。转动起来的线圈又切割磁感线产生<b>反电动势</b> E = kω（方向与电源相反）：</p>
@@ -1901,9 +1933,10 @@ chap({
     ctl.clear();
     ctl.slider({ label: '电源电压 U', min: 0, max: 6, step: 0.5, value: S14.E, fmt: (v) => v.toFixed(1) + ' V', onInput: (v) => { S14.E = v; CIR.els.get('bat1').E = v; solveNow(); updMotor(); } });
     ctl.slider({ label: '调速电阻', min: 0, max: 12, step: 0.5, value: S14.R, fmt: (v) => v.toFixed(1) + ' Ω', onInput: (v) => { S14.R = v; CIR.els.get('rh').R = v; setSliderVisual('rh', v / 12); solveNow(); updMotor(); } });
+    ctl.slider({ label: '负载转矩', min: 0, max: 0.15, step: 0.005, value: S14.TL, fmt: (v) => v.toFixed(3) + ' N·m', onInput: (v) => { S14.TL = v; updMotor(); } });
     ctl.sep();
     ctl.toggle({ label: '开关', value: true, onChange: (v) => { setSwitchLogic('sw', v); setSwitchVisual('sw', v); solveNow(); updMotor(); } });
-    setHUD([['eq', 'U = IR + kω'], ['i', '电枢电流'], ['w', '转速'], ['emf', '反电动势 kω']]);
+    setHUD([['eq', 'U = IR + kω'], ['i', '电枢电流'], ['w', '转速'], ['emf', '反电动势 kω'], ['tl', '负载转矩']]);
     updMotor();
   },
 });
@@ -1912,15 +1945,19 @@ function updMotor() {
   CIR.els.get('rh').R = S14.R;
   solveNow();
   const i = Math.abs(CIR.els.get('emf').I);
-  hset('i', i.toFixed(3) + ' A');
+  const stalled = S14.TL > 0 && S14.omega < 0.1 && i > 0.05 && 0.12 * i < S14.TL;
+  hset('i', i.toFixed(3) + ' A' + (stalled ? '（堵转！）' : ''));
   hset('w', (S14.omega).toFixed(1) + ' rad/s（' + (S14.omega * 9.55).toFixed(0) + ' rpm）');
   hset('emf', (0.12 * S14.omega).toFixed(2) + ' V');
+  hset('tl', S14.TL === 0 ? '空载' : `${S14.TL.toFixed(3)} N·m${stalled ? ' → 堵转，电流最大' : ' → 转速下降、电流上升'}`);
   setNeedle('am', i / 3);
 }
 function motorTick(dt) {
   const i = Math.abs(CIR.els.get('emf').I);
   const kt = 0.12, b = 0.0018, J = 0.008;
-  S14.omega += (kt * i - b * S14.omega) / J * dt * 0.25;
+  // 力矩平衡：kt·I − b·ω − TL（负载转矩），堵转时 ω 停在 0
+  const net = kt * i - b * S14.omega - S14.TL;
+  S14.omega = Math.max(0, S14.omega + net / J * dt * 0.25);
   S14.omega = clamp(S14.omega, 0, 60);
   CIR.els.get('emf').E = 0.12 * S14.omega;
   const rec = ELVIS.get('motR');
@@ -1930,18 +1967,18 @@ function motorTick(dt) {
 }
 
 /* ---------- 15 短路与保险丝 ---------- */
-const S15 = { shorted: false, fuseT: 0, blown: false };
+const S15 = { shorted: false, fuseT: 0, blown: false, Ir: 0.3 };
 chap({
   id: 'short', title: '短路与保险丝',
   html: `<p>用导线直接把灯泡两端连起来——<b>短路</b>：电流不再走灯泡，全部走「阻力最小」的短路线。电流 I = E/(r₀+r_短) 瞬间飙到十几安，导线发热起火。</p>
-<p><b>保险丝</b>是电路的「牺牲品」：低熔点合金丝，电流超限先把它烧断，保住整个电路。家庭电路里它进化成了空气开关。</p>
-<p>闭合短接开关，看保险丝发光烧断；点「更换保险丝」复位。</p>`,
+<p><b>保险丝</b>是电路的「牺牲品」：低熔点合金丝，电流超限先把它烧断，保住整个电路。选用原则：<b>串联在干路上，额定电流略大于正常工作电流</b>（本例正常约 0.24 A，选 0.3 A）。家庭电路里它进化成了空气开关。</p>
+<p>闭合短接开关，看保险丝发光烧断；调大额定电流再试；点「更换保险丝」复位。</p>`,
   enter() {
     enterBench(() => {
       CIR.dt = 0.002;
       addEl('bat1', { t: 'bat', x: -2.0, z: 0.4, label: '电源 3V（内阻 0.3Ω）', E: 3, r: 0.3, a: 1, b: 0 });
       addEl('sw', { t: 'sw', x: -1.1, z: 0.4, label: '主开关', R: 1e-4, a: 1, b: 2 });
-      addEl('fu', { t: 'fuse', x: -0.2, z: 0.4, label: '保险丝 6A', R: 0.05, a: 2, b: 4 });
+      addEl('fu', { t: 'fuse', x: -0.2, z: 0.4, label: '保险丝（额定 0.3A）', R: 0.05, Ir: S15.Ir, a: 2, b: 4 });
       addEl('am', { t: 'gauge', sub: 'A', x: 1.9, z: 0.4, label: '电流表', R: 1e-3, a: 4, b: 3 });
       addEl('bl', { t: 'bulb', x: 0.8, z: 0.4, label: '灯泡', R: 12, a: 3, b: 0 });
       addEl('sh', { t: 'sw', x: 0.8, z: -0.4, label: '短接开关（危险）', R: 1e9, a: 3, b: 0 });
@@ -1978,8 +2015,9 @@ chap({
     app.setCamera([-0.2, 3.3, 4.8], [0.2, 1.3, 0]);
     ctl.clear();
     ctl.toggle({ label: '短接开关（危险动作）', value: false, onChange: (v) => { S15.shorted = v; setSwitchLogic('sh', v); setSwitchVisual('sh', v); } });
+    ctl.slider({ label: '保险丝额定电流', min: 0.2, max: 1.0, step: 0.05, value: S15.Ir, fmt: (v) => v.toFixed(2) + ' A', onInput: (v) => { S15.Ir = v; const f = CIR.els.get('fu'); if (!f.blown) f.Ir = v; updShort(); } });
     ctl.sep();
-    ctl.button({ label: '🔧 更换保险丝', onClick() { S15.blown = false; S15.fuseT = 0; const f = CIR.els.get('fu'); f.blown = false; f.R = 0.05; const rec = ELVIS.get('fu'); rec.parts.wire.visible = true; rec.parts.wire.scale.x = 1; solveNow(); updShort(); } });
+    ctl.button({ label: '🔧 更换保险丝', onClick() { S15.blown = false; S15.fuseT = 0; const f = CIR.els.get('fu'); f.blown = false; f.R = 0.05; f.Ir = S15.Ir; const rec = ELVIS.get('fu'); rec.parts.wire.visible = true; rec.parts.wire.scale.x = 1; solveNow(); updShort(); } });
     setHUD([['i', '总电流'], ['fuse', '保险丝'], ['bl', '灯泡'], ['warn', '安全提示']]);
     solveNow();
     updShort();
@@ -1992,7 +2030,7 @@ function updShort() {
   bulbGlow('bl', Math.abs(bl.I) / 0.25);
   const f = CIR.els.get('fu');
   hset('i', i.toFixed(2) + ' A');
-  hset('fuse', f.blown ? '❌ 已熔断（电路断开）' : S15.fuseT > 0 ? '🔥 过热中…' : '✓ 正常');
+  hset('fuse', f.blown ? '❌ 已熔断（电路断开）' : S15.fuseT > 0 ? '🔥 过热中…' : `✓ 正常（额定 ${(f.Ir || 0.3).toFixed(2)} A）`);
   hset('bl', Math.abs(bl.I) > 0.02 ? '亮' : '熄');
   hset('warn', S15.shorted && !f.blown ? '短路电流 ' + i.toFixed(1) + ' A！保险丝先替你扛' : '家庭电路严禁短路');
 }
@@ -2000,7 +2038,8 @@ function shortTick(dt) {
   const am = CIR.els.get('am');
   const i = Math.abs(am.I);
   const f = CIR.els.get('fu');
-  if (!f.blown && i > 6) {
+  const Ir = f.Ir || 0.3;
+  if (!f.blown && i > 1.4 * Ir) {
     S15.fuseT += dt;
     const rec = ELVIS.get('fu');
     if (rec && rec.parts.wire) {
@@ -2072,7 +2111,7 @@ chap({
     });
     app.setCamera([-0.3, 3.3, 4.9], [0.1, 1.3, 0]);
     ctl.clear();
-    ctl.slider({ label: '输入电压 U_in', min: 6, max: 12, step: 0.5, value: S16.U, fmt: (v) => v.toFixed(1) + ' V', onInput: (v) => { S16.U = v; CIR.els.get('bat1').E = v; solveNow(); updZener(); } });
+    ctl.slider({ label: '输入电压 U_in', min: 3, max: 12, step: 0.5, value: S16.U, fmt: (v) => v.toFixed(1) + ' V', onInput: (v) => { S16.U = v; CIR.els.get('bat1').E = v; solveNow(); updZener(); } });
     setHUD([['uin', '输入电压'], ['uout', '输出电压'], ['iz', '稳压管电流'], ['note', '击穿区稳压']]);
     solveNow();
     updZener();
@@ -2094,9 +2133,9 @@ function updZener() {
 const S17 = { R3: 4, t: 0, heating: false, T1: 25, T2: 25 };
 chap({
   id: 'joule', title: '探究焦耳定律',
-  html: `<p>电流通过导体发热：<span class="hl">Q = I²Rt</span>（焦耳定律）。串联电路中电流处处相等——比较两根电阻丝，<b>R 大的发热快</b>；这是「电流相同比电阻」的对照实验。</p>
+  html: `<p>电流通过导体发热：<span class="hl">Q = I²Rt</span>（焦耳定律）。两只烧瓶装<b>等质量的煤油</b>（比热容小，升温更明显——这正是实验用煤油而不用水的原因）。串联电路中电流处处相等——比较两根电阻丝，<b>R 大的发热快</b>；这是「电流相同比电阻」的对照实验。</p>
 <p>并联比较则相反：电压相同时，R 小的发热快（P = U²/R）。</p>
-<p>点「开始加热」跑 8 秒，比较两只温度计。</p>`,
+<p>点「开始加热」跑 8 秒，比较两只温度计（ΔT₂ : ΔT₁ ≈ R₂ : R₁ = 2 : 1）。</p>`,
   enter() {
     enterBench(() => {
       CIR.dt = 0.002;
@@ -2175,6 +2214,7 @@ chap({
   id: 'reslaw', title: '探究影响导体电阻大小的因素',
   html: `<p>导体电阻由材料本身决定：<span class="hl">R = ρL / S</span>——电阻率 ρ 越大、越长 L、越细 S，电阻越大。</p>
 <p>ρ 是材料的「电阻身份证」：铜 0.017、铁 0.096、镍铬合金 1.1（单位 Ω·mm²/m，20°C）。同形状下镍铬丝电阻是铜丝的 ~65 倍，所以电炉丝用镍铬。</p>
+<p>实验方法：<b>控制变量法</b>——每次只改一个因素（先定材料看长度，再定长度看粗细，最后定长短粗细比材料）。</p>
 <p>换材料、拉长、变细，看电流表和公式一起动。</p>`,
   enter() {
     enterBench(() => {
@@ -2245,7 +2285,7 @@ chap({
   id: 'mm', title: '多用电表的使用',
   html: `<p>多用电表 = 电压表 + 电流表 + 欧姆表。三条铁律：</p>
 <p>① 测<b>电压</b>：并联在被测元件两端（表笔搭两端点）；② 测<b>电流</b>：串联进电路（断开一点串入）；③ 测<b>电阻</b>：<b>必须断电</b>测量（表内自带电池）。</p>
-<p>选档位 + 选测点，看读数。欧姆档用前要「调零」——两表笔短接调 0 Ω。</p>`,
+<p>选档位 + 选测点，看读数。欧姆档用前要「调零」——两表笔短接调 0 Ω。冷知识：欧姆挡内部电池的正极恰好接<b>红表笔</b>，测电阻时电流是从红表笔流出的。</p>`,
   enter() {
     enterBench(() => {
       CIR.dt = 0.002;
@@ -2328,12 +2368,12 @@ function updMM() {
 }
 
 /* ---------- 20 电磁铁 ---------- */
-const S20 = { E: 3, N: 150, rev: false };
+const S20 = { E: 3, N: 150, core: true };
 chap({
   id: 'mag', title: '影响电磁铁磁性强弱的因素',
-  html: `<p>通电螺线管产生磁场，插入铁芯后磁场被大大增强——<b>电磁铁</b>。磁性强弱由两个因素决定：<span class="hl">电流 I 越大、匝数 N 越多，磁性越强</span>（吸引铁钉数 ∝ N·I）。</p>
+  html: `<p>通电螺线管产生磁场，插入铁芯后磁场被大大增强——<b>电磁铁</b>。磁性强弱由<b>三个因素</b>决定：<span class="hl">电流 I 越大、匝数 N 越多、有铁芯，磁性越强</span>（吸引大头针数 ∝ N·I）。</p>
 <p>电磁铁的磁性「随电开关」：起重机吸废钢、电磁继电器、磁悬浮列车都用它。</p>
-<p>调电流、加匝数，数一数吸起几根铁钉；再试试断电。</p>`,
+<p>调电流、加匝数，数一数吸起几根大头针；抽掉铁芯再试；再试试断电。</p>`,
   enter() {
     enterBench(() => {
       CIR.dt = 0.002;
@@ -2369,8 +2409,9 @@ chap({
     ctl.slider({ label: '电源电压', min: 0, max: 4, step: 0.25, value: S20.E, fmt: (v) => v.toFixed(2) + ' V', onInput: (v) => { S20.E = v; CIR.els.get('bat1').E = v; solveNow(); updMag(); } });
     ctl.slider({ label: '线圈匝数 N', min: 50, max: 300, step: 10, value: S20.N, fmt: (v) => v + ' 匝', onInput: (v) => { S20.N = v; updMag(); } });
     ctl.sep();
+    ctl.toggle({ label: '插入铁芯', value: S20.core, onChange: (v) => { S20.core = v; updMag(); } });
     ctl.toggle({ label: '开关', value: true, onChange: (v) => { setSwitchLogic('sw', v); setSwitchVisual('sw', v); solveNow(); updMag(); } });
-    setHUD([['i', '电流'], ['ni', '安匝 N·I'], ['nail', '吸起铁钉'], ['note', 'I↑ 或 N↑ → 磁性↑']]);
+    setHUD([['i', '电流'], ['ni', '安匝 N·I'], ['nail', '吸起大头针'], ['note', 'I↑ 或 N↑ → 磁性↑']]);
     updMag();
   },
 });
@@ -2380,8 +2421,9 @@ function updMag() {
   const i = Math.abs(am.I);
   setNeedle('am', i / 1.2);
   const ni = i * S20.N;
-  const cnt = clamp(Math.floor(ni / 45), 0, 6);
+  const cnt = clamp(Math.floor(ni / 45 * (S20.core ? 1 : 0.15)), 0, 6);
   const rec = ELVIS.get('mag');
+  if (rec && rec.parts.core) rec.parts.core.visible = S20.core;
   if (rec && rec.parts.nails) {
     rec.parts.nails.forEach((nail, k) => {
       if (k < cnt) {
@@ -2400,12 +2442,12 @@ function updMag() {
 }
 
 /* ---------- 21 太阳能电池驱动电动机 ---------- */
-const S21 = { light: 0.8, tilt: 0, led: true, omega: 0 };
+const S21 = { light: 0.8, tilt: 0, sw: true, omega: 0 };
 chap({
   id: 'solar', title: '太阳能电池驱动电动机',
-  html: `<p>太阳能电池板把<b>光能 → 电能</b>（光伏效应），电动机再把<b>电能 → 机械能</b>。光照越强，电池板输出电压越高、能驱动的负载越多。</p>
+  html: `<p>太阳能电池板把<b>光能 → 电能</b>（光伏效应），电动机再把<b>电能 → 机械能</b>。太阳能电池近似「<b>恒流源</b>」：<span class="hl">短路电流与光照强度成正比</span>；光照越弱，能输出的电流越小，电动机变慢甚至停转。</p>
 <p>面板正对阳光（倾角合适）时接收功率最大——这就是太阳能电站追着太阳转的原因。</p>
-<p>拖「光照」和「倾角」，看电动机转速变化；晚上（光照=0）就全停了。</p>`,
+<p>拖「光照」和「倾角」看转速变化；断开开关，电压表读数就是<b>开路电压</b>；晚上（光照=0）就全停了。</p>`,
   enter() {
     enterBench(() => {
       CIR.dt = 0.001;
@@ -2414,14 +2456,14 @@ chap({
       addEl('motR', { t: 'motor', x: -0.3, z: 0.4, label: '电动机', R: 4, a: 1, b: 2 });
       addEl('emf', { t: 'res', x: -0.3, z: 0.4, label: '反电动势', kind: 'emf', E: 0, r: 0.02, a: 2, b: 3 });
       CIR.els.get('emf').kind = 'emf';
-      addEl('dio', { t: 'led', x: 0.8, z: 0.4, label: 'LED（可接）', a: 3, b: 4 });
+      addEl('sw', { t: 'sw', x: 0.8, z: 0.4, label: '开关 S', R: S21.sw ? 1e-4 : 1e9, a: 3, b: 4 });
       addEl('am', { t: 'gauge', sub: 'mA', x: 1.5, z: -0.5, label: '电流表', R: 1, a: 4, b: 0, ry: Math.PI });
       CIR.N = 5;
       const y0 = TABLE_Y + 0.06;
       W_([[-1.82, TABLE_Y + 0.3, 0.4], [-2.3, y0, 0.4], [-2.3, y0, -0.7], [1.5, y0, -0.7], [1.5, TABLE_Y + 0.2, -0.56]], 'pv');
       W_([[-1.38, TABLE_Y + 0.3, 0.4], [-1.0, y0, 0.4], [-0.55, y0, 0.4]], 'pv');
       W_([[-0.05, y0, 0.4], [0.4, y0, 0.4], [0.6, TABLE_Y + 0.14, 0.4]], 'motR');
-      W_([[1.0, TABLE_Y + 0.14, 0.4], [1.3, y0, 0.4], [1.3, y0, -0.55], [1.5, y0, -0.55]], 'dio');
+      W_([[1.0, TABLE_Y + 0.14, 0.4], [1.3, y0, 0.4], [1.3, y0, -0.55], [1.5, y0, -0.55]], 'sw');
       drawSchem([
         { kind: 'wire', x1: 30, y1: 30, x2: 44, y2: 30 },
         { kind: 'bat', sx: 54, sy: 30, dir: 'h', sub: 'PV' },
@@ -2430,7 +2472,7 @@ chap({
         { kind: 'wire', x1: 116, y1: 30, x2: 140, y2: 30 },
         { kind: 'bat', sx: 154, sy: 30, dir: 'h', sub: 'E反' },
         { kind: 'wire', x1: 166, y1: 30, x2: 190, y2: 30 },
-        { kind: 'dio', sx: 204, sy: 30, dir: 'h', sub: 'LED' },
+        { kind: 'sw', sx: 204, sy: 30, dir: 'h', closed: S21.sw, sub: 'S' },
         { kind: 'wire', x1: 216, y1: 30, x2: 232, y2: 30 },
         { kind: 'wire', x1: 232, y1: 30, x2: 232, y2: 114 },
         { kind: 'am', sx: 140, sy: 114, dir: 'h', sub: 'mA' },
@@ -2443,23 +2485,23 @@ chap({
     ctl.slider({ label: '光照强度', min: 0, max: 100, step: 5, value: S21.light * 100, fmt: (v) => v + ' %', onInput: (v) => { S21.light = v / 100; updSolar(); } });
     ctl.slider({ label: '面板倾角（0=正对阳光）', min: -60, max: 60, step: 5, value: S21.tilt, fmt: (v) => v + '°', onInput: (v) => { S21.tilt = v; updSolar(); } });
     ctl.sep();
-    ctl.toggle({ label: '接入 LED（额外负载）', value: S21.led, onChange: (v) => { S21.led = v; CIR.els.get('dio').blown = !v; CIR.els.get('am').blown = !v; solveNow(); updSolar(); } });
+    ctl.toggle({ label: '开关 S', value: S21.sw, onChange: (v) => { S21.sw = v; setSwitchLogic('sw', v); setSwitchVisual('sw', v); solveNow(); updSolar(); } });
     setHUD([['u', '板端电压'], ['i', '电流'], ['w', '电机转速'], ['note', '光能→电能→机械能']]);
     updSolar();
   },
 });
 function updSolar() {
   const eff = Math.cos(S21.tilt * Math.PI / 180) * 0.92 + 0.08;
-  const E = 3.2 * S21.light * S21.light * eff;
+  const E = 3.2 * S21.light * eff;
   CIR.els.get('pv').E = E;
   const rec = ELVIS.get('pv');
   if (rec && rec.parts.panel) rec.parts.panel.rotation.x = -0.35 - S21.tilt * Math.PI / 180;
   solveNow();
   const i = Math.abs(CIR.els.get('emf').I);
-  hset('u', CIR.els.get('pv').V.toFixed(2) + ' V');
+  hset('u', CIR.els.get('pv').V.toFixed(2) + ' V' + (S21.sw ? '' : '（开路）'));
   hset('i', (i * 1000).toFixed(0) + ' mA');
   hset('w', S21.omega.toFixed(1) + ' rad/s');
-  hset('note', S21.light === 0 ? '夜晚：光伏无输出' : (Math.abs(S21.tilt) > 30 ? '倾角大：受光面积减小' : '正对阳光效率最高'));
+  hset('note', S21.light === 0 ? '夜晚：光伏无输出' : !S21.sw ? '开关断开：电压表读数 = 开路电压' : (Math.abs(S21.tilt) > 30 ? '倾角大：受光面积减小' : '光照↑ → 短路电流成正比↑'));
 }
 function solarTick(dt) {
   const i = Math.abs(CIR.els.get('emf').I);

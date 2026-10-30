@@ -112,7 +112,7 @@ body.lab {
   min-width: 0;
   overflow: hidden;
 }
-.lab-stage canvas { position: absolute; inset: 0; display: block; outline: none; }
+.lab-stage canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; outline: none; }
 
 /* ---------- 章节说明卡 ---------- */
 

@@ -260,7 +260,7 @@ const TAPE_DT = 0.1;   // 每 5 个计时周期取一个计数点（0.02×5）
 function stepTape(dt) {
   if (TAPE.t < 0) return;
   TAPE.t += dt;
-  const a = TAPE.F / TAPE.m;                 // m/s²（桌面尺度 1:1）
+  const a = TAPE.F * 9.8 / (TAPE.m + TAPE.F);   // 系统整体：a = m钩·g / (M车 + m钩)
   const x0 = -3.8;
   const x = clamp(x0 + 0.5 * a * TAPE.t * TAPE.t * 0.55, -3.8, 4.4);
   TAPE.cart.position.x = x;
@@ -277,6 +277,7 @@ function stepTape(dt) {
     const i = TAPE.dots.length;
     const ti = (i + 1) * TAPE_DT;
     const xi = clamp(x0 + 0.5 * a * ti * ti * 0.55, -3.8, 4.4);
+    if (xi >= 4.35) break;   // 小车到头，纸带不再打点
     const dot = cyl(0.018, 0.018, 0.005, M(0x333a40, 0.8), 8);
     dot.rotation.x = Math.PI / 2;
     dot.position.set(xi - 0.32, 1.565, 0.04);
@@ -305,7 +306,7 @@ function drawTapePlot() {
   ctx.stroke();
   ctx.fillStyle = st.getPropertyValue('--text-dim').trim() || '#889';
   ctx.font = '10px sans-serif';
-  ctx.fillText('a = ' + (TAPE.F / TAPE.m).toFixed(2) + ' m/s²（斜率）', ox + 8, oy - ph * 0.85);
+  ctx.fillText('a = ' + (TAPE.F * 9.8 / (TAPE.m + TAPE.F)).toFixed(2) + ' m/s²（斜率）', ox + 8, oy - ph * 0.85);
   hset('fit', 'v–t 是一条过原点的直线 → 匀加速');
 }
 function tapeCtl() {
@@ -315,8 +316,8 @@ function tapeCtl() {
   ctl.sep();
   ctl.button({ label: '▶ 释放小车', onClick() { resetTape(); TAPE.t = 0; } });
   ctl.button({ label: '↺ 复位', onClick() { resetTape(); } });
-  setHUD([['a', '加速度 a=F/m'], ['dots', '计数点'], ['fit', '图线判断'], ['tip', '提示']]);
-  hset('a', (TAPE.F / TAPE.m).toFixed(2) + ' m/s²');
+  setHUD([['a', '加速度 a=m钩g/(M+m钩)'], ['dots', '计数点'], ['fit', '图线判断'], ['tip', '提示']]);
+  hset('a', (TAPE.F * 9.8 / (TAPE.m + TAPE.F)).toFixed(2) + ' m/s²');
   hset('dots', '0');
   hset('fit', '释放后自动绘制');
   hset('tip', '相邻计数点间距越来越大');
@@ -324,7 +325,7 @@ function tapeCtl() {
 
 /* ============ 02 光电门测速度 ============ */
 
-const GATE = { v: 0.8, w: 0.05, L: 2.0, t: -1, t1: 0, t2: 0 };
+const GATE = { v: 0.8, w: 0.05, L: 2.0, acc: 0, t: -1, t1: 0, t2: 0 };
 function buildGates(g) {
   buildBench(g, 12);
   buildTrack(g, 10, 1.32);
@@ -340,6 +341,7 @@ function buildGates(g) {
 }
 function resetGates() {
   GATE.t = -1;
+  GATE.vCur = GATE.v;
   GATE.cart.position.set(-4.4, 1.42, 0);
   GATE.t1 = GATE.t2 = 0;
   setSpriteText(GATE.lbl1, 'G1', { fontSize: 30, color: '#8fd3a0', scale: 0.0045, bg: 'rgba(12,18,26,0.6)' });
@@ -361,7 +363,8 @@ function updGates(idle = false) {
 function stepGates(dt) {
   if (GATE.t < 0) return;
   GATE.t += dt;
-  GATE.cart.position.x += GATE.v * dt;
+  GATE.vCur = (GATE.vCur ?? GATE.v) + GATE.acc * dt;   // 导轨微倾 → 匀加速
+  GATE.cart.position.x += GATE.vCur * dt;
   const x = GATE.cart.position.x;
   const w = GATE.w;
   [GATE.g1, GATE.g2].forEach((gt, i) => {
@@ -377,7 +380,11 @@ function stepGates(dt) {
       GATE['tt' + i] = GATE.t - GATE['tStart' + i];
       const v = w / GATE['tt' + i];
       setSpriteText(i === 0 ? GATE.lbl1 : GATE.lbl2, 'v' + (i + 1) + '=' + v.toFixed(2) + ' m/s', { fontSize: 30, color: '#ffd166', scale: 0.0045, bg: 'rgba(12,18,26,0.66)' });
-      if (i === 0) GATE.v1v = v; else GATE.v2v = v;
+      if (i === 0) GATE.v1v = v; else {
+        GATE.v2v = v;
+        const aMeas = (v * v - (GATE.v1v || 0) * (GATE.v1v || 0)) / (2 * GATE.L);   // a = (v2²−v1²)/2L
+        hset('a', aMeas.toFixed(3) + ' m/s²（=(v2²−v1²)/2L）');
+      }
       hset('t', 'Δt1=' + (GATE.tt0 * 1000).toFixed(1) + 'ms  Δt2=' + (GATE.tt1 * 1000).toFixed(1) + 'ms');
       hset('v', 'v1=' + (GATE.v1v || 0).toFixed(2) + '  v2=' + (GATE.v2v || 0).toFixed(2) + ' m/s');
     }
@@ -387,18 +394,21 @@ function stepGates(dt) {
 function gatesCtl() {
   ctl.clear();
   ctl.slider({ label: '初速度', min: 0.2, max: 2.5, step: 0.05, value: GATE.v, fmt: (v) => v.toFixed(2) + ' m/s', onInput: (v) => { GATE.v = v; } });
+  ctl.slider({ label: '导轨加速度', min: 0, max: 0.6, step: 0.05, value: GATE.acc, fmt: (v) => v.toFixed(2) + ' m/s²', onInput: (v) => { GATE.acc = v; } });
   ctl.slider({ label: '挡光片宽度', min: 0.02, max: 0.2, step: 0.01, value: GATE.w, fmt: (v) => v.toFixed(2) + ' m', onInput: (v) => { GATE.w = v; updGates(true); } });
   ctl.slider({ label: '两门间距', min: 0.6, max: 4, step: 0.1, value: GATE.L, fmt: (v) => v.toFixed(1) + ' m', onInput: (v) => { GATE.L = v; updGates(true); } });
   ctl.sep();
   ctl.button({ label: '▶ 释放', onClick() { resetGates(); GATE.t = 0; } });
-  setHUD([['d', '挡光片宽度 d'], ['L', '门间距'], ['t', '挡光时间'], ['v', '平均速度≈瞬时']]);
+  setHUD([['d', '挡光片宽度 d'], ['L', '门间距'], ['t', '挡光时间'], ['v', 'v1 / v2'], ['a', '由速度求加速度']]);
   hset('v', '极短时间内的平均速度 = 瞬时速度');
   updGates(true);
 }
 
 /* ============ 03 自由落体 ============ */
 
-const DROP = { h: 4.5, g: 9.8, slow: false, t: -1, ghosts: [], ghostT: 0 };
+const DROP = { h: 4.5, g: 9.8, slow: false, t: -1, ghosts: [], ghostT: 0, obj: 'ball', vac: false };
+/* 终端速度（示意量级）：钢球几乎不受空气阻力，乒乓球次之，羽毛很快到达终端速度 */
+const DROP_OBJS = { ball: { name: '钢球', vt: 60 }, pp: { name: '乒乓球', vt: 6.5 }, feather: { name: '羽毛', vt: 1.3 } };
 function buildDrop(g) {
   // 落体塔
   const tower = box(0.5, 6.4, 0.5, M(0x6f747b, 0.7));
@@ -425,6 +435,8 @@ function buildDrop(g) {
 }
 function resetDrop() {
   DROP.t = -1;
+  DROP.v = 0;
+  DROP.y = DROP.h;
   DROP.ghosts.forEach((m) => DROP.ghostsGroup.remove(m));
   DROP.ghosts = [];
   DROP.ball.visible = true;
@@ -438,8 +450,11 @@ function stepDrop(dt) {
   if (DROP.t < 0) return;
   const g = DROP.g;
   DROP.t += dt;
-  const y = Math.max(DROP.h - 0.5 * g * DROP.t * DROP.t, 0.16);
-  DROP.ball.position.y = y;
+  const vt = DROP.vac ? Infinity : DROP_OBJS[DROP.obj].vt;
+  // a = g·(1 − v²/vt²)：空气阻力随速度增大，v 达到终端速度后匀速下落
+  DROP.v = Math.min((DROP.v ?? 0) + g * dt, vt);
+  DROP.y = Math.max((DROP.y ?? DROP.h) - DROP.v * dt, 0.16);
+  DROP.ball.position.y = DROP.y;
   // 频闪残影
   DROP.ghostT += dt;
   if (DROP.ghostT > 0.12 && DROP.ghosts.length < 26) {
@@ -449,13 +464,11 @@ function stepDrop(dt) {
     DROP.ghostsGroup.add(gm);
     DROP.ghosts.push(gm);
   }
-  const tLand = Math.sqrt(2 * DROP.h / g);
-  if (y <= 0.17) {
+  if (DROP.y <= 0.17) {
     DROP.t = -2;
-    const v = g * tLand;
-    hset('t', tLand.toFixed(2) + ' s');
-    hset('v', v.toFixed(1) + ' m/s');
-    hset('eq', 'h=½gt² → t=√(2h/g)');
+    hset('t', DROP.t.toFixed(2) + ' s');
+    hset('v', DROP.v.toFixed(1) + ' m/s' + (!DROP.vac && vt < 10 ? '（≈终端速度）' : ''));
+    hset('eq', DROP.vac || vt > 50 ? 'h=½gt² → t=√(2h/g)' : '阻力 F=½ρC_dAv²，v 大后 a→0');
   }
 }
 
@@ -502,12 +515,26 @@ function resetNewton() {
 function stepNewton(dt) {
   if (NEWT.t < 0) return;
   NEWT.t += dt;
-  const a = NEWT.F / NEWT.m;
+  // 整体法：a = (m·g − 未平衡的摩擦) / (M + m)；绳拉力 T = M·(a + f/M)…
+  const mh = NEWT.F, Mc = NEWT.m, bal = NEWT.bal ?? true;
+  const fFric = bal ? 0 : 0.3 * Mc * 9.8;           // 未平衡摩擦力时 μ≈0.3
+  const drive = mh * 9.8 - fFric;
+  const a = Math.max(drive / (Mc + mh), 0);
+  const T = Mc * a + fFric;                          // 对小车用牛顿第二定律：T − f = M·a
+  NEWT.aCur = a; NEWT.tCur = T;
+  if (a <= 0) {                                      // 拉不动
+    hset('a', '0 m/s²（拉不动）');
+    hset('tension', 'T ≤ mg = ' + (mh * 9.8).toFixed(2) + ' N');
+    NEWT.t = -2;
+    return;
+  }
   const x0 = -4.4;
   NEWT.cart.position.x = clamp(x0 + 0.5 * a * NEWT.t * NEWT.t, -4.4, 4.4);
   NEWT.hanger.position.y = clamp(1.72 - (NEWT.cart.position.x - x0) * 0.35, 0.5, 1.72);
   NEWT.rope.set(new THREE.Vector3(5.15, 1.78, 0), new THREE.Vector3(5.15, NEWT.hanger.position.y, 0));
   NEWT.ropeH.set(new THREE.Vector3(NEWT.cart.position.x + 0.1, 1.5, 0), new THREE.Vector3(5.15, 1.78, 0));
+  hset('a', a.toFixed(2) + ' m/s²（=驱动/(M+m)）');
+  hset('tension', 'T=' + T.toFixed(2) + ' N ' + (T < mh * 9.8 - 0.01 ? '< mg=' + (mh * 9.8).toFixed(2) : '≈ mg'));
   const x = NEWT.cart.position.x;
   [NEWT.g1, NEWT.g2].forEach((gt, i) => {
     const gx = i === 0 ? -0.5 : 2.5;
@@ -516,10 +543,8 @@ function stepNewton(dt) {
       NEWT['tt' + i] = NEWT.t;
       flashGate(gt);
       if (i === 1) {
-        const dtm = NEWT.tt1 - NEWT.tt0;
         const v1 = a * NEWT.tt0, v2 = a * NEWT.tt1;
         const aMeas = (v2 * v2 - v1 * v1) / (2 * 3.0);
-        hset('a', a.toFixed(2) + ' m/s²（理论 F/m）');
         hset('meas', aMeas.toFixed(2) + ' m/s²（光电门实测）');
         NEWT.t = -2;
       }
@@ -529,7 +554,7 @@ function stepNewton(dt) {
 
 /* ============ 05 滑动摩擦力 ============ */
 
-const FRIC = { G: 20, mu: 0.5, pulling: false, x: -2.5 };
+const FRIC = { G: 20, mu: 0.5, pulling: false, x: -2.5, pullT: 0 };
 function buildFric(g) {
   buildBench(g, 12);
   // 木板
@@ -560,7 +585,7 @@ function buildFric(g) {
 function updFric() {
   const mu = FRIC.mu;
   const Gt = FRIC.G;
-  const F = mu * Gt;
+  const F = FRIC.pulling ? (FRIC.fCur ?? mu * Gt) : mu * Gt;
   FRIC.blk.position.x = FRIC.x;
   const sx = FRIC.x - 0.35 - 0.55;
   FRIC.scaleBody.position.set(sx, 1.42, 0);
@@ -571,10 +596,16 @@ function updFric() {
   if (FRIC.pulling) {
     FRIC.hand.set(new THREE.Vector3(sx - 1.6, 1.42, 0), new THREE.Vector3(sx - 0.4, 1.42, 0), '匀速拉动');
   } else FRIC.hand.hide();
+  // 阶段：静摩擦（随拉力增大）→ 最大静摩擦 → 滑动摩擦（回落并恒定）
+  let stage = '待拉动';
+  if (FRIC.pulling) {
+    const t = FRIC.pullT ?? 0;
+    stage = t < 1.4 ? '静摩擦：随拉力增大（物块未动）' : t < 1.6 ? '达到最大静摩擦！物块被拉动' : '滑动摩擦：示数回落并保持恒定';
+  }
   hset('n', Gt.toFixed(1) + ' N');
   hset('f', F.toFixed(1) + ' N');
   hset('mu', 'μ = F/N = ' + mu.toFixed(2));
-  hset('law', 'N 一定：接触面越粗糙，μ 越大');
+  hset('law', stage);
 }
 function fricCtl() {
   ctl.clear();
@@ -590,6 +621,7 @@ function fricCtl() {
   ctl.button({
     label: '▶ 匀速拉动', onClick(btn) {
       FRIC.pulling = !FRIC.pulling;
+      FRIC.pullT = 0; FRIC.fCur = undefined;
       btn.classList.toggle('active', FRIC.pulling);
       btn.textContent = FRIC.pulling ? '⏸ 停止' : '▶ 匀速拉动';
       updFric();
@@ -601,7 +633,7 @@ function fricCtl() {
 
 /* ============ 06 斜面与力的分解 ============ */
 
-const INC = { ang: 25, G: 30, show: true };
+const INC = { ang: 25, G: 30, mu: 0, show: true };
 function buildIncline(g) {
   buildBench(g, 12);
   INC.wedge = new THREE.Group();
@@ -655,15 +687,27 @@ function updIncline() {
   hset('g1', (Gt * Math.sin(th)).toFixed(1) + ' N（下滑分力）');
   hset('g2', (Gt * Math.cos(th)).toFixed(1) + ' N（压紧斜面）');
   hset('th', INC.ang + '°');
-  hset('note', INC.ang > 30 ? '倾角大：下滑分力明显' : '倾角小：物体被压得更紧');
+  // 摩擦与临界角：G·sinθ > μ·G·cosθ（即 tanθ > μ）时开始下滑，临界角与质量无关
+  if (INC.mu > 0) {
+    const slide = Math.tan(th) > INC.mu;
+    const a = slide ? 9.8 * (Math.sin(th) - INC.mu * Math.cos(th)) : 0;
+    hset('note', slide
+      ? 'tanθ=' + Math.tan(th).toFixed(2) + ' > μ=' + INC.mu + '：下滑，a=' + a.toFixed(2) + ' m/s²'
+      : 'tanθ=' + Math.tan(th).toFixed(2) + ' ≤ μ=' + INC.mu + '：静止，静摩擦平衡 G·sinθ');
+    hset('crit', '临界角 arctanμ = ' + (Math.atan(INC.mu) * 180 / Math.PI).toFixed(1) + '°（与质量无关）');
+  } else {
+    hset('note', INC.ang > 30 ? '倾角大：下滑分力明显' : '倾角小：物体被压得更紧');
+    hset('crit', '–');
+  }
 }
 function inclineCtl() {
   ctl.clear();
   ctl.slider({ label: '倾角 θ', min: 10, max: 45, step: 1, value: INC.ang, fmt: (v) => v + '°', onInput: (v) => { INC.ang = v; updIncline(); } });
   ctl.slider({ label: '物重 G', min: 10, max: 50, step: 1, value: INC.G, fmt: (v) => v + ' N', onInput: (v) => { INC.G = v; updIncline(); } });
+  ctl.slider({ label: '静摩擦因数 μ', min: 0, max: 1, step: 0.05, value: INC.mu, fmt: (v) => v.toFixed(2), onInput: (v) => { INC.mu = v; updIncline(); } });
   ctl.sep();
   ctl.toggle({ label: '显示两分力', value: true, onChange: (v) => { INC.show = v; updIncline(); } });
-  setHUD([['g1', '下滑分力 G1'], ['g2', '垂直分力 G2'], ['th', '倾角'], ['note', '观察']]);
+  setHUD([['g1', '下滑分力 G1'], ['g2', '垂直分力 G2'], ['th', '倾角'], ['crit', '临界角'], ['note', '状态']]);
   updIncline();
 }
 
@@ -701,9 +745,12 @@ function buildLift(g) {
 }
 function updLift(idle = false) {
   const m = 2;   // 砝码 2 kg
-  const N = m * (9.8 + LIFT.a);
+  const N = Math.max(m * (9.8 + LIFT.a), 0);   // a = −g（缆绳断开）时示数为 0：完全失重
   LIFT.cab.position.y = LIFT.y;
-  const state = idle ? '静止' : Math.abs(LIFT.a) < 0.15 ? '匀速/静止：N = mg' : LIFT.a > 0 ? '向上加速：N > mg（超重）' : '向下加速：N < mg（失重）';
+  const state = idle ? '静止'
+    : LIFT.a <= -9.7 ? '完全失重：a = −g，N = 0'
+      : Math.abs(LIFT.a) < 0.15 ? '匀速/静止：N = mg'
+        : LIFT.a > 0 ? '向上加速：N > mg（超重）' : '向下加速：N < mg（失重）';
   setSpriteText(LIFT.readLbl, 'N = ' + N.toFixed(1) + ' N', { fontSize: 34, color: '#ffd166', scale: 0.006, bg: 'rgba(12,18,26,0.7)' });
   hset('n', N.toFixed(1) + ' N');
   hset('mg', (m * 9.8).toFixed(1) + ' N');
@@ -724,6 +771,7 @@ function liftCtl() {
     label: '▼ 下降', onClick() { LIFT.v = -1.2; LIFT.dir = -1; },
   });
   ctl.button({ label: '■ 停', onClick() { LIFT.v = 0; } });
+  ctl.button({ label: '⚠ 缆绳断开', onClick() { LIFT.v = 0; LIFT.a = -9.8; updLift(); } });
   setHUD([['n', '秤的示数 N'], ['mg', '砝码重 mg'], ['a', '加速度'], ['st', '状态']]);
   updLift(true);
 }
@@ -800,6 +848,7 @@ function pendCtl() {
 /* ============ 09 动量守恒 ============ */
 
 const COL = { m1: 1, v1: 1.5, m2: 2, v2: -0.5, kind: 'elas', t: -1, done: false };
+const COL_E = { elas: 1, partial: 0.5, inel: 0 };   // 恢复系数：弹性 / 一般（橡胶） / 完全非弹性（魔术贴）
 function buildCollide(g) {
   buildBench(g, 12);
   buildTrack(g, 10, 1.32);
@@ -822,14 +871,15 @@ function resetCollide() {
 }
 function afterV() {
   const { m1, v1, m2, v2 } = COL;
-  if (COL.kind === 'elas') {
-    return [((m1 - m2) * v1 + 2 * m2 * v2) / (m1 + m2), ((m2 - m1) * v2 + 2 * m1 * v1) / (m1 + m2)];
-  }
-  const v = (m1 * v1 + m2 * v2) / (m1 + m2);
-  return [v, v];
+  const e = COL_E[COL.kind] ?? 1;
+  // 一维碰撞通式（含恢复系数 e）：弹性 e=1，一般碰撞 0<e<1，完全非弹性 e=0
+  const dv = v1 - v2;
+  const u1 = v1 - (1 + e) * m2 * dv / (m1 + m2);
+  const u2 = v2 + (1 + e) * m1 * dv / (m1 + m2);
+  return [u1, u2];
 }
 function updCollide(idle = false) {
-  const s = COL.kind === 'elas' ? '弹性（碰后分开）' : '完全非弹性（粘在一起）';
+  const s = COL.kind === 'elas' ? '弹性（弹簧圈，动能也守恒）' : COL.kind === 'partial' ? '一般碰撞（橡胶块，动能有损失）' : '完全非弹性（魔术贴，粘在一起）';
   if (idle) {
     const [u1, u2] = afterV();
     hset('pre', 'p前 = ' + (COL.m1 * COL.v1 + COL.m2 * COL.v2).toFixed(2) + ' kg·m/s');
@@ -854,14 +904,14 @@ function stepCollide(dt) {
     COL.done = true;
     COL.v1n = u1; COL.v2n = u2;
     if (COL.kind === 'inel') {
-      const vc = (COL.m1 * COL.v1 + COL.m2 * COL.v2) / (COL.m1 + COL.m2);
-      COL.v1n = COL.v2n = vc;
       COL.c2.position.x = COL.c1.position.x + half;
-      hset('post', '共同速度 v′=' + vc.toFixed(2) + ' m/s');
+      hset('post', '共同速度 v′=' + u1.toFixed(2) + ' m/s');
     } else {
       hset('post', '碰后 v1′=' + u1.toFixed(2) + '  v2′=' + u2.toFixed(2));
     }
-    hset('law', 'p后 = ' + (COL.m1 * COL.v1n + COL.m2 * COL.v2n).toFixed(2) + ' kg·m/s ✓');
+    const ek0 = 0.5 * COL.m1 * COL.v1 * COL.v1 + 0.5 * COL.m2 * COL.v2 * COL.v2;
+    const ek1 = 0.5 * COL.m1 * u1 * u1 + 0.5 * COL.m2 * u2 * u2;
+    hset('law', 'p后=' + (COL.m1 * u1 + COL.m2 * u2).toFixed(2) + ' ✓ · E_k损失 ' + ((ek0 - ek1) / ek0 * 100).toFixed(0) + '%');
   }
   if (COL.done) {
     COL.c1.position.x += COL.v1n * scale * dt;
@@ -884,7 +934,7 @@ function collideCtl() {
   ctl.sep();
   const btns = [];
   const paint = () => btns.forEach(({ b, v }) => b.classList.toggle('active', v === COL.kind));
-  [['elas', '弹性碰撞'], ['inel', '完全非弹性']].forEach(([v, t]) => {
+  [['elas', '弹性（弹簧圈）'], ['partial', '一般（橡胶块）'], ['inel', '完全非弹性（魔术贴）']].forEach(([v, t]) => {
     const b = ctl.button({ label: t, onClick: () => { COL.kind = v; updCollide(true); paint(); } });
     btns.push({ b, v });
   });
@@ -914,19 +964,24 @@ function resetFree() {
 function stepFree(dt) {
   if (FREE.t < 0) return;
   FREE.t += dt;
-  if (FREE.fric) FREE.vCur = Math.max(FREE.vCur - 0.35 * dt, 0);
+  const aIncline = 9.8 * Math.sin((FREE.th ?? 0) * Math.PI / 180);
+  const aFric = FREE.fric ? -0.35 : 0;
+  const a = aIncline + aFric;
+  FREE.vCur = Math.max(FREE.vCur + a * dt, 0);
   FREE.cart.position.x += FREE.vCur * dt;
   if (!FREE.p1 && FREE.cart.position.x >= -1.5) { FREE.p1 = true; flashGate(FREE.g1); hset('x', FREE.cart.position.x.toFixed(2) + ' m（过门）'); }
   hset('v', FREE.vCur.toFixed(2) + ' m/s');
+  hset('a', a.toFixed(2) + ' m/s²');
   if (FREE.cart.position.x > 4.8) FREE.t = -2;
 }
 function freeCtl() {
   ctl.clear();
   ctl.slider({ label: '初速度', min: 0.3, max: 2.5, step: 0.05, value: FREE.v, fmt: (v) => v.toFixed(2) + ' m/s', onInput: (v) => { FREE.v = v; } });
+  ctl.slider({ label: '导轨倾角', min: 0, max: 8, step: 0.5, value: FREE.th ?? 0, fmt: (v) => v.toFixed(1) + '°', onInput: (v) => { FREE.th = v; } });
   ctl.toggle({ label: '开摩擦（减速）', value: false, onChange: (v) => { FREE.fric = v; } });
   ctl.sep();
   ctl.button({ label: '▶ 推出小车', onClick() { resetFree(); FREE.t = 0; FREE.p1 = false; } });
-  setHUD([['x', '小车位置'], ['v', '当前速度'], ['tip', '自由试'], ['tip2', '改变初速与摩擦观察']]);
+  setHUD([['x', '小车位置'], ['v', '当前速度'], ['a', '加速度'], ['tip', '倾角给小车加 g·sinθ']]);
 }
 
 /* ============ HUD ============ */
@@ -948,7 +1003,7 @@ const SECTIONS = [
   {
     id: 'tape', title: '纸带与 v-t 图',
     html: `<p>打点计时器每隔 <b>0.02 s</b> 在纸带上打一个点。小车拖动纸带做加速运动时，<b>相邻计数点的间距越来越大</b>。</p>
-<p>用刻度尺量出间距，就能算出各点速度，画出 <span class="hl">v–t 图</span>：图线是过原点的直线 → 匀加速直线运动，<b>斜率就是加速度</b>。</p>
+<p>用刻度尺量出间距，就能算出各点速度，画出 <span class="hl">v–t 图</span>：图线是过原点的直线 → 匀加速直线运动，<b>斜率就是加速度</b>。小车与挂钩一起加速，加速度是 <span class="hl">a = m<sub>钩</sub>g / (M<sub>车</sub> + m<sub>钩</sub>)</span>。</p>
 <p>调整挂重与小车质量，点「释放小车」：纸带自动打出计数点，右上角同步画出 v–t 图。</p>`,
     enter() {
       useScene('tape', buildTape);
@@ -961,7 +1016,7 @@ const SECTIONS = [
     id: 'gates', title: '光电门测速度',
     html: `<p>光电门记录挡光片遮光的时间 <b>Δt</b>。挡光片宽度 d 很小时：</p>
 <p><span class="hl">v = d / Δt</span> —— 极短时间（极短位移）内的平均速度，就是<b>瞬时速度</b>。这是极限思想的实验体现。</p>
-<p>改变挡光片宽度、初速度与门距，点「释放」：两只门的读数 v1、v2 几乎相同 → 气垫导轨上小车做匀速运动。</p>`,
+<p>改变挡光片宽度、初速度与门距，点「释放」：加速度为 0 时两只门的读数 v1、v2 相同 → 匀速运动。把「导轨加速度」调大（导轨微倾），v2 > v1，就能用 <span class="hl">a = (v₂² − v₁²) / 2L</span> 算出加速度。</p>`,
     enter() {
       useScene('gates', buildGates);
       app.setCamera([0, 2.8, 8.2], [0, 1.6, 0]);
@@ -982,9 +1037,9 @@ const SECTIONS = [
   },
   {
     id: 'newton', title: '牛顿第二定律',
-    html: `<p>气垫导轨上，小车被跨过滑轮的细绳牵引，绳的拉力约等于挂钩砝码的重力（挂钩质量远小于小车时）。</p>
-<p><span class="hl">a = F / m</span>：力一定，质量加倍则加速度减半；质量一定，力加倍则加速度加倍。</p>
-<p>两只光电门测出小车经过时的速度，用 <b>v₂²−v₁² = 2aL</b> 算出实测加速度——与理论值 F/m 对比。</p>`,
+    html: `<p>探究 <span class="hl">a = F / m</span> 要<b>控制变量</b>：保持 M 不变改变拉力，或保持拉力不变改变 M。先把导轨左端垫高<b>平衡摩擦力</b>（重力沿斜面的分力抵消摩擦）。</p>
+<p>用钩码重力 mg 代替绳的拉力其实有系统误差——实际上 <span class="hl">T = M·m·g / (M + m) &lt; mg</span>，只有 <b>m ≪ M</b> 时才近似相等。钩码越重，T 偏离 mg 越多，a–F 图线会向下弯。关掉「平衡摩擦力」试试：小车可能根本拉不动。</p>
+<p>两只光电门测出小车经过时的速度，用 <b>v₂²−v₁² = 2aL</b> 算出实测加速度——与理论值对比。</p>`,
     enter() {
       useScene('newton', buildNewton);
       app.setCamera([0.5, 3.0, 8.6], [0.2, 1.6, 0]);
@@ -994,9 +1049,9 @@ const SECTIONS = [
   },
   {
     id: 'fric', title: '滑动摩擦力',
-    html: `<p>用弹簧测力计沿水平方向<b>匀速</b>拉动物块：拉力与滑动摩擦力平衡，测力计示数 = 摩擦力大小。</p>
-<p><span class="hl">f = μN</span>（N 为压力，水平面上 N=G）。接触面越粗糙 μ 越大；与接触面积大小无关。</p>
-<p>切换棉布/木板/毛巾接触面，观察示数变化；点「匀速拉动」看物块滑动中示数保持恒定。</p>`,
+    html: `<p>用弹簧测力计沿水平方向拉物块：刚开始物块不动，示数逐渐增大——这是<b>静摩擦力</b>；示数达到<b>最大静摩擦</b>的瞬间物块被拉动，示数回落并保持稳定，等于<b>滑动摩擦力</b>。</p>
+<p><span class="hl">f = μN</span>（N 为压力，水平面上 N=G）。接触面越粗糙 μ 越大；改变拉动速度，滑动摩擦力几乎不变。</p>
+<p>点「匀速拉动」完整看一遍「静摩擦爬升 → 最大静摩擦 → 回落恒定」；切换棉布/木板/毛巾接触面，观察恒定示数的变化。</p>`,
     enter() {
       useScene('fric', buildFric);
       app.setCamera([1.5, 2.6, 5.6], [-0.5, 1.3, 0]);
@@ -1005,9 +1060,9 @@ const SECTIONS = [
   },
   {
     id: 'incline', title: '斜面与力的分解',
-    html: `<p>斜面上的物体，重力产生两个效果：<b>沿斜面下滑</b>（G₁ = G·sinθ）和<b>压紧斜面</b>（G₂ = G·cosθ）。</p>
-<p>倾角 θ 增大：G₁ 变大（更容易下滑），G₂ 变小（压得不紧）。两个分力的矢量和恰好等于重力 G。</p>
-<p>拖动倾角滑杆，观察两支分力箭头此消彼长——这就是「按效果分解」。</p>`,
+    html: `<p>斜面上的物体，重力产生两个效果：<b>沿斜面下滑</b>（G₁ = G·sinθ）和<b>压紧斜面</b>（G₂ = G·cosθ = N）。</p>
+<p>倾角较小时，静摩擦力与 G₁ 平衡，物体静止。逐渐增大倾角，当 <span class="hl">G·sinθ &gt; μ·G·cosθ，即 tanθ &gt; μ</span> 时物体开始下滑，下滑加速度 <span class="hl">a = g(sinθ − μcosθ)</span>。注意：<b>临界角只由 μ 决定，与质量无关</b>——加砝码再找一次临界角，角度一个样。</p>
+<p>拖动倾角滑杆找临界角，再拖 μ 滑杆看临界角怎么移动——这就是「按效果分解」+ 摩擦条件的合奏。</p>`,
     enter() {
       useScene('incline', buildIncline);
       app.setCamera([1.2, 3.0, 7.0], [-0.8, 1.4, 0]);
@@ -1042,8 +1097,8 @@ const SECTIONS = [
   {
     id: 'collide', title: '动量守恒',
     html: `<p>气垫导轨上两车相碰，系统所受合外力为零，<b>总动量保持不变</b>：</p>
-<p><span class="hl">m₁v₁ + m₂v₂ = m₁v₁′ + m₂v₂′</span>。弹性碰撞还保持动能不变；完全非弹性碰撞碰后共速，动能损失最大（变形与发热）。</p>
-<p>改变两车质量与速度，点「发射」：碰前碰后的总动量始终相等。</p>`,
+<p><span class="hl">m₁v₁ + m₂v₂ = m₁v₁′ + m₂v₂′</span>。· 装<b>弹簧圈</b>：弹性碰撞，动能也守恒，质量相等时两车交换速度；· 装<b>橡胶块</b>：一般碰撞，动能有损失；· 装<b>魔术贴</b>：碰后粘在一起，完全非弹性碰撞，动能损失最大（变形与发热）。</p>
+<p>改变两车质量与速度，点「发射」：碰前碰后的总动量始终相等，动能却只有弹性碰撞守恒。</p>`,
     enter() {
       useScene('collide', buildCollide);
       app.setCamera([0, 3.0, 8.4], [0, 1.6, 0]);
@@ -1071,6 +1126,14 @@ function dropCtl() {
   ctl.clear();
   ctl.slider({ label: '下落高度', min: 2, max: 6, step: 0.5, value: DROP.h, fmt: (v) => v.toFixed(1) + ' m', onInput: (v) => { DROP.h = v; resetDrop(); } });
   ctl.sep();
+  const obtns = [];
+  const paintO = () => obtns.forEach(({ b, v }) => b.classList.toggle('active', v === DROP.obj));
+  [['ball', '钢球'], ['pp', '乒乓球'], ['feather', '羽毛']].forEach(([v, t]) => {
+    const b = ctl.button({ label: t, onClick: () => { DROP.obj = v; resetDrop(); paintO(); } });
+    obtns.push({ b, v });
+  });
+  paintO();
+  ctl.toggle({ label: '牛顿管抽真空', value: false, onChange: (v) => { DROP.vac = v; resetDrop(); } });
   const btns = [];
   const paint = () => btns.forEach(({ b, v }) => b.classList.toggle('active', v === DROP.g));
   [[9.8, '地球 g=9.8'], [3.7, '火星 g=3.7'], [1.6, '月球 g=1.6']].forEach(([v, t]) => {
@@ -1083,11 +1146,13 @@ function dropCtl() {
 }
 function newtonCtl() {
   ctl.clear();
-  ctl.slider({ label: '挂重 F', min: 0.1, max: 1.2, step: 0.05, value: NEWT.F, fmt: (v) => v.toFixed(2) + ' kg→' + (v * 9.8).toFixed(1) + 'N', onInput: (v) => { NEWT.F = v; } });
-  ctl.slider({ label: '小车质量 m', min: 0.2, max: 1.5, step: 0.05, value: NEWT.m, fmt: (v) => v.toFixed(2) + ' kg', onInput: (v) => { NEWT.m = v; } });
+  ctl.slider({ label: '挂重质量 m', min: 0.1, max: 1.2, step: 0.05, value: NEWT.F, fmt: (v) => v.toFixed(2) + ' kg→' + (v * 9.8).toFixed(1) + 'N', onInput: (v) => { NEWT.F = v; } });
+  ctl.slider({ label: '小车质量 M', min: 0.2, max: 1.5, step: 0.05, value: NEWT.m, fmt: (v) => v.toFixed(2) + ' kg', onInput: (v) => { NEWT.m = v; } });
+  ctl.toggle({ label: '平衡摩擦力', value: NEWT.bal ?? true, onChange: (v) => { NEWT.bal = v; } });
   ctl.sep();
   ctl.button({ label: '▶ 释放', onClick() { NEWT.p0 = NEWT.p1 = false; resetNewton(); NEWT.t = 0; } });
-  setHUD([['a', '理论加速度 F/m'], ['meas', '光电门实测 a'], ['tip', '对比'], ['tip2', '两值应一致']]);
+  setHUD([['a', '加速度 a'], ['tension', '绳拉力 T'], ['meas', '光电门实测 a'], ['tip', '对比']]);
+  hset('tip', 'm≪M 时 T ≈ mg');
 }
 
 /* ============ 帧循环 ============ */
@@ -1100,7 +1165,15 @@ app.onFrame((dt) => {
   else if (activeScene === scenes.drop) stepDrop(dt);
   else if (activeScene === scenes.newton) stepNewton(dt);
   else if (activeScene === scenes.fric) {
-    if (FRIC.pulling) { FRIC.x += dt * 0.45; if (FRIC.x > 2.6) FRIC.x = -2.5; updFric(); }
+    if (FRIC.pulling) {
+      FRIC.pullT += dt;
+      const N = FRIC.G, muS = FRIC.mu * 1.25;   // 最大静摩擦略大于滑动摩擦
+      if (FRIC.pullT < 1.4) FRIC.fCur = muS * N * (FRIC.pullT / 1.4);          // 静摩擦爬升
+      else if (FRIC.pullT < 1.6) FRIC.fCur = FRIC.mu * N + (muS * N - FRIC.mu * N) * (1.6 - FRIC.pullT) / 0.2;  // 落回滑动摩擦
+      else FRIC.fCur = FRIC.mu * N;                                              // 滑动摩擦恒定
+      if (FRIC.pullT >= 1.4) { FRIC.x += dt * 0.45; if (FRIC.x > 2.6) { FRIC.x = -2.5; FRIC.pullT = 0; } }
+      updFric();
+    }
   } else if (activeScene === scenes.lift) {
     if (LIFT.v !== 0) {
       LIFT.y = clamp(LIFT.y + LIFT.v * dt, 0.4, 6.8);

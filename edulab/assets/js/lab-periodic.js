@@ -642,6 +642,11 @@ function showInfo(z) {
     ['电子层分布', `${shells.join(' · ')}（${shells.length} 层）`],
     ['电子排布', d[8]],
     ['周期 / 族', `第 ${periodOf(z)} 周期 · ${groupLabel(z)}`],
+    ['原子半径', d[3] == null ? '—' : d[3] + ' pm'],
+    ['电负性', d[4] == null ? '—' : d[4]],
+    ['第一电离能', d[5] == null ? '—' : d[5] + ' kJ/mol'],
+    ['熔点 / 沸点', d[6] == null && d[7] == null ? '—' : `${d[6] == null ? '—' : d[6] + ' K'} / ${d[7] == null ? '—' : d[7] + ' K'}`],
+    ['常温状态', { solid: '固态', liquid: '液态', gas: '气态', unknown: '—' }[stateAt(z, 298)]],
     ['发现', fmtYear(d[10])],
     ['密度', d[12] == null ? '—' : d[12] + ' g/cm³'],
   ];
@@ -733,7 +738,7 @@ app.onFrame((dt) => {
     st.temp = Math.min(4000, st.temp + dt * 200);
     if (st.tempSlider) st.tempSlider.set(Math.round(st.temp));
     applyTempState();
-    if (st.temp >= 4000) setTempPlaying(false);
+    if (st.temp >= 6000) setTempPlaying(false);
   }
 
   if (st.tempMode && st.gasList.length) {
@@ -767,7 +772,7 @@ function setYearPlaying(v) {
 function setTempPlaying(v) {
   st.tempPlaying = v;
   if (st.tempPlayBtn) {
-    st.tempPlayBtn.textContent = v ? '⏸ 暂停升温' : '▶ 播放升温（0→4000 K）';
+    st.tempPlayBtn.textContent = v ? '⏸ 暂停升温' : '▶ 播放升温（0→6000 K）';
     st.tempPlayBtn.classList.toggle('active', v);
   }
 }
@@ -1029,7 +1034,8 @@ const SECTIONS = [
   {
     title: '物态与温度',
     html: `<p>温度决定单质的物态：<b>T 低于熔点 → 固态</b>；<span class="hl">熔点 ≤ T ＜ 沸点 → 液态</span>；<b>T ≥ 沸点 → 气态</b>（图中气态画成线框并微微升起）。</p>
-<p>室温（298 K ≈ 25 ℃）下只有<b>2 种液态单质</b>：汞（唯一液态金属）和溴；<b>11 种气体</b>：H、He、N、O、F、Ne、Cl、Ar、Kr、Xe、Rn。拖动温度滑杆或播放升温扫描，看整张表"熔化又沸腾"。</p>
+<p>室温（298 K ≈ 25 ℃）下只有<b>2 种液态单质</b>：汞（唯一液态金属）和溴；<b>11 种气体</b>：H、He、N、O、F、Ne、Cl、Ar、Kr、Xe、Rn。降到 <b>10 K</b>，除氦以外全部凝固——常压下氦永远不凝固；升到 <b>303 K</b>，镓和铯也熔化了（镓放在手心就会熔化）。</p>
+<p>再往上，3000 K 以上金属发出白炽的光；<span class="hl">钨（3695 K）是熔点最高的金属</span>，所以用它做灯丝。拖动温度滑杆、点快捷温度档或播放升温扫描，看整张表"熔化又沸腾"。</p>
 <p>熔沸点数据不足以判断物态的元素（多为人工合成元素）显示为灰色「未知」。</p>`,
     enter() {
       resetWorld();
@@ -1041,15 +1047,22 @@ const SECTIONS = [
       applyTempState();
       ctl.clear();
       st.tempSlider = ctl.slider({
-        label: '温度', min: 0, max: 4000, step: 1, value: 298,
+        label: '温度', min: 0, max: 6000, step: 1, value: 298,
         fmt: (v) => `${Math.round(v)} K / ${(v - 273).toFixed(0)} ℃`,
         onInput: (v) => { st.temp = v; setTempPlaying(false); applyTempState(); },
       });
+      ctl.sep();
+      const setTemp = (t) => { st.temp = t; setTempPlaying(false); if (st.tempSlider) st.tempSlider.set(t); applyTempState(); };
+      ctl.button({ label: '10 K · 全凝固', onClick: () => setTemp(10) });
+      ctl.button({ label: '液氮 77 K', onClick: () => setTemp(77) });
+      ctl.button({ label: '室温 298 K', onClick: () => setTemp(298) });
+      ctl.button({ label: '铁熔化 1811 K', onClick: () => setTemp(1811) });
+      ctl.button({ label: '太阳表面 5800 K', onClick: () => setTemp(5800) });
       st.tempPlayBtn = ctl.button({
-        label: '▶ 播放升温（0→4000 K）',
+        label: '▶ 播放升温（0→6000 K）',
         onClick: () => {
           if (st.tempPlaying) { setTempPlaying(false); return; }
-          if (st.temp >= 4000) { st.temp = 0; if (st.tempSlider) st.tempSlider.set(0); }
+          if (st.temp >= 6000) { st.temp = 0; if (st.tempSlider) st.tempSlider.set(0); }
           setTempPlaying(true);
         },
       });
@@ -1066,7 +1079,8 @@ const SECTIONS = [
   {
     title: '元素发现史',
     html: `<p>人类认识元素用了几千年：古代就会使用<b>金、银、铜、铁、硫、碳</b>等（方格上标「古代」）；1669 年起化学家陆续发现新元素；<span class="hl">1860 年前后</span>光谱分析法带来一波发现高峰；<b>1940 年以后</b>的元素几乎全靠核反应人工合成。</p>
-<p>拖动年份滑杆回放：只有「发现年份 ≤ 当前年份」的元素立在地面上，新出现的元素会<b>闪亮一次</b>。点「播放」看 1650→2015 的完整发现史。</p>`,
+<p>两个关键年份：<span class="hl">1869 年门捷列夫</span>排出周期表时只知道 63 种元素，他大胆为未知元素留空并预言其性质，后来发现的镓、钪、锗证实了预言；<b>1898 年</b>前后氖、氪、氙相继出现，周期表多出了一整列稀有气体。</p>
+<p>拖动年份滑杆回放：只有「发现年份 ≤ 当前年份」的元素立在地面上，新出现的元素会<b>闪亮一次</b>。点「播放」看 1650→2016 的完整发现史。</p>`,
     enter() {
       resetWorld();
       currentSection = 5;
@@ -1077,7 +1091,7 @@ const SECTIONS = [
       applyYear(1650, false);
       ctl.clear();
       st.yearSlider = ctl.slider({
-        label: '年份', min: 1650, max: 2015, step: 1, value: 1650,
+        label: '年份', min: 1650, max: 2016, step: 1, value: 1650,
         fmt: (v) => v + ' 年',
         onInput: (v) => { setYearPlaying(false); applyYear(v, false); },
       });
@@ -1085,7 +1099,7 @@ const SECTIONS = [
         label: '▶ 播放发现史',
         onClick: () => {
           if (st.yearPlaying) { setYearPlaying(false); return; }
-          if (st.year >= 2015) { applyYear(1650, false); if (st.yearSlider) st.yearSlider.set(1650); }
+          if (st.year >= 2016) { applyYear(1650, false); if (st.yearSlider) st.yearSlider.set(1650); }
           setYearPlaying(true);
         },
       });
@@ -1103,7 +1117,7 @@ const SECTIONS = [
   {
     title: '螺旋与同心环',
     html: `<p>同一张周期表的三种视角：</p>
-<p><b>长式网格</b>——最常用，突出族的相似性；<b>三维螺旋</b>——按原子序数排成一条上升的螺线，强调元素序列的<b>连续性</b>（周期表其实是一条 "螺旋楼梯" 投影成表格）；<b>同心环</b>——每个周期画成一圈、一圈比一圈大，镧系、锕系单独成两个小环。</p>
+<p><b>长式网格</b>——最常用，突出族的相似性；<b>三维螺旋</b>——按原子序数排成一条上升的螺线，每绕一圈是一个周期，<span class="hl">同一族的元素落在同一条"辐条"上</span>，强调性质随原子序数<b>周期性地重复</b>；<b>同心环</b>——每个周期画成一圈、一圈比一圈大，第 n 圈就是第 n 周期，每圈的格数依次是 <b>2、8、8、18、18、32、32</b>，正是每个周期所含的元素数目（镧系、锕系单独成两个小环）。</p>
 <p>切换布局看变形动画，再换一种<b>着色</b>（族 / 电负性 / 物态）观察规律在不同布局里同样成立。</p>`,
     enter() {
       resetWorld();
