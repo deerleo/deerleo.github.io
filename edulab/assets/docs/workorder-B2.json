@@ -1,0 +1,217 @@
+{
+ "labs": [
+  {
+   "id": "volt-lab",
+   "href": "/labs/volt",
+   "name": "VoltLab",
+   "subtitle": "电路实验室",
+   "subject": "物理",
+   "desc": "电学虚拟实验台：自由搭建电路，实时观察电流、电压与元件状态，支持仪表测量与数据记录。",
+   "points": [
+    "串并联电路",
+    "欧姆定律",
+    "电表使用",
+    "电功率"
+   ],
+   "preview": "circuit",
+   "status": "live",
+   "slug": "volt",
+   "fullname": "VoltLab 电学实验台",
+   "chapters": [
+    "串联与并联电路",
+    "探究欧姆定律",
+    "测电源电动势和内阻",
+    "描绘小灯泡的伏安特性曲线",
+    "RC 电路充放电",
+    "断电自感现象",
+    "LC 振荡电路",
+    "桥式整流与电容滤波",
+    "惠斯通电桥测电阻",
+    "RLC 串联谐振",
+    "变压器原理",
+    "二极管单向导电性",
+    "三极管光控路灯",
+    "直流电动机",
+    "短路与保险丝",
+    "稳压二极管稳压电路",
+    "探究焦耳定律",
+    "探究影响导体电阻大小的因素",
+    "多用电表的使用",
+    "影响电磁铁磁性强弱的因素",
+    "太阳能电池驱动电动机",
+    "空白实验台"
+   ]
+  },
+  {
+   "id": "motion-lab",
+   "href": "/labs/motion",
+   "name": "MotionLab",
+   "subtitle": "运动与力实验室",
+   "subject": "物理",
+   "desc": "写实三维力学实验台：打点计时器与纸带、光电门、气垫导轨、弹簧测力计，10 个课题覆盖匀变速直线运动、自由落体、牛顿第二定律、摩擦力、斜面、超重失重、机械能与动量守恒。",
+   "points": [
+    "匀变速直线运动",
+    "牛顿第二定律",
+    "摩擦力",
+    "动量守恒"
+   ],
+   "preview": "motion",
+   "status": "live",
+   "slug": "motion",
+   "fullname": "运动与力 · MotionLab",
+   "chapters": [
+    "纸带与 v-t 图",
+    "光电门测速度",
+    "自由落体",
+    "牛顿第二定律",
+    "滑动摩擦力",
+    "斜面与力的分解",
+    "超重与失重",
+    "机械能守恒",
+    "动量守恒",
+    "自由实验台"
+   ]
+  },
+  {
+   "id": "machine-lab",
+   "href": "/labs/machine",
+   "name": "MachineLab",
+   "subtitle": "简单机械实验室",
+   "subject": "物理",
+   "desc": "没有实验器材，就在真实的生活场景里做：建筑工地上用撬棍撬石块、在脚手架上用滑轮组吊砖、沿跳板把木箱拉上货车、看塔吊的力矩限制器；古代农家院里用辘轳打水、桔槔提水、杆秤称米。拉力计、吊秤实时读数，叠加画出力与力臂，算出机械效率。",
+   "points": [
+    "杠杆平衡条件",
+    "滑轮组",
+    "斜面与轮轴",
+    "机械效率"
+   ],
+   "preview": "machine",
+   "status": "live",
+   "slug": "machine",
+   "fullname": "简单机械 · MachineLab",
+   "chapters": [
+    "杠杆平衡条件",
+    "杠杆的分类",
+    "定滑轮与动滑轮",
+    "滑轮组",
+    "斜面",
+    "轮轴",
+    "机械效率",
+    "生活中的机械",
+    "随堂检测"
+   ]
+  },
+  {
+   "id": "float-lab",
+   "href": "/labs/float",
+   "name": "FloatLab",
+   "subtitle": "压强与浮力实验室",
+   "subject": "物理",
+   "desc": "在真实的港口和海底里学液体压强与浮力：深潜器一路下潜到马里亚纳海沟、船闸让货船升降 3 m、吊车把混凝土块放进海里称浮力、潜艇靠压载水舱浮沉、集装箱船越装越深直到载重线。海面是实时的波浪，船随浪起伏的姿态由浮力逐点算出。",
+   "points": [
+    "液体压强与深度",
+    "连通器与船闸",
+    "阿基米德原理",
+    "物体的浮沉条件"
+   ],
+   "preview": "float",
+   "status": "live",
+   "slug": "float",
+   "fullname": "液体压强与浮力 · FloatLab",
+   "chapters": [
+    "液体压强与深度",
+    "连通器：船闸",
+    "浮力的成因",
+    "称重法测浮力",
+    "阿基米德原理",
+    "浮沉条件：潜艇",
+    "轮船与载重线",
+    "密度计与水尺计重",
+    "随堂检测"
+   ]
+  },
+  {
+   "id": "rocket-lab",
+   "href": "/labs/rocket",
+   "name": "RocketLab",
+   "subtitle": "神舟发射与返回",
+   "subject": "物理",
+   "desc": "跟着长征二号F和神舟飞船走完一次真实任务：从酒泉卫星发射中心点火起飞，冲出大气、助推器与一二级分离、整流罩分离，进入轨道绕地球飞行，再入大气穿过黑障，开伞反推降落在东风着陆场。全程按真实参数计算飞行，可以改载荷、助推器、比冲、关机时刻、再入角和主伞面积，看火箭能不能入轨、返回舱能不能安全落地。",
+   "points": [
+    "牛顿运动定律",
+    "齐奥尔科夫斯基公式",
+    "第一宇宙速度",
+    "超重与失重"
+   ],
+   "preview": "rocket",
+   "status": "live",
+   "slug": "rocket",
+   "fullname": "神舟发射与返回 · RocketLab",
+   "chapters": [
+    "认识长征二号F",
+    "点火与起飞",
+    "冲出大气",
+    "抛掉包袱",
+    "进入轨道",
+    "在轨飞行",
+    "再入大气",
+    "开伞着陆"
+   ]
+  },
+  {
+   "id": "thermo-lab",
+   "href": "/labs/thermo",
+   "name": "ThermoLab",
+   "subtitle": "热学工作站",
+   "subject": "物理",
+   "desc": "傍晚工作室里的一台热力学工作站：玻璃气缸里能看见分子在跑，转动控制台上的旋钮加热、推拉活塞，两块屏幕实时画出 p–V 图和速率分布。十二个课题从分子热运动、压强的微观解释、三个气体实验定律，到压缩引火、热力学第一定律、剖开的四冲程汽油机、卡诺循环和第二定律的“倒放”。",
+   "points": [
+    "分子热运动",
+    "气体实验定律",
+    "热力学第一定律",
+    "热机与效率"
+   ],
+   "preview": "thermo",
+   "status": "live",
+   "slug": "thermo",
+   "fullname": "热力学 · ThermoLab",
+   "chapters": [
+    "热力学工作站",
+    "分子热运动与温度",
+    "气体压强从哪里来",
+    "玻意耳定律",
+    "盖-吕萨克定律",
+    "查理定律",
+    "做功与内能",
+    "热力学第一定律",
+    "四冲程汽油机",
+    "热机效率与卡诺循环",
+    "热力学第二定律",
+    "自由实验"
+   ]
+  }
+ ],
+ "media": {
+  "sky": [
+   "sky_court-BLHJ2ADI.hdr",
+   "sky_harbor-BruSQyW8.hdr",
+   "sky_site-C35ymwQp.hdr",
+   "sky_court-BKHrsJQE.webp",
+   "sky_harbor-LXJSRKim.webp",
+   "sky_site-Co0CA3Qo.webp"
+  ],
+  "earth": [
+   "day-DmukkgAy.webp",
+   "night-7j0D73E-.webp",
+   "clouds-DTkGUc9f.webp",
+   "water-CiZebwCi.webp",
+   "earth_normal_2048-BD2vMuPH.jpg",
+   "earth_specular_2048-6aAFN27D.jpg",
+   "earth_lights_2048-DB_KwUMR.webp",
+   "earth_bm_01-yIuzfkz1.webp",
+   "earth_bm_07-BDPAypd3.webp",
+   "earth_clouds_1024-CKDLEBqO.png"
+  ],
+  "pbr_count": 66
+ }
+}

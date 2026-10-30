@@ -4,41 +4,65 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex,nofollow">
-<title>函数图像 · FuncLab · 建设中 — EduLab</title>
+<title>函数图像 · FuncLab — EduLab</title>
+<script type="importmap">
+{
+  "imports": {
+    "three": "../assets/lib/three/three.module.js",
+    "three/addons/": "../assets/lib/three/addons/"
+  }
+}
+</script>
 <script>
 /* 主题首帧应用（浅/深，默认跟随系统） */
 (function(){try{var t=localStorage.getItem('edulab-theme');if(t!=='light'&&t!=='dark'){t=matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';}document.documentElement.setAttribute('data-theme',t);}catch(e){}})();
 </script>
 <link rel="stylesheet" href="../assets/css/edu.css">
+<link rel="stylesheet" href="../assets/css/lab.css">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'%3E%3Cpath d='M19 6h10M21 6v12.5L9.8 37.2A4 4 0 0 0 13.3 43h21.4a4 4 0 0 0 3.5-5.8L27 18.5V6' stroke='%23e8674a' stroke-width='4' fill='none' stroke-linecap='round'/%3E%3C/svg%3E">
 </head>
-<body>
-<header class="edu-header">
-  <a class="edu-logo" href="../"><svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M19 6h10M21 6v12.5L9.8 37.2A4 4 0 0 0 13.3 43h21.4a4 4 0 0 0 3.5-5.8L27 18.5V6" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/><path d="M15.5 30h17" stroke="currentColor" stroke-width="3" stroke-linecap="round"/><circle cx="21" cy="36.5" r="1.8" fill="currentColor"/><circle cx="27.5" cy="34.5" r="1.4" fill="currentColor"/><path d="M24 6v-2" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></svg><span>EduLab<span class="logo-sub">教学实验平台</span></span></a>
+<body class="lab">
+
+<header class="lab-topbar">
+  <a class="edu-logo" href="../" aria-label="返回实验目录">
+    <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M19 6h10M21 6v12.5L9.8 37.2A4 4 0 0 0 13.3 43h21.4a4 4 0 0 0 3.5-5.8L27 18.5V6" stroke="var(--accent)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/><path d="M15.5 30h17" stroke="var(--accent)" stroke-width="3" stroke-linecap="round"/><circle cx="21" cy="36.5" r="1.8" fill="var(--accent)"/><circle cx="27.5" cy="34.5" r="1.4" fill="var(--accent)"/></svg>
+  </a>
+  <button class="edu-header-btn side-toggle" id="sideToggle" type="button" aria-label="章节目录">☰ 章节</button>
+  <div class="lab-title"><b>函数图像 · FuncLab</b><span>图像变换 · 指数与对数 · 三角函数 · 导数 · 二分法 · 黎曼和</span></div>
   <span class="spacer"></span>
-  <a class="edu-header-btn" href="../">← 返回实验目录</a>
+  <a class="edu-header-btn" href="../">← 实验目录</a>
   <button class="edu-header-btn" id="themeBtn" type="button" aria-label="切换主题">☾</button>
 </header>
 
-<main class="placeholder-wrap">
-  <div class="placeholder-icon">
-    <svg viewBox="0 0 48 48" fill="none" aria-hidden="true"><path d="M19 6h10M21 6v12.5L9.8 37.2A4 4 0 0 0 13.3 43h21.4a4 4 0 0 0 3.5-5.8L27 18.5V6" stroke="#e8674a" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/><path d="M15.5 30h17" stroke="#e8674a" stroke-width="3" stroke-linecap="round"/><circle cx="21" cy="36.5" r="1.8" fill="#e8674a"/><circle cx="27.5" cy="34.5" r="1.4" fill="#e8674a"/></svg>
+<div class="lab-body">
+  <nav class="lab-side" id="sideNav" aria-label="章节目录">
+    <div class="side-label">章节 · CHAPTERS</div>
+  </nav>
+  <div class="lab-stage" id="stage">
+    <div class="lab-desc" id="descPanel">
+      <div class="desc-head">
+        <h2>章节说明</h2>
+        <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+      </div>
+      <div class="desc-body"></div>
+    </div>
+    <div class="lab-controls" id="controls"></div>
   </div>
-  <h1>函数图像 · FuncLab</h1>
-  <div class="sub">函数图像实验室 · 数学</div>
-  <p class="desc">函数图像演示：参数一拖，图像怎么平移、伸缩、翻折；指数与对数互为反函数；单位圆展开成正弦曲线与五点法；割线逼近切线、导函数与单调性极值；二分法求零点与定积分的黎曼和。</p>
-  <div class="placeholder-points"><span class="tag">图像变换</span><span class="tag">指数与对数</span><span class="tag">单位圆与三角函数</span><span class="tag">正弦型函数</span><span class="tag">导数的几何意义</span><span class="tag">单调性与极值</span><span class="tag">…共 8 章</span></div>
-  <div class="placeholder-points"><span class="tag">图像变换</span><span class="tag">三角函数</span><span class="tag">导数</span><span class="tag">二分法</span></div>
-  <div class="badge-building"><span class="pulse"></span>该实验正在建设中，敬请期待</div>
-</main>
+</div>
 
-<footer class="edu-footer">
+<footer class="lab-footer">
   <span class="attr">3D 资源来源：<a href="https://wedulab.com" target="_blank" rel="noopener">WeduLab © WY · wedulab.com</a></span>
   <span class="sep">|</span>
   <span>EduLab · <a href="/">milulab.com</a></span>
 </footer>
 
 <script src="../assets/js/edu-theme.js"></script>
-<script>eduBindThemeToggle(document.getElementById('themeBtn'));</script>
+<script type="module" src="../assets/js/lab-func.js"></script>
+<script>
+eduBindThemeToggle(document.getElementById('themeBtn'));
+document.getElementById('sideToggle').addEventListener('click', function () {
+  document.getElementById('sideNav').classList.toggle('open');
+});
+</script>
 </body>
 </html>
