@@ -75,8 +75,6 @@ for (const lab of cards.labs) {
 </main>
 
 <footer class="edu-footer">
-  <span class="attr">3D 资源来源：<a href="https://wedulab.com" target="_blank" rel="noopener">WeduLab © WY · wedulab.com</a></span>
-  <span class="sep">|</span>
   <span>EduLab · <a href="/">milulab.com</a></span>
 </footer>
 
