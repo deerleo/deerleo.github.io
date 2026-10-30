@@ -634,7 +634,7 @@ const SECTIONS = [
   {
     id: 'boyle', title: '玻意耳定律',
     html: `<p><b>等温过程</b>：温度不变时，一定质量气体的压强与体积成反比：</p>
-<p><span class="hl">p₁V₁ = p₂V₂</span>（玻意耳–马略特定律，1662）。p–V 图上是一条<b>双曲线</b>——「压下去，压力反弹」。</p>
+<p><span class="hl">p₁V₁ = p₂V₂</span>（玻意耳–马略特定律，1662）。p–V 图上是一条<b>双曲线</b>——「压下去，压力反弹」；改用 p–1/V 作图则是一条过原点的直线（化曲为直好验证）。温度越高，等温线离原点越远。</p>
 <p>锁住温度，拖动活塞，屏幕上描出整条等温线；点「记录数据点」攒几组 p·V 看乘积是否恒定。</p>`,
     enter() {
       useScene('studio', (g) => buildStudio(g, TEX));
@@ -742,7 +742,8 @@ const SECTIONS = [
   {
     id: 'engine', title: '四冲程汽油机',
     html: `<p>内能→机械能的转化现场。剖开的单缸汽油机，一个工作循环 = 活塞往复两次（曲轴转两圈）：</p>
-<p><b>① 吸气</b>（进气门开，吸入油气混合物）→ <b>② 压缩</b>（两门全闭，气体被压缩升温）→ <b>③ 做功</b>（火花塞点火，燃气猛推活塞——这才是对外输出）→ <b>④ 排气</b>（排气门开，废气推出）。</p>
+<p><b>① 吸气</b>（进气门开，吸入油气混合物）→ <b>② 压缩</b>（两门全闭，气体被压缩升温：<b>机械能转化为内能</b>）→ <b>③ 做功</b>（火花塞点火，燃气猛推活塞：<b>内能转化为机械能</b>——四个冲程只有这个对外输出）→ <b>④ 排气</b>（排气门开，废气推出）。其余三个冲程靠飞轮的惯性完成。</p>
+<p>对应的理想循环是<b>奥托循环</b>：压缩比 r 越大，理想效率 <span class="hl">η = 1 − 1/r<sup>γ−1</sup></span> 越高——这就是赛车发动机追求高压缩比的原因（汽油机怕爆震，r 一般不超过 13）。</p>
 <p>点四个冲程按钮逐步观察，或开自动运转提速。</p>`,
     enter() {
       useScene('engine', (g) => buildEngine(g));
@@ -755,7 +756,8 @@ const SECTIONS = [
       ctl.sep();
       ctl.toggle({ label: '自动运转', value: ENG.running, onChange: (v) => { ENG.running = v; } });
       ctl.slider({ label: '转速', min: 30, max: 240, step: 10, value: ENG.rpm, fmt: (v) => v + ' 转/min', onInput: (v) => { ENG.rpm = v; } });
-      setHUD([['stroke', '当前冲程'], ['crank', '曲轴转角'], ['valve', '气门'], ['note', '只有做功冲程输出功']]);
+      ctl.slider({ label: '压缩比', min: 6, max: 13, step: 0.5, value: ENG.cr, fmt: (v) => v.toFixed(1) + ' : 1', onInput: (v) => { ENG.cr = v; } });
+      setHUD([['stroke', '当前冲程'], ['crank', '曲轴转角'], ['valve', '气门'], ['eta', '理想效率（奥托）'], ['note', '只有做功冲程输出功']]);
     },
   },
   {
@@ -781,7 +783,7 @@ const SECTIONS = [
   {
     id: 'second-law', title: '热力学第二定律',
     html: `<p>隔板抽开，气体自由扩散充满整个箱子——<b>自发</b>；把过程「倒放」，让所有分子自己退回左半边——<b>从不发生</b>。</p>
-<p>这不是不可能，而是<b>概率小到宇宙尺度都等不来</b>：N 个分子全部回到左半的概率约 (1/2)<sup>N</sup>。热量自发从高温流向低温、气体自发扩散，都是同一个道理：<span class="hl">孤立系统总是走向更「无序」（熵增）</span>。</p>
+<p>这不是不可能，而是<b>概率小到宇宙尺度都等不来</b>：N 个分子全部回到左半的概率约 (1/2)<sup>N</sup>。热量自发从高温流向低温、气体自发扩散，都是同一个道理：<span class="hl">孤立系统总是走向更「无序」（熵增）</span>。<b>热力学第二定律</b>的两种表述：热量不能自发地从低温物体传到高温物体（<b>克劳修斯表述</b>）；不可能从单一热源吸热使之完全变成功而不产生其他影响（<b>开尔文表述</b>）。一切与热现象有关的宏观自然过程都是<b>不可逆</b>的。</p>
 <p>先播放扩散，再点「倒放」感受一下这种不自然；减少分子数（比如 5 个），倒放就不再那么不可思议了。</p>`,
     enter() {
       useScene('diffuse', (g) => buildDiffuse(g));
@@ -880,7 +882,7 @@ function updCarnotHUD() {
 
 /* ---------------- 四冲程汽油机（独立场景） ---------------- */
 
-const ENG = { theta: 0, rpm: 90, running: false, built: false };
+const ENG = { theta: 0, rpm: 90, running: false, built: false, cr: 10 };
 function buildEngine(g) {
   const cx = 0, baseY = 0.95;
   const key = new THREE.DirectionalLight(0xfff0e0, 1.6);
@@ -1048,6 +1050,9 @@ function stepEngine(dt) {
   hset('stroke', st.name);
   hset('crank', deg.toFixed(0) + '°（一循环 720°）');
   hset('valve', st.valve);
+  // 奥托循环理想效率 η = 1 − 1/r^(γ−1)（空气标准，γ ≈ 1.4）：压缩比越高，效率越高
+  const etaOtto = 1 - 1 / Math.pow(ENG.cr, 0.4);
+  hset('eta', (etaOtto * 100).toFixed(0) + ' %（r=' + ENG.cr.toFixed(1) + '，γ=1.4）');
 }
 function paintStageBtns() {
   ENG.painted = true;

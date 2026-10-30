@@ -7,7 +7,7 @@
 import {
   THREE, TAU, clamp,
   loadTexture, loadHDR, loadAll, createApp, cameraTweenTick, makeLoader,
-  createSections, createControlsPanel, makeHUD, makeTextSprite, circleLine, makeGlowTexture,
+  createSections, createControlsPanel, makeHUD, makeTextSprite, makeGlowTexture,
 } from './edu-core.js';
 
 /* ---------------- 本实验专属样式（不改动共享 lab.css） ---------------- */
@@ -210,6 +210,53 @@ const _im4 = new THREE.Matrix4();
 const _iq = new THREE.Quaternion();
 const _idv = new THREE.Vector3();
 
+/** 合成电场的等势线（marching squares）：φ = Σ kq/r，逐格判断电平穿越并线性插值 */
+function equipotentialSegs(charges) {
+  const NX = 104, NZ = 68, X0 = -3.2, X1 = 3.2, Z0 = -2.2, Z1 = 2.2;
+  const dx = (X1 - X0) / (NX - 1), dz = (Z1 - Z0) / (NZ - 1);
+  const phi = new Float32Array(NX * NZ);
+  for (let j = 0; j < NZ; j++) {
+    for (let i = 0; i < NX; i++) {
+      const x = X0 + i * dx, z = Z0 + j * dz;
+      let p = 0;
+      for (const c of charges) {
+        const r2 = (x - c.pos.x) * (x - c.pos.x) + (z - c.pos.z) * (z - c.pos.z);
+        p += r2 < 0.02 ? NaN : c.q / Math.sqrt(r2);
+      }
+      phi[j * NX + i] = p;
+    }
+  }
+  const levels = [-3.5, -2.2, -1.2, -0.6, 0.6, 1.2, 2.2, 3.5];
+  const segs = [];
+  const E = [[0, 1], [1, 2], [2, 3], [3, 0]];
+  for (let j = 0; j < NZ - 1; j++) {
+    for (let i = 0; i < NX - 1; i++) {
+      const v = [phi[j * NX + i], phi[j * NX + i + 1], phi[(j + 1) * NX + i + 1], phi[(j + 1) * NX + i]];
+      if (v.some((t) => Number.isNaN(t))) continue;
+      const x0 = X0 + i * dx, z0 = Z0 + j * dz;
+      const pts = [[x0, z0], [x0 + dx, z0], [x0 + dx, z0 + dz], [x0, z0 + dz]];
+      for (const L of levels) {
+        const idx = v.reduce((acc, t, k) => acc | (t > L ? 1 << k : 0), 0);
+        if (idx === 0 || idx === 15) continue;
+        const crossings = [];
+        E.forEach(([k1, k2]) => {
+          if ((v[k1] > L) !== (v[k2] > L)) {
+            const t = (L - v[k1]) / (v[k2] - v[k1]);
+            crossings.push([pts[k1][0] + (pts[k2][0] - pts[k1][0]) * t, pts[k1][1] + (pts[k2][1] - pts[k1][1]) * t]);
+          }
+        });
+        if (crossings.length === 2) {
+          segs.push(crossings[0][0], 0, crossings[0][1], crossings[1][0], 0, crossings[1][1]);
+        } else if (crossings.length === 4) {
+          segs.push(crossings[0][0], 0, crossings[0][1], crossings[1][0], 0, crossings[1][1]);
+          segs.push(crossings[2][0], 0, crossings[2][1], crossings[3][0], 0, crossings[3][1]);
+        }
+      }
+    }
+  }
+  return segs;
+}
+
 function createChargeField(parent, colors, hidden = false) {
   const grp = new THREE.Group();
   grp.position.y = PLANE_Y;
@@ -301,15 +348,13 @@ function createChargeField(parent, colors, hidden = false) {
     const geo = new THREE.BufferGeometry();
     geo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(posArr), 3));
     lineGroup.add(new THREE.LineSegments(geo, lineMat));
-    if (opts.showEquip) {
-      for (const c of charges) {
-        for (const r of [0.34, 0.62, 0.98, 1.45]) {
-          const ring = circleLine(r, colors.equip, 64, 'y');
-          ring.material.opacity = 0.5;
-          ring.position.set(c.mesh.position.x, 0, c.mesh.position.z);
-          equipGroup.add(ring);
-        }
-      }
+    if (opts.showEquip && charges.length) {
+      // 合成电场的等势线（多电荷时按矢量叠加电势求等值线，处处与电场线垂直）
+      const segs = equipotentialSegs(charges);
+      const geo = new THREE.BufferGeometry();
+      geo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(segs), 3));
+      const eq = new THREE.LineSegments(geo, new THREE.LineBasicMaterial({ color: colors.equip, transparent: true, opacity: 0.55 }));
+      equipGroup.add(eq);
     }
   }
   return {
@@ -424,6 +469,10 @@ function buildWork() {
 function probeStart() {
   if (st2.path === 'along') return { p: V3(-1.05, 1.06, 0), dir: V3(1, 0, 0) };
   if (st2.path === 'against') return { p: V3(1.05, 1.06, 0), dir: V3(-1, 0, 0) };
+  if (st2.path === 'bent') {
+    // 折线：先沿等势面平移（不做功），再顺场线走 d —— 与直线殊途同归
+    return { p: V3(-1.05, 1.06, -0.7), via: V3(-1.05, 1.06, 0.7), dir: V3(1, 0, 0) };
+  }
   return { p: V3(0, 1.06, -0.85), dir: V3(0, 0, 1) };
 }
 function resetProbe() {
@@ -436,7 +485,12 @@ function resetProbe() {
 
 const g3 = new THREE.Group();
 scene.add(g3);
-const st3 = { U: 200, d: 10, S: 100, show: true };
+const st3 = { U: 200, d: 10, S: 100, show: true, mode: 'U', eps: 1, Q: 2 };
+const DIELECTRICS = [
+  { name: '空气', eps: 1.0 },
+  { name: '塑料', eps: 2.5 },
+  { name: '玻璃', eps: 5.0 },
+];
 let w3 = {};
 function buildCap() {
   const plateMat = stdMat({ color: 0xc9ccd2, roughness: 0.35, metalness: 0.7 });
@@ -454,6 +508,9 @@ function buildCap() {
   g3.add(pL, pR, lblL, lblR);
   w3 = { pL, pR, lblL, lblR, arrows };
 }
+function capC() { return (0.885 * st3.eps * st3.S) / st3.d; }          // pF
+function capU() { return st3.mode === 'U' ? st3.U : (st3.Q * 1e-9) / (capC() * 1e-12); } // V
+function capE() { return capU() / st3.d; }                             // V/mm
 function applyCap() {
   const gap = 0.25 + (st3.d - 2) * (0.95 / 18); // 板距视觉映射 2~20mm
   const s = Math.sqrt(st3.S / 100);
@@ -463,8 +520,8 @@ function applyCap() {
   w3.pR.scale.set(1, s, s);
   w3.lblL.position.set(-gap / 2 - 0.06, 1.06 + 0.42 * s, 0);
   w3.lblR.position.set(gap / 2 + 0.06, 1.06 + 0.42 * s, 0);
-  const EkV = st3.U / st3.d; // V/mm = kV/m
-  const len = st3.U <= 0 ? 0 : 0.18 + clamp(EkV / 250, 0, 1) * 0.5;
+  const Evm = capE(); // V/mm
+  const len = Evm <= 0 ? 0 : 0.18 + clamp(Evm / 60, 0, 1) * 0.5;
   let i = 0;
   for (const x of [-0.35, 0, 0.35]) {
     for (const z of [-0.25, 0.08, 0.33]) {
@@ -480,7 +537,7 @@ function applyCap() {
 
 const g4 = new THREE.Group();
 scene.add(g4);
-const st4 = { Uy: 60, freq: 1.5, gain: 1.4, sweep: true };
+const st4 = { Uy: 60, freq: 1.5, gain: 1.4, sweep: true, U1: 1.5 };
 let w4 = {};
 function buildScope() {
   const glass = new THREE.MeshPhysicalMaterial({ color: 0xaec6d4, roughness: 0.06, transparent: true, opacity: 0.12, side: THREE.DoubleSide, depthWrite: false });
@@ -529,20 +586,50 @@ function buildScope() {
   w4.scrCtx.fillStyle = '#04140a';
   w4.scrCtx.fillRect(0, 0, 256, 256);
 }
-function sig4(t) { return (st4.Uy / 100) * st4.gain * Math.sin(TAU * st4.freq * t); }
+function sig4(t) {
+  // 偏转量 ∝ U₂/U₁（y = U₂L²/(4dU₁)，加速电压 U₁ 越高电子越"不易弯"）
+  return ((st4.Uy / 100) * st4.gain * Math.sin(TAU * st4.freq * t) * 1.5) / st4.U1;
+}
 
 /* ---------------- 第 5 章 · 磁感线（条形磁铁偶极子场） ---------------- */
 
 const g5 = new THREE.Group();
 scene.add(g5);
 const cf5 = createChargeField(g5, { line: 0x35b5c9 }, true);
-const st5 = { cfg: 'single', flip: false, filings: true };
+const st5 = { cfg: 'single', flip: false, filings: true, wireDir: 1 };
 let w5 = {};
 function buildMagnet() {
   const magA = makeBarMagnet(1.1);
   const magB = makeBarMagnet(1.1);
-  g5.add(magA, magB);
-  w5 = { magA, magB, filingsCv: null };
+  // 通电直导线（沿 y 轴）+ 同心圆磁感线
+  const wire = cyl(0.018, 0.018, 1.3, stdMat({ color: 0xd9a441, roughness: 0.3, metalness: 0.8 }));
+  wire.position.set(0, PLANE_Y, 0);
+  const wireLbl = makeTextSprite('通电直导线', { fontSize: 28, color: '#e0c9b8', scale: 0.0026 });
+  wireLbl.position.set(0, PLANE_Y + 0.8, 0);
+  wire.add(wireLbl);
+  const circlesG = new THREE.Group();
+  const cMat = new THREE.LineBasicMaterial({ color: 0x35b5c9, transparent: true, opacity: 0.75 });
+  const wireArrows = [];
+  const tangGeo = new THREE.ConeGeometry(0.03, 0.09, 8);
+  const tangMat = new THREE.MeshBasicMaterial({ color: 0x35b5c9 });
+  for (const R of [0.35, 0.7, 1.1, 1.6, 2.1]) {
+    const pts = [];
+    for (let k = 0; k <= 60; k++) {
+      const aa = (k / 60) * TAU;
+      pts.push(V3(Math.cos(aa) * R, PLANE_Y, Math.sin(aa) * R));
+    }
+    circlesG.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts), cMat));
+    for (let k = 0; k < 4; k++) {
+      const cone = new THREE.Mesh(tangGeo, tangMat);
+      circlesG.add(cone);
+      wireArrows.push({ cone, R, a: (k / 4) * TAU + 0.35 });
+    }
+  }
+  const wireG = new THREE.Group();
+  wireG.add(wire, circlesG);
+  wireG.visible = false;
+  g5.add(magA, magB, wireG);
+  w5 = { magA, magB, filingsCv: null, wireG, wireArrows };
 }
 function magnetPoles() {
   // 返回单极子列表（教学近似）：N=+1、S=−1；flip 通过整体旋转磁铁实现场线反向
@@ -557,20 +644,48 @@ function magnetPoles() {
   else { pushMag(-1.2, st5.flip, true); pushMag(1.2, !st5.flip, true); }
   return poles;
 }
-function applyMagnet() {
-  w5.magA.visible = true;
-  w5.magB.visible = st5.cfg !== 'single';
-  w5.magA.position.set(st5.cfg === 'single' ? 0 : -1.2, PLANE_Y, 0);
-  w5.magB.position.set(1.2, PLANE_Y, 0);
-  w5.magA.rotation.y = st5.flip ? Math.PI : 0;
-  w5.magB.rotation.y = st5.cfg !== 'single' && !st5.flip ? Math.PI : 0;
-  cf5.clearCharges();
-  for (const p of magnetPoles()) {
-    const c = cf5.addCharge(p.q, p.pos.x, p.pos.z);
-    c.lines = 12;
+function fieldAt5(x, z) {
+  if (st5.cfg === 'wire') {
+    // 通电直导线：B = μ₀I/(2πr)，方向按安培定则（I 沿 +y 时 B = I·ŷ×r̂）
+    const r2 = x * x + z * z;
+    if (r2 < 0.02) return null;
+    const s = st5.wireDir;
+    return [(s * z) / r2, (-s * x) / r2];
   }
-  cf5.opts.showLines = true;
-  cf5.force = true;
+  return fieldVec2D(x, z, magnetPoles());
+}
+function orientWireArrows() {
+  const s = st5.wireDir;
+  for (const { cone, R, a } of w5.wireArrows) {
+    const x = Math.cos(a) * R, z = Math.sin(a) * R;
+    _idv.set(z * s, 0, -x * s).normalize();
+    cone.position.set(x, PLANE_Y, z);
+    cone.quaternion.setFromUnitVectors(UPV, _idv);
+  }
+}
+function applyMagnet() {
+  const wire = st5.cfg === 'wire';
+  w5.wireG.visible = wire;
+  w5.magA.visible = !wire;
+  w5.magB.visible = !wire && st5.cfg !== 'single';
+  if (wire) {
+    cf5.clearCharges();
+    cf5.opts.showLines = false;
+    cf5.force = true;
+    orientWireArrows();
+  } else {
+    w5.magA.position.set(st5.cfg === 'single' ? 0 : -1.2, PLANE_Y, 0);
+    w5.magB.position.set(1.2, PLANE_Y, 0);
+    w5.magA.rotation.y = st5.flip ? Math.PI : 0;
+    w5.magB.rotation.y = st5.cfg !== 'single' && !st5.flip ? Math.PI : 0;
+    cf5.clearCharges();
+    for (const p of magnetPoles()) {
+      const c = cf5.addCharge(p.q, p.pos.x, p.pos.z);
+      c.lines = 12;
+    }
+    cf5.opts.showLines = true;
+    cf5.force = true;
+  }
   if (st5.filings) drawFilings();
 }
 function drawFilings() {
@@ -579,7 +694,7 @@ function drawFilings() {
   const W = ctx.canvas.width, H = ctx.canvas.height;
   ctx.fillStyle = '#161a1f';
   ctx.fillRect(0, 0, W, H);
-  const poles = magnetPoles();
+  const poles = st5.cfg === 'wire' ? [] : magnetPoles();
   const NX = 36, NZ = 19;
   ctx.strokeStyle = '#9aa3ac';
   ctx.lineWidth = 2;
@@ -590,7 +705,7 @@ function drawFilings() {
       let close = false;
       for (const p of poles) if (Math.hypot(x - p.pos.x, z - p.pos.z) < 0.28) close = true;
       if (close) continue;
-      const v = fieldVec2D(x, z, poles);
+      const v = fieldAt5(x, z);
       if (!v) continue;
       const mag = Math.hypot(v[0], v[1]);
       const len = clamp(Math.log10(1 + mag * 40) * 9, 4, 17);
@@ -669,7 +784,7 @@ function applyAmpereArrows() {
 
 const g7 = new THREE.Group();
 scene.add(g7);
-const st7 = { v: 1.5, B: 0.8, m: 1, q: 1, active: false, pos: new THREE.Vector3(), vel: new THREE.Vector3() };
+const st7 = { v: 1.5, B: 0.8, m: 1, q: 1, alpha: 0, active: false, pos: new THREE.Vector3(), vel: new THREE.Vector3() };
 let w7 = {};
 const TRAIL7 = 240;
 function buildLorentz() {
@@ -699,7 +814,8 @@ function buildLorentz() {
 }
 function launch7() {
   st7.pos.set(-0.9, PLANE_Y, 0);
-  st7.vel.set(st7.v, 0, 0);
+  const al = (st7.alpha * Math.PI) / 180;
+  st7.vel.set(st7.v * Math.cos(al), st7.v * Math.sin(al), 0);
   st7.active = true;
   w7.trailLen = 0;
   w7.trailGeo.setDrawRange(0, 0);
@@ -872,8 +988,10 @@ const st8c = { pos: new THREE.Vector3(), vel: new THREE.Vector3(), active: false
 
 const g9 = new THREE.Group();
 scene.add(g9);
-const st9 = { speed: 1.2, N: 12, action: 'still', magX: 2.4, anim: false, animDir: 0, emf: 0, showArrows: true };
+const st9 = { speed: 1.2, N: 12, action: 'still', magX: 2.4, anim: false, animDir: 0, emf: 0, showArrows: true, mode: 'magnet' };
+const st9r = { F: 0.12, B: 0.5, L: 0.8, R: 2, v: 0, x: -0.7 };
 let w9 = {};
+let w9r = {};
 function buildInduction() {
   const coilMat = stdMat({ color: 0xc08040, roughness: 0.35, metalness: 0.7 });
   const coilG = new THREE.Group();
@@ -901,7 +1019,55 @@ function buildInduction() {
   magLbl.position.set(0, 0.26, 0);
   magnet.add(magLbl);
   g9.add(coilG, track, magnet);
-  w9 = { coilG, tori, curArrows, magnet, galvCv: null };
+  w9 = { coilG, track, tori, curArrows, magnet, galvCv: null };
+
+  /* 导体棒切割子台（mode='rod' 时显示） */
+  const rg = new THREE.Group();
+  rg.visible = false;
+  const railMat = stdMat({ color: 0x7a828c, roughness: 0.35, metalness: 0.7 });
+  const railA = box(2.6, 0.04, 0.06, railMat); railA.position.set(0.1, 0.94, -0.3);
+  const railB = railA.clone(); railB.position.z = 0.3;
+  const legA = box(0.1, 0.9, 0.1, railMat); legA.position.set(-1.1, 0.45, -0.3);
+  const legB = legA.clone(); legB.position.z = 0.3;
+  const legC = legA.clone(); legC.position.x = 1.3;
+  const legD = legC.clone(); legD.position.z = 0.3;
+  const rod = box(0.07, 0.07, 0.66, stdMat({ color: 0xd9a441, roughness: 0.3, metalness: 0.8 }));
+  rod.position.y = 1.0;
+  const rodG = new THREE.Group();
+  rodG.add(rod);
+  rodG.position.x = -0.7;
+  const pullArr = makeArrow(0x35d07a, 0.9);
+  setArrow(pullArr, V3(-0.25, 1.06, 0), V3(1, 0, 0), 0.35);
+  rodG.add(pullArr);
+  const rodLbl = makeTextSprite('导体棒（受恒定拉力）', { fontSize: 26, color: '#b8ecc9', scale: 0.0024 });
+  rodLbl.position.set(0, 0.3, 0);
+  rodG.add(rodLbl);
+  const bArrows = [];
+  for (const x of [-0.7, 0.1, 0.9]) {
+    const a = makeArrow(0x7fb2ff, 0.6);
+    rg.add(a); bArrows.push(a);
+  }
+  const resBox = box(0.16, 0.2, 0.2, stdMat({ color: 0x2f3338, roughness: 0.6 }));
+  resBox.position.set(-1.35, 1.0, 0);
+  const resLbl = makeTextSprite('电阻 R', { fontSize: 26, color: '#c9d4de', scale: 0.0024 });
+  resLbl.position.set(-1.35, 1.24, 0);
+  rg.add(railA, railB, legA, legB, legC, legD, rodG, resBox, resLbl);
+  g9.add(rg);
+  w9r = { g: rg, rodG, bArrows };
+}
+function applyMode9() {
+  const rod = st9.mode === 'rod';
+  w9.coilG.visible = !rod;
+  w9.track.visible = !rod;
+  w9.magnet.visible = !rod;
+  w9r.g.visible = rod;
+  w9r.bArrows.forEach((a) => {
+    a.visible = rod;
+    setArrow(a, a.position, V3(0, -1, 0), 0.2 + st9r.B * 0.22);
+  });
+  w9r.bArrows[0].position.set(-0.7, 0.8, 0);
+  w9r.bArrows[1].position.set(0.1, 0.8, 0);
+  w9r.bArrows[2].position.set(0.9, 0.8, 0);
 }
 function applyCoilTurns() {
   const N = st9.N;
@@ -1067,7 +1233,12 @@ function drawWave(eN) {
 const g11 = new THREE.Group();
 scene.add(g11);
 const cf2 = createChargeField(g11, { line: 0xff8a3d, equip: 0x5a9bff });
-const st11 = { Bon: false, B: 0.8 };
+const st11 = { Bon: false, B: 0.8, ptype: 'electron' };
+const PTYPE11 = {
+  electron: { label: '电子', q: -1, m: 0.5, color: 0x7be0ff },
+  proton: { label: '质子', q: 1, m: 1, color: 0xff9a7b },
+  alpha: { label: 'α 粒子', q: 2, m: 4, color: 0xffd166 },
+};
 let w11 = {};
 function buildSandbox() {
   const arrows = [];
@@ -1082,10 +1253,13 @@ function buildSandbox() {
   const parts = [];
   const PMAX = 4;
   const partGeo = new THREE.SphereGeometry(0.055, 12, 10);
-  const partMat = new THREE.MeshBasicMaterial({ color: 0x7be0ff });
+  const partMats = {};
+  for (const k of Object.keys(PTYPE11)) {
+    partMats[k] = new THREE.MeshBasicMaterial({ color: PTYPE11[k].color });
+  }
   const TRP = 240;
   for (let i = 0; i < PMAX; i++) {
-    const m = new THREE.Mesh(partGeo, partMat);
+    const m = new THREE.Mesh(partGeo, partMats.electron);
     m.visible = false;
     g11.add(m);
     const tPos = new Float32Array(TRP * 3);
@@ -1095,14 +1269,18 @@ function buildSandbox() {
     const line = new THREE.Line(tGeo, new THREE.LineBasicMaterial({ color: 0x7be0ff, transparent: true, opacity: 0.7 }));
     line.frustumCulled = false;
     g11.add(line);
-    parts.push({ mesh: m, vel: new THREE.Vector3(), active: false, tPos, tGeo, tLen: 0 });
+    parts.push({ mesh: m, vel: new THREE.Vector3(), active: false, q: -1, mm: 0.5, tPos, tGeo, tLen: 0 });
   }
-  w11 = { arrows, parts, TRP, selected: null };
+  w11 = { arrows, parts, TRP, selected: null, partMats };
 }
 function launchParticle11() {
   const p = w11.parts.find((q) => !q.active);
   if (!p) return;
+  const pt = PTYPE11[st11.ptype];
   p.active = true;
+  p.q = pt.q;
+  p.mm = pt.m;
+  p.mesh.material = w11.partMats[st11.ptype];
   p.mesh.visible = true;
   p.mesh.position.set(-2.75, PLANE_Y, (Math.random() - 0.5) * 2.6);
   p.vel.set(1.4 + Math.random() * 0.6, 0, 0);
@@ -1157,18 +1335,22 @@ function mkHud(rows) { const h = makeHUD(hudWrap, rows); h.el.style.display = 'n
 const huds = [
   mkHud([['cfg', '配置'], ['lines', '每电荷场线'], ['drag', '电荷可拖动']]),
   mkHud([['f', '电场力 F=qE'], ['w', '做功 W=qEd'], ['ep', 'ΔEp=−W'], ['note', '移动方向']]),
-  mkHud([['e', '场强 E=U/d'], ['c', '电容 C=ε₀S/d'], ['note', '规律']]),
-  mkHud([['uy', '信号电压 Uy'], ['dy', '竖直偏转量'], ['sw', '扫描']]),
+  mkHud([['e', '场强 E'], ['u', '电压 U'], ['c', '电容 C=εrε₀S/d'], ['note', '规律']]),
+  mkHud([['u1', '加速电压 U₁'], ['uy', '偏转电压 U₂'], ['dy', '竖直偏转量'], ['sw', '扫描']]),
   mkHud([['cfg', '装置'], ['dir', '磁感线方向'], ['note', '铁屑俯视']]),
   mkHud([['f', '安培力 F=BIL'], ['dir', '力的方向'], ['v', '导体棒速率']]),
-  mkHud([['r', '半径 r=mv/qB'], ['t', '周期 T=2πm/qB'], ['st', '状态']]),
+  mkHud([['r', '半径 r=mv/qB'], ['t', '周期 T=2πm/qB'], ['pitch', '螺距 v∥·T'], ['st', '状态']]),
   mkHud([['r', 'C-12 偏转半径'], ['law', '分离规律'], ['st', '状态']]),
-  mkHud([['t', '周期 T=2πm/qB'], ['n', '加速次数'], ['st', '状态']]),
+  mkHud([['t', '周期 T=2πm/qB'], ['n', '加速次数'], ['ek', '最终动能 Ek'], ['st', '状态']]),
   mkHud([['flux', '磁通变化'], ['emf', '感应电动势'], ['cur', '感应电流方向']]),
-  mkHud([['em', '峰值 Em=NBSω'], ['f', '频率 f'], ['e', '瞬时 e']]),
+  mkHud([['em', '峰值 Em=NBSω'], ['f', '频率 f'], ['rms', '有效值 E=Em/√2'], ['e', '瞬时 e']]),
   mkHud([['n', '电荷数'], ['b', '外加磁场'], ['p', '粒子数']]),
 ];
-function showHud(i) { huds.forEach((h, j) => h.el.style.display = j === i ? '' : 'none'); }
+const hudsRod = mkHud([['e', '电动势 E=BLv'], ['i', '感应电流 I=E/R'], ['fa', '安培力 F=B²L²v/R'], ['v', '速度 v / 收尾速度']]);
+function showHud(i) {
+  huds.forEach((h, j) => h.el.style.display = j === i ? '' : 'none');
+  hudsRod.el.style.display = i === 'rod' ? '' : 'none';
+}
 
 /* ---------------- 帧循环 ---------------- */
 
@@ -1187,13 +1369,27 @@ app.onFrame((dt) => {
 
   /* 第 2 章：试探电荷移动动画 */
   if (g2.visible && st2.anim) {
-    st2.anim.t += dt / 1.3;
-    const k = Math.min(st2.anim.t, 1);
-    const e = k < 0.5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2;
-    w2.probe.position.lerpVectors(st2.anim.from, st2.anim.to, e);
-    const traveled = e * st2.d;
-    st2.anim.W = st2.q * st2.E * traveled; // μC·kV/m·m = mJ
-    st2.anim.done = k >= 1;
+    const a = st2.anim;
+    a.t += dt / 1.3;
+    const k = Math.min(a.t, 1);
+    if (a.via) {
+      // 折线两段：第一段沿等势面（W=0），第二段顺场线走 d
+      if (k < 0.5) {
+        w2.probe.position.lerpVectors(a.from, a.via, k / 0.5);
+        a.W = 0;
+      } else {
+        const k2 = (k - 0.5) / 0.5;
+        const e = k2 < 0.5 ? 2 * k2 * k2 : 1 - Math.pow(-2 * k2 + 2, 2) / 2;
+        w2.probe.position.lerpVectors(a.via, a.to, e);
+        a.W = a.q * a.E * e * a.d; // μC·kV/m·m = mJ
+      }
+    } else {
+      const e = k < 0.5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2;
+      w2.probe.position.lerpVectors(a.from, a.to, e);
+      const traveled = e * a.d;
+      a.W = a.q * a.E * traveled; // μC·kV/m·m = mJ
+    }
+    a.done = k >= 1;
   }
 
   /* 第 4 章：示波管 */
@@ -1259,7 +1455,7 @@ app.onFrame((dt) => {
     }
     w7.particle.position.copy(st7.pos);
     pushTrail7();
-    if (Math.abs(st7.pos.x) > 1.55 || Math.abs(st7.pos.z) > 1.55) st7.active = false;
+    if (Math.abs(st7.pos.x) > 1.55 || Math.abs(st7.pos.z) > 1.55 || Math.abs(st7.pos.y - PLANE_Y) > 0.55) st7.active = false;
   }
 
   /* 第 8 章：质谱仪离子飞行 */
@@ -1340,8 +1536,20 @@ app.onFrame((dt) => {
     w8c.gapFlash.material.opacity = 0;
   }
 
-  /* 第 9 章：磁铁插拔 + 检流计 */
-  if (g9.visible) {
+  /* 第 9 章：磁铁插拔 + 检流计 / 导体棒切割 */
+  if (g9.visible && st9.mode === 'rod') {
+    // 导体棒：恒定拉力 − 安培力（B²L²v/R）→ 收尾速度 v = FR/(B²L²)，E = BLv
+    const Fa = (st9r.B * st9r.B * st9r.L * st9r.L * st9r.v) / st9r.R;
+    const acc = (st9r.F - Fa) / 0.1;
+    st9r.v = clamp(st9r.v + acc * dt, 0, 4);
+    st9r.x += st9r.v * dt * 0.4;
+    if (st9r.x > 1.0) { st9r.x = 1.0; st9r.v = 0; }
+    w9r.rodG.position.x = st9r.x;
+    hudsRod.set('e', (st9r.B * st9r.L * st9r.v).toFixed(3) + ' V');
+    hudsRod.set('i', ((st9r.B * st9r.L * st9r.v) / st9r.R).toFixed(3) + ' A');
+    hudsRod.set('fa', Fa.toFixed(3) + ' N（拉力 ' + st9r.F.toFixed(2) + ' N）');
+    hudsRod.set('v', st9r.v.toFixed(2) + ' m/s → 收尾 ' + ((st9r.F * st9r.R) / (st9r.B * st9r.B * st9r.L * st9r.L)).toFixed(2) + ' m/s');
+  } else if (g9.visible) {
     let vx = 0;
     if (st9.anim) {
       vx = st9.animDir * st9.speed * 0.85;
@@ -1393,8 +1601,9 @@ app.onFrame((dt) => {
         const ez = ev ? ev[1] * 0.45 : 0;
         const B = st11.Bon ? st11.B : 0;
         const vx = p.vel.x, vz = p.vel.z;
-        const ax = ex - vz * B;
-        const az = ez + vx * B;
+        // a = (qE + qv×B)/m，电荷与质量按粒子类型取值
+        const ax = (p.q * (ex - vz * B)) / p.mm;
+        const az = (p.q * (ez + vx * B)) / p.mm;
         p.vel.x += ax * dt / sub;
         p.vel.z += az * dt / sub;
         p.mesh.position.x += p.vel.x * dt / sub;
@@ -1423,29 +1632,35 @@ app.onFrame((dt) => {
     huds[1].set('f', (st2.q * st2.E).toFixed(1) + ' mN');
     huds[1].set('w', a ? a.W.toFixed(2) + ' mJ' : '点击「移动」');
     huds[1].set('ep', a ? '−' + a.W.toFixed(2) + ' mJ' : '−W');
-    huds[1].set('note', st2.path === 'along' ? '顺着场线' : st2.path === 'against' ? '逆着场线' : '垂直场线');
+    huds[1].set('note', st2.path === 'along' ? '顺着场线（直线）' : st2.path === 'against' ? '逆着场线' : st2.path === 'bent' ? '折线：先平移再顺场线' : '垂直场线');
   } else if (g3.visible) {
-    huds[2].set('e', (st3.U / st3.d).toFixed(0) + ' kV/m');
-    const Cpf = (0.885 * st3.S) / st3.d;
-    huds[2].set('c', Cpf.toFixed(2) + ' pF');
-    huds[2].set('note', 'd↓→E↑ · S↑→C↑');
+    huds[2].set('e', capE().toFixed(1) + ' V/mm');
+    huds[2].set('u', capU().toFixed(0) + ' V');
+    huds[2].set('c', capC().toFixed(2) + ' pF');
+    huds[2].set('note', st3.mode === 'U'
+      ? 'U 不变：d↑ → C↓、Q=CU↓、E=U/d↓'
+      : 'Q 不变：d↑ → C↓、U=Q/C↑（静电计偏角大）、E 不变');
   } else if (g4.visible) {
+    huds[3].set('u1', st4.U1.toFixed(1) + ' kV');
     huds[3].set('uy', (st4.Uy * st4.gain).toFixed(0) + ' %');
-    huds[3].set('dy', (sig4(time) * 10).toFixed(1) + ' 格');
+    huds[3].set('dy', (sig4(time) * 10).toFixed(1) + ' 格（∝U₂/U₁）');
     huds[3].set('sw', st4.sweep ? '开（正弦波形）' : '关（竖直亮线）');
   } else if (g5.visible) {
-    huds[4].set('cfg', st5.cfg === 'single' ? '单条形磁铁' : '双磁铁同极相对');
-    huds[4].set('dir', st5.flip ? '已翻转（N/S 互换）' : 'N 出 S 入');
-    huds[4].set('note', st5.filings ? '开（右下角）' : '关');
+    huds[4].set('cfg', st5.cfg === 'single' ? '单条形磁铁' : st5.cfg === 'wire' ? '通电直导线（安培定则）' : '双磁铁同极相对');
+    huds[4].set('dir', st5.cfg === 'wire' ? (st5.wireDir > 0 ? '逆时针（俯视）' : '顺时针（俯视）') : st5.flip ? '已翻转（N/S 互换）' : 'N 出 S 入');
+    huds[4].set('note', st5.cfg === 'wire' ? 'B = μ₀I/(2πr) ∝ 1/r' : st5.filings ? '铁屑开（右下角）' : '铁屑关');
   } else if (g6.visible) {
     const F = st6.B * st6.I * st6.L;
     huds[5].set('f', F.toFixed(2) + ' N');
     huds[5].set('dir', F < 0.01 ? '—' : (st6.dir > 0 ? '−z 方向' : '+z 方向'));
     huds[5].set('v', Math.abs(st6.v).toFixed(2) + ' 格/s');
   } else if (g7.visible) {
-    huds[6].set('r', ((st7.m * st7.v) / (Math.abs(st7.q) * st7.B)).toFixed(2) + '（相对）');
-    huds[6].set('t', ((TAU * st7.m) / (Math.abs(st7.q) * st7.B)).toFixed(2) + '（相对）');
-    huds[6].set('st', st7.active ? '圆周运动中' : '已停止');
+    const w7om = (0.9 * st7.q * st7.B) / st7.m;
+    const T7 = Math.abs(TAU / w7om);
+    huds[6].set('r', ((st7.m * st7.v * Math.cos((st7.alpha * Math.PI) / 180)) / (Math.abs(st7.q) * st7.B)).toFixed(2) + '（相对）');
+    huds[6].set('t', T7.toFixed(2) + '（相对，与 v 无关）');
+    huds[6].set('pitch', st7.alpha > 0 ? (st7.v * Math.sin((st7.alpha * Math.PI) / 180) * T7).toFixed(2) : '—（α=0）');
+    huds[6].set('st', st7.active ? (st7.alpha > 0 ? '螺旋线运动中' : '圆周运动中') : '已停止');
   } else if (g8ms.visible) {
     huds[7].set('r', msRadiusText());
     huds[7].set('law', 'r∝√m · √U · 1/B');
@@ -1453,9 +1668,12 @@ app.onFrame((dt) => {
   } else if (g8cyc.visible) {
     const mKg = 12 * 1.66e-27;
     const T = (TAU * mKg) / (1.6e-19 * st8.B) * 1e6;
+    const Rcyc = 1.15 / 26;   // D 形盒视觉半径对应的物理半径（与离子轨迹缩放一致）
+    const EkkeV = ((1.6e-19 * st8.B * Rcyc) ** 2) / (2 * mKg) / 1.6e-22;
     huds[8].set('t', T.toFixed(2) + ' μs（恒定）');
-    huds[8].set('n', st8c.crossings + ' 次');
-    huds[8].set('st', st8c.active ? '螺旋加速中' : st8c.crossings > 0 ? '达到能量上限' : '待发射');
+    huds[8].set('n', st8c.crossings + ' 次（n = Ek/qU）');
+    huds[8].set('ek', EkkeV.toFixed(1) + ' keV（与 U 无关）');
+    huds[8].set('st', st8c.active ? '螺旋加速中' : st8c.crossings > 0 ? '达到能量上限引出' : '待发射');
   } else if (g9.visible) {
     const nd = st9.needle || 0;
     huds[9].set('flux', st9.anim ? (st9.animDir < 0 ? '增大（插入）' : '减小（拔出）') : '不变（静止）');
@@ -1465,6 +1683,7 @@ app.onFrame((dt) => {
     const Em = st10.Nt * st10.B * 0.02 * TAU * st10.n;
     huds[10].set('em', Em.toFixed(1) + ' V');
     huds[10].set('f', st10.n.toFixed(1) + ' Hz');
+    huds[10].set('rms', (Em / Math.SQRT2).toFixed(1) + ' V');
     huds[10].set('e', (Em * Math.sin(st10.theta)).toFixed(1) + ' V');
   } else if (g11.visible) {
     huds[11].set('n', cf2.charges.length + ' / 8');
@@ -1477,6 +1696,75 @@ app.onFrame((dt) => {
 
 const ctl = createControlsPanel(document.getElementById('controls'));
 let activeSectionCleanup = null;
+
+/* 第 9 章控件：按模式（磁铁插拔 / 导体棒切割）重建 */
+function buildControls9() {
+  ctl.clear();
+  ctl.seg({
+    options: [{ label: '磁铁插拔线圈', value: 'magnet' }, { label: '导体棒切割', value: 'rod' }],
+    value: st9.mode,
+    onChange: (v) => {
+      st9.mode = v;
+      applyMode9();
+      if (v === 'rod') { st9r.v = 0; st9r.x = -0.7; w9r.rodG.position.x = -0.7; showHud('rod'); }
+      else showHud(9);
+      buildControls9();
+    },
+  });
+  ctl.sep();
+  if (st9.mode === 'magnet') {
+    ctl.seg({
+      options: [{ label: '插入', value: 'insert' }, { label: '拔出', value: 'pull' }, { label: '静止', value: 'still' }],
+      value: 'still',
+      onChange: (v) => {
+        if (v === 'insert' && st9.magX <= 0.19) st9.magX = 2.4;
+        if (v === 'pull' && st9.magX >= 2.39) st9.magX = 0.18;
+        setAction9(v);
+      },
+    });
+    ctl.sep();
+    ctl.slider({
+      label: '磁铁速度', min: 0.5, max: 3, step: 0.1, value: st9.speed,
+      fmt: (v) => '×' + v.toFixed(1),
+      onInput: (v) => { st9.speed = v; },
+    });
+    ctl.slider({
+      label: '线圈匝数 N', min: 6, max: 18, step: 1, value: st9.N,
+      fmt: (v) => v + ' 匝',
+      onInput: (v) => { st9.N = v; applyCoilTurns(); },
+    });
+    ctl.toggle({
+      label: '显示感应电流方向', value: st9.showArrows,
+      onChange: (v) => { st9.showArrows = v; },
+    });
+  } else {
+    ctl.slider({
+      label: '拉力 F', min: 0.02, max: 0.4, step: 0.01, value: st9r.F,
+      fmt: (v) => v.toFixed(2) + ' N',
+      onInput: (v) => { st9r.F = v; },
+    });
+    ctl.slider({
+      label: '磁感应强度 B', min: 0.2, max: 1, step: 0.05, value: st9r.B,
+      fmt: (v) => v.toFixed(2) + ' T',
+      onInput: (v) => { st9r.B = v; applyMode9(); },
+    });
+    ctl.slider({
+      label: '导轨间距 L', min: 0.4, max: 1.2, step: 0.05, value: st9r.L,
+      fmt: (v) => v.toFixed(2) + ' m',
+      onInput: (v) => { st9r.L = v; },
+    });
+    ctl.slider({
+      label: '回路电阻 R', min: 0.5, max: 5, step: 0.1, value: st9r.R,
+      fmt: (v) => v.toFixed(1) + ' Ω',
+      onInput: (v) => { st9r.R = v; },
+    });
+    ctl.sep();
+    ctl.button({
+      label: '↺ 复位导体棒',
+      onClick: () => { st9r.v = 0; st9r.x = -0.7; w9r.rodG.position.x = -0.7; },
+    });
+  }
+}
 
 function hideAllChapters() {
   [g1, g2, g3, g4, g5, g6, g7, g8ms, g8cyc, g9, g10, g11].forEach((g) => { g.visible = false; });
@@ -1496,9 +1784,9 @@ function hideAllChapters() {
 const SECTIONS = [
   {
     title: '电场线与等势面',
-    html: `<p><b>电场线</b>从正电荷出发、到负电荷终止（或伸向无穷远），<span class="hl">不闭合、不相交</span>；线的疏密表示场强强弱——电荷附近最密、场最强。</p>
+    html: `<p><b>电场线</b>从正电荷出发、到负电荷终止（或伸向无穷远），<span class="hl">不闭合、不相交</span>；线的疏密表示场强强弱——电荷附近最密、场最强。点电荷场强 E = kQ/r²。</p>
 <p>拖动任意电荷试试：电场线会实时重新计算。切换「等量异号 / 等量同号」对比场线形状：异号电荷的线<span class="hl">从一个直接连到另一个</span>，同号电荷的线<b>相互排斥</b>、中间出现「真空」区。</p>
-<p><b>等势面</b>（蓝色圆环）与电场线处处垂直，沿等势面移动电荷电场力不做功。</p>`,
+<p><b>等势线</b>（蓝色）按合成电场的电势 φ = ΣkQ/r（标量直接相加）绘出，<span class="hl">处处与电场线垂直</span>；沿电场线方向电势降低，沿等势线移动电荷电场力不做功。异号电荷对的中垂线就是 φ=0 的等势线。</p>`,
     enter() {
       hideAllChapters();
       g1.visible = true;
@@ -1540,9 +1828,9 @@ const SECTIONS = [
   },
   {
     title: '电场力做功与电势能',
-    html: `<p>两块平行板间是<span class="hl">匀强电场</span>（箭头均匀、方向一致，E=U/d）。试探电荷（正）受恒定电场力 F=qE。</p>
-<p>选择移动方向：<b>顺着场线</b>——电场力做正功，W=qEd＞0，电势能<span class="hl">减小</span>；<b>逆着场线</b>——W＜0，电势能增大；<b>垂直场线</b>——W=0，电势能不变（沿等势面移动）。</p>
-<p>点「移动」按钮看动画，HUD 实时累计做功。注意：数值按匀强场公式 W=qEd 计算（板外场不再均匀，属近似）。</p>`,
+    html: `<p>两块平行板间是<span class="hl">匀强电场</span>（箭头均匀、方向一致，E=U/d）。试探电荷（正）受恒定电场力 F=qE，电场力做功 <span class="hl">W=qU=qEd</span>。</p>
+<p>关键性质：W <b>只与起点、终点有关，与路径无关</b>——和重力做功一样，所以才能定义电势能 E<sub>p</sub>=qφ：电场力做正功，电势能减少；做负功，电势能增加。选「折线路径」先沿等势面平移（W=0）再顺场线走，与直接走做功相同。</p>
+<p>顺着场线 W＞0 电势能减小；逆着场线 W＜0 电势能增大；垂直场线 W=0（沿等势面移动）。点「移动」看动画，HUD 实时累计做功。</p>`,
     enter() {
       hideAllChapters();
       g2.visible = true;
@@ -1555,6 +1843,7 @@ const SECTIONS = [
           { label: '顺着场线', value: 'along' },
           { label: '逆着场线', value: 'against' },
           { label: '垂直场线', value: 'perp' },
+          { label: '折线路径', value: 'bent' },
         ],
         value: st2.path,
         onChange: (v) => { st2.path = v; resetProbe(); },
@@ -1580,9 +1869,9 @@ const SECTIONS = [
         label: '▶ 移动',
         onClick: () => {
           const s = probeStart();
-          const to = s.p.clone().addScaledVector(s.dir, st2.d);
+          const to = (s.via ? s.via.clone() : s.p.clone()).addScaledVector(s.dir, st2.d);
           w2.probe.position.copy(s.p);
-          st2.anim = { t: 0, from: s.p, to, W: 0, done: false };
+          st2.anim = { t: 0, from: s.p, to, via: s.via || null, W: 0, done: false };
         },
       });
       ctl.button({ label: '↺ 复位', onClick: () => resetProbe() });
@@ -1591,9 +1880,9 @@ const SECTIONS = [
   },
   {
     title: '平行板电容器',
-    html: `<p>电容器带电后板间形成匀强电场：<span class="hl">E=U/d</span>。提高电压 U 或减小板距 d，箭头变长——场更强。</p>
-<p>电容 <span class="hl">C=εS/d</span>：正对面积 S 越大、板距 d 越小，容纳电荷的本领越强。注意 C 只由构造决定，<b>与 U 无关</b>。</p>
-<p>拖动三个滑杆观察：d 减小 → E 增大；S 增大 → C 增大。HUD 实时给出数值（ε₀=8.85×10⁻¹² F/m）。</p>`,
+    html: `<p>平行板电容器电容 <span class="hl">C = ε<sub>r</sub>ε<sub>0</sub>S / d</span>：正对面积 S 越大、板距 d 越小、插入介质（ε<sub>r</sub>↑）电容越大。C 只由构造决定，与是否带电无关。</p>
+<p><b>充电后断开电源（Q 不变）</b>：由 U = Q/C，增大 d、减小 S 或抽出介质 → C 变小 → <b>U 变大（静电计偏角变大）</b>，而板间场强 E = Q/(ε<sub>r</sub>ε<sub>0</sub>S) <b>与 d 无关</b>。</p>
+<p><b>始终接电源（U 不变）</b>：改变 d 时 Q = CU 和 E = U/d 都随之变化。两种模式切换对比；记录多组 (C, 1/d)，C–1/d 图像是一条过原点的直线。</p>`,
     enter() {
       hideAllChapters();
       g3.visible = true;
@@ -1601,10 +1890,21 @@ const SECTIONS = [
       app.setCamera([2.2, 1.8, 3.2], [0, 1.05, 0]);
       showHud(2);
       ctl.clear();
+      ctl.seg({
+        options: [{ label: '接电源（U 不变）', value: 'U' }, { label: '充电后断开（Q 不变）', value: 'Q' }],
+        value: st3.mode,
+        onChange: (v) => { st3.mode = v; applyCap(); },
+      });
+      ctl.sep();
       ctl.slider({
-        label: '电压 U', min: 0, max: 500, step: 10, value: st3.U,
+        label: '电压 U（U 不变模式）', min: 0, max: 500, step: 10, value: st3.U,
         fmt: (v) => v.toFixed(0) + ' V',
         onInput: (v) => { st3.U = v; applyCap(); },
+      });
+      ctl.slider({
+        label: '电荷量 Q（Q 不变模式）', min: 0.5, max: 5, step: 0.1, value: st3.Q,
+        fmt: (v) => v.toFixed(1) + ' nC',
+        onInput: (v) => { st3.Q = v; applyCap(); },
       });
       ctl.slider({
         label: '板距 d', min: 2, max: 20, step: 1, value: st3.d,
@@ -1616,6 +1916,11 @@ const SECTIONS = [
         fmt: (v) => v.toFixed(0) + ' cm²',
         onInput: (v) => { st3.S = v; applyCap(); },
       });
+      ctl.seg({
+        options: DIELECTRICS.map((dd) => ({ label: dd.name, value: dd.name })),
+        value: '空气',
+        onChange: (name) => { st3.eps = DIELECTRICS.find((dd) => dd.name === name).eps; applyCap(); },
+      });
       ctl.toggle({
         label: '显示电场箭头', value: st3.show,
         onChange: (v) => { st3.show = v; applyCap(); },
@@ -1624,9 +1929,9 @@ const SECTIONS = [
   },
   {
     title: '示波管',
-    html: `<p>电子枪发射高速电子，穿过 <b>YY′ 竖直偏转板</b>（信号电压使束上下偏——类平抛运动）与 XX′ 扫描板，打在荧光屏上。</p>
-<p><b>扫描开</b>：X 方向匀速展开，屏上画出<span class="hl">信号的正弦波形</span>；<b>扫描关</b>：光点只在竖直方向往复，屏上是一条竖直亮线。</p>
-<p>调 Uy 看波形幅度（偏转量∝Uy），调频率看波形疏密，调增益放大信号。</p>`,
+    html: `<p>阴极被灯丝加热发射电子，经加速电压 U₁ 加速（eU₁ = ½mv₀²），穿过 <b>YY′ 竖直偏转板</b>做<b>类平抛运动</b>，出板后匀速直线上屏——看起来像从偏转板中点沿直线射出。偏移量 <span class="hl">y = U₂L²/(4dU₁)</span>：与 U₂ 成正比、与 U₁ 成反比（偏转灵敏度 Y/U₂ ∝ 1/U₁）。</p>
+<p><b>扫描开</b>：XX′ 板加锯齿扫描电压，光点从左到右匀速扫过，屏上画出<span class="hl">信号的正弦波形</span>——这就是示波器测电压的原理；<b>扫描关</b>：屏上是一条竖直亮线。</p>
+<p>调 U₂ 看幅度、调 U₁ 看灵敏度、调频率看波形疏密。</p>`,
     enter() {
       hideAllChapters();
       g4.visible = true;
@@ -1634,7 +1939,12 @@ const SECTIONS = [
       showHud(3);
       ctl.clear();
       ctl.slider({
-        label: '信号电压 Uy', min: 0, max: 100, step: 5, value: st4.Uy,
+        label: '加速电压 U₁', min: 0.5, max: 3, step: 0.1, value: st4.U1,
+        fmt: (v) => v.toFixed(1) + ' kV',
+        onInput: (v) => { st4.U1 = v; },
+      });
+      ctl.slider({
+        label: '信号电压 U₂（幅度）', min: 0, max: 100, step: 5, value: st4.Uy,
         fmt: (v) => v.toFixed(0) + '%',
         onInput: (v) => { st4.Uy = v; },
       });
@@ -1660,9 +1970,9 @@ const SECTIONS = [
   },
   {
     title: '磁感线',
-    html: `<p>条形磁铁的<b>磁感线</b>从 N 极出来、回到 S 极（磁体内部则从 S 到 N，构成<span class="hl">闭合曲线</span>）。</p>
-<p>开启「铁屑窗」：撒在磁铁周围的铁屑就像一个个小磁针，沿磁场方向排列——这是显示磁场分布的经典实验。切换「双磁铁·同极相对」看中间的<span class="hl">排斥区</span>：两束磁感线互不相交、彼此推开。</p>
-<p>「磁极翻转」把磁铁调头，磁感线整体反向。</p>`,
+    html: `<p>玻璃板上撒铁屑、轻敲，铁屑沿磁场方向排成曲线——这就是<b>磁感线</b>的显示方法。条形磁铁的磁感线从 N 极出来、回到 S 极（磁体内部从 S 到 N，构成<span class="hl">闭合曲线</span>）。</p>
+<p>电流也能产生磁场（<b>奥斯特实验</b>）。<b>通电直导线</b>的磁感线是一圈圈同心圆，B = <span class="hl">μ₀I/(2πr) ∝ 1/r</span>，方向用<b>安培定则</b>（右手螺旋）判断：拇指指电流，四指环绕方向即磁感线方向。通电<b>螺线管</b>的外磁场与条形磁铁相似，内部近似匀强。切到「通电直导线」模式，反转电流方向看磁感线整体反向。</p>
+<p>切换「双磁铁·同极相对」看中间的<span class="hl">排斥区</span>：两束磁感线互不相交、彼此推开。</p>`,
     enter() {
       hideAllChapters();
       g5.visible = true;
@@ -1674,13 +1984,18 @@ const SECTIONS = [
         options: [
           { label: '单磁铁', value: 'single' },
           { label: '双磁铁·同极相对', value: 'double' },
+          { label: '通电直导线', value: 'wire' },
         ],
         value: st5.cfg,
         onChange: (v) => { st5.cfg = v; applyMagnet(); },
       });
       ctl.toggle({
-        label: '磁极翻转', value: st5.flip,
+        label: '磁极翻转（磁铁模式）', value: st5.flip,
         onChange: (v) => { st5.flip = v; applyMagnet(); },
+      });
+      ctl.toggle({
+        label: '电流反向（直导线模式）', value: false,
+        onChange: (v) => { st5.wireDir = v ? -1 : 1; applyMagnet(); },
       });
       ctl.toggle({
         label: '铁屑窗（俯视）', value: st5.filings,
@@ -1694,6 +2009,7 @@ const SECTIONS = [
         label: '显示磁感线', value: cf5.opts.showLines,
         onChange: (v) => { cf5.opts.showLines = v; cf5.force = true; },
       });
+      setHint(['铁屑窗 = 俯视的磁场分布', '直导线模式：B ∝ 1/r，方向由安培定则确定']);
     },
   },
   {
@@ -1750,6 +2066,7 @@ const SECTIONS = [
     title: '洛伦兹力',
     html: `<p>磁场里的运动带电粒子受<span class="hl">洛伦兹力 F=qv×B</span>——它始终与速度垂直，<b>只改变方向、不做功</b>，所以粒子做匀速圆周运动。</p>
 <p>半径 <b>r=mv/qB</b>：v 越大 r 越大，B 越强 r 越小；周期 <b>T=2πm/qB</b> 与 v 无关。切换电荷正负，旋转方向立刻相反（蓝箭头为竖直向上的匀强磁场）。</p>
+<p>把「倾角 α」调大（电子枪不再垂直磁场射入）：平行于 B 的速度分量不受力，粒子一边做圆周运动一边沿磁场方向匀速前进——径迹变成<span class="hl">螺旋线</span>，螺距 = v<sub>∥</sub>·T。</p>
 <p>点「发射」观察轨迹尾迹；粒子飞出场区说明 r 太大——调小 v 或增大 B。</p>`,
     enter() {
       hideAllChapters();
@@ -1776,6 +2093,11 @@ const SECTIONS = [
         fmt: (v) => v.toFixed(1),
         onInput: (v) => { st7.m = v; },
       });
+      ctl.slider({
+        label: '电子枪倾角 α（0=垂直 B）', min: 0, max: 50, step: 5, value: st7.alpha,
+        fmt: (v) => v.toFixed(0) + '°',
+        onInput: (v) => { st7.alpha = v; },
+      });
       ctl.seg({
         options: [{ label: '正电荷', value: 'pos' }, { label: '负电荷', value: 'neg' }],
         value: st7.q > 0 ? 'pos' : 'neg',
@@ -1787,12 +2109,13 @@ const SECTIONS = [
         label: '↺ 清除轨迹',
         onClick: () => { w7.trailLen = 0; w7.trailGeo.setDrawRange(0, 0); },
       });
+      setHint(['α=0：圆周运动；α>0：平行 B 的分量不受力 → 螺旋线']);
     },
   },
   {
     title: '质谱仪与回旋加速器',
-    html: `<p><b>质谱仪</b>：离子经速度选择器（电场力=洛伦兹力，只有特定速度能直线穿过窄缝），进入偏转磁场做半圆运动打在感光屏上——<span class="hl">r=mv/qB</span>，质量越大偏转半径越大，C-12/13/14 因此按质荷比分开。</p>
-<p><b>回旋加速器</b>：粒子在两 D 形盒间被交变电压反复加速，每半周加速一次、半径螺旋增大，但<span class="hl">周期 T=2πm/qB 恒定</span>（与速率无关），所以交变电压频率不用变。</p>
+    html: `<p><b>质谱仪</b>：离子经电压 U 加速（qU = ½mv²）后进入偏转磁场做半圆运动打在感光屏上：<span class="hl">r = mv/(qB) = √(2mU/q)/B</span>。电荷量相同的同位素质量越大半径越大，r₁:r₂ = √m₁:√m₂，按质荷比分成一条条<b>谱线</b>——阿斯顿就是这样发现了氖的同位素。</p>
+<p><b>回旋加速器</b>：粒子每经过 D 形盒缝隙被加速一次，半径螺旋增大，但<span class="hl">周期 T=2πm/qB 恒定</span>（与速率无关），交变电压频率不用变。最终动能 <span class="hl">E<sub>k</sub> = q²B²R²/(2m)</span> 只取决于 B 和 D 形盒半径 R，<b>与加速电压 U 无关</b>——U 越大加速次数 n = E<sub>k</sub>/(qU) 越少，但最终能量一样。</p>
 <p>调加速电压 U 与磁场 B，看两种装置里半径/圈数如何变化。</p>`,
     enter() {
       hideAllChapters();
@@ -1847,9 +2170,9 @@ const SECTIONS = [
   },
   {
     title: '电磁感应与楞次定律',
-    html: `<p>磁铁相对线圈运动时磁通变化，产生感应电流——<span class="hl">插入与拔出，检流计偏转方向相反</span>；静止时磁通不变，无电流。</p>
-<p><b>楞次定律</b>：感应电流的效果总是阻碍磁通变化——磁通增大时感应磁场与原磁场反向（<span class="hl">增反</span>），减小时同向（<span class="hl">减同</span>）。线圈上的绿色箭头就是感应电流方向。</p>
-<p>调「速度」：磁通变化越快、感应电动势越大（ΔΦ/Δt）；调「匝数 N」：电动势与 N 成正比。</p>`,
+    html: `<p>穿过闭合回路的<b>磁通量</b>发生变化，回路中就产生感应电流——<b>电磁感应</b>（法拉第）。感应电动势 <span class="hl">E = N·ΔΦ/Δt</span>：磁铁插入与拔出，检流计偏转方向相反；静止时磁通不变、无电流；插拔越快，偏转越大。</p>
+<p><b>楞次定律</b>：感应电流的磁场总要<b>阻碍</b>磁通变化（增反减同，力学效果即「来拒去留」）——它是能量守恒的体现：插拔磁铁都要克服感应磁场力做功，机械能转化为电能。</p>
+<p><b>导体棒切割</b>模式：棒在磁场中切割磁感线，<span class="hl">E = BLv</span>，感应电流使棒受到与运动方向相反的安培力 F = B²L²v/R；恒定拉力下棒最终<b>匀速</b>运动（收尾速度 v = FR/(B²L²)）。</p>`,
     enter() {
       hideAllChapters();
       g9.visible = true;
@@ -1858,41 +2181,21 @@ const SECTIONS = [
       st9.emf = 0;
       w9.magnet.position.set(2.4, PLANE_Y, 0);
       applyCoilTurns();
+      st9.mode = 'magnet';
+      st9r.v = 0; st9r.x = -0.7;
+      applyMode9();
       app.setCamera([2.4, 2.0, 3.4], [0.2, 1.05, 0]);
       showHud(9);
       setHint(['楞次定律口诀：增反减同 · 来拒去留']);
-      ctl.clear();
-      ctl.seg({
-        options: [{ label: '插入', value: 'insert' }, { label: '拔出', value: 'pull' }, { label: '静止', value: 'still' }],
-        value: 'still',
-        onChange: (v) => {
-          if (v === 'insert' && st9.magX <= 0.19) st9.magX = 2.4;
-          if (v === 'pull' && st9.magX >= 2.39) st9.magX = 0.18;
-          setAction9(v);
-        },
-      });
-      ctl.sep();
-      ctl.slider({
-        label: '磁铁速度', min: 0.5, max: 3, step: 0.1, value: st9.speed,
-        fmt: (v) => '×' + v.toFixed(1),
-        onInput: (v) => { st9.speed = v; },
-      });
-      ctl.slider({
-        label: '线圈匝数 N', min: 6, max: 18, step: 1, value: st9.N,
-        fmt: (v) => v + ' 匝',
-        onInput: (v) => { st9.N = v; applyCoilTurns(); },
-      });
-      ctl.toggle({
-        label: '显示感应电流方向', value: st9.showArrows,
-        onChange: (v) => { st9.showArrows = v; },
-      });
+      buildControls9();
     },
   },
   {
     title: '交流发电机',
-    html: `<p>矩形线圈在磁场中匀速转动，产生正弦交流电：<span class="hl">e=NBSω·sin(ωt)</span>。</p>
-<p>线圈平面转到与磁场垂直时（<b>中性面</b>），磁通最大但变化率为零——e=0、电流换向；线圈平面与磁场平行时 e 最大。</p>
-<p>右下角波形窗实时滚动 e(t)。调「转速 n」：转速加倍 → <span class="hl">频率 f=n 加倍</span>、峰值 Em=NBSω 也加倍。灯泡亮度随 |e| 闪烁。</p>`,
+    html: `<p>矩形线圈在磁场中匀速转动，从中性面开始计时产生正弦交流电：<span class="hl">e = E<sub>m</sub>·sin ωt，E<sub>m</sub> = NBSω</span>。</p>
+<p>线圈平面与磁场垂直的位置叫<b>中性面</b>：此时磁通<b>最大</b>但变化率为零——e=0、电流换向（每经过中性面一次，电流方向改变一次）；线圈平面与磁场平行时 e 最大。</p>
+<p>正弦交流电的<b>有效值</b> E = E<sub>m</sub>/√2 ≈ 0.707E<sub>m</sub>：让交流与直流通过相同电阻、相同时间内发热相等——<b>交流电表读数、用电器铭牌电压都是有效值</b>。</p>
+<p>右下角波形窗实时滚动 e(t)。调「转速 n」：转速加倍 → 频率 f=n 加倍、峰值 Em=NBSω 也加倍。灯泡亮度随 |e| 闪烁。</p>`,
     enter() {
       hideAllChapters();
       g10.visible = true;
@@ -1924,8 +2227,8 @@ const SECTIONS = [
   },
   {
     title: '自由实验',
-    html: `<p>电荷沙盒：<b>添加正/负电荷</b>（最多 8 个），<span class="hl">点击选中、按住拖动</span>，电场线实时重算；「删除选中」「清空」整理台面。</p>
-<p>打开<b>匀强磁场</b>后再点「发射带电粒子」：粒子在<span class="hl">合场</span>中运动，受 qE（电场加速/偏折）+ qv×B（磁场圆周）共同作用——试试先加一对异号电荷再发射，看粒子被加速又打转。</p>
+    html: `<p>电荷沙盒：<b>添加正/负电荷</b>（最多 8 个），<span class="hl">点击选中、按住拖动</span>，电场线实时重算；「删除选中」「清空」整理台面。试试让电子绕着正电荷转圈。</p>
+<p>选择粒子类型（<b>电子 / 质子 / α 粒子</b>，电荷与质量不同）后「发射」：粒子在<span class="hl">合场</span>中按 F = qE + qv×B 运动（慢镜头）——开启匀强磁场后，质子在磁场里转半圈又回来，电子则反向打转。</p>
 <p>粒子最多同时 4 个，飞出场区自动消失。</p>`,
     enter() {
       hideAllChapters();
@@ -1942,7 +2245,7 @@ const SECTIONS = [
       cf2.force = true;
       app.setCamera([0.3, 3.5, 4.2], [0, 1.05, 0]);
       showHud(11);
-      setHint(['点击电荷可选中，按住拖动可移动', '粒子受 qE + qv×B 合力（蓝箭头=竖直磁场）']);
+      setHint(['点击电荷可选中，按住拖动可移动', '粒子受 qE + qv×B 合力（蓝箭头=竖直磁场，慢放播放）']);
       ctl.clear();
       ctl.button({ label: '＋ 添加正电荷', onClick: () => { addSandboxCharge(1); } });
       ctl.button({ label: '－ 添加负电荷', onClick: () => { addSandboxCharge(-1); } });
@@ -1952,6 +2255,11 @@ const SECTIONS = [
       });
       ctl.button({ label: '✕ 清空电荷', onClick: () => clearSandbox11() });
       ctl.sep();
+      ctl.seg({
+        options: [{ label: '电子', value: 'electron' }, { label: '质子', value: 'proton' }, { label: 'α 粒子', value: 'alpha' }],
+        value: st11.ptype,
+        onChange: (v) => { st11.ptype = v; },
+      });
       ctl.toggle({
         label: '匀强磁场（竖直）', value: st11.Bon,
         onChange: (v) => {
@@ -1992,8 +2300,8 @@ const QUIZ = [
   {
     q: '通电直导线电流水平向右，所在处磁场竖直向下，用左手定则判断安培力方向是？',
     opts: ['竖直向上', '竖直向下', '水平指向读者（垂直导线向外）', '水平指离读者（垂直导线向里）'],
-    a: 2,
-    ex: '左手摊平、掌心朝上接住向下的磁场，四指指向电流（向右），拇指即安培力方向——垂直导线指向读者。也可由 F=IL×B 验证。',
+    a: 3,
+    ex: '左手摊平、掌心朝上接住向下的磁场，四指指向电流（向右），拇指即安培力方向——垂直导线指离读者（也可由 F=IL×B 验证：x̂×(−ŷ)=−ẑ，指向纸内）。',
   },
   {
     q: '带电粒子在匀强磁场中做匀速圆周运动，若速率 v 加倍（m、q、B 不变），半径 r 与周期 T 如何变化？',

@@ -343,9 +343,9 @@ function buildPendulum() {
   const base = box(0.34, 0.03, 0.26, darkMetal); base.position.set(0, 0.915, -0.18);
   const rod = cyl(0.015, 0.015, 1.12, metalMat); rod.position.set(0, 1.46, -0.18);
   const arm = box(0.02, 0.02, 0.2, metalMat); arm.position.set(0, 2.0, -0.09);
-  // 量角弧（±35°）与每 10° 刻度
+  // 量角弧（±70°）与每 10° 刻度
   const arcPts = [];
-  for (let a = -35; a <= 35; a += 2) {
+  for (let a = -70; a <= 70; a += 2) {
     const r = a * Math.PI / 180;
     arcPts.push(new THREE.Vector3(Math.sin(r) * 0.32, PEN_PIVOT.y - Math.cos(r) * 0.32, 0));
   }
@@ -354,7 +354,7 @@ function buildPendulum() {
     new THREE.LineBasicMaterial({ color: 0x8a94a4, transparent: true, opacity: 0.7 })
   );
   const tickPts = [];
-  for (let a = -30; a <= 30; a += 10) {
+  for (let a = -60; a <= 60; a += 10) {
     const r = a * Math.PI / 180;
     tickPts.push(new THREE.Vector3(Math.sin(r) * 0.30, PEN_PIVOT.y - Math.cos(r) * 0.30, 0));
     tickPts.push(new THREE.Vector3(Math.sin(r) * 0.35, PEN_PIVOT.y - Math.cos(r) * 0.35, 0));
@@ -364,7 +364,7 @@ function buildPendulum() {
     new THREE.LineBasicMaterial({ color: 0x8a94a4, transparent: true, opacity: 0.9 })
   );
   g.add(base, rod, arm, arcLine, ticks);
-  for (const a of [-30, -20, -10, 10, 20, 30]) {
+  for (const a of [-60, -40, -20, 20, 40, 60]) {
     const r = a * Math.PI / 180;
     const lbl = makeTextSprite(Math.abs(a) + '°', { fontSize: 22, color: '#cfd6e2', scale: 0.0021 });
     lbl.position.set(Math.sin(r) * 0.43, PEN_PIVOT.y - Math.cos(r) * 0.43, 0);
@@ -422,6 +422,7 @@ const ROW_V = 1.5; // 介质波速（固定，λ = v/f）
 
 const stRow = {
   group: new THREE.Group(), f: 0.8, A: 0.08, phi: 0, slow: false, playing: true,
+  pol: 'transverse',
   balls: [], arrows: [], labels: [], line: null, markIdx: 12,
 };
 scene.add(stRow.group);
@@ -606,7 +607,7 @@ const img = octx.createImageData(RW, RH);
 
 const tank = {
   mode: 'double', lambda: 0.2, sep: 0.5, slitW: 0.16, v: 0.6,
-  phi: 0, paused: false, dirty: true,
+  phi: 0, paused: false, dirty: true, showLines: true,
   cx: 0, cy: 0, viewW: 2.2, viewH: 1.1,
   wx: null, wy: null, plane: null, rs: [null, null, null, null, null],
 };
@@ -722,6 +723,41 @@ function tankDrawFrame(dt) {
     }
   } else {
     tctx.fillText('缝', px(TANK_XB) + 6, py(0) - 6);
+  }
+  // 加强线（黄实线，Δr = kλ）与减弱线（蓝虚线，Δr = (2k+1)λ/2）——双源干涉模式
+  if (tank.mode === 'double' && tank.showLines) {
+    const dd = tank.sep;
+    const lam = tank.lambda;
+    const drawFam = (c, dashed) => {
+      const a = Math.abs(c) / 2;
+      if (a >= dd / 2) return;
+      tctx.strokeStyle = dashed ? 'rgba(130,185,255,0.8)' : 'rgba(255,214,90,0.92)';
+      tctx.lineWidth = dashed ? 1.4 : 2;
+      tctx.setLineDash(dashed ? [6, 6] : []);
+      tctx.beginPath();
+      if (a === 0) {   // 中央加强线 = 中垂线
+        tctx.moveTo(px(0), py(tank.cy - tank.viewH / 2));
+        tctx.lineTo(px(0), py(tank.cy + tank.viewH / 2));
+        tctx.stroke();
+        tctx.setLineDash([]);
+        return;
+      }
+      const b2 = (dd * dd) / 4 - a * a;
+      const sgn = c > 0 ? -1 : 1;
+      let started = false;
+      for (let q = 0; q <= 80; q++) {
+        const Y = tank.cy - tank.viewH / 2 + (q / 80) * tank.viewH;
+        const X = sgn * a * Math.sqrt(1 + (Y * Y) / b2);
+        const sx = px(X), sy = py(Y);
+        if (sx < -30 || sx > cw + 30) { started = false; continue; }
+        if (!started) { tctx.moveTo(sx, sy); started = true; } else tctx.lineTo(sx, sy);
+      }
+      tctx.stroke();
+      tctx.setLineDash([]);
+    };
+    const K = Math.ceil(dd / lam);
+    for (let k2 = -K; k2 <= K; k2++) drawFam((k2 + 0.5) * lam, true);
+    for (let k2 = -K; k2 <= K; k2++) drawFam(k2 * lam, false);
   }
   const barPx = (0.5 / tank.viewW) * cw;
   const bx = 16, by = chh - 16;
@@ -840,8 +876,16 @@ function resetDoppler() {
 
 const TUBE_BOT = 0.94, TUBE_H = 1.05;
 
+/** 乐器音色 = 各次谐波的相对振幅（音叉几乎纯正弦；钢琴、小提琴谐波丰富） */
+const INSTR = {
+  fork: { name: '音叉（纯音）', h: [[1, 1]] },
+  flute: { name: '长笛', h: [[1, 1], [2, 0.12], [3, 0.05]] },
+  piano: { name: '钢琴', h: [[1, 1], [2, 0.55], [3, 0.3], [4, 0.15], [5, 0.08], [6, 0.04]] },
+  violin: { name: '小提琴', h: [[1, 1], [2, 0.6], [3, 0.45], [4, 0.32], [5, 0.22], [6, 0.14], [7, 0.08]] },
+};
+
 const stTube = {
-  group: new THREE.Group(), f: 440, amp: 0.6, shape: 'sine', L: 0.34,
+  group: new THREE.Group(), f: 440, amp: 0.6, inst: 'fork', L: 0.34,
   phiS: 0, phiV: 0, phiR: 0, soundOn: false, tone: null,
 };
 scene.add(stTube.group);
@@ -882,6 +926,17 @@ function buildTube() {
 function stopTubeTone() {
   if (stTube.tone) { stTube.tone.stop(); stTube.tone = null; }
   stTube.soundOn = false;
+}
+/** 把乐器谐波表写入振荡器（WebAudio PeriodicWave） */
+function applyInstrument(tone, instKey) {
+  if (!tone) return;
+  const harms = INSTR[instKey].h;
+  const real = new Float32Array(harms.length + 1);
+  const imag = new Float32Array(harms.length + 1);
+  harms.forEach(([hh, aa]) => { imag[hh] = aa; });
+  try {
+    tone.osc.setPeriodicWave(tone.ctx.createPeriodicWave(real, imag));
+  } catch (e) { /* 老浏览器兜底：保持默认波形 */ }
 }
 
 /* ================= 各章仿真更新 ================= */
@@ -1065,8 +1120,12 @@ function updatePendulum(dt) {
   P.str.quaternion.setFromUnitVectors(UP, dir);
   if (hud) {
     const T = TAU * Math.sqrt(p.L / p.g);
+    // 大摆角精确值（级数解）：T = T₀·[1 + ¼sin²(θ₀/2) + 9⁄64·sin⁴(θ₀/2) + 25⁄256·sin⁶(θ₀/2)]
+    const s2 = Math.sin(p.th0 / 2) ** 2;
+    const Tex = T * (1 + s2 / 4 + (9 * s2 * s2) / 64 + (25 * s2 ** 3) / 256);
     hud.set('th', (p.th * 180 / Math.PI).toFixed(1) + '°');
     hud.set('T', T.toFixed(2) + ' s');
+    hud.set('Tex', Tex.toFixed(2) + ' s');
     hud.set('g', p.g.toFixed(1) + ' m/s²');
     if (p.meas && p.meas.on) hud.set('Tm', p.meas.armed ? `测量中 ${Math.max(0, p.meas.count - 1)}/30` : '待过零…');
     else hud.set('Tm', p.Tm ? p.Tm.toFixed(3) + ' s' : '—');
@@ -1161,18 +1220,33 @@ function updateRow(dt) {
   const rate = (s.slow ? 0.25 : 1) * (s.playing ? 1 : 0);
   s.phi += TAU * s.f * dt * rate;
   const k = TAU / (ROW_V / s.f);
+  const lon = s.pol === 'longitudinal';
   const pos = W5.line.geometry.attributes.position;
   for (let i = 0; i < ROW_N; i++) {
     const x = ROW_X0 + i * ROW_DX;
-    const y = STR_Y + s.A * Math.sin(s.phi - k * (x - ROW_X0));
-    s.balls[i].position.y = y;
-    pos.setXYZ(i, x, y, 0);
-    const vy = s.A * TAU * s.f * Math.cos(s.phi - k * (x - ROW_X0)) * rate;
+    const u = s.A * Math.sin(s.phi - k * (x - ROW_X0));
+    const vu = s.A * TAU * s.f * Math.cos(s.phi - k * (x - ROW_X0)) * rate;
     const arr = s.arrows[i];
-    if (arr.visible) {
-      arr.position.y = y + 0.1;
-      arr.rotation.x = vy >= 0 ? 0 : Math.PI;
-      arr.scale.setScalar(clamp(0.5 + Math.abs(vy) * 0.9, 0.4, 1.6));
+    if (lon) {
+      // 纵波：质点沿传播方向（x）振动，形成疏部与密部
+      const xx = x + u;
+      s.balls[i].position.set(xx, STR_Y, 0);
+      pos.setXYZ(i, xx, STR_Y, 0);
+      if (arr.visible) {
+        arr.position.set(xx + (vu >= 0 ? 0.1 : -0.1), STR_Y, 0);
+        arr.rotation.set(0, 0, vu >= 0 ? -Math.PI / 2 : Math.PI / 2);
+        arr.scale.setScalar(clamp(0.5 + Math.abs(vu) * 0.9, 0.4, 1.6));
+      }
+    } else {
+      // 横波：质点沿竖直方向（y）振动
+      const y = STR_Y + u;
+      s.balls[i].position.y = y;
+      pos.setXYZ(i, x, y, 0);
+      if (arr.visible) {
+        arr.position.set(x, y + 0.1, 0);
+        arr.rotation.set(vu >= 0 ? 0 : Math.PI, 0, 0);
+        arr.scale.setScalar(clamp(0.5 + Math.abs(vu) * 0.9, 0.4, 1.6));
+      }
     }
   }
   pos.needsUpdate = true;
@@ -1266,6 +1340,7 @@ function updateTank(dt) {
     hud.set('lam', tank.lambda.toFixed(2) + ' m');
     hud.set('v', tank.v.toFixed(1) + ' m/s');
     hud.set('f', (tank.v / tank.lambda).toFixed(1) + ' Hz');
+    hud.set('lines', tank.mode === 'double' ? `${2 * Math.floor(tank.sep / tank.lambda) + 1} 条（由 d/λ 决定）` : '—');
   }
 }
 
@@ -1302,19 +1377,21 @@ function updateDoppler(dt) {
   const den = DP_V + vr;
   const shock = den < 0.15;
   const fp = shock ? 0 : (s.fEmit * DP_V) / den;
-  const status = shock ? '激波！' : vr < -0.01 ? '靠近（音调升高）' : vr > 0.01 ? '远离（音调降低）' : '经过观测者';
+  const ratio = Math.abs(s.cartV) / DP_V;
+  const status = shock ? (ratio > 1 ? '马赫锥！波面叠成锥面（激波）' : '接近声速：波前压缩成「墙」') : vr < -0.01 ? '靠近（音调升高）' : vr > 0.01 ? '远离（音调降低）' : '经过观测者';
   if (s.tone) {
     if (shock) {
       s.tone.set(200, 0.0001);
-      if (!s.shockToasted) { s.shockToasted = true; toast('源速达到波速：波前叠加成激波，无法正常发声。', 'warn'); }
+      if (!s.shockToasted) { s.shockToasted = true; toast(ratio > 1 ? '源速超过声速：波面叠成马赫锥（sinμ = v/vₛ），锥面即激波。' : '源速接近波速：波前叠加，无法正常发声。', 'warn'); }
     } else {
       s.tone.set(s.fEmit * 110 * (DP_V / den), 0.07); // 折算到可听频段（×110）
     }
   }
   if (hud) {
     hud.set('f', s.fEmit.toFixed(1) + ' Hz');
-    hud.set('vs', (s.cartV / DP_V).toFixed(2));
-    hud.set('fp', shock ? '∞' : fp.toFixed(1) + ' Hz');
+    hud.set('vs', ratio.toFixed(2));
+    hud.set('fp', shock ? '—' : fp.toFixed(1) + ' Hz');
+    hud.set('mach', ratio > 1 ? `sinμ = 1/${ratio.toFixed(2)} → μ ≈ ${(Math.asin(1 / ratio) * 180 / Math.PI).toFixed(0)}°` : '超音速后出现');
     hud.set('st', status);
   }
 }
@@ -1362,43 +1439,64 @@ function updateTube(dt) {
 
 function drawScope() {
   const W = cwCanvas.width, H = cwCanvas.height;
+  const waveH = H * 0.62;
   cwc.fillStyle = '#10161f';
   cwc.fillRect(0, 0, W, H);
   cwc.strokeStyle = 'rgba(255,255,255,0.1)';
   cwc.lineWidth = 1;
   for (let gx = 0; gx <= 8; gx++) {
-    cwc.beginPath(); cwc.moveTo(gx * W / 8, 0); cwc.lineTo(gx * W / 8, H - 40); cwc.stroke();
+    cwc.beginPath(); cwc.moveTo(gx * W / 8, 0); cwc.lineTo(gx * W / 8, waveH); cwc.stroke();
   }
-  const midY = (H - 40) / 2;
+  const midY = waveH / 2;
   cwc.strokeStyle = 'rgba(255,255,255,0.2)';
   cwc.beginPath(); cwc.moveTo(0, midY); cwc.lineTo(W, midY); cwc.stroke();
-  const shape = (ph2) => {
-    if (stTube.shape === 'square') return Math.sin(ph2) >= 0 ? 0.9 : -0.9;
-    if (stTube.shape === 'sawtooth') return 2 * ((ph2 / TAU) % 1) - 1;
-    return Math.sin(ph2);
+  // 波形 = 各次谐波叠加（与发声的 PeriodicWave 同一套振幅）
+  const harms = INSTR[stTube.inst].h;
+  const wave = (ph2) => {
+    let acc = 0;
+    for (const [hh, aa] of harms) acc += aa * Math.sin(hh * ph2);
+    return acc;
   };
   cwc.strokeStyle = '#7fd0ff';
   cwc.lineWidth = 2.2;
   cwc.beginPath();
-  for (let px = 0; px <= W; px += 2) {
-    const ph2 = stTube.phiS + (px / W) * TAU * 3;
-    const y = midY - shape(ph2) * stTube.amp * 0.34 * (H - 40) * 0.5;
-    if (px === 0) cwc.moveTo(px, y); else cwc.lineTo(px, y);
+  const maxA = Math.max(...harms.map(([hh, aa]) => aa), 0.001);
+  for (let px2 = 0; px2 <= W; px2 += 2) {
+    const ph2 = stTube.phiS + (px2 / W) * TAU * 3;
+    const y = midY - (wave(ph2) / maxA) * stTube.amp * 0.34 * waveH * 0.5;
+    if (px2 === 0) cwc.moveTo(px2, y); else cwc.lineTo(px2, y);
   }
   cwc.stroke();
+  // 频谱：各次谐波的相对振幅
+  cwc.fillStyle = '#8a94a4';
+  cwc.font = '600 11px sans-serif';
+  cwc.fillText('频谱（各次谐波相对振幅）', 14, waveH + 18);
+  const specY = H - 34;
+  const barW = 26;
+  for (let n = 1; n <= 8; n++) {
+    const amp = (harms.find(([hh]) => hh === n) || [0, 0])[1];
+    const bx = 14 + (n - 1) * (barW + 10);
+    const bh = clamp(amp, 0, 1) * 42;
+    cwc.fillStyle = n === 1 ? '#ffc46b' : '#7fd0ff';
+    cwc.fillRect(bx, specY - bh, barW, bh);
+    cwc.fillStyle = '#8a94a4';
+    cwc.font = '10px sans-serif';
+    cwc.fillText(n + 'f', bx + 6, specY + 12);
+  }
   // 共鸣增益条
   const lam = 340 / stTube.f;
   const ratio = (4 * stTube.L) / lam;
   const mo = Math.round((ratio - 1) / 2) * 2 + 1;
   const err = Math.abs(ratio - mo);
   const res = 1 / (1 + (err * 7) * (err * 7));
+  const gx0 = 14 + 8 * (barW + 10) + 16;
   cwc.fillStyle = 'rgba(255,255,255,0.15)';
-  cwc.fillRect(16, H - 26, W - 32, 12);
+  cwc.fillRect(gx0, specY - 12, W - gx0 - 14, 12);
   cwc.fillStyle = res > 0.5 ? '#7ee2a8' : '#e8674a';
-  cwc.fillRect(16, H - 26, (W - 32) * clamp(res, 0.02, 1), 12);
+  cwc.fillRect(gx0, specY - 12, (W - gx0 - 14) * clamp(res, 0.02, 1), 12);
   cwc.fillStyle = '#dfe6ee';
   cwc.font = '600 11px sans-serif';
-  cwc.fillText(res > 0.5 ? '空气柱共鸣！声强大增' : '共鸣增益', 18, H - 30);
+  cwc.fillText(res > 0.5 ? '空气柱共鸣！声强大增' : '共鸣增益', gx0, specY - 18);
 }
 
 /* ================= 帧循环（先过就绪守卫） ================= */
@@ -1483,8 +1581,8 @@ const SECTIONS = [
   {
     title: '单摆',
     html: `<p><b>单摆</b>：细线（长 L）下拴小球。摆角很小（≤10°）时回复力近似 F ≈ −(mg/L)x，做简谐运动。</p>
-<p>周期 T = <span class="hl">2π√(L/g)</span>——与摆球质量、振幅无关。</p>
-<p>本仿真按<span class="hl">完整非线性方程</span> θ″ = −(g/L)·sinθ 计算：把摆角调到 10° 以上，实测周期会比公式偏大，「测 g」结果也会偏小——这正是小角度近似的局限。</p>
+<p>周期 T = <span class="hl">2π√(L/g)</span>——与摆球质量、振幅无关（等时性），测 g 就靠它：画 T²–L 图，斜率 k = 4π²/g。</p>
+<p>本仿真按<span class="hl">完整非线性方程</span> θ″ = −(g/L)·sinθ 计算：把摆角调到 30° 以上，实测周期会比小角度公式<b>偏大</b>（HUD 里「T 大摆角」给出含修正项的精确值），「测 g」结果也会偏小——这正是小角度近似的局限。到月球或火星上试试，周期变长。</p>
 <p>点「测 g 实验」自动计时 30 个全振动（已 5 倍速播放），由 g = 4π²L/T² 算出重力加速度。</p>`,
     enter() {
       hideAllStations();
@@ -1492,12 +1590,12 @@ const SECTIONS = [
       Object.assign(stPen, { L: 0.6, g: 9.8, playing: true });
       resetPendulum();
       app.setCamera([1.0, 1.8, 2.3], [0, 1.5, 0]);
-      setHUD([['th', '摆角 θ'], ['T', 'T 理论'], ['g', 'g 设定'], ['Tm', 'T 实测'], ['gm', 'g 实测']]);
+      setHUD([['th', '摆角 θ'], ['T', 'T 小角度'], ['Tex', 'T 大摆角'], ['g', 'g 设定'], ['Tm', 'T 实测'], ['gm', 'g 实测']]);
       ctl.clear();
       ctl.slider({ label: '摆长 L', min: 0.3, max: 1.0, step: 0.02, value: stPen.L, fmt: (v) => v.toFixed(2) + ' m', onInput: (v) => { stPen.L = v; } });
-      ctl.slider({ label: '初始摆角 θ₀', min: 2, max: 30, step: 1, value: 12, fmt: (v) => v + '°', onInput: (v) => { stPen.th0 = v * Math.PI / 180; if (!stPen.meas || !stPen.meas.on) resetPendulum(); } });
+      ctl.slider({ label: '初始摆角 θ₀', min: 2, max: 70, step: 1, value: 12, fmt: (v) => v + '°', onInput: (v) => { stPen.th0 = v * Math.PI / 180; if (!stPen.meas || !stPen.meas.on) resetPendulum(); } });
       ctl.seg({
-        options: [{ label: '地球 9.8', value: 9.8 }, { label: '月球 1.6', value: 1.6 }, { label: '火星 3.7', value: 3.7 }],
+        options: [{ label: '地球 9.8', value: 9.8 }, { label: '月球 1.62', value: 1.62 }, { label: '火星 3.71', value: 3.71 }, { label: '木星 24.8', value: 24.8 }],
         value: 9.8,
         onChange: (v) => { stPen.g = v; },
       });
@@ -1521,7 +1619,7 @@ const SECTIONS = [
     title: '简谐运动的能量',
     html: `<p>简谐运动的能量在<b>动能</b>与<b>势能</b>之间周期性转化：</p>
 <p>Ep = <span class="hl">½kx²</span>（最大位移处最大），Ek = <span class="hl">½mv²</span>（平衡位置最大），总机械能 E = ½kA² <span class="hl">保持不变</span>。</p>
-<p>打开「阻尼」后，振幅按指数衰减，总能量逐渐耗散——这就是现实里振动慢慢停下来的原因。观察右侧能量柱与绿色总能量线。</p>`,
+<p>打开「阻尼」后，机械能逐渐转化为内能，振幅按指数衰减，总能量逐渐耗散——这就是现实里振动慢慢停下来的原因。注意：<b>阻尼振动的周期几乎不变</b>（变的是振幅，不是周期）。观察右侧能量柱与绿色总能量线。</p>`,
     enter() {
       hideAllStations();
       stSpring.group.visible = true;
@@ -1570,23 +1668,28 @@ const SECTIONS = [
   },
   {
     title: '机械波的形成',
-    html: `<p>一排质点被弹性介质联系起来，波源（最左端）振动时，振动状态由近及远传播，形成<b>横波</b>。</p>
-<p>每个质点只在平衡位置附近<span class="hl">上下振动</span>，并不随波迁移——盯住橙色标记的质点验证！</p>
+    html: `<p>一排质点被弹性介质联系起来，波源（最左端）振动时，振动状态由近及远传播，形成<b>机械波</b>。</p>
+<p>每个质点只在平衡位置附近振动，<span class="hl">并不随波迁移</span>——盯住橙色标记的质点验证！质点振动方向与传播方向<b>垂直</b>的是<b>横波</b>；<b>在同一直线上</b>的是<b>纵波</b>（声波就是纵波），纵波里出现疏部与密部。切换「波的类型」对比。</p>
 <p>y = A·sin(ωt − kx)，波长 λ = <span class="hl">v/f</span>（v 由介质决定）。</p>`,
     enter() {
       hideAllStations();
       stRow.group.visible = true;
-      Object.assign(stRow, { f: 0.8, A: 0.08, phi: 0, slow: false, playing: true });
+      Object.assign(stRow, { f: 0.8, A: 0.08, phi: 0, slow: false, playing: true, pol: 'transverse' });
       app.setCamera([0.35, 2.0, 2.6], [0, 1.08, 0]);
       setHUD([['f', '频率 f'], ['lam', '波长 λ'], ['v', '波速 v']]);
       ctl.clear();
+      ctl.seg({
+        options: [{ label: '横波', value: 'transverse' }, { label: '纵波', value: 'longitudinal' }],
+        value: 'transverse',
+        onChange: (v) => { stRow.pol = v; setHint(v === 'transverse' ? '横波：质点上下振动，与传播方向垂直' : '纵波：质点沿传播方向振动，出现疏部与密部'); },
+      });
       ctl.slider({ label: '频率 f', min: 0.3, max: 2, step: 0.05, value: stRow.f, fmt: (v) => v.toFixed(2) + ' Hz', onInput: (v) => { stRow.f = v; } });
       ctl.slider({ label: '振幅 A', min: 0.02, max: 0.12, step: 0.005, value: stRow.A, fmt: (v) => v.toFixed(3) + ' m', onInput: (v) => { stRow.A = v; } });
       ctl.toggle({ label: '质点编号', value: false, onChange: (v) => { stRow.labels.forEach((l) => { l.visible = v; }); } });
       ctl.toggle({ label: '运动箭头', value: false, onChange: (v) => { stRow.arrows.forEach((a) => { a.visible = v; }); } });
       ctl.toggle({ label: '慢放', value: false, onChange: (v) => { stRow.slow = v; } });
       playBtn(stRow);
-      setHint('橙色标记质点：只上下振动，不随波向右迁移');
+      setHint('橙色标记质点：只在原地振动，不随波迁移');
     },
   },
   {
@@ -1654,8 +1757,8 @@ const SECTIONS = [
   },
   {
     title: '水波的干涉与衍射',
-    html: `<p><b>干涉</b>：两列同频波叠加，路径差为波长整数倍处相长（亮纹）、半整数倍处相消（暗纹）。</p>
-<p><b>衍射</b>：波绕过障碍物继续传播；缝宽与波长相当时衍射最明显。</p>
+    html: `<p><b>干涉</b>：两个振动情况完全相同的<b>相干波源</b>叠加，波程差 Δr = kλ 处振动<b>加强</b>、Δr = (2k+1)λ/2 处<b>减弱</b>——水面出现稳定的加强区/减弱区相间图样。黄色实线 = 加强线，蓝色虚线 = 减弱线；<b>加强线条数由 d/λ 决定</b>：频率越高（λ 越短）或两源越远（d 越大），加强线越密。</p>
+<p><b>衍射</b>：波绕过障碍物继续传播；<b>缝宽比波长小或与波长差不多</b>时衍射最明显，缝宽远大于波长时几乎直线通过。</p>
 <p>画面为水波槽俯视，亮度代表水面起伏。双源模式拖「源间距」看条纹疏密；单缝模式把缝宽从大调小，看波绕进缝后阴影区。</p>
 <p><span class="hl">拖拽平移 · 滚轮缩放</span>。</p>`,
     enter() {
@@ -1663,8 +1766,8 @@ const SECTIONS = [
       tankCanvas.style.display = '';
       tankCanvas.width = tankCanvas.clientWidth || 800;
       tankCanvas.height = tankCanvas.clientHeight || 400;
-      Object.assign(tank, { mode: 'double', lambda: 0.2, sep: 0.5, slitW: 0.16, v: 0.6, phi: 0, paused: false, dirty: true, cx: 0, cy: 0, viewW: 2.2 });
-      setHUD([['mode', '模式'], ['lam', '波长 λ'], ['v', '波速'], ['f', '频率 f']]);
+      Object.assign(tank, { mode: 'double', lambda: 0.2, sep: 0.5, slitW: 0.16, v: 0.6, phi: 0, paused: false, dirty: true, cx: 0, cy: 0, viewW: 2.2, showLines: true });
+      setHUD([['mode', '模式'], ['lam', '波长 λ'], ['v', '波速'], ['f', '频率 f'], ['lines', '加强线']]);
       ctl.clear();
       ctl.seg({
         options: [{ label: '双源干涉', value: 'double' }, { label: '单缝衍射', value: 'slit' }],
@@ -1674,24 +1777,25 @@ const SECTIONS = [
       ctl.slider({ label: '波长 λ', min: 0.08, max: 0.4, step: 0.01, value: tank.lambda, fmt: (v) => v.toFixed(2) + ' m', onInput: (v) => { tank.lambda = v; } });
       ctl.slider({ label: '源间距 / 缝宽', min: 0.06, max: 1.0, step: 0.02, value: tank.sep, fmt: (v) => v.toFixed(2) + ' m', onInput: (v) => { if (tank.mode === 'double') tank.sep = v; else tank.slitW = v; tank.dirty = true; } });
       ctl.slider({ label: '波速', min: 0.3, max: 1.2, step: 0.05, value: tank.v, fmt: (v) => v.toFixed(2) + ' m/s', onInput: (v) => { tank.v = v; } });
+      ctl.toggle({ label: '加强/减弱线', value: true, onChange: (v) => { tank.showLines = v; } });
       ctl.button({ label: '⏸ 暂停', onClick: (b) => { tank.paused = !tank.paused; b.textContent = tank.paused ? '▶ 播放' : '⏸ 暂停'; b.classList.toggle('active', !tank.paused); }, active: true });
-      setHint('拖拽平移 · 滚轮缩放；缝宽 ≈ λ 时衍射最明显');
+      setHint('黄实线=加强线（Δr=kλ）· 蓝虚线=减弱线；缝宽 ≈ λ 时衍射最明显');
     },
   },
   {
     title: '多普勒效应',
-    html: `<p>声源运动时，前方波前被<span class="hl">压缩</span>（波长变短、音调变高），后方被拉长（音调变低）。</p>
+    html: `<p>声源运动时，前方波面被<span class="hl">挤</span>在一起（波长变短、频率升高），后方被拉长（频率降低）。救护车驶近时音调变高、驶离时变低；测速雷达、彩超也利用多普勒效应。</p>
 <p>f′ = f·v/(v ∓ vs)：靠近用 −、远离用 +。点 🔊 按钮，小车经过观测者时亲耳听音调先升后降（发声按 ×110 折算到可听频段）。</p>
-<p>把源速推到接近波速（vs/v → 1）：波前叠成一堵「墙」——这就是<span class="hl">激波</span>，此时无法正常发声。</p>`,
+<p>把源速推到<b>1 倍声速以上</b>：波面叠成一个圆锥——<span class="hl">马赫锥</span>（马赫角 sinμ = v/vₛ），锥面就是激波，产生音爆。</p>`,
     enter() {
       hideAllStations();
       stDop.group.visible = true;
       Object.assign(stDop, { vf: 0.4, fEmit: 3, waveOn: true });
       resetDoppler();
       app.setCamera([0, 2.9, 3.0], [0, 0.98, 0]);
-      setHUD([['f', 'f 源'], ['vs', 'vs/v'], ['fp', "f′ 观测"], ['st', '状态']]);
+      setHUD([['f', 'f 源'], ['vs', 'vs/v'], ['fp', "f′ 观测"], ['mach', '马赫角 μ'], ['st', '状态']]);
       ctl.clear();
-      ctl.slider({ label: '源速度 vs/v', min: -0.5, max: 0.9, step: 0.05, value: stDop.vf, fmt: (v) => v.toFixed(2), onInput: (v) => { stDop.vf = v; stDop.cartV = v * DP_V; stDop.shockToasted = false; } });
+      ctl.slider({ label: '源速度 vs/v', min: -0.5, max: 1.6, step: 0.05, value: stDop.vf, fmt: (v) => v.toFixed(2), onInput: (v) => { stDop.vf = v; stDop.cartV = v * DP_V; stDop.shockToasted = false; } });
       ctl.slider({ label: '发射频率', min: 1, max: 5, step: 0.1, value: stDop.fEmit, fmt: (v) => v.toFixed(1) + ' Hz', onInput: (v) => { stDop.fEmit = v; } });
       ctl.toggle({ label: '波前显示', value: true, onChange: (v) => { stDop.waveOn = v; } });
       const ab = ctl.button({
@@ -1714,24 +1818,28 @@ const SECTIONS = [
   },
   {
     title: '声音的特性与共鸣',
-    html: `<p>声音三要素：<b>音调</b>由频率决定，<b>响度</b>由振幅（声强）决定，<b>音色</b>由波形（谐波成分）决定。</p>
-<p>右侧示波器实时画出你设置的波形。玻璃管是<b>共鸣管</b>：空气柱长 L = <span class="hl">λ/4 的奇数倍</span>（λ = v/f，v = 340 m/s）时发生共鸣，管口声波明显增强。</p>
-<p>调整管长寻找共鸣点（黄色 HUD 提示），点 🔊 听音调、响度、音色的差别。</p>`,
+    html: `<p>声音三要素：<b>音调</b>由频率决定，<b>响度</b>由振幅（声强）决定，<b>音色</b>由波形（<span class="hl">各次谐波的组成</span>）决定——音叉几乎是纯正弦波，钢琴、小提琴含有丰富的谐波。切换乐器，对照右侧示波器的波形与频谱。</p>
+<p>玻璃管是<b>共鸣管</b>：空气柱长 L = <span class="hl">λ/4 的奇数倍</span>（λ = v/f，v = 340 m/s）时发生共鸣，声音明显变响：第一次共鸣 L₁ = λ/4，第二次 L₂ = 3λ/4。<b>由两次共鸣位置的长度差 ΔL = λ/2 可测出声速 v = 2ΔL·f</b>——这是测声速的经典方法。</p>
+<p>调整管长寻找共鸣点（HUD 提示），点 🔊 听音调、响度、音色的差别。</p>`,
     enter() {
       hideAllStations();
       stTube.group.visible = true;
-      Object.assign(stTube, { f: 440, amp: 0.6, shape: 'sine', L: 0.34, phiS: 0, phiV: 0, phiR: 0 });
+      Object.assign(stTube, { f: 440, amp: 0.6, inst: 'fork', L: 0.34, phiS: 0, phiV: 0, phiR: 0 });
       stopTubeTone();
       app.setCamera([0.9, 1.6, 2.0], [0.1, 1.45, 0]);
       setHUD([['f', '频率 f'], ['lam', '波长 λ'], ['L', '管长 L'], ['res', '共鸣判断']]);
-      showCW('示波器', '波形 · 共鸣增益', drawScope);
+      showCW('示波器 · 频谱', '波形 × 谐波成分', drawScope);
       ctl.clear();
       ctl.slider({ label: '频率', min: 150, max: 1000, step: 5, value: stTube.f, fmt: (v) => v + ' Hz', onInput: (v) => { stTube.f = v; } });
       ctl.slider({ label: '振幅（响度）', min: 0.2, max: 1, step: 0.05, value: stTube.amp, fmt: (v) => v.toFixed(2), onInput: (v) => { stTube.amp = v; } });
       ctl.seg({
-        options: [{ label: '正弦', value: 'sine' }, { label: '方波', value: 'square' }, { label: '锯齿', value: 'sawtooth' }],
-        value: 'sine',
-        onChange: (v) => { stTube.shape = v; if (stTube.tone) stTube.tone.osc.type = v; },
+        options: [{ label: '音叉', value: 'fork' }, { label: '长笛', value: 'flute' }, { label: '钢琴', value: 'piano' }, { label: '小提琴', value: 'violin' }],
+        value: 'fork',
+        onChange: (v) => {
+          stTube.inst = v;
+          applyInstrument(stTube.tone, v);
+          toast(`乐器：${INSTR[v].name}——看波形和频谱怎么变`, 'ok');
+        },
       });
       ctl.slider({ label: '管长 L', min: 0.15, max: 1.0, step: 0.01, value: stTube.L, fmt: (v) => v.toFixed(2) + ' m', onInput: (v) => { stTube.L = v; } });
       const ab = ctl.button({
@@ -1739,14 +1847,14 @@ const SECTIONS = [
         onClick: () => {
           if (stTube.soundOn) { stopTubeTone(); ab.textContent = '🔊 发声'; return; }
           stTube.tone = createTone();
-          stTube.tone.osc.type = stTube.shape;
+          applyInstrument(stTube.tone, stTube.inst);
           stTube.soundOn = true;
           ab.textContent = '🔇 停止';
           activeSectionCleanup = () => stopTubeTone();
           toast('发声中：调「管长 L」到 λ/4 附近找共鸣点，管口波纹会明显增强。', 'ok');
         },
       });
-      setHint('共鸣条件：L = λ/4（基频）；440 Hz 时 λ ≈ 0.77 m，L ≈ 0.19 m');
+      setHint('切换乐器比较音色；共鸣条件 L = λ/4（基频），440 Hz 时 λ ≈ 0.77 m，L ≈ 0.19 m');
     },
   },
   {

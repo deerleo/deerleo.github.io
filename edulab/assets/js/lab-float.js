@@ -302,7 +302,7 @@ function layoutLock() {
 
 /* ============ 03 浮力的成因 ============ */
 
-const CUBE = { size: 1.2, depth: 0.5, showNum: true };
+const CUBE = { size: 1.2, depth: 0.5, showNum: true, sealed: false };
 function buildCube(g) {
   // 玻璃水箱
   const glass = new THREE.MeshPhysicalMaterial({ color: 0xbfe4f5, transparent: true, opacity: 0.16, roughness: 0.05, side: THREE.DoubleSide });
@@ -333,7 +333,7 @@ function updCube() {
   const botY = topY - a;
   CUBE.cube.position.set(0, topY - a / 2, 0);
   const pTop = Math.max(-topY, 0) * 9800;   // Pa（顶面在水下才有）
-  const pBot = Math.max(-botY, 0) * 9800;
+  const pBot = CUBE.sealed ? 0 : Math.max(-botY, 0) * 9800;   // 底面陷进淤泥：下面没有水
   const net = (pBot - pTop) * a * a;
   const visible = CUBE.showNum;
   // 顶面箭头（下压）
@@ -343,15 +343,16 @@ function updCube() {
   } else CUBE.aTop.hide();
   // 底面箭头（上托）
   const Lb = clamp(pBot / 12000, 0.3, 2.2);
-  CUBE.aBot.set(new THREE.Vector3(0, botY + Lb + 0.05, 0), new THREE.Vector3(0, botY, 0), visible ? 'p底=' + (pBot / 1000).toFixed(1) + ' kPa' : '');
+  if (pBot > 50) CUBE.aBot.set(new THREE.Vector3(0, botY + Lb + 0.05, 0), new THREE.Vector3(0, botY, 0), visible ? 'p底=' + (pBot / 1000).toFixed(1) + ' kPa' : '');
+  else CUBE.aBot.hide();
   // 侧面一对（前后方向），说明侧向抵消
   const Ls = clamp((pTop + pBot) / 2 / 14000, 0.2, 1.2);
   CUBE.aSide[0].set(new THREE.Vector3(0, (topY + botY) / 2, -Ls - a / 2 - 0.05), new THREE.Vector3(0, (topY + botY) / 2, -a / 2), '侧面相互抵消');
   CUBE.aSide[1].set(new THREE.Vector3(0, (topY + botY) / 2, Ls + a / 2 + 0.05), new THREE.Vector3(0, (topY + botY) / 2, a / 2), '');
   hset('ptop', pTop > 50 ? (pTop / 1000).toFixed(1) + ' kPa' : '0（露出水面）');
-  hset('pbot', (pBot / 1000).toFixed(1) + ' kPa');
-  hset('fb', (net / 1000).toFixed(2) + ' kN');
-  hset('arch', 'F浮=(p底−p顶)·S=' + (net / 1000).toFixed(2) + ' kN');
+  hset('pbot', CUBE.sealed ? '0（底面无水）' : (pBot / 1000).toFixed(1) + ' kPa');
+  hset('fb', CUBE.sealed ? '0！底面没有水向上托' : (net / 1000).toFixed(2) + ' kN');
+  hset('arch', CUBE.sealed ? '陷进淤泥/贴死容器底 → 无浮力（桥墩同理）' : 'F浮=(p底−p顶)·S=' + (net / 1000).toFixed(2) + ' kN');
 }
 
 /* ============ 04 称重法测浮力 ============ */
@@ -481,7 +482,7 @@ function updArch() {
 
 /* ============ 06 浮沉条件：潜艇 ============ */
 
-const SUB = { fill: 20, depth: 0, diving: null };
+const SUB = { fill: 20, depth: 0, diving: null, jumpy: false };
 function buildSub(g) {
   buildQuay(g, 2.6, 7, 60, 14);
   const seaFloor = new THREE.Mesh(new THREE.PlaneGeometry(70, 40), M(0xa89670, 0.95));
@@ -513,7 +514,8 @@ function buildSub(g) {
 }
 function updSub() {
   const rhoSub = 900 + SUB.fill * 2;         // 注水 0→100 ⇒ 900→1100
-  const rhoW = 1030;
+  // 密度跃层（"海中断崖"）：60 m 以下海水密度骤降，浮力跟着变小，悬浮的潜艇会急速掉深
+  const rhoW = SUB.jumpy && SUB.depth < -2 ? 980 : 1030;
   let targetY, status;
   if (rhoSub < rhoW - 15) {
     const frac = rhoSub / rhoW;              // 吃水比例
@@ -521,7 +523,7 @@ function updSub() {
     status = '漂浮（ρ潜 < ρ水）';
   } else if (rhoSub > rhoW + 15) {
     targetY = -7.6;
-    status = '下潜坐底（ρ潜 > ρ水）';
+    status = SUB.jumpy && rhoSub < 1030 - 15 ? '⚠ 掉深！跃层下方浮力骤减（海中断崖）' : '下潜坐底（ρ潜 > ρ水）';
   } else {
     targetY = -3.2;
     status = '悬浮（ρ潜 ≈ ρ水）';
@@ -534,7 +536,7 @@ function updSub() {
   SUB.tankLbl.position.set(2.6, SUB.sub.position.y + 1.6, 0);
   setSpriteText(SUB.tankLbl, '水舱注水 ' + SUB.fill + '%', { fontSize: 30, color: '#ffd166', scale: 0.005, bg: 'rgba(12,18,26,0.66)' });
   hset('rho', rhoSub.toFixed(0) + ' kg/m³');
-  hset('rw', rhoW + ' kg/m³');
+  hset('rw', rhoW + ' kg/m³' + (SUB.jumpy ? '（跃层下 980）' : ''));
   hset('st', status);
   hset('y', (SUB.sub.position.y * 3).toFixed(1) + ' m（示意）');
 }
@@ -638,18 +640,22 @@ function buildHydrometer(g) {
     const water = cyl(0.98, 0.9, 2.2, new THREE.MeshPhysicalMaterial({ color: 0x3d8ec9, transparent: true, opacity: 0.55, roughness: 0.15 }), 26);
     water.position.set(c.x, 1.62 + 1.1, 0);
     g.add(water);
-    // 密度计：球泡 + 细杆
+    // 密度计：球泡 + 细杆（刻度上小下大、上疏下密——浸入深度 h ∝ 1/ρ）
     const m = new THREE.Group();
     const bulb = new THREE.Mesh(new THREE.SphereGeometry(0.3, 18, 14), M(0xe8e2d2, 0.3));
     bulb.position.y = 0.15;
     const stem = cyl(0.055, 0.055, 1.7, M(0xe8e2d2, 0.3), 12);
     stem.position.y = 1.05;
     m.add(bulb, stem);
-    for (let i = 1; i <= 5; i++) {
+    for (const rho of [800, 1000, 1200, 1400]) {
+      const hMark = 1.05 * (1000 / rho);   // 液面所在杆高（与 updHyd 同一公式）
       const mark = new THREE.Mesh(new THREE.TorusGeometry(0.058, 0.008, 6, 14), M(0xc2743a, 0.5));
       mark.rotation.x = Math.PI / 2;
-      mark.position.y = 0.45 + i * 0.24;
+      mark.position.y = hMark;
       m.add(mark);
+      const num = lbl(String(rho), '#c2743a', 0.0026);
+      num.position.set(0.22, hMark, 0);
+      m.add(num);
     }
     g.add(m);
     HYD.cups.push({ water, beak });
@@ -663,7 +669,7 @@ function buildHydrometer(g) {
 }
 function updHyd() {
   // 教学口径：漂浮时 F浮=m·g 一定，ρ↑ → V排↓ → 浸入线沿杆下移（浮得高）
-  // 以淡水时液面停在 2.5 格为基准：lineLocal = 1.05 × (1000/ρ)
+  // 液面所在杆高：lineLocal = 1.05 × (1000/ρ)，与杆上非均匀刻度同一公式
   const conf = [
     { rho: 1000, x: -2.2 },
     { rho: HYD.liquid, x: 2.2 },
@@ -673,11 +679,10 @@ function updHyd() {
     const lineLocal = clamp(1.05 * (1000 / c.rho), 0.5, 1.66);
     HYD.meters[i].position.set(c.x, surfaceY - lineLocal - 0.15, 0);
     if (i === 1) {
-      const reading = clamp((lineLocal - 0.45) / 0.24, 0, 5);
-      hset('read', reading.toFixed(1) + ' 格（越少越浮得高）');
+      hset('read', '液面停在 ρ=' + HYD.liquid + ' 刻度附近');
       hset('rho2', HYD.liquid + ' kg/m³');
       hset('deep', (1000 / HYD.liquid * 100).toFixed(1) + ' % 浸入（相对淡水）');
-      hset('law', '同一密度计 m 一定：ρ越大 → V排越小 → 浮得越高');
+      hset('law', '刻度上小下大、上疏下密（h∝1/ρ，不均匀）');
       setSpriteText(HYD.tags[1], '待测 ρ=' + HYD.liquid, { fontSize: 30, color: '#ffe1a8', scale: 0.0042, bg: 'rgba(12,18,26,0.6)' });
     }
   });
@@ -735,13 +740,21 @@ function cubeCtl() {
   ctl.slider({ label: '上表面深度', min: -1.4, max: 2, step: 0.05, value: CUBE.depth, fmt: (v) => (v >= 0 ? v.toFixed(2) : '露出 ' + (-v).toFixed(2)) + ' m', onInput: (v) => { CUBE.depth = v; updCube(); } });
   ctl.sep();
   ctl.toggle({ label: '显示压强数值', value: true, onChange: (v) => { CUBE.showNum = v; updCube(); } });
+  ctl.toggle({ label: '底面陷进淤泥', value: false, onChange: (v) => { CUBE.sealed = v; updCube(); } });
   setHUD([['ptop', '顶面压强'], ['pbot', '底面压强'], ['fb', '压力差（浮力）'], ['arch', '验证']]);
   updCube();
 }
 function weighCtl() {
   ctl.clear();
   ctl.slider({ label: '浸入深度比例', min: 0, max: 1, step: 0.01, value: 0, fmt: (v) => (v * 100).toFixed(0) + ' %', onInput: (v) => { WEI.frac = v; updWeigh(); } });
-  ctl.slider({ label: '混凝土块体积', min: 0.3, max: 2, step: 0.05, value: 1, fmt: (v) => v.toFixed(2) + ' m³', onInput: (v) => { WEI.vol = v; updWeigh(); } });
+  ctl.slider({ label: '物块体积', min: 0.3, max: 2, step: 0.05, value: 1, fmt: (v) => v.toFixed(2) + ' m³', onInput: (v) => { WEI.vol = v; updWeigh(); } });
+  const mbtns = [];
+  const paintM = () => mbtns.forEach(({ b, v }) => b.classList.toggle('active', v === WEI.rhoObj));
+  [[2400, '混凝土块'], [7800, '钢块']].forEach(([v, t]) => {
+    const b = ctl.button({ label: t, onClick: () => { WEI.rhoObj = v; updWeigh(); paintM(); } });
+    mbtns.push({ b, v });
+  });
+  paintM();
   ctl.sep();
   ctl.button({ label: '▼ 缓慢浸入', onClick() { if (!WEI.dipping) WEI.dipping = +1; } });
   ctl.button({ label: '▲ 提升', onClick() { if (!WEI.dipping) WEI.dipping = -1; } });
@@ -768,7 +781,8 @@ function subCtl() {
   ctl.slider({ label: '水舱注水', min: 0, max: 100, step: 1, value: SUB.fill, fmt: (v) => v + ' %', onInput: (v) => { SUB.fill = v; updSub(); } });
   ctl.sep();
   ctl.button({ label: '悬浮预设 65%', onClick() { SUB.fill = 65; updSub(); } });
-  ctl.button({ label: '吹除上浮 0%', onClick() { SUB.fill = 0; updSub(); } });
+  ctl.toggle({ label: '海水密度跃层', value: false, onChange: (v) => { SUB.jumpy = v; updSub(); } });
+  ctl.button({ label: '⚠ 紧急吹除', onClick() { SUB.fill = 10; updSub(); } });
   ctl.toggle({ label: '压载水舱显示', value: true, onChange: (v) => { SUB.tank.visible = v; } });
   setHUD([['rho', '潜艇平均密度'], ['rw', '海水密度'], ['st', '状态'], ['y', '深度']]);
   updSub();
@@ -833,6 +847,18 @@ const QUIZ = [
     opts: ['改变自身重力（水舱注水/排水）', '改变海水密度', '改变浸没体积（艇体无法变形）', '减小浮力'],
     a: 0,
     ex: '浸没后 V排 不变、浮力不变，潜水艇靠向压载水舱注水/吹除压缩空气来改变自重，实现浮沉。',
+  },
+  {
+    q: '一个浸没在水中的立方体，上表面受到水向下的压力 20 N，下表面受到向上的压力 50 N，它受到的浮力是？',
+    opts: ['20 N', '30 N', '50 N', '70 N'],
+    a: 1,
+    ex: '浮力来自上下表面的压力差：F浮 = F下 − F上 = 50 − 20 = 30 N。侧面压力对称抵消，不参与。',
+  },
+  {
+    q: '用吊秤称一个物块：空气中读数 24 kN，浸没在水中读数 14 kN。物块受到的浮力和排开水的体积分别是（g 取 10 N/kg，ρ水=1000 kg/m³）',
+    opts: ['10 kN；1 m³', '10 kN；10 m³', '24 kN；2.4 m³', '38 kN；3.8 m³'],
+    a: 0,
+    ex: 'F浮 = G − F示 = 24 − 14 = 10 kN；V排 = F浮/(ρ水g) = 10000/(1000×10) = 1 m³。',
   },
 ];
 
@@ -939,7 +965,7 @@ const SECTIONS = [
     id: 'cube', title: '浮力的成因',
     html: `<p>浸在液体里的物体，各个面都受到液体的压力：<b>前后、左右的压力对称抵消</b>；但下表面更深、压强更大——<b>向上的压力大于向下的压力</b>。</p>
 <p>这个压力差就是浮力：<span class="hl">F浮 = F向上 − F向下 = (p底 − p顶)·S</span>。</p>
-<p>把立方体的「上表面深度」调到负值（露出一半）：顶面在水面上，压强为 0，浮力全部来自底面的向上压力。再整体下潜，观察上下压强都变大、但<b>差值不变</b>——浸没后浮力与深度无关。</p>`,
+<p>把立方体的「上表面深度」调到负值（露出一半）：顶面在水面上，压强为 0，浮力全部来自底面的向上压力。再整体下潜，观察上下压强都变大、但<b>差值不变</b>——浸没后浮力与深度无关。打开「底面陷进淤泥」：下面没有水向上托，浮力消失，沉箱被压在海底拔不起来——桥墩也不受浮力。</p>`,
     enter() {
       useScene('cube', buildCube);
       app.setCamera([4.2, 1.6, 8.2], [0, -0.6, 0]);
@@ -948,9 +974,9 @@ const SECTIONS = [
   },
   {
     id: 'weigh', title: '称重法测浮力',
-    html: `<p>吊车把混凝土块缓缓吊入海水：吊秤的读数<b>越来越小</b>。</p>
+    html: `<p>吊车把物块缓缓吊入海水：吊秤的读数<b>越来越小</b>。</p>
 <p>物体在水中受到向上的浮力，弹簧秤的示数因此变小：<span class="hl">F浮 = G − F示</span>——这就是<b>称重法</b>，实验室里测浮力的第一手段。</p>
-<p>点「缓慢浸入」观察示重随浸入体积增大而减小；完全浸没后再往下，示重不再变化（V排 不再增大）。</p>`,
+<p>点「缓慢浸入」观察示重随浸入体积增大而减小；完全浸没后再往下，示重不再变化（V排 不再增大）。换成<b>钢块</b>：钢块重得多，可完全浸没后浮力和混凝土块一样大——浮力只和排开液体的体积有关，与物体的轻重、材料无关。</p>`,
     enter() {
       useScene('weigh', buildWeigh);
       app.setCamera([7.0, 6.0, 10.5], [-1.2, 0.6, 2.0]);
@@ -975,7 +1001,7 @@ const SECTIONS = [
     id: 'sub', title: '浮沉条件：潜艇',
     html: `<p>物体的浮沉取决于<b>自身密度与液体密度</b>的比较：ρ物&lt;ρ液 → 漂浮；ρ物=ρ液 → 悬浮；ρ物&gt;ρ液 → 下沉。</p>
 <p>潜艇浸没后 V排 不变、浮力不变，它靠向<b>压载水舱</b>注水/吹除压缩空气来改变<b>自重</b>：注水变重下潜，排水变轻上浮，注到恰好等于水密度就悬停在水中。</p>
-<p>拖动注水滑杆，看潜艇从港面一直潜到坐底，或稳稳悬停。</p>`,
+<p>打开「海水密度跃层」再悬浮试试：60 m 以下海水密度骤然变小，浮力跟着变小，悬浮的潜艇会急速「掉深」——这叫<b>海中断崖</b>。2014 年我国 372 潜艇就遭遇过，官兵紧急向水舱供气排水（点「紧急吹除」），三分钟内化险为夷。</p>`,
     enter() {
       useScene('sub', buildSub);
       app.setCamera([7.5, 3.0, 12.5], [0, -1.5, 0]);
@@ -1007,7 +1033,7 @@ const SECTIONS = [
   },
   {
     id: 'quiz', title: '随堂检测',
-    html: `<p>5 道选择题，检验一下压强与浮力的掌握情况。答完可重新开始。</p>`,
+    html: `<p>7 道选择题，检验一下压强与浮力的掌握情况——概念与计算都有。答完可重新开始。</p>`,
     enter() {
       useScene('ship', buildShip);
       app.setCamera([7.0, 3.6, 13.5], [0, 0.8, 0]);

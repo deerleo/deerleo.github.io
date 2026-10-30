@@ -499,6 +499,7 @@ const secTools = {
   id: 'tools', title: '认识滴定管与移液管',
   html: `<p>滴定分析的三件量器。左侧是<b>酸式滴定管</b>（玻璃活塞），中间是<b>碱式滴定管</b>（橡胶管+玻璃珠），右侧是 <b>20 mL 单标线移液管</b>。</p>
 <p><b>点击部件</b>查看名称与用途（活塞 / 刻度 / 尖嘴 / 零刻度线）。注意滴定管刻度<b>自上而下增大</b>，读数须估读到 0.01 mL。</p>
+<p>滴定管使用前的准备顺序：<b>查漏</b>（装水静置看活塞与尖嘴是否渗水）→ <b>蒸馏水洗涤</b> → <span class="hl">用待装溶液润洗 2~3 次</span> → 装液到 0 刻度以上 → <b>快速放液赶出尖嘴气泡</b> → 调节液面到 0 或 0 以下某一刻度。漏掉润洗或没赶气泡，都会把误差带进结果（见「误差分析」章）。</p>
 <p>右侧下方是<b>读数误差演示</b>：切换「平视 / 俯视 / 仰视」，看视线落点如何让读数偏小或偏大——滴定管 0 在上，所以<b>仰视读数偏大、俯视读数偏小</b>（量筒正好相反）。</p>`,
   enter() {
     P1.part = null; P1.view = 'level'; P1.showAll = false;
@@ -1133,7 +1134,7 @@ const ERRS = [
   { t: '锥形瓶用待测液（盐酸）润洗', ans: 0, chain: '瓶内多出一部分待测 HCl → n(HCl) 增多 → 消耗 V(NaOH) 偏大 → 结果偏高（锥形瓶只能用蒸馏水洗）' },
   { t: '滴定前活塞下有气泡，滴定中消失', ans: 0, chain: '气泡被液体取代，其体积被计入读数 → 终读数偏大 → V(NaOH) 偏大 → 结果偏高（滴定前须赶尽气泡）' },
   { t: '终点时仰视读取终读数', ans: 0, chain: '滴定管刻度自上而下增大，仰视读数偏大 → 终读数偏大 → V(NaOH)=终−初 偏大 → 结果偏高' },
-  { t: '滴定过程中锥形瓶内液体溅出', ans: 1, chain: '部分待测 HCl 损失 → n(HCl) 减少 → 消耗 V(NaOH) 偏小 → 结果偏低' },
+  { t: '移液管转移盐酸前未用待测液润洗', ans: 1, chain: '管内残留的蒸馏水把待测盐酸稀释 → 实际移取的 n(HCl) 偏少 → 消耗 V(NaOH) 偏小 → 结果偏低（移液管须先用待测液润洗 2~3 次）' },
   { t: '锥形瓶用蒸馏水洗净后残留少量水', ans: 2, chain: '瓶内 n(HCl) 不变（蒸馏水不消耗 NaOH）→ V(NaOH) 不变 → 对结果无影响' },
 ];
 const ERR_OPTS = ['偏高', '偏低', '无影响'];
@@ -1266,19 +1267,23 @@ let ionSel = 0;
 
 const CAT = {
   tubes: [
-    { lab: '甲', ion: 'Cu²⁺', sol: 'rgba(64,140,214,0.42)', ppt: null, bubbles: [], anim: 0, naoh: false, deep: false, feT: -1, paper: false, paperBlue: false, log: [], con: null },
-    { lab: '乙', ion: 'Fe³⁺', sol: 'rgba(206,160,60,0.45)', ppt: null, bubbles: [], anim: 0, naoh: false, deep: false, feT: -1, paper: false, paperBlue: false, log: [], con: null },
-    { lab: '丙', ion: 'Fe²⁺', sol: 'rgba(126,196,172,0.38)', ppt: null, bubbles: [], anim: 0, naoh: false, deep: false, feT: -1, paper: false, paperBlue: false, log: [], con: null },
-    { lab: '丁', ion: 'NH₄⁺', sol: 'rgba(188,214,238,0.22)', ppt: null, bubbles: [], anim: 0, naoh: false, deep: false, feT: -1, paper: false, paperBlue: false, log: [], con: null },
+    { lab: '甲', ion: 'Cu²⁺', sol0: 'rgba(64,140,214,0.42)', sol: 'rgba(64,140,214,0.42)', ppt: null, bubbles: [], anim: 0, naoh: false, deep: false, feT: -1, kscn: false, paper: false, paperBlue: false, log: [], con: null },
+    { lab: '乙', ion: 'Fe³⁺', sol0: 'rgba(206,160,60,0.45)', sol: 'rgba(206,160,60,0.45)', ppt: null, bubbles: [], anim: 0, naoh: false, deep: false, feT: -1, kscn: false, paper: false, paperBlue: false, log: [], con: null },
+    { lab: '丙', ion: 'Fe²⁺', sol0: 'rgba(126,196,172,0.38)', sol: 'rgba(126,196,172,0.38)', ppt: null, bubbles: [], anim: 0, naoh: false, deep: false, feT: -1, kscn: false, paper: false, paperBlue: false, log: [], con: null },
+    { lab: '丁', ion: 'Al³⁺', sol0: 'rgba(196,218,238,0.22)', sol: 'rgba(196,218,238,0.22)', ppt: null, bubbles: [], anim: 0, naoh: false, deep: false, feT: -1, kscn: false, paper: false, paperBlue: false, log: [], con: null },
+    { lab: '戊', ion: 'Mg²⁺', sol0: 'rgba(196,218,238,0.22)', sol: 'rgba(196,218,238,0.22)', ppt: null, bubbles: [], anim: 0, naoh: false, deep: false, feT: -1, kscn: false, paper: false, paperBlue: false, log: [], con: null },
+    { lab: '己', ion: 'NH₄⁺', sol0: 'rgba(188,214,238,0.22)', sol: 'rgba(188,214,238,0.22)', ppt: null, bubbles: [], anim: 0, naoh: false, deep: false, feT: -1, kscn: false, paper: false, paperBlue: false, log: [], con: null },
   ],
   reagents: [
     { id: 'naoh', n: 'NaOH 溶液' },
     { id: 'nh3', n: '浓氨水' },
+    { id: 'kscn', n: 'KSCN 溶液' },
+    { id: 'cl2', n: '氯水' },
     { id: 'paper', n: '湿润红色石蕊试纸' },
   ],
   reg: 'naoh', reveal: false, msg: '点选试管 → 选试剂 → 滴加',
 };
-const catXs = [200, 340, 480, 620];
+const catXs = [120, 230, 340, 450, 560, 670];
 function catApply() {
   const T = CAT.tubes[ionSel];
   const reg = CAT.reg;
@@ -1296,6 +1301,12 @@ function catApply() {
       T.con = '含 Fe³⁺：Fe³⁺ + 3OH⁻ = Fe(OH)₃↓（红褐色沉淀）';
     } else if (ion === 'Fe²⁺') {
       if (T.feT < 0) { T.feT = 0; T.ppt = { color: '#eceee8', k: 1 }; T.log.push('＋NaOH → 白色沉淀 Fe(OH)₂↓'); }
+    } else if (ion === 'Al³⁺') {
+      T.ppt = { color: '#f2f2ec', k: 1 };
+      T.log.push('＋NaOH → 白色絮状沉淀 Al(OH)₃↓（点「滴加至过量」看它溶不溶）');
+    } else if (ion === 'Mg²⁺') {
+      T.ppt = { color: '#f2f2ec', k: 1 };
+      T.log.push('＋NaOH → 白色沉淀 Mg(OH)₂↓（点「滴加至过量」与 Al³⁺ 对比）');
     } else {
       T.log.push('＋NaOH → 无明显现象（未加热不放氨）');
     }
@@ -1315,8 +1326,35 @@ function catApply() {
       T.con = '含 Fe³⁺：Fe³⁺ + 3NH₃·H₂O = Fe(OH)₃↓ + 3NH₄⁺';
     } else if (ion === 'Fe²⁺') {
       if (T.feT < 0) { T.feT = 0; T.ppt = { color: '#eceee8', k: 1 }; T.log.push('＋浓氨水 → 白色沉淀（随后氧化变色）'); }
+    } else if (ion === 'Al³⁺') {
+      T.ppt = { color: '#f2f2ec', k: 1 };
+      T.log.push('＋浓氨水 → 白色沉淀 Al(OH)₃↓（弱碱，过量也不溶解——与 NaOH 对比）');
+    } else if (ion === 'Mg²⁺') {
+      T.ppt = { color: '#f2f2ec', k: 1 };
+      T.log.push('＋浓氨水 → 白色沉淀 Mg(OH)₂↓（过量不溶解）');
     } else {
       T.log.push('＋浓氨水 → 无明显现象');
+    }
+  } else if (reg === 'kscn') {
+    T.kscn = true;
+    if (ion === 'Fe³⁺') {
+      T.sol = 'rgba(190,30,40,0.55)';
+      T.log.push('＋KSCN → 溶液变成血红色');
+      T.con = '含 Fe³⁺：Fe³⁺ + 3SCN⁻ → Fe(SCN)₃（血红色）——检验 Fe³⁺ 最灵敏的方法';
+    } else if (ion === 'Fe²⁺') {
+      T.log.push('＋KSCN → 无明显变化（Fe²⁺ 不显色——再滴「氯水」试试）');
+    } else {
+      T.log.push('＋KSCN → 无明显变化（只有 Fe³⁺ 遇 KSCN 变血红色）');
+    }
+  } else if (reg === 'cl2') {
+    if (ion === 'Fe²⁺' && T.kscn) {
+      T.sol = 'rgba(190,30,40,0.55)';
+      T.log.push('先 KSCN 无现象，滴氯水后 → 溶液变血红色');
+      T.con = '含 Fe²⁺：氯水把 Fe²⁺ 氧化成 Fe³⁺（2Fe²⁺ + Cl₂ = 2Fe³⁺ + 2Cl⁻），Fe³⁺ 遇 KSCN 变红';
+    } else if (ion === 'Fe²⁺') {
+      T.log.push('＋氯水 → 无明显变化（要先滴 KSCN 再加氯水，才能看到变红）');
+    } else {
+      T.log.push('＋氯水 → 无明显变化');
     }
   } else {
     if (!T.naoh) { CAT.msg = '检验 NH₄⁺：须先加 NaOH 溶液，再共热，湿润红色石蕊试纸置于管口'; return; }
@@ -1331,6 +1369,27 @@ function catApply() {
   }
   CAT.msg = `已向 ${T.lab} 管滴加完成，观察现象 →`;
 }
+function catExcess() {
+  const T = CAT.tubes[ionSel];
+  const ion = T.ion;
+  T.anim = 0.9;
+  if (ion === 'Al³⁺' && T.ppt && CAT.reg === 'naoh') {
+    T.ppt = null;
+    T.log.push('＋NaOH 至过量 → 白色沉淀溶解：Al(OH)₃ + OH⁻ = AlO₂⁻ + 2H₂O');
+    T.con = '含 Al³⁺：Al(OH)₃ 是两性氢氧化物，溶于强碱——与 Mg(OH)₂（不溶）区分';
+  } else if (ion === 'Al³⁺' && T.ppt && CAT.reg === 'nh3') {
+    T.log.push('＋浓氨水至过量 → 沉淀不溶解（弱碱不能溶解两性的 Al(OH)₃）');
+  } else if (ion === 'Mg²⁺' && T.ppt && (CAT.reg === 'naoh' || CAT.reg === 'nh3')) {
+    T.log.push('滴加至过量 → 白色沉淀不溶解（Mg(OH)₂ 不是两性氢氧化物）');
+  } else if (ion === 'Cu²⁺' && T.ppt && CAT.reg === 'nh3') {
+    T.deep = true; T.ppt = null;
+    T.log.push('＋过量浓氨水 → 沉淀溶解，得深蓝色溶液 [Cu(NH₃)₄]²⁺');
+    T.con = '含 Cu²⁺：Cu(OH)₂ + 4NH₃·H₂O = [Cu(NH₃)₄]²⁺ + 2OH⁻ + 4H₂O（深蓝色）';
+  } else {
+    T.log.push('继续滴加至过量 → 现象无进一步变化');
+  }
+  CAT.msg = '「过量」操作完成——对照记录推理结论';
+}
 function drawIonPanelCation() {
   const T = CAT.tubes[ionSel];
   card(740, 52, 512, 620);
@@ -1340,7 +1399,7 @@ function drawIonPanelCation() {
   T.log.forEach((s) => {
     yy = wrapText(s, 764, yy, 460, 21, { size: 13, align: 'left', color: '#d5dfe9', halo: null }) + 8;
   });
-  if (!T.log.length) wrapText('尚未加试剂。依次尝试：NaOH 溶液（Cu²⁺/Fe³⁺/Fe²⁺）、浓氨水（Cu²⁺ 深蓝络合物）、湿润红色石蕊试纸（先加 NaOH 共热检验 NH₄⁺）。', 764, yy, 452, 21, { size: 12.5, align: 'left', color: '#93a3b3', halo: null });
+  if (!T.log.length) wrapText('尚未加试剂。依次尝试：NaOH（滴加后点「滴加至过量」，Al³⁺ 沉淀溶、Mg²⁺ 不溶）、浓氨水（Cu²⁺ 深蓝络合物）、KSCN（Fe³⁺ 血红色，对 Fe²⁺ 无现象）、氯水（KSCN 后滴氯水变红 ⇒ Fe²⁺）、湿润红色石蕊试纸（先加 NaOH 共热检验 NH₄⁺）。', 764, yy, 452, 21, { size: 12.5, align: 'left', color: '#93a3b3', halo: null });
   ctx.strokeStyle = 'rgba(255,255,255,0.10)';
   ctx.beginPath(); ctx.moveTo(764, 480); ctx.lineTo(1228, 480); ctx.stroke();
   txt('结论', 764, 506, { size: 12.5, color: '#9fb0c2', align: 'left', halo: null });
@@ -1350,14 +1409,16 @@ function drawIonPanelCation() {
 }
 const secCation = {
   id: 'cation', title: '阳离子的检验',
-  html: `<p>四支试管分别含 <b>Cu²⁺ / Fe³⁺ / Fe²⁺ / NH₄⁺</b> 中的一种。点选试管，选择试剂滴加，观察现象：</p>
+  html: `<p>六支试管分别含 <b>Cu²⁺ / Fe³⁺ / Fe²⁺ / Al³⁺ / Mg²⁺ / NH₄⁺</b> 中的一种。点选试管，选择试剂滴加，观察现象：</p>
 <p>• <b>NaOH</b>：Cu²⁺→蓝色沉淀；Fe³⁺→红褐色沉淀；Fe²⁺→<b>白色沉淀迅速变灰绿、最后红褐色</b>；NH₄⁺ 常温无现象<br>
-• <b>浓氨水</b>：Cu²⁺ 先出蓝色沉淀、<b>过量后溶解成深蓝色</b> [Cu(NH₃)₄]²⁺<br>
+• <b>先逐滴加 NaOH，再「滴加至过量」看沉淀溶不溶解</b>：Al³⁺→白色沉淀<span class="hl">溶于过量 NaOH（Al(OH)₃ 两性）</span>；Mg²⁺→白色沉淀不溶——这是区分 Al³⁺ 与 Mg²⁺ 的关键<br>
+• <b>浓氨水</b>：Cu²⁺ 先出蓝色沉淀、过量后溶解成深蓝色 [Cu(NH₃)₄]²⁺；对 Al³⁺、Mg²⁺ 沉淀<b>不溶解</b>（弱碱）<br>
+• <b>KSCN</b>：Fe³⁺→<b>血红色</b>（最灵敏）；对 Fe²⁺ 无现象——再滴<b>氯水</b>变红，即证明原溶液含 Fe²⁺<br>
 • <b>湿润红色石蕊试纸</b>：先加 NaOH 共热，试纸变蓝 ⇒ NH₄⁺</p>
-<p>点「显示答案」核对四支试管。</p>`,
+<p>点「显示答案」核对六支试管。</p>`,
   enter() {
     ionSel = 0;
-    CAT.tubes.forEach((T) => Object.assign(T, { ppt: null, bubbles: [], anim: 0, naoh: false, deep: false, feT: -1, paper: false, paperBlue: false, log: [], con: null, sol: T.sol0 || T.sol }));
+    CAT.tubes.forEach((T) => Object.assign(T, { ppt: null, bubbles: [], anim: 0, naoh: false, deep: false, feT: -1, kscn: false, paper: false, paperBlue: false, log: [], con: null, sol: T.sol0 }));
     CAT.reveal = false; CAT.msg = '点选试管 → 选试剂 → 滴加';
     setHud([['tube', '试管'], ['reg', '试剂'], ['st', '提示']]);
     ctl.clear();
@@ -1368,11 +1429,12 @@ const secCation = {
     });
     ctl.sep();
     ctl.button({ label: '滴加', onClick: () => catApply() });
+    ctl.button({ label: '滴加至过量', onClick: () => catExcess() });
     ctl.button({ label: '显示答案', onClick(b) { CAT.reveal = !CAT.reveal; b.classList.toggle('active', CAT.reveal); } });
     ctl.button({
       label: '↺ 重置',
       onClick() {
-        CAT.tubes.forEach((T) => Object.assign(T, { ppt: null, bubbles: [], anim: 0, naoh: false, deep: false, feT: -1, paper: false, paperBlue: false, log: [], con: null }));
+        CAT.tubes.forEach((T) => Object.assign(T, { ppt: null, bubbles: [], anim: 0, naoh: false, deep: false, feT: -1, kscn: false, paper: false, paperBlue: false, log: [], con: null, sol: T.sol0 }));
         CAT.reveal = false;
       },
     });
@@ -1406,7 +1468,7 @@ function drawCation() {
     if (T.deep) { ctx.fillStyle = 'rgba(30,64,208,0.55)'; const x = catXs[k]; ctx.fillRect(x - 15, 470, 30, 60); }
     ionDropperAnim(catXs[k], 400, T);
   });
-  txt('Cu²⁺ / Fe³⁺ / Fe²⁺ / NH₄⁺ 各其一（顺序见「显示答案」）', 410, 620, { size: 12, color: '#9fb0c2' });
+  txt('六种阳离子各其一（顺序见「显示答案」）', 410, 620, { size: 12, color: '#9fb0c2' });
   drawIonPanelCation();
   pill(CAT.msg, 410, 34);
   if (hud) {
@@ -1421,8 +1483,10 @@ function drawCation() {
 const AN = {
   tubes: [
     { lab: 'Ⅰ', ion: 'Cl⁻', sol: 'rgba(196,218,238,0.22)', ppt: null, bubbles: [], anim: 0, hcl: false, lastPpt: null, log: [], con: null },
-    { lab: 'Ⅱ', ion: 'SO₄²⁻', sol: 'rgba(196,218,238,0.22)', ppt: null, bubbles: [], anim: 0, hcl: false, lastPpt: null, log: [], con: null },
-    { lab: 'Ⅲ', ion: 'CO₃²⁻', sol: 'rgba(196,218,238,0.22)', ppt: null, bubbles: [], anim: 0, hcl: false, lastPpt: null, log: [], con: null },
+    { lab: 'Ⅱ', ion: 'Br⁻', sol: 'rgba(196,218,238,0.22)', ppt: null, bubbles: [], anim: 0, hcl: false, lastPpt: null, log: [], con: null },
+    { lab: 'Ⅲ', ion: 'I⁻', sol: 'rgba(196,218,238,0.22)', ppt: null, bubbles: [], anim: 0, hcl: false, lastPpt: null, log: [], con: null },
+    { lab: 'Ⅳ', ion: 'SO₄²⁻', sol: 'rgba(196,218,238,0.22)', ppt: null, bubbles: [], anim: 0, hcl: false, lastPpt: null, log: [], con: null },
+    { lab: 'Ⅴ', ion: 'CO₃²⁻', sol: 'rgba(196,218,238,0.22)', ppt: null, bubbles: [], anim: 0, hcl: false, lastPpt: null, log: [], con: null },
   ],
   reagents: [
     { id: 'hcl', n: '稀盐酸' },
@@ -1433,7 +1497,7 @@ const AN = {
   ],
   reg: 'hcl', reveal: false, msg: '点选试管 → 选试剂 → 滴加',
 };
-const anXs = [230, 420, 610];
+const anXs = [150, 285, 420, 555, 680];
 function anApply() {
   const T = AN.tubes[ionSel];
   const reg = AN.reg;
@@ -1449,9 +1513,12 @@ function anApply() {
       T.log.push('＋稀盐酸 → 无沉淀（先酸化，排除 CO₃²⁻ 等干扰）');
     }
   } else if (reg === 'ag') {
-    T.ppt = { color: '#f0f0e6', k: 1 };
+    const col = { 'Cl⁻': '#f0f0e6', 'Br⁻': '#e6cf8c', 'I⁻': '#dfb955' }[ion] || '#f0f0e6';
+    T.ppt = { color: col, k: 1 };
     T.lastPpt = 'ag';
     if (ion === 'Cl⁻') T.log.push('＋AgNO₃ → 白色沉淀（再用稀硝酸验证）');
+    else if (ion === 'Br⁻') T.log.push('＋AgNO₃ → 浅黄色沉淀 AgBr（加稀硝酸验证：不溶解 ⇒ Br⁻）');
+    else if (ion === 'I⁻') T.log.push('＋AgNO₃ → 黄色沉淀 AgI（加稀硝酸验证：不溶解 ⇒ I⁻）');
     else if (ion === 'SO₄²⁻') T.log.push('＋AgNO₃ → 白色沉淀（Ag₂SO₄ 微溶，现象不明显，不用此法检 SO₄²⁻）');
     else T.log.push('＋AgNO₃ → 白色沉淀（Ag₂CO₃，会溶于硝酸冒泡）');
   } else if (reg === 'ba') {
@@ -1474,6 +1541,8 @@ function anApply() {
   } else if (reg === 'hno3') {
     if (T.lastPpt === 'ag') {
       if (ion === 'Cl⁻') { T.log.push('＋稀硝酸 → 沉淀不溶解 ⇒ AgCl'); T.con = '含 Cl⁻：AgNO₃ 产生白色沉淀且不溶于稀硝酸（AgCl）'; }
+      else if (ion === 'Br⁻') { T.log.push('＋稀硝酸 → 浅黄色沉淀不溶解 ⇒ AgBr'); T.con = '含 Br⁻：卤素离子沉淀白→浅黄→黄，AgBr 浅黄且不溶于稀硝酸'; }
+      else if (ion === 'I⁻') { T.log.push('＋稀硝酸 → 黄色沉淀不溶解 ⇒ AgI'); T.con = '含 I⁻：黄色沉淀 AgI 不溶于稀硝酸（三者中颜色最深）'; }
       else if (ion === 'CO₃²⁻') T.log.push('＋稀硝酸 → 沉淀溶解并冒气泡 ⇒ 碳酸银（AgCl 不溶才是 Cl⁻）');
       else T.log.push('＋稀硝酸 → 沉淀无明显溶解');
     } else if (T.lastPpt === 'ba') {
@@ -1486,7 +1555,7 @@ function anApply() {
     if (ion === 'CO₃²⁻') T.log.push('＋澄清石灰水 → 白色沉淀 CaCO₃');
     else T.log.push('＋澄清石灰水 → 无明显现象');
   }
-  AN.msg = `已向 Ⅰ/Ⅱ/Ⅲ 之 ${T.lab} 滴加完成，对照现象下结论`;
+  AN.msg = `已向 ${T.lab} 管滴加完成，对照现象下结论`;
 }
 function drawIonPanelAnion() {
   const T = AN.tubes[ionSel];
@@ -1496,7 +1565,7 @@ function drawIonPanelAnion() {
   T.log.forEach((s) => {
     yy = wrapText(s, 764, yy, 460, 21, { size: 13, align: 'left', color: '#d5dfe9', halo: null }) + 8;
   });
-  if (!T.log.length) wrapText('尚未加试剂。推荐流程：Cl⁻ → AgNO₃ + 稀硝酸；SO₄²⁻ → 先稀盐酸后 BaCl₂；CO₃²⁻ → 稀盐酸（气泡→石灰水变浑浊）。', 764, yy, 452, 21, { size: 12.5, align: 'left', color: '#93a3b3', halo: null });
+  if (!T.log.length) wrapText('尚未加试剂。推荐流程：卤素离子 → AgNO₃ + 稀硝酸（白/浅黄/黄）；SO₄²⁻ → 先稀盐酸后 BaCl₂；CO₃²⁻ → 稀盐酸（气泡→石灰水变浑浊）。', 764, yy, 452, 21, { size: 12.5, align: 'left', color: '#93a3b3', halo: null });
   ctx.strokeStyle = 'rgba(255,255,255,0.10)';
   ctx.beginPath(); ctx.moveTo(764, 462); ctx.lineTo(1228, 462); ctx.stroke();
   txt('结论', 764, 488, { size: 12.5, color: '#9fb0c2', align: 'left', halo: null });
@@ -1507,10 +1576,11 @@ function drawIonPanelAnion() {
 }
 const secAnion = {
   id: 'anion', title: '阴离子的检验',
-  html: `<p>三支试管分别含 <b>Cl⁻ / SO₄²⁻ / CO₃²⁻</b> 中的一种（钠盐溶液）。</p>
-<p>• <b>Cl⁻</b>：滴 AgNO₃ → 白色沉淀，加<b>稀硝酸不溶解</b> ⇒ AgCl<br>
+  html: `<p>五支试管分别含 <b>Cl⁻ / Br⁻ / I⁻ / SO₄²⁻ / CO₃²⁻</b> 中的一种（钠盐溶液）。</p>
+<p>• <b>卤素离子</b>：先加稀硝酸酸化，再加 AgNO₃——<span class="hl">Cl⁻ 白色、Br⁻ 浅黄色、I⁻ 黄色</span>沉淀，都<b>不溶于稀硝酸</b>（沉淀颜色由浅到深）<br>
 • <b>SO₄²⁻</b>：<b>先加稀盐酸（无沉淀）</b>，再加 BaCl₂ → 白色沉淀 ⇒ BaSO₄（先酸化排除 CO₃²⁻ / Ag⁺ 干扰）<br>
 • <b>CO₃²⁻</b>：滴稀盐酸 → 气泡 → 澄清石灰水变浑浊</p>
+<p>• <b>NO₃⁻</b>（稀溶液）：加 NaOH 溶液与铝箔共热，放出的 NH₃ 使湿润红色石蕊试纸变蓝（原题不做演示，记住方法）。</p>
 <p>故意「不按顺序」试试：直接对 SO₄²⁻ 管加 BaCl₂，看记录里怎么提醒你。</p>`,
   enter() {
     ionSel = 0;
@@ -1551,13 +1621,13 @@ function drawAnion() {
   ionRack(anXs, 400, ionSel, AN.tubes, AN.reveal);
   AN.tubes.forEach((T, k) => {
     ionDropperAnim(anXs[k], 400, T);
-    if (k === 2 && T.bubbles.length) {
-      // CO₃²⁻ 管：气泡 + 右侧澄清石灰水小管变浑浊
-      drawTube(anXs[2] + 96, 430, { w: 26, len: 100, liquid: 'rgba(232,230,220,0.75)', liquidH: 52 });
-      txt('石灰水变浑浊', anXs[2] + 96, 548, { size: 10.5, color: '#c6d2df' });
+    if (k === 4 && T.bubbles.length) {
+      // CO₃²⁻ 管：气泡 + 左侧澄清石灰水小管变浑浊
+      drawTube(anXs[4] - 90, 430, { w: 26, len: 100, liquid: 'rgba(232,230,220,0.75)', liquidH: 52 });
+      txt('石灰水变浑浊', anXs[4] - 90, 548, { size: 10.5, color: '#c6d2df' });
     }
   });
-  txt('Cl⁻ / SO₄²⁻ / CO₃²⁻ 各其一（钠盐溶液，顺序见「显示答案」）', 420, 620, { size: 12, color: '#9fb0c2' });
+  txt('Cl⁻ / Br⁻ / I⁻ / SO₄²⁻ / CO₃²⁻ 各其一（钠盐溶液，顺序见「显示答案」）', 420, 620, { size: 12, color: '#9fb0c2' });
   drawIonPanelAnion();
   pill(AN.msg, 420, 34);
   if (hud) {
@@ -1932,6 +2002,18 @@ const QUIZ = [
     a: 1,
     ex: '钴玻璃吸收黄光：试剂和铂丝难免带入微量 Na，其黄色火焰会掩盖 K 的紫色，滤去黄光才能看清。',
   },
+  {
+    q: '向某溶液中逐滴加入 NaOH 溶液至过量，先产生白色沉淀、后沉淀溶解；另取一份改用浓氨水，产生白色沉淀且不溶解。该溶液中含有？',
+    opts: ['Mg²⁺', 'Al³⁺', 'Fe²⁺', 'Cu²⁺'],
+    a: 1,
+    ex: 'Al(OH)₃ 是两性氢氧化物：溶于强碱 NaOH、不溶于弱碱氨水；Mg(OH)₂ 在过量 NaOH 中不溶解。白色沉淀加过量 NaOH 溶解 ⇒ Al³⁺。',
+  },
+  {
+    q: '用 AgNO₃ 溶液和稀硝酸检验卤素离子，产生浅黄色且不溶于稀硝酸的沉淀，对应的离子是？',
+    opts: ['Cl⁻', 'Br⁻', 'I⁻', 'CO₃²⁻'],
+    a: 1,
+    ex: 'AgCl 白色、AgBr 浅黄色、AgI 黄色，三者都不溶于稀硝酸；浅黄色对应 Br⁻。Ag₂CO₃ 虽是白色但溶于硝酸并冒气泡。',
+  },
 ];
 function showQuiz() {
   let idx = 0;
@@ -2015,7 +2097,7 @@ function showQuiz() {
 }
 const secQuiz = {
   id: 'quiz', title: '随堂检测',
-  html: `<p>5 道题：中和滴定计算、指示剂选择、误差判断、离子检验与焰色操作。答完可重新开始。</p>`,
+  html: `<p>7 道题：中和滴定计算、指示剂选择、误差判断、离子检验（含 Al³⁺ 与卤素沉淀颜色）与焰色操作。答完可重新开始。</p>`,
   enter() {
     setHud(null);
     ctl.clear();

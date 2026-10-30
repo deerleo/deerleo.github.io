@@ -495,8 +495,34 @@ function buildStationD() {
   splintEmber.visible = false;
   const flame = makeFlame();
   flame.visible = false;
-  g.add(o2.grp, co2.grp, limeBottle, lime, limeLbl, splint, splintEmber, flame);
-  D = { o2, co2, lime, limeBottle, splint, splintEmber, flame, bubbleY: 0, bubbleXZ: [0, 0] };
+  // 阶梯蜡烛（一高一低）：演示 CO₂「下层先灭、上层后灭」
+  function candle(x, z, h) {
+    const grp = new THREE.Group();
+    const body = new THREE.Mesh(new THREE.CylinderGeometry(0.008, 0.009, h, 12), stdMat({ color: 0xf3ead9, roughness: 0.6 }));
+    body.position.y = h / 2;
+    const wick = new THREE.Mesh(new THREE.CylinderGeometry(0.0012, 0.0012, 0.008, 6), stdMat({ color: 0x333333, roughness: 0.9 }));
+    wick.position.y = h + 0.004;
+    const fl = makeFlame();
+    fl.scale.set(0.8, 0.8, 1);
+    fl.position.y = h + 0.016;
+    grp.add(body, wick, fl);
+    grp.position.set(x, BENCH_Y, z);
+    return { grp, fl };
+  }
+  const candLow = candle(0.40, 0.20, 0.030);
+  const candHigh = candle(0.58, 0.20, 0.055);
+  const candLbl = makeTextSprite('阶梯蜡烛', { fontSize: 24, color: '#dfe6ee', scale: 0.0028 });
+  candLbl.position.set(0.49, BENCH_Y + 0.115, 0.20);
+  // 紫色石蕊溶液烧杯
+  const indLiquid = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.032, 0.04, 20), liquidMat(0x8a5fc0, 0.55));
+  indLiquid.position.set(-0.62, BENCH_Y + 0.02, 0.5);
+  const indCup = new THREE.Mesh(new THREE.CylinderGeometry(0.032, 0.03, 0.055, 20, 1, true), glassMat(0.35));
+  indCup.position.set(-0.62, BENCH_Y + 0.028, 0.5);
+  const indLbl = makeTextSprite('紫色石蕊', { fontSize: 24, color: '#dfe6ee', scale: 0.0028 });
+  indLbl.position.set(-0.62, BENCH_Y + 0.145, 0.5);
+  g.add(o2.grp, co2.grp, limeBottle, lime, limeLbl, splint, splintEmber, flame,
+    candLow.grp, candHigh.grp, candLbl, indLiquid, indCup, indLbl);
+  D = { o2, co2, lime, limeBottle, splint, splintEmber, flame, candLow, candHigh, indLiquid, bubbleY: 0, bubbleXZ: [0, 0] };
 }
 
 /* ---------------- 粒子：气泡 / 气流点 / 烟 ---------------- */
@@ -1006,7 +1032,7 @@ const SECTIONS = [
     title: '制取二氧化碳',
     html: `<p>实验室用<b>大理石（或石灰石）</b>与<b>稀盐酸</b>反应制 CO₂：</p>
 <p>CaCO₃ + 2HCl = CaCl₂ + H₂O + CO₂↑</p>
-<p>为什么不用别的药品？切换下方三种组合对比：<b>稀硫酸</b>——生成的 CaSO₄ 微溶于水，覆盖在大理石表面，反应很快停止；<b>碳酸钠粉末</b>——与盐酸反应<b>过于剧烈</b>，不便于收集。</p>
+<p>为什么不用别的药品？切换下方几种组合对比：<b>稀硫酸</b>——生成的 CaSO₄ 微溶于水，覆盖在大理石表面，反应很快停止；<b>碳酸钠粉末</b>——与盐酸反应<b>过于剧烈</b>，不便于收集；<b>浓盐酸</b>——易挥发出 HCl 气体混入 CO₂，通入石灰水时被盐酸抑制，<b>石灰水不易变浑浊</b>，所以实验室要用<b>稀盐酸</b>。</p>
 <p>CO₂ 能溶于水，一般用<b>向上排空气法</b>收集（密度比空气大）；长颈漏斗下端管口必须<span class="hl">插入液面以下</span>形成液封，防止气体逸出。</p>`,
     enter() {
       hideAllStations();
@@ -1024,6 +1050,7 @@ const SECTIONS = [
           { label: '大理石+稀盐酸 ✓', value: 'marble-hcl' },
           { label: '大理石+稀硫酸', value: 'marble-h2so4' },
           { label: '碳酸钠+稀盐酸', value: 'soda-hcl' },
+          { label: '大理石+浓盐酸', value: 'marble-conc' },
         ],
         value: 'marble-hcl',
         onChange: (v) => {
@@ -1033,6 +1060,7 @@ const SECTIONS = [
           hudText.phase = '待反应';
           if (v === 'marble-h2so4') toast('提示：CaSO₄ 微溶，很快会覆盖大理石表面使反应停止。', 'warn');
           if (v === 'soda-hcl') toast('提示：碳酸钠是粉末，反应速率太快，来不及收集。', 'warn');
+          if (v === 'marble-conc') toast('提示：浓盐酸易挥发，制得的 CO₂ 混有 HCl，石灰水不易变浑浊。', 'warn');
         },
       });
       ctl.sep();
@@ -1050,7 +1078,9 @@ const SECTIONS = [
           if (stC.rx !== 'marble-hcl') {
             toast(stC.rx === 'marble-h2so4'
               ? '反应一会儿就停止了——CaSO₄ 微溶物覆盖在大理石表面。'
-              : '反应过于剧烈，气泡来不及收集，不适合实验室制法。', 'warn');
+              : stC.rx === 'marble-conc'
+                ? '反应能进行，但气体混有挥发出来的 HCl——这种 CO₂ 通入石灰水不易变浑浊，不能用浓盐酸。'
+                : '反应过于剧烈，气泡来不及收集，不适合实验室制法。', 'warn');
           }
         },
       });
@@ -1064,7 +1094,7 @@ const SECTIONS = [
     html: `<p>两种气体的<b>检验</b>与<b>验满</b>：</p>
 <p>① 检验 O₂：把<b>带火星的木条伸入瓶内</b>，木条复燃 → 是氧气；② 验满 O₂：带火星木条放<b>瓶口</b>，复燃即满。</p>
 <p>③ 检验 CO₂：向瓶中倒入<b>澄清石灰水</b>振荡，变浑浊 → 是 CO₂（生成 CaCO₃ 沉淀）；④ 验满 CO₂：<b>燃着的木条放瓶口</b>，火焰熄灭即满。</p>
-<p>CO₂ 还有一个重要性质：它<b>不能燃烧、也不支持燃烧</b>，密度比空气大——所以可用来灭火。点击下方按钮逐项验证。</p>`,
+<p>更多性质逐项验证：<b>铁丝</b>在 O₂ 中剧烈燃烧、火星四射，生成黑色固体四氧化三铁（瓶底预先放少量水或细沙，防止高温熔融物溅落炸裂瓶底）；把 CO₂ 像<b>倒水一样</b>倒进阶梯烧杯，<span class="hl">下层蜡烛先熄灭、上层后熄灭</span>——密度比空气大，不燃烧也不支持燃烧；CO₂ 通入紫色石蕊溶液变红（CO₂ + H₂O = H₂CO₃），再加热，红色又褪回紫色——<span class="hl">碳酸不稳定，受热分解</span>。</p>`,
     enter() {
       hideAllStations();
       stD.group.visible = true;
@@ -1115,6 +1145,56 @@ const SECTIONS = [
         },
       });
       ctl.button({
+        label: '⛓ 铁丝 → O₂瓶',
+        onClick: () => {
+          if (stD.busy) return;
+          stD.busy = true;
+          for (let i = 0; i < 8; i++) setTimeout(() => puffAt(0.12 + (Math.random() - 0.5) * 0.05, BENCH_Y + 0.05 + Math.random() * 0.05, 0.5), i * 130);
+          D.flame.position.set(0.12, BENCH_Y + 0.07, 0.5);
+          D.flame.visible = true; D.flameOn = true;
+          toast('铁丝剧烈燃烧，火星四射，生成黑色固体四氧化三铁。瓶底预先放少量水或细沙：防止高温熔融物溅落炸裂瓶底。', 'ok');
+          setTimeout(() => { D.flame.visible = false; D.flameOn = false; stD.busy = false; }, 1600);
+        },
+      });
+      ctl.button({
+        label: '🕯 CO₂ → 阶梯蜡烛',
+        onClick: () => {
+          if (stD.busy) return;
+          stD.busy = true;
+          if (!D.candLow.fl.visible) { D.candLow.fl.visible = true; D.candHigh.fl.visible = true; }
+          for (let i = 0; i < 5; i++) setTimeout(() => puffAt(0.49 + (Math.random() - 0.5) * 0.04, BENCH_Y + 0.11 - i * 0.012, 0.20), i * 220);
+          toast('倒入 CO₂……下层蜡烛先熄灭，上层后熄灭：CO₂ 密度比空气大，沉在底部，且不燃烧、不支持燃烧。', 'warn');
+          setTimeout(() => { D.candLow.fl.visible = false; }, 900);
+          setTimeout(() => { D.candHigh.fl.visible = false; stD.busy = false; }, 1800);
+        },
+      });
+      ctl.button({
+        label: '🧪 CO₂ → 紫色石蕊',
+        onClick: () => {
+          if (stD.busy) return;
+          stD.busy = true;
+          for (let i = 0; i < 4; i++) setTimeout(() => spawnBubble(-0.62, BENCH_Y + 0.012, 0.5, BENCH_Y + 0.038), i * 200);
+          D.indLiquid.material.color.set(0xd85a6a);
+          toast('紫色石蕊溶液变红：CO₂ + H₂O = H₂CO₃，碳酸使石蕊变红。点「加热石蕊」看会怎样。', 'ok');
+          setTimeout(() => { stD.busy = false; }, 1200);
+        },
+      });
+      ctl.button({
+        label: '🔥 加热石蕊',
+        onClick: () => {
+          if (stD.busy) return;
+          if (D.indLiquid.material.color.getHex() !== 0xd85a6a) {
+            toast('先通入 CO₂ 让石蕊变红，再加热观察。', 'warn');
+            return;
+          }
+          stD.busy = true;
+          for (let i = 0; i < 3; i++) setTimeout(() => puffAt(-0.62, BENCH_Y + 0.07, 0.5), i * 260);
+          D.indLiquid.material.color.set(0x8a5fc0);
+          toast('红色褪去、恢复紫色：碳酸不稳定，受热分解 H₂CO₃ = H₂O + CO₂↑。', 'warn');
+          setTimeout(() => { stD.busy = false; }, 900);
+        },
+      });
+      ctl.button({
         label: '📋 验满演示',
         onClick: () => {
           toast('验满 O₂：带火星木条放瓶口复燃即满；验满 CO₂：燃着木条放瓶口熄灭即满。', 'ok');
@@ -1127,7 +1207,7 @@ const SECTIONS = [
   },
   {
     title: '随堂检测',
-    html: `<p>5 道选择题，检验本节课的掌握情况。</p>`,
+    html: `<p>6 道选择题，检验本节课的掌握情况。</p>`,
     enter() {
       hideAllStations();
       app.setCamera([0.7, 1.5, 2.9], [0.1, 1.0, 0]);
@@ -1190,6 +1270,12 @@ const QUIZ = [
     opts: ['导管口一有气泡就立即收集', '气泡连续并均匀冒出时再收集', '加热满 1 分钟后收集', '等试管冷却后收集'],
     a: 1,
     ex: '刚开始排出的气泡主要是试管和导管内的空气；当气泡连续、均匀冒出时，排出的才是较纯的氧气，此时开始收集。',
+  },
+  {
+    q: '做铁丝在氧气中燃烧的实验时，集气瓶底预先放少量水或细沙，是为了？',
+    opts: ['吸收生成的四氧化三铁', '防止高温熔融物溅落炸裂瓶底', '使铁丝更容易燃烧', '降低氧气的浓度'],
+    a: 1,
+    ex: '铁丝在氧气中剧烈燃烧、火星四射，生成的高温熔融物若直接溅落到瓶底会使瓶底炸裂，所以要先放少量水或铺一层细沙。',
   },
 ];
 

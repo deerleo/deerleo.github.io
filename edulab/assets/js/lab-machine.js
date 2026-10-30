@@ -153,7 +153,7 @@ function useScene(key, build) {
 
 /* ============ 01 杠杆平衡（撬棍撬石） ============ */
 
-const LEV = { pivot: -1.2, press: 0, pressing: false };
+const LEV = { pivot: -1.2, press: 0, pressing: false, dir: 'down' };
 function buildLever(g) {
   LEV.rock = new THREE.Mesh(new THREE.DodecahedronGeometry(0.55, 0), rockMat);
   LEV.rock.position.set(-3, 0.5, 0);
@@ -172,26 +172,32 @@ function updLever() {
   const F = LEV.pivot;
   const L1 = 3 - F, L2 = F + 3;
   const G = 600;
-  const Need = G * L2 / L1;
-  const th = LEV.press * 0.16;
+  // 力臂是支点到「力的作用线」的距离：竖直向下/垂直撬棍都取全长，
+  // 斜着用力（偏离撬棍 30°）时作用线离支点更近，力臂打 0.87 折
+  const armK = LEV.dir === 'slant' ? Math.cos(Math.PI / 6) : 1;
+  const L1eff = L1 * armK;
+  const Need = G * L2 / L1eff;
+  const stuck = Need > 600;   // 一个人最多能使出约 600 N
+  const th = LEV.press * (LEV.dir === 'down' ? 0.16 : 0.13);
   LEV.bar.position.set(F, 1.0, 0);
   LEV.bar.rotation.z = -th;
   LEV.fulcrum.position.set(F, 0.5, 0);
   LEV.rock.position.y = 0.5 + L2 * Math.sin(th);
   const rockTop = LEV.rock.position.y + 0.35;
   const handY = 1.0 - L1 * Math.sin(th);
-  const fScale = 0.8 + Need / 900;
-  LEV.hand.set(new THREE.Vector3(3, handY + 0.45 + fScale, 0), new THREE.Vector3(3, handY + 0.42, 0), '');
-  LEV.hand.set(new THREE.Vector3(3, handY + 0.45 + fScale, 0), new THREE.Vector3(3, handY + 0.45, 0), 'F动=' + Need.toFixed(0) + ' N');
+  const fScale = 0.8 + Math.min(Need, 900) / 900;
+  const handX = 3;
+  LEV.hand.set(new THREE.Vector3(handX, handY + 0.45 + fScale, 0), new THREE.Vector3(handX, handY + 0.45, 0),
+    'F动=' + (stuck ? '>600' : Need.toFixed(0)) + ' N');
   LEV.gArrow.set(new THREE.Vector3(-3, rockTop + 1.5, 0), new THREE.Vector3(-3, rockTop + 0.72, 0), 'G=600 N');
-  setSpriteText(LEV.l1, 'L1=' + L1.toFixed(1) + ' m', { fontSize: 28, color: '#ffb46e', scale: 0.006, bg: 'rgba(12,18,26,0.6)' });
+  setSpriteText(LEV.l1, 'L1=' + L1eff.toFixed(1) + ' m', { fontSize: 28, color: '#ffb46e', scale: 0.006, bg: 'rgba(12,18,26,0.6)' });
   LEV.l1.position.set((F + 3) / 2, 0.32, 0.5);
   setSpriteText(LEV.l2, 'L2=' + L2.toFixed(1) + ' m', { fontSize: 28, color: '#8fc6ff', scale: 0.006, bg: 'rgba(12,18,26,0.6)' });
   LEV.l2.position.set((F - 3) / 2, 0.32, 0.5);
-  hset('l1', L1.toFixed(1) + ' m');
+  hset('l1', L1eff.toFixed(1) + ' m' + (LEV.dir === 'slant' ? '（斜拉变短）' : ''));
   hset('l2', L2.toFixed(1) + ' m');
-  hset('f', Need.toFixed(0) + ' N');
-  hset('rel', (L1 / L2).toFixed(1) + ' 倍');
+  hset('f', stuck ? Need.toFixed(0) + ' N —— 拉不动！' : Need.toFixed(0) + ' N');
+  hset('rel', stuck ? '一个人最多使出约 600 N，力不够撬棍纹丝不动' : (L1eff / L2).toFixed(1) + ' 倍');
 }
 
 /* ============ 02 杠杆分类 ============ */
@@ -247,7 +253,7 @@ function unfocusLeverClass() {
 
 /* ============ 03 定滑轮与动滑轮 ============ */
 
-const PUL = { G: 200, lift: 0, lifting: false, fixed: null, mov: null };
+const PUL = { G: 200, G0: 0, lift: 0, lifting: false, fixed: null, mov: null };
 function buildPulleyScene(g) {
   const mk = (x, moving) => {
     const s = new THREE.Group(); s.position.x = x; g.add(s);
@@ -278,7 +284,7 @@ function updPulley() {
     u.ropes[1].set(new THREE.Vector3(0.7, 4.05, 0), new THREE.Vector3(0.7, handY + 0.5, 0));
     u.arr.set(new THREE.Vector3(0.7, handY + 0.55, 0), new THREE.Vector3(0.7, handY, 0), 'F=' + G.toFixed(0) + ' N');
   }
-  { // 动滑轮
+  { // 动滑轮：两段绳分担「物重 + 动滑轮重」（不计绳重与摩擦）
     const u = PUL.mov;
     const pulY = 3.9 - h;
     u.pul.position.y = pulY;
@@ -286,12 +292,12 @@ function updPulley() {
     u.ropes[0].set(new THREE.Vector3(-0.34, 4.35, 0), new THREE.Vector3(-0.34, pulY, 0));
     const pullY = 4.35 + 2 * h;
     u.ropes[1].set(new THREE.Vector3(0.34, pulY, 0), new THREE.Vector3(0.34, pullY, 0));
-    u.arr.set(new THREE.Vector3(0.34, pullY + 0.05, 0), new THREE.Vector3(0.34, pullY + 0.95, 0), 'F=' + (G / 2).toFixed(0) + ' N');
+    u.arr.set(new THREE.Vector3(0.34, pullY + 0.05, 0), new THREE.Vector3(0.34, pullY + 0.95, 0), 'F=' + ((G + PUL.G0) / 2).toFixed(0) + ' N');
   }
   hset('gf', G.toFixed(0) + ' N');
-  hset('mf', (G / 2).toFixed(0) + ' N');
+  hset('mf', ((G + PUL.G0) / 2).toFixed(0) + ' N（=(G+G动)/2）');
   hset('s', '定 1.2 m · 动 2.4 m');
-  hset('con', '定：不省力改方向；动：省半力费距离');
+  hset('con', PUL.G0 > 0 ? '动滑轮重也要提，G动越大越费' : '定：不省力改方向；动：省半力费距离');
 }
 
 /* ============ 04/07 滑轮组（与效率共用造型） ============ */
@@ -383,6 +389,9 @@ function updRamp() {
   hset('f', Fneed.toFixed(0) + ' N');
   hset('wl', (G * h).toFixed(0) + ' J');
   hset('wr', (Fneed * len).toFixed(0) + ' J');
+  // 斜面机械效率：η = W有用/W总 = G·h / (F·L)；坡越陡、面越光滑，η 越高
+  const eta = Fneed > 0 ? (G * h) / (Fneed * len) * 100 : 100;
+  hset('eta', eta.toFixed(0) + ' %');
 }
 
 /* ============ 06 轮轴（辘轳） ============ */
@@ -479,7 +488,10 @@ function calcEff(t) {
 
 /* ============ 08 生活中的机械（桔槔 + 杆秤） ============ */
 
-const LIFE = { focus: 'shad', Gstone: 400, pull: 1, pulling: false, m: 2, weigh: 2.2 };
+const LIFE = { focus: 'shad', Gstone: 400, pull: 1, pulling: false, m: 2, weigh: 2.2, radius: 2, tonnage: 1.2, falls: 4 };
+/* 塔吊力矩模型：额定力矩 60 kN·m → 额定起重量 = 60 / (9.8 × r) t */
+const CRANE_MMAX = 60;
+const CRANE_LOADS = [[1.2, '一托砖'], [2, '一捆钢筋'], [3.2, '混凝土吊斗']];
 function buildLife(g) {
   // —— 桔槔 ——
   const a = new THREE.Group(); a.position.set(-3.4, 0, 0); g.add(a); LIFE.shad = a;
@@ -510,6 +522,20 @@ function buildLife(g) {
   LIFE.wtLbl = lbl('读数', '#ffd166', 0.0095); b.add(LIFE.wtLbl);
   LIFE.knob = makeRope(0xdddddd, 0.016); LIFE.wbeam.add(LIFE.knob);
   LIFE.knob.set(new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, -0.31, 0));
+  // —— 塔吊（简化力矩演示） ——
+  const cr = new THREE.Group(); cr.position.set(0, 0, 7); g.add(cr); LIFE.crane = cr;
+  const mast = box(0.5, 7.2, 0.5, M(0xd8a02e, 0.6, 0.3)); mast.position.y = 3.6; cr.add(mast);
+  LIFE.jib = new THREE.Group(); LIFE.jib.position.y = 7.2; cr.add(LIFE.jib);
+  const jibLong = box(4.8, 0.16, 0.26, M(0xe8b23a, 0.55, 0.35)); jibLong.position.x = 2.4; LIFE.jib.add(jibLong);
+  const jibShort = box(1.8, 0.16, 0.26, M(0xe8b23a, 0.55, 0.35)); jibShort.position.x = -0.9; LIFE.jib.add(jibShort);
+  const tie = makeRope(0x9aa2ab, 0.035); tie.set(new THREE.Vector3(0, 1.1, 0), new THREE.Vector3(4.6, 0.1, 0)); LIFE.jib.add(tie);
+  tie.set(new THREE.Vector3(0, 1.1, 0), new THREE.Vector3(-1.7, 0.1, 0));
+  const cw = box(0.75, 0.95, 0.75, M(0x9a958c, 0.9)); cw.position.set(-1.55, -0.55, 0); LIFE.jib.add(cw);
+  const cab = box(0.6, 0.55, 0.6, M(0x5f6a75, 0.5, 0.3)); cab.position.set(0.55, -0.4, 0); LIFE.jib.add(cab);
+  LIFE.trolley = box(0.34, 0.18, 0.4, M(0x4a4e54, 0.5, 0.5)); LIFE.jib.add(LIFE.trolley);
+  LIFE.cLoad = box(0.72, 0.55, 0.72, M(0xa5573e, 0.9)); cr.add(LIFE.cLoad);
+  LIFE.cRope = makeRope(0x777c82, 0.03); cr.add(LIFE.cRope);
+  LIFE.cTag = lbl('', '#9be29b', 0.0075); cr.add(LIFE.cTag);
   updLife();
 }
 const _tip = new THREE.Vector3();
@@ -542,6 +568,28 @@ function updLife() {
   LIFE.wRope.set(new THREE.Vector3(_tip.x, _tip.y, 0), new THREE.Vector3(_tip.x, _tip.y - 0.1, 0));
   setSpriteText(LIFE.wtLbl, '读数≈' + (Lw / 0.24).toFixed(1) + ' kg', { fontSize: 28, color: '#ffd166', scale: 0.0055, bg: 'rgba(12,18,26,0.6)' });
   LIFE.wtLbl.position.set(_tip.x, _tip.y + 0.45, 0);
+  // 塔吊：力矩限制器——起重量 × 幅度不能超过额定力矩
+  if (LIFE.crane) {
+    const r = LIFE.radius, load = LIFE.tonnage;
+    const rated = CRANE_MMAX / (9.8 * r);
+    const over = load > rated;
+    LIFE.trolley.position.x = r;
+    LIFE.cLoad.scale.setScalar(Math.cbrt(load / 1.2));
+    const topY = 3.35, loadH = 0.55 * Math.cbrt(load / 1.2);
+    LIFE.cRope.set(new THREE.Vector3(r, 7.05, 0), new THREE.Vector3(r, topY + loadH, 0));
+    LIFE.cLoad.position.set(r, topY + loadH / 2, 0);
+    LIFE.jib.rotation.z = over ? -0.045 : 0;
+    setSpriteText(LIFE.cTag, over
+      ? '超载！' + load + ' t 在 ' + r + ' m 处超过额定 ' + rated.toFixed(2) + ' t'
+      : load.toFixed(1) + ' t ≤ 额定 ' + rated.toFixed(2) + ' t，可起吊',
+      { fontSize: 28, color: over ? '#ff8a7a' : '#9be29b', scale: 0.0055, bg: 'rgba(12,18,26,0.66)' });
+    LIFE.cTag.position.set(r, topY + loadH + 1.15, 0);
+    hset('cr', '幅度 r = ' + r.toFixed(1) + ' m');
+    hset('cload', load.toFixed(1) + ' t × ' + r.toFixed(1) + ' m = ' + (load * 9.8 * r).toFixed(0) + ' kN·m');
+    hset('crated', rated.toFixed(2) + ' t');
+    hset('cstatus', over ? '超载，力矩限制器切断起升' : '力矩负荷正常');
+    hset('cwire', '每根钢丝绳 ' + (load * 9.8 / LIFE.falls).toFixed(1) + ' kN（' + LIFE.falls + ' 倍率）');
+  }
   hset('shad', '配重 ' + LIFE.Gstone + ' N · L1=3.2 m · L2=0.85 m');
   hset('scale', m.toFixed(1) + '×0.55 = 0.5×' + (m * 1.1).toFixed(2));
 }
@@ -566,10 +614,18 @@ let quizCleanup = null;
 function leverCtl() {
   ctl.clear();
   ctl.slider({ label: '支点位置', min: -2.4, max: 1.8, step: 0.05, value: LEV.pivot, fmt: (v) => 'x=' + v.toFixed(1), onInput: (v) => { LEV.pivot = v; updLever(); } });
+  const dirs = [['down', '竖直向下'], ['perp', '垂直撬棍'], ['slant', '斜着用力']];
+  const dbtns = [];
+  const paintDir = () => dbtns.forEach(({ b, v }) => b.classList.toggle('active', v === LEV.dir));
+  dirs.forEach(([v, t]) => {
+    const b = ctl.button({ label: t, onClick: () => { LEV.dir = v; updLever(); paintDir(); } });
+    dbtns.push({ b, v });
+  });
+  paintDir();
   ctl.sep();
   ctl.button({ label: '▼ 下压撬棍', onClick() { if (!LEV.pressing) LEV.pressing = true; } });
   ctl.button({ label: '↺ 复位', onClick() { LEV.press = 0; updLever(); } });
-  setHUD([['l1', '动力臂 L1'], ['l2', '阻力臂 L2'], ['f', '所需压力'], ['rel', '省力倍数']]);
+  setHUD([['l1', '动力臂 L1'], ['l2', '阻力臂 L2'], ['f', '所需压力'], ['rel', '省力情况']]);
   updLever();
 }
 function leverClassCtl() {
@@ -593,6 +649,7 @@ function leverClassCtl() {
 function pulleyCtl() {
   ctl.clear();
   ctl.slider({ label: '物重 G', min: 100, max: 500, step: 10, value: PUL.G, fmt: (v) => v + ' N', onInput: (v) => { PUL.G = v; updPulley(); } });
+  ctl.slider({ label: '动滑轮重 G动', min: 0, max: 100, step: 10, value: PUL.G0, fmt: (v) => v + ' N', onInput: (v) => { PUL.G0 = v; updPulley(); } });
   ctl.sep();
   ctl.button({ label: '▲ 提升', onClick() { if (!PUL.lifting) { PUL.lifting = true; PUL.lift = 0; } } });
   ctl.button({ label: '↺ 复位', onClick() { PUL.lift = 0; updPulley(); } });
@@ -621,7 +678,7 @@ function rampCtl() {
   ctl.sep();
   ctl.toggle({ label: '显示重力分解', value: false, onChange: (v) => { RAMP.showDecomp = v; updRamp(); } });
   ctl.button({ label: '▲ 推箱上车', onClick() { if (!RAMP.pushing) { RAMP.pushing = true; RAMP.push = 0; } } });
-  setHUD([['h', '等效提升高度'], ['f', '沿面拉力'], ['wl', '直接提升做功'], ['wr', '沿斜面做功']]);
+  setHUD([['h', '等效提升高度'], ['f', '沿面拉力'], ['wl', '直接提升做功'], ['wr', '沿斜面做功'], ['eta', '斜面效率 η']]);
   updRamp();
 }
 function winchCtl() {
@@ -659,31 +716,56 @@ function effCtl() {
 }
 function lifeCtl() {
   ctl.clear();
+  const CAMS = {
+    shad: [[-2.4, 3.6, 10.2], [-0.8, 1.9, 0]],
+    scale: [[3.6, 3.4, 9.0], [3.6, 1.9, 0]],
+    crane: [[1.5, 6.5, 14.5], [0, 4.4, 7]],
+  };
   const btns = [];
   const paint = () => btns.forEach(({ b, v }) => b.classList.toggle('active', v === LIFE.focus));
-  [['shad', '桔槔'], ['scale', '杆秤']].forEach(([v, t]) => {
-    const b = ctl.button({
-      label: t,
-      onClick: () => {
-        LIFE.focus = v; paint();
-        app.setCamera(v === 'shad' ? [-2.4, 3.6, 10.2] : [3.6, 3.4, 9.0], v === 'shad' ? [-0.8, 1.9, 0] : [3.6, 1.9, 0]);
-      },
-    });
+  const goFocus = (v) => {
+    LIFE.focus = v; paint();
+    app.setCamera(...CAMS[v]);
+    lifeCtl();   // 重画下半区控件
+  };
+  [['shad', '桔槔'], ['scale', '杆秤'], ['crane', '塔吊']].forEach(([v, t]) => {
+    const b = ctl.button({ label: t, onClick: () => goFocus(v) });
     btns.push({ b, v });
   });
   paint();
   ctl.sep();
-  ctl.slider({ label: '配重石重', min: 150, max: 800, step: 10, value: LIFE.Gstone, fmt: (v) => v + ' N', onInput: (v) => { LIFE.Gstone = v; } });
-  ctl.button({
-    label: '▼ 按下提水',
-    onClick(btn) {
-      LIFE.pulling = !LIFE.pulling;
-      btn.classList.toggle('active', LIFE.pulling);
-      btn.textContent = LIFE.pulling ? '⏫ 松手吊水' : '▼ 按下提水';
-    },
-  });
-  ctl.slider({ label: '被称物重', min: 0.5, max: 5, step: 0.1, value: LIFE.m, fmt: (v) => v.toFixed(1) + ' kg', onInput: (v) => { LIFE.m = v; LIFE.weigh = v * 0.24; updLife(); } });
-  setHUD([['shad', '桔槔'], ['scale', '杆秤平衡式']]);
+  if (LIFE.focus === 'crane') {
+    ctl.slider({ label: '幅度（小车位置）', min: 1, max: 4, step: 0.1, value: LIFE.radius, fmt: (v) => v.toFixed(1) + ' m', onInput: (v) => { LIFE.radius = v; updLife(); } });
+    const lbtns = [];
+    const paintL = () => lbtns.forEach(({ b, v }) => b.classList.toggle('active', v === LIFE.tonnage));
+    CRANE_LOADS.forEach(([t, name]) => {
+      const b = ctl.button({ label: name + ' ' + t + ' t', onClick: () => { LIFE.tonnage = t; updLife(); paintL(); } });
+      lbtns.push({ b, v: t });
+    });
+    paintL();
+    const fbtns = [];
+    const paintF = () => fbtns.forEach(({ b, v }) => b.classList.toggle('active', v === LIFE.falls));
+    [2, 4].forEach((n) => {
+      const b = ctl.button({ label: '吊钩 ' + n + ' 倍率', onClick: () => { LIFE.falls = n; updLife(); paintF(); } });
+      fbtns.push({ b, v: n });
+    });
+    paintF();
+    setHUD([['cr', '幅度'], ['cload', '力矩负荷'], ['crated', '额定起重量'], ['cstatus', '状态'], ['cwire', '钢丝绳拉力']]);
+  } else if (LIFE.focus === 'scale') {
+    ctl.slider({ label: '被称物重', min: 0.5, max: 5, step: 0.1, value: LIFE.m, fmt: (v) => v.toFixed(1) + ' kg', onInput: (v) => { LIFE.m = v; LIFE.weigh = v * 0.24; updLife(); } });
+    setHUD([['scale', '杆秤平衡式']]);
+  } else {
+    ctl.slider({ label: '配重石重', min: 150, max: 800, step: 10, value: LIFE.Gstone, fmt: (v) => v + ' N', onInput: (v) => { LIFE.Gstone = v; } });
+    ctl.button({
+      label: '▼ 按下提水',
+      onClick(btn) {
+        LIFE.pulling = !LIFE.pulling;
+        btn.classList.toggle('active', LIFE.pulling);
+        btn.textContent = LIFE.pulling ? '⏫ 松手吊水' : '▼ 按下提水';
+      },
+    });
+    setHUD([['shad', '桔槔'], ['scale', '杆秤平衡式']]);
+  }
   updLife();
 }
 
@@ -719,6 +801,24 @@ const QUIZ = [
     opts: ['减小提升的物重', '增大提升的物重', '加快提升速度', '加长绳子'],
     a: 1,
     ex: 'η=W有用/W总。增大物重，有用功占比变大（额外功基本不变），效率提高；减小动滑轮自重与摩擦同理。',
+  },
+  {
+    q: '用 n = 4 的滑轮组匀速提升 360 N 的重物，动滑轮总重 40 N，不计绳重和摩擦，拉力为？',
+    opts: ['90 N', '100 N', '110 N', '400 N'],
+    a: 1,
+    ex: 'F = (G + G动) / n = (360 + 40) / 4 = 100 N。动滑轮重也被 n 段绳分担，绳端还要移动 s = 4h。',
+  },
+  {
+    q: '沿长 3 m、高 1.2 m 的斜面把 500 N 的箱子匀速拉上去，拉力 250 N，斜面的机械效率是？',
+    opts: ['60%', '75%', '80%', '100%'],
+    a: 2,
+    ex: 'W有用 = G·h = 500×1.2 = 600 J，W总 = F·L = 250×3 = 750 J，η = 600/750 = 80%。剩下的 150 J 是克服摩擦做的额外功。',
+  },
+  {
+    q: '塔吊的变幅小车向外移动时，能吊起的最大质量变小，是因为？',
+    opts: ['钢丝绳变长了', '吊物的力臂变长，力矩变大', '配重变轻了', '滑轮组的倍率变小了'],
+    a: 1,
+    ex: '配重能平衡的力矩有限：幅度 r 越大，「起重量 × 幅度」越容易超过额定力矩，所以额定起重量随幅度变小——力矩限制器就是按这个乘积报警的。',
   },
 ];
 
@@ -802,7 +902,7 @@ const SECTIONS = [
   {
     id: 'lever', title: '杠杆平衡条件',
     html: `<p>撬棍撬石块是最经典的杠杆：<b>支点</b>在垫石上，手压的一端是<b>动力</b>，石块的重力是<b>阻力</b>。</p>
-<p>杠杆平衡（或缓慢转动）时满足 <span class="hl">F₁·L₁ = F₂·L₂</span>。把支点挪近石块，阻力臂 L₂ 变短，所需的压力 F₁ 随之变小——「给我一个支点，我能撬起地球」。</p>
+<p>杠杆平衡（或缓慢转动）时满足 <span class="hl">F₁·L₁ = F₂·L₂</span>。<b>力臂是支点到力的作用线的距离，不是到作用点的距离</b>——切换「用力方向」试试：同样握在末端，斜着用力时作用线离支点更近，力臂变短，要使更大的力。把支点挪近石块，阻力臂 L₂ 变短，所需的压力随之变小——「给我一个支点，我能撬起地球」。不过一个人最多能使出约 <span class="hl">600 N</span> 的力，超过就撬不动了。</p>
 <p>拖动「支点位置」观察两个力臂的变化，点「下压撬棍」看石块被撬起：省力，但手要压下更大的距离。</p>`,
     enter() {
       useScene('lev', buildLever);
@@ -815,7 +915,7 @@ const SECTIONS = [
   {
     id: 'lever-class', title: '杠杆的分类',
     html: `<p>按动力臂与阻力臂的长短，杠杆分三类：</p>
-<p>① <b>省力杠杆</b>（L₁>L₂）：撬棍、瓶起子、老虎钳——省力费距离；② <b>费力杠杆</b>（L₁<L₂）：镊子、钓鱼竿、筷子——费力省距离，换来操作灵活；③ <b>等臂杠杆</b>（L₁=L₂）：天平、定滑轮——不省力不费距离。</p>
+<p>① <b>省力杠杆</b>（L₁>L₂）：撬棍、独轮车、瓶起子——省力费距离。独轮车的车轮是支点，货装得越靠近车轮，阻力臂越短，抬着越省力；② <b>费力杠杆</b>（L₁<L₂）：镊子、钓鱼竿、起重臂——费力省距离，换来操作灵活：随车吊的液压缸只伸长一点点，吊钩就升高很多；③ <b>等臂杠杆</b>（L₁=L₂）：天平、定滑轮——不省力不费距离。</p>
 <p>点按钮突出其中一件，观察各自力臂的相对长短。</p>`,
     enter() {
       useScene('levclass', buildLeverClass);
@@ -826,9 +926,9 @@ const SECTIONS = [
   },
   {
     id: 'pulley', title: '定滑轮与动滑轮',
-    html: `<p>滑轮是变形的杠杆。<b>定滑轮</b>（轴固定不动）实质是等臂杠杆：不省力也不费力，但能改变力的方向——升旗时向下拉绳，旗向上升。</p>
-<p><b>动滑轮</b>（随重物一起移动）实质是动力臂为阻力臂 2 倍的杠杆：两段绳分担物重，<span class="hl">F = G/2</span>，但绳端要移动 2 倍距离，且不能改变用力方向。</p>
-<p>点「提升」对比两侧：左边的绳端下移 1.2 m，右边要上拉 2.4 m。</p>`,
+    html: `<p>滑轮是变形的杠杆。<b>定滑轮</b>（轴固定不动）实质是等臂杠杆：不省力也不费力，但能改变力的方向——升旗时向下拉绳，旗向上升。改变拉绳的方向，拉力也不变（力臂始终是轮半径）。</p>
+<p><b>动滑轮</b>（随重物一起移动）实质是动力臂为阻力臂 2 倍的杠杆：两段绳共同分担物重，不计绳重与摩擦时 <span class="hl">F = (G + G<sub>动</sub>) / 2</span>，但绳端要移动 2 倍距离，且不能改变用力方向——动滑轮越重，越「吃」掉省下的力。</p>
+<p>点「提升」对比两侧：左边的绳端下移 1.2 m，右边要上拉 2.4 m。调大「动滑轮重」看拉力怎么变。</p>`,
     enter() {
       useScene('pulley', buildPulleyScene);
       app.setCamera([0, 3.8, 9.2], [0, 2.6, 0]);
@@ -840,7 +940,7 @@ const SECTIONS = [
   {
     id: 'block', title: '滑轮组',
     html: `<p>把定滑轮和动滑轮组合起来就是<b>滑轮组</b>：既省力又能改变力的方向。由 <span class="hl">n 段绳承担物重</span>时（不计动滑轮重与摩擦）：</p>
-<p><span class="hl">F = G / n</span>，绳端移动距离 <span class="hl">s = n·h</span>——省力必须费距离。</p>
+<p><span class="hl">F = G / n</span>，绳端移动距离 <span class="hl">s = n·h</span>——省力必须费距离。绕绳有个规律：<b>n 为偶数</b>时绳头系在定滑轮上、最后向下拉；<b>n 为奇数</b>时绳头系在动滑轮上。绳端最后绕过的那个定滑轮只改变用力方向，不承担物重。</p>
 <p>脚手架上的吊砖滑轮组就是这样：切换绳段数、改变物重，点「提升」观察绳端移动的距离。</p>`,
     enter() {
       useScene('block', buildBlockScene);
@@ -853,8 +953,8 @@ const SECTIONS = [
   {
     id: 'ramp', title: '斜面',
     html: `<p>沿跳板把木箱推上货车，用的就是<b>斜面</b>。斜面是一种省力机械：倾角越小越省力，但要把物体沿更长的坡推上去。</p>
-<p>光滑斜面上 <span class="hl">F = G·sinθ</span>；粗糙时还要克服摩擦 <span class="hl">+ μG·cosθ</span>。无论斜面多省力，<b>直接提升与沿斜面推上去做的功差不多</b>（粗糙时反而更多）——机械不省功。</p>
-<p>调节倾角与接触面，点「推箱上车」对比两种做功。</p>`,
+<p>光滑斜面上 <span class="hl">F = G·sinθ</span>；粗糙时还要克服摩擦 <span class="hl">+ μG·cosθ</span>。无论斜面多省力，<b>直接提升与沿斜面推上去做的功差不多</b>（粗糙时反而更多）——机械不省功。再看斜面自己的机械效率 <span class="hl">η = G·h / (F·L)</span>：面越光滑 η 越高，坡越陡 η 也越高（有用功占比变大）。</p>
+<p>调节倾角与接触面，点「推箱上车」对比两种做功，HUD 里盯着效率的变化。</p>`,
     enter() {
       useScene('ramp', buildRamp);
       app.setCamera([2.5, 3.4, 8.8], [2.2, 1.0, 0]);
@@ -892,8 +992,8 @@ const SECTIONS = [
   {
     id: 'life', title: '生活中的机械',
     html: `<p>没有实验器材，生活本身就是实验室：</p>
-<p>① <b>桔槔</b>：横杆架在木柱上，短头挂配重石、长头挂水桶。按下长头打水时很费力，但一松手，配重石就把水桶提起来了——用「配重的重力」代替人向上提的力；② <b>杆秤</b>：提纽是支点，秤钩挂货，秤砣在杆上滑动，平衡时 <span class="hl">m·L物 = M砣·L砣</span>，砣的位置直接「读」出重量。</p>
-<p>点按钮切换场景，拖滑杆看它们怎么工作。</p>`,
+<p>① <b>桔槔</b>：横杆架在木柱上，短头挂配重石、长头挂水桶。按下长头打水时很费力，但一松手，配重石就把水桶提起来了——用「配重的重力」代替人向上提的力；② <b>杆秤</b>：提纽是支点，秤钩挂货，秤砣在杆上滑动，平衡时 <span class="hl">m·L物 = M砣·L砣</span>，砣的位置直接「读」出重量；③ <b>塔吊</b>：起重臂像一根巨大的杠杆，平衡臂上的配重平衡吊物的力矩。变幅小车走得越远，吊物的力臂越长，能吊起的就越少——驾驶室里的<b>力矩限制器</b>按「起重量 × 幅度」实时核算，超载就切断起升。吊钩滑轮组的倍率越高，每根钢丝绳分到的拉力越小。</p>
+<p>点按钮切换场景：拖动塔吊的「幅度」滑杆，看额定起重量怎么一路变小。</p>`,
     enter() {
       useScene('life', buildLife);
       LIFE.pull = 0; LIFE.pulling = false;
@@ -905,7 +1005,7 @@ const SECTIONS = [
   },
   {
     id: 'quiz', title: '随堂检测',
-    html: `<p>5 道选择题，检验一下简单机械的掌握情况。答完可重新开始。</p>`,
+    html: `<p>8 道选择题，检验一下简单机械的掌握情况——既有概念题，也有杠杆、滑轮组、斜面效率的计算题。答完可重新开始。</p>`,
     enter() {
       useScene('levclass', buildLeverClass);
       unfocusLeverClass();
