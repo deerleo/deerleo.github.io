@@ -1,46 +1,64 @@
 {
  "generated": "2026-10-30",
- "total": 39,
+ "total": 93,
  "implemented": [
-  "volt",
-  "contour",
-  "atmos",
   "earth",
   "tide",
-  "drift",
   "water",
-  "cell",
-  "micro",
-  "pea",
-  "atp",
-  "dna",
-  "immune",
-  "plant",
-  "periodic",
-  "gas",
-  "analysis",
-  "mechanism",
-  "vsepr",
-  "orbital",
-  "reaction",
-  "geo",
-  "conic",
-  "func",
-  "construct",
-  "pythagoras",
-  "wonder",
-  "motion",
-  "machine",
-  "float",
-  "rocket",
-  "thermo",
-  "heat",
-  "optics",
-  "waves",
-  "fields",
-  "war",
-  "atlas",
-  "neuro"
+  "haber-step",
+  "river-step",
+  "rate-step",
+  "insolation-step",
+  "ball-stick-step",
+  "titration-step",
+  "chlorine-step",
+  "blast-furnace-step",
+  "smelting-step",
+  "currents-step",
+  "enso-step",
+  "coal-gas-step",
+  "sulfuric-step",
+  "hydrolysis-step",
+  "heating-step",
+  "karst-step",
+  "cement-step",
+  "carbon-step",
+  "tectonic-step",
+  "photoelectric-step",
+  "capacitor-step",
+  "earth-motion-step",
+  "accel-force-step",
+  "iron-step",
+  "plasmolysis-step",
+  "electrolysis-step",
+  "ammonia-step",
+  "equilibrium-step",
+  "flame-step",
+  "galvanic-step",
+  "conductivity-step",
+  "energy-step",
+  "soil-step",
+  "projectile-step",
+  "transport-step",
+  "nitric-lab-step",
+  "centripetal-step",
+  "self-induction-step",
+  "emf-step",
+  "impulse-step",
+  "bromine-step",
+  "thermal-step",
+  "mitosis-step",
+  "sodium-step",
+  "sulfur-step",
+  "wind-step",
+  "corrosion-step",
+  "enzyme-step",
+  "chlor-alkali-step",
+  "hou-soda-step",
+  "current-field-step",
+  "brownian-step",
+  "water-cycle-step",
+  "circulation-step"
  ],
  "subjects": [
   "物理",
@@ -290,7 +308,7 @@
    ],
    "fullname": "元素周期表 · PeriodicLab",
    "chapters": 7,
-   "implemented": true
+   "implemented": false
   },
   {
    "slug": "gas",
@@ -306,7 +324,7 @@
    ],
    "fullname": "实验室制取气体 · GasLab",
    "chapters": 5,
-   "implemented": true
+   "implemented": false
   },
   {
    "slug": "analysis",
@@ -578,7 +596,7 @@
    ],
    "fullname": "传热与物态变化 · HeatLab",
    "chapters": 11,
-   "implemented": true
+   "implemented": false
   },
   {
    "slug": "optics",
@@ -594,7 +612,7 @@
    ],
    "fullname": "光学实验台 · OpticsLab",
    "chapters": 12,
-   "implemented": true
+   "implemented": false
   },
   {
    "slug": "waves",
@@ -610,7 +628,7 @@
    ],
    "fullname": "振动与波 · WaveLab",
    "chapters": 11,
-   "implemented": true
+   "implemented": false
   },
   {
    "slug": "fields",
@@ -626,7 +644,7 @@
    ],
    "fullname": "电场与磁场 · FieldLab",
    "chapters": 11,
-   "implemented": true
+   "implemented": false
   },
   {
    "slug": "war",
@@ -675,6 +693,924 @@
    "fullname": "神经网络识数字 · NeuroLab",
    "chapters": 6,
    "implemented": false
+  },
+  {
+   "slug": "haber-step",
+   "name": "合成氨工业",
+   "subtitle": "工业流程",
+   "subject": "化学",
+   "desc": "怎样把空气里的氮又快、又多、又省地变成氨？",
+   "points": [
+    "为什么建厂",
+    "为什么净化",
+    "为什么加压",
+    "为什么高温"
+   ],
+   "fullname": "合成氨工业 · Tongjiang Lab",
+   "chapters": 7,
+   "implemented": true,
+   "source": "tongjiang"
+  },
+  {
+   "slug": "river-step",
+   "name": "河流地貌的发育",
+   "subtitle": "原理与现象",
+   "subject": "地理",
+   "desc": "长江镇江段的岸线为什么持续向北推移？",
+   "points": [
+    "认识沙盘",
+    "山区V形谷",
+    "河谷剖面",
+    "冲积扇"
+   ],
+   "fullname": "河流地貌的发育 · Tongjiang Lab",
+   "chapters": 8,
+   "implemented": true,
+   "source": "tongjiang"
+  },
+  {
+   "slug": "rate-step",
+   "name": "化学反应速率的影响因素",
+   "subtitle": "原理与现象",
+   "subject": "化学",
+   "desc": "同样两个反应，为什么有的几秒就完、有的等半天？快慢到底由什么决定？",
+   "points": [
+    "认识实验台",
+    "浓度",
+    "温度",
+    "催化剂"
+   ],
+   "fullname": "化学反应速率的影响因素 · Tongjiang Lab",
+   "chapters": 8,
+   "implemented": true,
+   "source": "tongjiang"
+  },
+  {
+   "slug": "insolation-step",
+   "name": "太阳直射点的回归运动与四季、五带",
+   "subtitle": "原理与现象",
+   "subject": "地理",
+   "desc": "学校所在地的正午太阳高度和正午太阳方向，一年里为什么有规律地变化？",
+   "points": [
+    "黄赤交角",
+    "回归运动",
+    "正午高度",
+    "纬度分布"
+   ],
+   "fullname": "太阳直射点的回归运动与四季、五带 · Tongjiang Lab",
+   "chapters": 9,
+   "implemented": true,
+   "source": "tongjiang"
+  },
+  {
+   "slug": "ball-stick-step",
+   "name": "搭建球棍模型认识有机化合物分子结构",
+   "subtitle": "原理与现象模拟",
+   "subject": "化学",
+   "desc": "分子画在纸上是平的，真实的三维形状到底是什么样？搭一座球棍模型能看出什么？",
+   "points": [
+    "零件盒",
+    "甲烷",
+    "二氯甲烷",
+    "单键能转"
+   ],
+   "fullname": "搭建球棍模型认识有机化合物分子结构 · Tongjiang Lab",
+   "chapters": 9,
+   "implemented": true,
+   "source": "tongjiang"
+  },
+  {
+   "slug": "titration-step",
+   "name": "强酸与强碱的中和滴定",
+   "subtitle": "原理与现象",
+   "subject": "化学",
+   "desc": "前面加了 20 多毫升几乎看不出变化，为什么最后半滴颜色就全变了？",
+   "points": [
+    "认识滴定装置",
+    "润洗与赶气泡",
+    "取液与加指示剂",
+    "逐滴加入"
+   ],
+   "fullname": "强酸与强碱的中和滴定 · Tongjiang Lab",
+   "chapters": 9,
+   "implemented": true,
+   "source": "tongjiang"
+  },
+  {
+   "slug": "chlorine-step",
+   "name": "氯气的制备及性质",
+   "subtitle": "原理与现象",
+   "subject": "化学",
+   "desc": "要一瓶干燥、纯净的氯气，装置里每一段各管什么？少一段会怎样？",
+   "points": [
+    "认识装置",
+    "为什么加热",
+    "为什么要浓盐酸",
+    "第一瓶洗什么"
+   ],
+   "fullname": "氯气的制备及性质 · Tongjiang Lab",
+   "chapters": 9,
+   "implemented": true,
+   "source": "tongjiang"
+  },
+  {
+   "slug": "blast-furnace-step",
+   "name": "高炉炼铁",
+   "subtitle": "工业流程",
+   "subject": "化学",
+   "desc": "一堆矿石从炉顶倒下去，怎么几小时后就变成一股铁水，还越省越好？",
+   "points": [
+    "矿石变铁",
+    "分层布料",
+    "剖开看层",
+    "风口烧焦"
+   ],
+   "fullname": "高炉炼铁 · Tongjiang Lab",
+   "chapters": 8,
+   "implemented": true,
+   "source": "tongjiang"
+  },
+  {
+   "slug": "smelting-step",
+   "name": "金属冶炼：电解熔融盐 + 铝热",
+   "subtitle": "工业流程",
+   "subject": "化学",
+   "desc": "为什么铝只能靠电「拆」出来，而铁能被铝「换」出来？",
+   "points": [
+    "三处台子",
+    "只能电解",
+    "剖开槽",
+    "谁往哪走"
+   ],
+   "fullname": "金属冶炼：电解熔融盐 + 铝热 · Tongjiang Lab",
+   "chapters": 8,
+   "implemented": true,
+   "source": "tongjiang"
+  },
+  {
+   "slug": "currents-step",
+   "name": "世界洋流的分布规律与影响",
+   "subtitle": "原理与现象",
+   "subject": "地理",
+   "desc": "数万只玩具鸭散落海面，为什么会漂到世界各地的海岸？",
+   "points": [
+    "风推水走",
+    "中低纬成圈",
+    "中高纬反着转",
+    "寒暖流"
+   ],
+   "fullname": "世界洋流的分布规律与影响 · Tongjiang Lab",
+   "chapters": 9,
+   "implemented": true,
+   "source": "tongjiang"
+  },
+  {
+   "slug": "enso-step",
+   "name": "海—气相互作用与厄尔尼诺、拉尼娜",
+   "subtitle": "原理与现象",
+   "subject": "地理",
+   "desc": "秘鲁沿海常年干旱，为什么 2016 年底海水一暖，就下起了暴雨、还死了近百人？",
+   "points": [
+    "交换",
+    "差",
+    "环流",
+    "厄尔尼诺"
+   ],
+   "fullname": "海—气相互作用与厄尔尼诺、拉尼娜 · Tongjiang Lab",
+   "chapters": 7,
+   "implemented": true,
+   "source": "tongjiang"
+  },
+  {
+   "slug": "coal-gas-step",
+   "name": "煤的综合利用：以煤的气化为主线",
+   "subtitle": "工业流程",
+   "subject": "化学",
+   "desc": "煤只能烧吗？怎么把煤变成能造化肥、造甲醇的气？",
+   "points": [
+    "为什么气化",
+    "供热还是供气",
+    "炉子里长什么样",
+    "蒸汽多好还是少好"
+   ],
+   "fullname": "煤的综合利用：以煤的气化为主线 · Tongjiang Lab",
+   "chapters": 8,
+   "implemented": true,
+   "source": "tongjiang"
+  },
+  {
+   "slug": "sulfuric-step",
+   "name": "接触法制硫酸",
+   "subtitle": "工业流程",
+   "subject": "化学",
+   "desc": "怎样把矿石里的硫，又快、又多、又省、又干净地变成硫酸？",
+   "points": [
+    "为什么分五段",
+    "为什么先净化",
+    "为什么这个温度",
+    "为什么要常压"
+   ],
+   "fullname": "接触法制硫酸 · Tongjiang Lab",
+   "chapters": 7,
+   "implemented": true,
+   "source": "tongjiang"
+  },
+  {
+   "slug": "hydrolysis-step",
+   "name": "盐类的水解及其应用",
+   "subtitle": "原理与现象",
+   "subject": "化学",
+   "desc": "盐电离出来的离子看上去「既不酸也不碱」，凭什么能让溶液显出酸碱性？",
+   "points": [
+    "认识实验",
+    "盐的类型",
+    "看进去",
+    "浓度"
+   ],
+   "fullname": "盐类的水解及其应用 · Tongjiang Lab",
+   "chapters": 9,
+   "implemented": true,
+   "source": "tongjiang"
+  },
+  {
+   "slug": "heating-step",
+   "name": "大气受热过程",
+   "subtitle": "原理与现象",
+   "subject": "地理",
+   "desc": "太阳晒了一整天的地面，为什么白天先热起来，夜里又凉得那么快——大气到底替地面留住了多少热？",
+   "points": [
+    "削弱",
+    "地面吸收",
+    "长波",
+    "截留"
+   ],
+   "fullname": "大气受热过程 · Tongjiang Lab",
+   "chapters": 9,
+   "implemented": true,
+   "source": "tongjiang"
+  },
+  {
+   "slug": "karst-step",
+   "name": "喀斯特地貌的形成与识别",
+   "subtitle": "原理与现象",
+   "subject": "地理",
+   "desc": "徐霞客写的「峭峰离立，分行竞颖」——这些像从地里长出来的尖峰，是怎么一块岩层变出来的？",
+   "points": [
+    "溶",
+    "沟→洼",
+    "峰丛→峰林",
+    "孤峰→残丘"
+   ],
+   "fullname": "喀斯特地貌的形成与识别 · Tongjiang Lab",
+   "chapters": 7,
+   "implemented": true,
+   "source": "tongjiang"
+  },
+  {
+   "slug": "cement-step",
+   "name": "工业制水泥",
+   "subtitle": "工业流程",
+   "subject": "化学",
+   "desc": "一车石头和土，凭什么磨一磨、烧一烧、再磨一磨，就变成能撑起大坝的水泥？",
+   "points": [
+    "看全厂",
+    "备生料",
+    "预热分解",
+    "窑里走"
+   ],
+   "fullname": "工业制水泥 · Tongjiang Lab",
+   "chapters": 8,
+   "implemented": true,
+   "source": "tongjiang"
+  },
+  {
+   "slug": "carbon-step",
+   "name": "全球气候变化与国家安全",
+   "subtitle": "原理与现象",
+   "subject": "地理",
+   "desc": "马尔代夫为什么要把内阁会议开到 6 米深的海底去？",
+   "points": [
+    "碳循环",
+    "两条输入",
+    "排放去向",
+    "保温增强"
+   ],
+   "fullname": "全球气候变化与国家安全 · Tongjiang Lab",
+   "chapters": 8,
+   "implemented": true,
+   "source": "tongjiang"
+  },
+  {
+   "slug": "tectonic-step",
+   "name": "构造地貌的形成",
+   "subtitle": "原理与现象",
+   "subject": "地理",
+   "desc": "青藏高原上为什么会找到阔叶树的叶子化石 —— 什么力量把地表抬起来、又把它切开？",
+   "points": [
+    "弯",
+    "分",
+    "倒置",
+    "错开"
+   ],
+   "fullname": "构造地貌的形成 · Tongjiang Lab",
+   "chapters": 6,
+   "implemented": true,
+   "source": "tongjiang"
+  },
+  {
+   "slug": "photoelectric-step",
+   "name": "光电效应",
+   "subtitle": "原理与实验",
+   "subject": "物理",
+   "desc": "同一束光，为什么换成另一种金属就一个电子都打不出来？光电子的能量到底由光的什么决定？",
+   "points": [
+    "认识电路",
+    "加到饱和",
+    "反向扫描",
+    "改光强"
+   ],
+   "fullname": "光电效应 · Tongjiang Lab",
+   "chapters": 9,
+   "implemented": true,
+   "source": "tongjiang"
+  },
+  {
+   "slug": "capacitor-step",
+   "name": "观察电容器的充放电",
+   "subtitle": "原理与实验",
+   "subject": "物理",
+   "desc": "电容器里到底存了什么？能不能只用一个数把它的「肚量」量出来？",
+   "points": [
+    "认识器材",
+    "合向 1 充电",
+    "合向 2 放电",
+    "面积得电荷"
+   ],
+   "fullname": "观察电容器的充放电 · Tongjiang Lab",
+   "chapters": 9,
+   "implemented": true,
+   "source": "tongjiang"
+  },
+  {
+   "slug": "earth-motion-step",
+   "name": "地球运动的地理意义",
+   "subtitle": "原理与现象",
+   "subject": "地理",
+   "desc": "同一时刻，为什么北京是中午、纽约是半夜，而夏天的白天又比冬天长？",
+   "points": [
+    "自转",
+    "公转",
+    "昼夜半球",
+    "晨线昏线"
+   ],
+   "fullname": "地球运动的地理意义 · Tongjiang Lab",
+   "chapters": 9,
+   "implemented": true,
+   "source": "tongjiang"
+  },
+  {
+   "slug": "accel-force-step",
+   "name": "实验：探究加速度与力、质量的关系",
+   "subtitle": "原理与现象",
+   "subject": "物理",
+   "desc": "不直接测力、也不直接测加速度——一张纸带加几个槽码，能不能把 a 与 F、m 的关系量出来？",
+   "points": [
+    "认识器材",
+    "平衡阻力",
+    "打纸带",
+    "求加速度"
+   ],
+   "fullname": "实验：探究加速度与力、质量的关系 · Tongjiang Lab",
+   "chapters": 8,
+   "implemented": true,
+   "source": "tongjiang"
+  },
+  {
+   "slug": "iron-step",
+   "name": "铁及其化合物：铁的价态转化",
+   "subtitle": "原理与现象",
+   "subject": "化学",
+   "desc": "同一个铁元素，为什么在试管里一会儿是 +2 价、一会儿是 +3 价，我们凭什么知道它是哪一个？",
+   "points": [
+    "认识实验",
+    "白色沉淀",
+    "隔绝空气",
+    "KSCN 检验"
+   ],
+   "fullname": "铁及其化合物：铁的价态转化 · Tongjiang Lab",
+   "chapters": 9,
+   "implemented": true,
+   "source": "tongjiang"
+  },
+  {
+   "slug": "plasmolysis-step",
+   "name": "植物细胞的吸水和失水",
+   "subtitle": "原理与现象",
+   "subject": "生物",
+   "desc": "菜叶泡在清水里会变硬挺，撒了盐会出水——植物细胞怎样吸水和失水？",
+   "points": [
+    "渗透",
+    "原生质层",
+    "失水",
+    "水去哪"
+   ],
+   "fullname": "植物细胞的吸水和失水 · Tongjiang Lab",
+   "chapters": 8,
+   "implemented": true,
+   "source": "tongjiang"
+  },
+  {
+   "slug": "electrolysis-step",
+   "name": "电解原理：电解氯化铜溶液与饱和食盐水",
+   "subtitle": "原理与现象",
+   "subject": "化学",
+   "desc": "同一个直流电源，为什么电解氯化铜溶液得到铜和氯气，电解饱和食盐水却得到氢气、氯气和氢氧化钠？",
+   "points": [
+    "认识实验",
+    "接通电源",
+    "通得更久",
+    "看进去"
+   ],
+   "fullname": "电解原理：电解氯化铜溶液与饱和食盐水 · Tongjiang Lab",
+   "chapters": 9,
+   "implemented": true,
+   "source": "tongjiang"
+  },
+  {
+   "slug": "ammonia-step",
+   "name": "氨的制备与性质（含喷泉实验）",
+   "subtitle": "原理与现象",
+   "subject": "化学",
+   "desc": "一瓶氨气，凭什么能把烧杯里的水自己「吸」到瓶子里去？",
+   "points": [
+    "整套装置",
+    "管口朝哪边",
+    "干燥剂选谁",
+    "怎么收集"
+   ],
+   "fullname": "氨的制备与性质（含喷泉实验） · Tongjiang Lab",
+   "chapters": 9,
+   "implemented": true,
+   "source": "tongjiang"
+  },
+  {
+   "slug": "equilibrium-step",
+   "name": "探究影响化学平衡移动的因素",
+   "subtitle": "原理与实验",
+   "subject": "化学",
+   "desc": "改变一个条件，凭什么说平衡「往哪边移」？",
+   "points": [
+    "认识实验台",
+    "铁管加料",
+    "铁粉减料",
+    "铬管加碱"
+   ],
+   "fullname": "探究影响化学平衡移动的因素 · Tongjiang Lab",
+   "chapters": 9,
+   "implemented": true,
+   "source": "tongjiang"
+  },
+  {
+   "slug": "flame-step",
+   "name": "焰色试验与原子光谱",
+   "subtitle": "原理与现象",
+   "subject": "化学",
+   "desc": "金属在火焰里为什么各有各的颜色，这点颜色凭什么能当成「化验报告」？",
+   "points": [
+    "认识实验",
+    "洗净铂丝",
+    "钠双线",
+    "钾与钴玻璃"
+   ],
+   "fullname": "焰色试验与原子光谱 · Tongjiang Lab",
+   "chapters": 8,
+   "implemented": true,
+   "source": "tongjiang"
+  },
+  {
+   "slug": "galvanic-step",
+   "name": "原电池：单液到双液",
+   "subtitle": "原理与现象",
+   "subject": "化学",
+   "desc": "同一杯稀硫酸里已经有电流了，为什么还要换成两杯、再加一根盐桥？",
+   "points": [
+    "两台装置",
+    "接通导线",
+    "谁在流",
+    "单液的代价"
+   ],
+   "fullname": "原电池：单液到双液 · Tongjiang Lab",
+   "chapters": 9,
+   "implemented": true,
+   "source": "tongjiang"
+  },
+  {
+   "slug": "conductivity-step",
+   "name": "电解质的电离与溶液导电性、离子反应的实质",
+   "subtitle": "原理与现象",
+   "subject": "化学",
+   "desc": "干手、湿手都是同一只手，为什么湿了反而容易触电？",
+   "points": [
+    "认识台面",
+    "干燥与熔融",
+    "溶于水",
+    "水与蔗糖"
+   ],
+   "fullname": "电解质的电离与溶液导电性、离子反应的实质 · Tongjiang Lab",
+   "chapters": 9,
+   "implemented": true,
+   "source": "tongjiang"
+  },
+  {
+   "slug": "energy-step",
+   "name": "实验：验证机械能守恒定律",
+   "subtitle": "原理与现象",
+   "subject": "物理",
+   "desc": "重物下落时，减少的重力势能是不是正好变成了增加的动能？一条纸带能不能把这件事量出来？",
+   "points": [
+    "认识器材",
+    "先通电后释放",
+    "选点",
+    "量 h 算 v"
+   ],
+   "fullname": "实验：验证机械能守恒定律 · Tongjiang Lab",
+   "chapters": 8,
+   "implemented": true,
+   "source": "tongjiang"
+  },
+  {
+   "slug": "soil-step",
+   "name": "土壤的主要形成因素与土壤剖面观察",
+   "subtitle": "原理与现象",
+   "subject": "地理",
+   "desc": "东北的土又黑又肥，南方的土为什么相对贫瘠？",
+   "points": [
+    "剖面",
+    "母质",
+    "生物",
+    "气候"
+   ],
+   "fullname": "土壤的主要形成因素与土壤剖面观察 · Tongjiang Lab",
+   "chapters": 8,
+   "implemented": true,
+   "source": "tongjiang"
+  },
+  {
+   "slug": "projectile-step",
+   "name": "实验：探究平抛运动的特点",
+   "subtitle": "原理与现象",
+   "subject": "物理",
+   "desc": "只靠一只斜槽和一块挡板，能不能把平抛拆成两个分运动、量出初速度？",
+   "points": [
+    "认识器材",
+    "先做竖直",
+    "末端要水平",
+    "描四个点"
+   ],
+   "fullname": "实验：探究平抛运动的特点 · Tongjiang Lab",
+   "chapters": 9,
+   "implemented": true,
+   "source": "tongjiang"
+  },
+  {
+   "slug": "transport-step",
+   "name": "物质跨膜运输",
+   "subtitle": "原理与现象",
+   "subject": "生物",
+   "desc": "同一片细胞膜，为什么氧能自己穿过去、葡萄糖要好几个蛋白帮忙、K⁺ 还能逆着浓度往里走？",
+   "points": [
+    "自由扩散",
+    "选择透过",
+    "协助扩散",
+    "载体与通道"
+   ],
+   "fullname": "物质跨膜运输 · Tongjiang Lab",
+   "chapters": 8,
+   "implemented": true,
+   "source": "tongjiang"
+  },
+  {
+   "slug": "nitric-lab-step",
+   "name": "浓、稀硝酸的性质与氮氧化物的转化",
+   "subtitle": "原理与现象",
+   "subject": "化学",
+   "desc": "同样是铜和硝酸，为什么一瓶冒红棕色气体、另一瓶什么颜色都没有？",
+   "points": [
+    "整套装置",
+    "铜丝插进去",
+    "换成稀硝酸",
+    "换成铁片"
+   ],
+   "fullname": "浓、稀硝酸的性质与氮氧化物的转化 · Tongjiang Lab",
+   "chapters": 9,
+   "implemented": true,
+   "source": "tongjiang"
+  },
+  {
+   "slug": "centripetal-step",
+   "name": "探究向心力大小与半径、角速度、质量的关系",
+   "subtitle": "原理与现象",
+   "subject": "物理",
+   "desc": "这台手摇的演示器只给你两个标尺上的格数——能不能用它把 F 与 m、r、ω 的定量关系量出来？",
+   "points": [
+    "认识演示器",
+    "仪器自检",
+    "质量关系",
+    "半径关系"
+   ],
+   "fullname": "探究向心力大小与半径、角速度、质量的关系 · Tongjiang Lab",
+   "chapters": 8,
+   "implemented": true,
+   "source": "tongjiang"
+  },
+  {
+   "slug": "self-induction-step",
+   "name": "自感与涡流",
+   "subtitle": "原理与实验",
+   "subject": "物理",
+   "desc": "线圈里只是多绕了几圈铜线，为什么两只灯泡亮得不一样？开关已经断开了，灯泡凭什么还能再亮一下？",
+   "points": [
+    "认识器材",
+    "通电自感",
+    "断电自感",
+    "I-t 曲线"
+   ],
+   "fullname": "自感与涡流 · Tongjiang Lab",
+   "chapters": 9,
+   "implemented": true,
+   "source": "tongjiang"
+  },
+  {
+   "slug": "emf-step",
+   "name": "测电源电动势和内阻",
+   "subtitle": "原理与实验",
+   "subject": "物理",
+   "desc": "一节旧干电池的电动势和内阻，怎么用一只电压表、一只电流表和一个滑动变阻器「测」出来？换一种接法，测出来的还一样吗？",
+   "points": [
+    "认识接法",
+    "先到最大",
+    "多测几组",
+    "作 U-I 图"
+   ],
+   "fullname": "测电源电动势和内阻 · Tongjiang Lab",
+   "chapters": 9,
+   "implemented": true,
+   "source": "tongjiang"
+  },
+  {
+   "slug": "impulse-step",
+   "name": "神经冲动的产生和传导",
+   "subtitle": "原理与现象",
+   "subject": "生物",
+   "desc": "发令枪响后 0.1 s 内起跑就算抢跑（教材 p.27）——兴奋在身体里怎样「跑」过去？",
+   "points": [
+    "神经冲动",
+    "静息电位",
+    "动作电位",
+    "局部电流"
+   ],
+   "fullname": "神经冲动的产生和传导 · Tongjiang Lab",
+   "chapters": 9,
+   "implemented": true,
+   "source": "tongjiang"
+  },
+  {
+   "slug": "bromine-step",
+   "name": "海水提溴：空气吹出法",
+   "subtitle": "工业流程",
+   "subject": "化学",
+   "desc": "海水里的溴只有 65 mg/L，怎么把它变成一瓶液溴？",
+   "points": [
+    "全场",
+    "酸化",
+    "氧化",
+    "吹出"
+   ],
+   "fullname": "海水提溴：空气吹出法 · Tongjiang Lab",
+   "chapters": 7,
+   "implemented": true,
+   "source": "tongjiang"
+  },
+  {
+   "slug": "thermal-step",
+   "name": "大气热力环流",
+   "subtitle": "原理与现象",
+   "subject": "地理",
+   "desc": "台湾海峡两岸的风向，为什么一天里会反过来？",
+   "points": [
+    "温差",
+    "高空",
+    "近地面",
+    "成环"
+   ],
+   "fullname": "大气热力环流 · Tongjiang Lab",
+   "chapters": 9,
+   "implemented": true,
+   "source": "tongjiang"
+  },
+  {
+   "slug": "mitosis-step",
+   "name": "观察根尖分生区组织细胞的有丝分裂",
+   "subtitle": "原理与现象",
+   "subject": "生物",
+   "desc": "一根洋葱根尖上，哪些细胞正在分裂？它们分裂一次各要多久？",
+   "points": [
+    "制片",
+    "找分生区",
+    "前期",
+    "中期"
+   ],
+   "fullname": "观察根尖分生区组织细胞的有丝分裂 · Tongjiang Lab",
+   "chapters": 9,
+   "implemented": true,
+   "source": "tongjiang"
+  },
+  {
+   "slug": "sodium-step",
+   "name": "金属钠的性质（含钠着火扑救）",
+   "subtitle": "原理与现象",
+   "subject": "化学",
+   "desc": "一块银白色的小金属，为什么必须泡在煤油里，着火时连水都不能浇？",
+   "points": [
+    "认识实验",
+    "银白变暗",
+    "泡在煤油里",
+    "加热燃烧"
+   ],
+   "fullname": "金属钠的性质（含钠着火扑救） · Tongjiang Lab",
+   "chapters": 9,
+   "implemented": true,
+   "source": "tongjiang"
+  },
+  {
+   "slug": "sulfur-step",
+   "name": "硫、二氧化硫、浓硫酸的性质与不同价态含硫物质的转化",
+   "subtitle": "原理与现象",
+   "subject": "化学",
+   "desc": "同样是硫，为什么有时它是黄色固体、有时让品红褪成无色、有时又跑进铁粉里？",
+   "points": [
+    "整套装置",
+    "硫粉 + 铁粉",
+    "浓硫酸与铜",
+    "浓还是稀"
+   ],
+   "fullname": "硫、二氧化硫、浓硫酸的性质与不同价态含硫物质的转化 · Tongjiang Lab",
+   "chapters": 9,
+   "implemented": true,
+   "source": "tongjiang"
+  },
+  {
+   "slug": "wind-step",
+   "name": "大气的水平运动——风",
+   "subtitle": "原理与现象",
+   "subject": "地理",
+   "desc": "天气图上的风，为什么不是从高压直直吹向低压？",
+   "points": [
+    "等压线",
+    "梯度力",
+    "地转偏向",
+    "高空风"
+   ],
+   "fullname": "大气的水平运动——风 · Tongjiang Lab",
+   "chapters": 8,
+   "implemented": true,
+   "source": "tongjiang"
+  },
+  {
+   "slug": "corrosion-step",
+   "name": "吸氧腐蚀与暖贴的设计",
+   "subtitle": "原理与现象",
+   "subject": "化学",
+   "desc": "铁生锈这么慢的事，凭什么能做出一个 45 ℃ 以上的暖贴？又凭什么反过来用它保护铁不生锈？",
+   "points": [
+    "台面四站",
+    "液柱为什么升",
+    "碳粉的角色",
+    "换成酸性"
+   ],
+   "fullname": "吸氧腐蚀与暖贴的设计 · Tongjiang Lab",
+   "chapters": 9,
+   "implemented": true,
+   "source": "tongjiang"
+  },
+  {
+   "slug": "enzyme-step",
+   "name": "影响酶活性的条件",
+   "subtitle": "原理与现象",
+   "subject": "生物",
+   "desc": "同一支酶，为什么放进沸水里就再也救不回来，放进冰水里却还能醒过来？",
+   "points": [
+    "认识实验台",
+    "温度",
+    "pH",
+    "高温不可逆"
+   ],
+   "fullname": "影响酶活性的条件 · Tongjiang Lab",
+   "chapters": 8,
+   "implemented": true,
+   "source": "tongjiang"
+  },
+  {
+   "slug": "chlor-alkali-step",
+   "name": "氯碱工业",
+   "subtitle": "工业流程",
+   "subject": "化学",
+   "desc": "同样的电，怎样换来更多烧碱、更少电耗，又不出事故？",
+   "points": [
+    "三样产品",
+    "先洗盐",
+    "剖开槽",
+    "膜里看"
+   ],
+   "fullname": "氯碱工业 · Tongjiang Lab",
+   "chapters": 8,
+   "implemented": true,
+   "source": "tongjiang"
+  },
+  {
+   "slug": "hou-soda-step",
+   "name": "侯氏制碱",
+   "subtitle": "工业流程",
+   "subject": "化学",
+   "desc": "怎样用食盐和氨造出纯碱，还顺手拿到氮肥？",
+   "points": [
+    "从盐到碱",
+    "先氨后碳",
+    "为什么它自己析出",
+    "碳化温度"
+   ],
+   "fullname": "侯氏制碱 · Tongjiang Lab",
+   "chapters": 8,
+   "implemented": true,
+   "source": "tongjiang"
+  },
+  {
+   "slug": "current-field-step",
+   "name": "电流的磁场",
+   "subtitle": "原理与现象",
+   "subject": "物理",
+   "desc": "磁场看不见摸不着，怎么把它画出来、又怎么判断它的方向？",
+   "points": [
+    "铁屑显形",
+    "一圈圈同心圆",
+    "握导线定方向",
+    "疏密就是强弱"
+   ],
+   "fullname": "电流的磁场 · Tongjiang Lab",
+   "chapters": 9,
+   "implemented": true,
+   "source": "tongjiang"
+  },
+  {
+   "slug": "brownian-step",
+   "name": "布朗运动与扩散",
+   "subtitle": "原理与现象",
+   "subject": "物理",
+   "desc": "看不见的分子，凭什么说它在乱动？",
+   "points": [
+    "看见它在动",
+    "30 秒一个点",
+    "越久越远",
+    "微粒越小越明显"
+   ],
+   "fullname": "布朗运动与扩散 · Tongjiang Lab",
+   "chapters": 9,
+   "implemented": true,
+   "source": "tongjiang"
+  },
+  {
+   "slug": "water-cycle-step",
+   "name": "水循环的过程与地理意义",
+   "subtitle": "原理与现象",
+   "subject": "地理",
+   "desc": "江河不断注入大海，为什么大海的水没有增多？",
+   "points": [
+    "全景",
+    "蒸发",
+    "蒸腾",
+    "输送"
+   ],
+   "fullname": "水循环的过程与地理意义 · Tongjiang Lab",
+   "chapters": 9,
+   "implemented": true,
+   "source": "tongjiang"
+  },
+  {
+   "slug": "circulation-step",
+   "name": "气压带、风带与三圈环流",
+   "subtitle": "原理与现象",
+   "subject": "地理",
+   "desc": "麦哲伦船队为什么有的航段逆风、有的顺风，到了 30°S 附近却寸步难行？",
+   "points": [
+    "赤道低压",
+    "30° 下沉",
+    "60° 爬升",
+    "七带六风"
+   ],
+   "fullname": "气压带、风带与三圈环流 · Tongjiang Lab",
+   "chapters": 7,
+   "implemented": true,
+   "source": "tongjiang"
   }
  ]
 }
