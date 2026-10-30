@@ -2364,6 +2364,9 @@ function selectChapter(i) {
   chapCount.textContent = `${String(chapterIdx + 1).padStart(2, '0')}/${SECTIONS.length}`;
   detailNo.textContent = String(chapterIdx + 1).padStart(2, '0');
   detailTitle.textContent = sec.title;
+  /* 折叠竖条上的章节信息同步（左栏序号 / 右栏竖排标题） */
+  railNoL.textContent = String(chapterIdx + 1).padStart(2, '0');
+  railTitleR.textContent = sec.title;
   lessonEl.innerHTML = sec.html || '';
   if (activeCleanup) { activeCleanup(); activeCleanup = null; }
   if (sec.id !== 'imaging') optic.letterRot = 0;
@@ -2372,14 +2375,68 @@ function selectChapter(i) {
   detailBody.scrollTop = 0;
 }
 
-/* 专注模式：隐藏左右两栏，3D 独占（再点恢复） */
+/* ---------------- 栏折叠（左右独立 28px 竖条）× 专注模式（双栏同折）统一管理 ---------------- */
+
+const foldLBtn = document.getElementById('foldLBtn');
+const unfoldLBtn = document.getElementById('unfoldLBtn');
+const foldRBtn = document.getElementById('foldRBtn');
+const unfoldRBtn = document.getElementById('unfoldRBtn');
+const railNoL = document.getElementById('railNoL');
+const railTitleR = document.getElementById('railTitleR');
 const microShell = document.getElementById('microShell');
 const focusBtn = document.getElementById('focusBtn');
-focusBtn.addEventListener('click', () => {
-  const on = microShell.classList.toggle('focus-mode');
+
+const FOLD_KEY = { l: 'micro.foldL', r: 'micro.foldR' };
+let foldL = false;
+let foldR = false;
+let focusSaved = null; /* 进入专注模式前的独立折叠状态 [foldL, foldR]，退出时恢复 */
+try {
+  foldL = localStorage.getItem(FOLD_KEY.l) === '1';
+  foldR = localStorage.getItem(FOLD_KEY.r) === '1';
+} catch (e) { /* localStorage 不可用（隐私模式等）时仅本次会话内生效 */ }
+
+/* 把折叠状态落到 shell 类名与按钮 aria 态（布局/竖条显隐全在 CSS） */
+function applyFold() {
+  microShell.classList.toggle('fold-l', foldL);
+  microShell.classList.toggle('fold-r', foldR);
+  for (const [btn, folded] of [[foldLBtn, foldL], [unfoldLBtn, foldL], [foldRBtn, foldR], [unfoldRBtn, foldR]]) {
+    btn.setAttribute('aria-expanded', String(!folded));
+  }
+}
+
+/* 专注模式：双栏同时折叠；退出恢复进入前状态（不写 localStorage，保持独立折叠记忆不变） */
+function setFocus(on) {
+  if (on && focusSaved === null) {
+    focusSaved = [foldL, foldR];
+    foldL = true;
+    foldR = true;
+  } else if (!on && focusSaved !== null) {
+    [foldL, foldR] = focusSaved;
+    focusSaved = null;
+  }
+  microShell.classList.toggle('focus-mode', on);
   focusBtn.textContent = on ? '退出专注' : '专注模式';
   focusBtn.setAttribute('aria-pressed', String(on));
-});
+  applyFold();
+}
+
+/* 独立折叠翻转并持久化；专注模式中点竖条展开钮 = 先退出专注（恢复原状）再翻转该侧 */
+function toggleFold(side) {
+  if (focusSaved !== null) setFocus(false);
+  if (side === 'l') foldL = !foldL;
+  else foldR = !foldR;
+  try {
+    localStorage.setItem(FOLD_KEY[side], (side === 'l' ? foldL : foldR) ? '1' : '0');
+  } catch (e) { /* 同上，忽略持久化失败 */ }
+  applyFold();
+}
+
+foldLBtn.addEventListener('click', () => toggleFold('l'));
+unfoldLBtn.addEventListener('click', () => toggleFold('l'));
+foldRBtn.addEventListener('click', () => toggleFold('r'));
+unfoldRBtn.addEventListener('click', () => toggleFold('r'));
+focusBtn.addEventListener('click', () => setFocus(focusSaved === null));
+applyFold();
 
 /* ================= 主循环 ================= */
 

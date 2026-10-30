@@ -55,6 +55,8 @@ body.lab.micro {
 
 .lab-chapters {
   grid-area: chapters;
+  position: relative;
+  overflow: hidden;
   display: flex;
   flex-direction: column;
   min-height: 0;
@@ -65,7 +67,7 @@ body.lab.micro {
   flex: none;
   display: flex;
   align-items: baseline;
-  justify-content: space-between;
+  gap: 8px;
   padding: 13px 14px 7px;
 }
 .chap-head .chap-title {
@@ -75,6 +77,7 @@ body.lab.micro {
   color: var(--text-faint);
 }
 .chap-count {
+  margin-left: auto;
   font-size: 11.5px;
   color: var(--text-faint);
   font-variant-numeric: tabular-nums;
@@ -147,15 +150,98 @@ body.lab.micro {
 }
 .micro-foot a { color: var(--text-faint); text-decoration: underline; text-underline-offset: 2px; }
 
-/* 专注模式：隐藏左右两栏，3D 独占 */
-.micro-shell.focus-mode { grid-template-columns: 0px minmax(0, 1fr) 0px; }
-.micro-shell.focus-mode .lab-chapters,
-.micro-shell.focus-mode .lab-detail { display: none; }
+/* ---------- 栏折叠（左右独立 28px 竖条）与专注模式（双栏同折） ---------- */
+
+/* 栏宽过渡：grid-template-columns 数值插值，ResizeObserver 逐帧跟随画布 */
+.micro-shell { transition: grid-template-columns 0.3s ease; }
+.micro-shell.fold-l { grid-template-columns: 28px minmax(0, 1fr) 352px; }
+.micro-shell.fold-r { grid-template-columns: 246px minmax(0, 1fr) 28px; }
+.micro-shell.fold-l.fold-r { grid-template-columns: 28px minmax(0, 1fr) 28px; }
+
+/* 折叠态：原栏内容保持固有宽度淡出（免挤压跳动），由 overflow 裁切 */
+.chap-head, .chap-list { min-width: 246px; }
+.detail-head, .detail-body { min-width: 352px; }
+.chap-head, .chap-list, .detail-head, .detail-body { transition: opacity 0.16s ease; }
+.micro-shell.fold-l .chap-head,
+.micro-shell.fold-l .chap-list { opacity: 0; pointer-events: none; }
+.micro-shell.fold-r .detail-head,
+.micro-shell.fold-r .detail-body { opacity: 0; pointer-events: none; }
+
+/* 折叠按钮（栏头收起 / 竖条展开共用视觉） */
+.fold-btn {
+  flex: none;
+  appearance: none;
+  font-family: inherit;
+  width: 22px;
+  height: 22px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  line-height: 1;
+  border-radius: 7px;
+  border: 1px solid var(--card-border);
+  background: var(--chip-bg);
+  color: var(--text-faint);
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s, background 0.15s;
+}
+.fold-btn:hover {
+  color: var(--accent);
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+.detail-head .fold-btn { margin-left: auto; align-self: center; }
+
+/* 竖条导轨（折叠态显示：展开钮 + 章序号 / 竖排标题） */
+.fold-rail {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 0 12px;
+  background: var(--bg-soft);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.2s ease, visibility 0s linear 0.2s;
+}
+.micro-shell.fold-l .lab-chapters .fold-rail,
+.micro-shell.fold-r .lab-detail .fold-rail {
+  opacity: 1;
+  visibility: visible;
+  transition: opacity 0.2s ease 0.1s;
+}
+.rail-no {
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--accent);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.04em;
+}
+.rail-title {
+  writing-mode: vertical-rl;
+  max-height: 210px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 12px;
+  color: var(--text-faint);
+  letter-spacing: 0.14em;
+}
+
+/* 专注模式：语义 = 双栏同时折叠，布局完全复用 .fold-l/.fold-r 竖条形态
+   （JS 保证 focus-mode 必伴随两个 fold 类），进入前状态由 JS 保存、退出时恢复，
+   .focus-mode 类本身只作按钮态标记，不参与布局 */
 
 /* ---------- 右栏：知识点详解 + 控件 + 读数 ---------- */
 
 .lab-detail {
   grid-area: detail;
+  position: relative;
+  overflow: hidden;
   display: flex;
   flex-direction: column;
   min-height: 0;
@@ -171,13 +257,22 @@ body.lab.micro {
   border-bottom: 1px solid var(--card-border);
 }
 .detail-no {
+  flex: none;
   font-size: 24px;
   font-weight: 700;
   color: var(--accent);
   font-variant-numeric: tabular-nums;
   letter-spacing: 0.02em;
 }
-.detail-title { margin: 0; font-size: 16px; color: var(--text); }
+.detail-title {
+  margin: 0;
+  font-size: 16px;
+  color: var(--text);
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
 .detail-body {
   flex: 1;
   min-height: 0;
@@ -361,6 +456,19 @@ body.lab.micro {
       "stage"
       "detail";
   }
+
+  /* 折叠 / 专注模式为桌面端专属：移动端压回纵向堆叠并隐藏折叠控件
+     （localStorage 可能带着折叠态进来，内容透明度须复原） */
+  .micro-shell { transition: none; }
+  .micro-shell.fold-l,
+  .micro-shell.fold-r,
+  .micro-shell.fold-l.fold-r,
+  .micro-shell.focus-mode { grid-template-columns: minmax(0, 1fr); }
+  .fold-btn, .fold-rail { display: none; }
+  .micro-shell.fold-l .chap-head,
+  .micro-shell.fold-l .chap-list,
+  .micro-shell.fold-r .detail-head,
+  .micro-shell.fold-r .detail-body { opacity: 1; pointer-events: auto; }
 
   .micro-toprow {
     padding: 8px 10px;
