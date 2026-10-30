@@ -320,3 +320,13 @@ html[data-theme="dark"] .archive-modal__close { background: var(--panel-2); bord
   :root:not([data-theme]) .archive-modal__dialog { border-color: rgba(255,255,255,.16); box-shadow: 0 24px 80px rgba(0,0,0,.78); }
   :root:not([data-theme]) .archive-modal__close { background: var(--panel-2); border-color: rgba(255,255,255,.22); }
 }
+
+/* 模态框内报道文字说明（解决单图存档“只有图没文字”） */
+.arch-desc {
+  margin: 16px 0 0;
+  padding-top: 14px;
+  border-top: 1px solid var(--line);
+  font-size: 14px;
+  line-height: 1.75;
+  color: var(--ink);
+}
