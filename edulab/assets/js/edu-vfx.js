@@ -562,7 +562,7 @@ export function makeWoodTexture(opts = {}) {
 /**
  * 试剂瓶标签贴图：纸底 + 边框 + 化学式文字（可多行）。
  * @param {string[]} lines 第一行通常为名称，后续行为浓度/说明
- * @param {object} [opts] { w, h, accent 边框色 }
+ * @param {object} [opts] { w, h, accent 边框色, lineSizes 每行字号数组（缺省全部同号，兼容旧调用） }
  * @returns {THREE.CanvasTexture}
  */
 export function makeLabelTexture(lines, opts = {}) {
@@ -584,9 +584,12 @@ export function makeLabelTexture(lines, opts = {}) {
   ctx.fillStyle = '#2c2620';
   ctx.textAlign = 'center';
   const fs = opts.fontSize || Math.min(30, (h - 40) / Math.max(lines.length, 1) * 0.62);
+  /* 每行字号：lineSizes 指定行距节奏按最大号算，旧调用不受影响 */
+  const sizes = opts.lineSizes || lines.map(() => fs);
+  const lead = Math.max(...sizes);
   lines.forEach((ln, i) => {
-    ctx.font = (i === 0 ? '700 ' : '400 ') + fs + 'px "PingFang SC", sans-serif';
-    ctx.fillText(ln, w / 2, h / 2 + (i - (lines.length - 1) / 2) * fs * 1.35 + fs * 0.4);
+    ctx.font = (i === 0 ? '700 ' : '400 ') + sizes[i] + 'px "PingFang SC", sans-serif';
+    ctx.fillText(ln, w / 2, h / 2 + (i - (lines.length - 1) / 2) * lead * 1.3 + sizes[i] * 0.4);
   });
   const tex = new THREE.CanvasTexture(cv);
   tex.colorSpace = THREE.SRGBColorSpace;
