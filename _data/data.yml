@@ -31,7 +31,7 @@ sidebar:
     mastodon:  # Please include your full Mastodon link here.
     hackerrank: # Please provide your HackerRank username.
     leetcode: # Please provide your LeetCode username.
-    pdf: # Add a PDF link here if you want to include a PDF custom version in your resume.
+    pdf: /assets/whitepaper.pdf # 个人白皮书 PDF（build-whitepaper.sh 自动生成，与 /whitepaper/ 同源）
 
     languages:
       title: Languages

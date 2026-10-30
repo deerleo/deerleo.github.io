@@ -1,0 +1,377 @@
+/* ============================================================
+   whitepaper.css — 个人白皮书（/whitepaper/）文档样式
+   工单 WHITEPAPER-20261030。
+
+   设计约定：
+   - 打印优先的浅色文档布局，冻结 light（页面不加载主题系统，
+     本文件自带全部颜色常量——色板取自 theme.css/milu.css 品牌墨绿系）。
+   - 屏幕端做纸张预览（居中卡片 + 顶部工具条）；打印端 @page 接管：
+     A4、页边距、封面独立命名页（满版出血、无页眉页脚）、
+     章节强制换页、页脚页码。
+   - PDF 引擎为 WeasyPrint：用到 @page margin boxes / target-counter /
+     leader()（目录页码引导线），Chrome printToPDF 不支持这些，勿换引擎。
+   - CJK：系统字体栈 PingFang SC / Hiragino Sans GB / Microsoft YaHei。
+   ============================================================ */
+
+:root {
+  --wp-forest: #173b2c;        /* 品牌墨绿（milu.css --forest） */
+  --wp-forest-deep: #10271d;   /* 墨林绿（--forest-deep） */
+  --wp-lime: #c3ed59;          /* 青柠重点色 */
+  --wp-on-lime: #14231a;       /* 青柠底上的文字色 */
+  --wp-accent: #3c7657;        /* 苔绿强调（theme.css --accent） */
+  --wp-ink: #1a2921;
+  --wp-ink-2: #2c3d33;
+  --wp-muted: #56645a;
+  --wp-line: rgba(23, 59, 44, .16);
+  --wp-line-strong: rgba(23, 59, 44, .32);
+  --wp-paper: #ffffff;
+  --wp-soft: #f4f6ef;          /* 浅苔底（--code-bg 同源） */
+  --wp-font: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Source Han Sans SC", sans-serif;
+}
+
+/* ---------------- @page（打印分页与页眉页脚） ---------------- */
+
+@page {
+  size: A4;
+  margin: 21mm 17mm 19mm 17mm;
+
+  @top-left {
+    content: "迷鹿 MiLu · 个人白皮书";
+    font-family: var(--wp-font);
+    font-size: 7.5pt;
+    color: var(--wp-muted);
+    letter-spacing: .04em;
+  }
+  @top-right {
+    content: "milulab.com";
+    font-family: var(--wp-font);
+    font-size: 7.5pt;
+    color: var(--wp-muted);
+  }
+  @bottom-left {
+    content: "© Leo Lu";
+    font-family: var(--wp-font);
+    font-size: 7.5pt;
+    color: var(--wp-muted);
+  }
+  @bottom-right {
+    content: "第 " counter(page) " 页 · 共 " counter(pages) " 页";
+    font-family: var(--wp-font);
+    font-size: 7.5pt;
+    color: var(--wp-muted);
+  }
+}
+
+/* 封面命名页：满版出血，无页眉页脚 */
+@page cover {
+  margin: 0;
+  @top-left { content: none; }
+  @top-right { content: none; }
+  @bottom-left { content: none; }
+  @bottom-right { content: none; }
+}
+
+/* ---------------- 屏幕预览（纸张卡片 + 工具条） ---------------- */
+
+.wp-body {
+  margin: 0;
+  padding: 0;
+  background: #e9ebe3;
+  color: var(--wp-ink);
+  font-family: var(--wp-font);
+  font-size: 15px;
+  line-height: 1.75;
+  -webkit-font-smoothing: antialiased;
+}
+.wp-body * { box-sizing: border-box; }
+
+.wp-toolbar {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  max-width: 920px;
+  margin: 0 auto;
+  padding: 12px 18px;
+  background: rgba(255, 255, 255, .92);
+  border-bottom: 1px solid var(--wp-line);
+  backdrop-filter: blur(8px);
+}
+.wp-toolbar-brand { font-size: 13px; font-weight: 800; color: var(--wp-forest); letter-spacing: -.01em; }
+.wp-toolbar-brand small { margin-left: 8px; font-weight: 600; color: var(--wp-muted); }
+.wp-toolbar-actions { display: flex; align-items: center; gap: 14px; }
+.wp-toolbar a { font-size: 13px; font-weight: 700; color: var(--wp-muted); text-decoration: none; }
+.wp-toolbar a:hover { color: var(--wp-ink); }
+.wp-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 16px;
+  border-radius: 999px;
+  background: var(--wp-lime);
+  color: var(--wp-on-lime) !important;
+  font-size: 13px;
+  font-weight: 800;
+  text-decoration: none;
+}
+.wp-btn:hover { background: #d1f477; color: var(--wp-on-lime) !important; }
+
+.wp-doc {
+  max-width: 860px;
+  margin: 26px auto 72px;
+  padding: 58px 64px;
+  background: var(--wp-paper);
+  box-shadow: 0 12px 40px rgba(23, 59, 44, .12);
+}
+
+/* ---------------- 封面 ---------------- */
+
+.wp-cover {
+  page: cover;
+  width: 100%;
+  min-height: 920px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 26mm 22mm;
+  background: var(--wp-forest);
+  background-image: linear-gradient(160deg, var(--wp-forest) 55%, var(--wp-forest-deep) 100%);
+  color: #ffffff;
+}
+.wp-cover-top { display: flex; align-items: center; gap: 10px; }
+.wp-cover-mark {
+  display: inline-grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: var(--wp-lime);
+  color: var(--wp-on-lime);
+  font-weight: 900;
+  font-size: 15px;
+}
+.wp-cover-top span { font-size: 13px; font-weight: 700; letter-spacing: .12em; color: rgba(255, 255, 255, .85); }
+.wp-cover-mid h1 {
+  margin: 0 0 14px;
+  font-size: 37pt;
+  font-weight: 900;
+  letter-spacing: .04em;
+  line-height: 1.15;
+}
+.wp-cover-mid .wp-cover-sub {
+  display: inline-block;
+  padding: 6px 14px;
+  background: var(--wp-lime);
+  color: var(--wp-on-lime);
+  font-size: 13pt;
+  font-weight: 800;
+  letter-spacing: .22em;
+}
+.wp-cover-mid p {
+  margin: 22px 0 0;
+  max-width: 128mm;
+  font-size: 10.5pt;
+  line-height: 1.95;
+  color: rgba(255, 255, 255, .88);
+}
+.wp-cover-mid .wp-cover-motto {
+  margin-top: 26px;
+  font-size: 13pt;
+  font-weight: 800;
+  color: var(--wp-lime);
+  letter-spacing: .06em;
+}
+.wp-cover-bottom { display: flex; justify-content: space-between; align-items: flex-end; font-size: 9pt; color: rgba(255, 255, 255, .78); }
+.wp-cover-bottom b { display: block; margin-bottom: 3px; font-size: 9.5pt; color: #ffffff; }
+
+/* ---------------- 目录 ---------------- */
+
+.wp-toc { page-break-before: always; }
+.wp-toc ol { margin: 18px 0 0; padding: 0; list-style: none; counter-reset: wp-toc; }
+.wp-toc li { margin: 0; padding: 9px 2px; border-bottom: 1px solid var(--wp-line); counter-increment: wp-toc; font-size: 10.5pt; }
+.wp-toc li::before {
+  content: counter(wp-toc, decimal-leading-zero);
+  display: inline-block;
+  min-width: 30px;
+  color: var(--wp-accent);
+  font-weight: 800;
+  font-size: 9.5pt;
+}
+.wp-toc a { color: var(--wp-ink); text-decoration: none; font-weight: 700; }
+.wp-toc a::after {
+  content: leader(". ") " " target-counter(attr(href), page);
+  color: var(--wp-muted);
+  font-weight: 400;
+}
+
+/* ---------------- 章节 ---------------- */
+
+.wp-section { page-break-before: always; }
+
+.wp-sec-head { margin-bottom: 11mm; }
+.wp-sec-head .wp-sec-no {
+  display: block;
+  margin-bottom: 4px;
+  color: var(--wp-accent);
+  font-size: 9pt;
+  font-weight: 800;
+  letter-spacing: .28em;
+}
+.wp-sec-head h2 {
+  margin: 0;
+  padding-bottom: 10px;
+  border-bottom: 2.5pt solid var(--wp-lime);
+  color: var(--wp-forest);
+  font-size: 17pt;
+  font-weight: 900;
+  letter-spacing: .02em;
+}
+.wp-sec-head .wp-sec-lead { margin: 10px 0 0; color: var(--wp-muted); font-size: 9.5pt; }
+
+.wp-section h3 {
+  margin: 8mm 0 3mm;
+  color: var(--wp-forest);
+  font-size: 11.5pt;
+  font-weight: 800;
+}
+.wp-section p { margin: 0 0 3mm; font-size: 10.5pt; }
+.wp-section a { color: var(--wp-accent); text-decoration: none; border-bottom: .5pt solid rgba(60, 118, 87, .35); }
+.wp-avoid { page-break-inside: avoid; }
+.wp-note { color: var(--wp-muted); font-size: 8.5pt; }
+
+/* 01 定位 */
+.wp-positioning-text {
+  font-size: 12pt;
+  line-height: 2.05;
+  color: var(--wp-ink-2);
+}
+.wp-factline {
+  margin-top: 8mm;
+  padding: 5mm 6mm;
+  background: var(--wp-soft);
+  border-left: 3pt solid var(--wp-lime);
+  font-size: 9.5pt;
+  color: var(--wp-muted);
+  line-height: 1.9;
+}
+.wp-factline b { color: var(--wp-forest); }
+
+/* 02 内容支柱：三卡并排（inline-block，WeasyPrint 兼容稳妥） */
+.wp-cards { margin-top: 6mm; font-size: 0; }
+.wp-card {
+  display: inline-block;
+  vertical-align: top;
+  width: 31%;
+  margin-right: 3.5%;
+  padding: 5mm;
+  background: var(--wp-soft);
+  border-top: 2.5pt solid var(--wp-lime);
+}
+.wp-card:last-child { margin-right: 0; }
+.wp-card h4 { margin: 0 0 2.5mm; color: var(--wp-forest); font-size: 10.5pt; font-weight: 800; }
+.wp-card p { margin: 0; font-size: 9pt; line-height: 1.8; color: var(--wp-muted); }
+
+/* 03 经历与作品 */
+.wp-xp { margin-top: 2mm; }
+.wp-xp-item { page-break-inside: avoid; padding: 2.8mm 0; border-bottom: .5pt solid var(--wp-line); }
+.wp-xp-line1 { display: block; margin-bottom: 1mm; }
+.wp-xp-role { font-weight: 800; color: var(--wp-forest); font-size: 10.5pt; }
+.wp-xp-co { color: var(--wp-ink-2); font-size: 9.5pt; }
+.wp-xp-time { float: right; color: var(--wp-muted); font-size: 9pt; }
+.wp-xp-prose { margin: 0 0 1.5mm; color: var(--wp-muted); font-size: 9pt; line-height: 1.8; }
+.wp-xp-detail { margin: 0; padding-left: 5mm; color: var(--wp-muted); font-size: 9pt; line-height: 1.8; }
+
+.wp-table { width: 100%; border-collapse: collapse; margin-top: 3mm; }
+.wp-table th {
+  padding: 2.6mm 3mm;
+  border-bottom: 1.2pt solid var(--wp-forest);
+  color: var(--wp-forest);
+  font-size: 9pt;
+  font-weight: 800;
+  text-align: left;
+  white-space: nowrap;
+}
+.wp-table td {
+  padding: 2.2mm 3mm;
+  border-bottom: .5pt solid var(--wp-line);
+  font-size: 9pt;
+  vertical-align: top;
+  line-height: 1.65;
+}
+.wp-table td.wp-td-title { font-weight: 700; color: var(--wp-ink); white-space: nowrap; }
+.wp-table td.wp-td-tag { color: var(--wp-accent); font-weight: 700; white-space: nowrap; font-size: 8.5pt; }
+.wp-table td:last-child { white-space: nowrap; }
+.wp-table tr { page-break-inside: avoid; }
+
+/* 04 课程体系 */
+.wp-course { page-break-inside: avoid; margin-top: 5mm; padding: 4.5mm 5mm; border: .6pt solid var(--wp-line); border-left: 3pt solid var(--wp-forest); }
+.wp-course-head { margin-bottom: 1.5mm; }
+.wp-course-head h4 { display: inline; margin: 0; color: var(--wp-forest); font-size: 11pt; font-weight: 800; }
+.wp-course-meta { float: right; color: var(--wp-muted); font-size: 8.5pt; }
+.wp-course-meta b { color: var(--wp-accent); }
+.wp-course-desc { margin: 0 0 2.5mm; color: var(--wp-muted); font-size: 9pt; }
+.wp-episodes { margin: 0; padding: 0; list-style: none; font-size: 0; }
+.wp-episodes li {
+  display: inline-block;
+  vertical-align: top;
+  width: 48%;
+  margin: 0 2% 1.8mm 0;
+  padding: 2mm 2.5mm;
+  background: var(--wp-soft);
+  font-size: 8.5pt;
+  line-height: 1.6;
+}
+.wp-episodes li:nth-child(2n) { margin-right: 0; }
+.wp-episodes b { display: block; color: var(--wp-ink); font-weight: 700; }
+.wp-episodes span { color: var(--wp-muted); }
+
+/* 05 技能与证书 */
+.wp-skill { page-break-inside: avoid; display: block; margin-bottom: 3.2mm; }
+.wp-skill-name { display: block; margin-bottom: 1.2mm; font-size: 9.5pt; font-weight: 700; color: var(--wp-ink-2); }
+.wp-skill-track { display: block; width: 100%; height: 2.4mm; background: var(--wp-soft); border-radius: 2mm; }
+.wp-skill-fill { display: block; height: 2.4mm; background: var(--wp-accent); border-radius: 2mm; }
+.wp-skill-cols { font-size: 0; }
+.wp-skill-col { display: inline-block; vertical-align: top; width: 48%; margin-right: 3%; }
+.wp-skill-col:last-child { margin-right: 0; }
+.wp-cert-list { margin: 2mm 0 0; padding-left: 5mm; font-size: 9.5pt; line-height: 2; }
+.wp-cert-list li b { color: var(--wp-forest); }
+
+/* 06 方法论 */
+.wp-method { page-break-inside: avoid; margin-top: 4mm; padding: 4.5mm 5mm; background: var(--wp-soft); border-left: 3pt solid var(--wp-lime); }
+.wp-method h4 { margin: 0 0 1.5mm; color: var(--wp-forest); font-size: 11pt; font-weight: 800; }
+.wp-method p { margin: 0; color: var(--wp-muted); font-size: 9.5pt; }
+.wp-motto-line { margin-top: 8mm; text-align: center; color: var(--wp-forest); font-size: 14pt; font-weight: 900; letter-spacing: .08em; }
+
+/* 07 精选文章 */
+.wp-post { page-break-inside: avoid; padding: 3.2mm 0; border-bottom: .5pt solid var(--wp-line); }
+.wp-post-line { display: block; margin-bottom: 1mm; }
+.wp-post-date { display: inline-block; min-width: 24mm; color: var(--wp-muted); font-size: 8.5pt; }
+.wp-post-title { font-weight: 800; color: var(--wp-ink); font-size: 10.5pt; }
+.wp-post-desc { margin: 0 0 0 24mm; color: var(--wp-muted); font-size: 9pt; line-height: 1.75; }
+
+/* 08 媒体报道 */
+.wp-media-item { page-break-inside: avoid; padding: 3.2mm 0; border-bottom: .5pt solid var(--wp-line); }
+.wp-media-line { display: block; margin-bottom: 1mm; color: var(--wp-muted); font-size: 8.5pt; }
+.wp-media-line b { color: var(--wp-forest); font-weight: 800; }
+.wp-media-title { font-weight: 800; font-size: 10.5pt; color: var(--wp-ink); }
+.wp-media-url { display: block; margin-top: .8mm; color: var(--wp-muted); font-size: 7.5pt; word-break: break-all; }
+
+/* 09 联系方式 */
+.wp-contact { margin-top: 4mm; font-size: 10.5pt; line-height: 2.3; }
+.wp-contact b { display: inline-block; min-width: 26mm; color: var(--wp-forest); font-weight: 800; }
+.wp-closing { margin-top: 12mm; padding-top: 4mm; border-top: .6pt solid var(--wp-line); color: var(--wp-muted); font-size: 9pt; }
+
+/* ---------------- 打印覆盖 ---------------- */
+
+@media print {
+  .wp-body { background: #ffffff; font-size: 10.5pt; }
+  .wp-toolbar { display: none; }
+  .wp-doc { max-width: none; margin: 0; padding: 0; background: #ffffff; box-shadow: none; }
+  /* 满版封面：交给 @page cover 零边距页面，精确 A4 整页 */
+  .wp-cover { width: 210mm; height: 297mm; min-height: 0; }
+  a { color: inherit; }
+  .wp-toc a { color: var(--wp-ink); }
+}
