@@ -4,7 +4,7 @@
  *       历代疆域多边形按弧长重采样后连续变形，时间轴拖动/自动播放，面积曲线，都城与注记。
  */
 import {
-  makeLoader, createSections, createControlsPanel, makeHUD, clamp,
+  makeLoader, createControlsPanel, makeHUD, clamp,
 } from './edu-core.js';
 
 /* ---------------- 噪声与几何工具 ---------------- */
@@ -592,30 +592,27 @@ function draw(time) {
 
 /* ---------------- 字幕 / 面积曲线 / 控件 ---------------- */
 
+/* 字幕条：定位与视觉全在 lab-atlas.css（.edulab-sub，贴中栏底边、避开面积窗与专注钮） */
 const subtitle = document.createElement('div');
 subtitle.className = 'edulab-sub';
-{
-  const stl = document.createElement('style');
-  stl.textContent = '@media (max-width:760px){ .edulab-sub{bottom:132px !important} }';
-  document.head.appendChild(stl);
-}
-subtitle.style.cssText = 'position:absolute;left:50%;transform:translateX(-50%);bottom:96px;z-index:12;width:min(680px,calc(100% - 24px));text-align:center;font-size:14.5px;line-height:1.65;color:#f2ede2;background:rgba(12,15,22,0.72);border:1px solid rgba(255,255,255,0.12);border-radius:12px;padding:10px 16px;pointer-events:auto;text-shadow:0 1px 3px rgba(0,0,0,0.6);';
 stage.appendChild(subtitle);
 
+/* 面积曲线窗：定位在 lab-atlas.css（.coastal-window.aw，浮于中栏左下）；
+ * 头部带折叠钮，可收成 40px 圆形「积」徽标（localStorage 记忆 atlas.foldArea） */
 const areaBox = document.createElement('div');
-areaBox.className = 'coastal-window';
-areaBox.style.cssText += 'left:14px;right:auto;bottom:176px;width:296px;z-index:11;';
-{
-  const stl = document.createElement('style');
-  stl.textContent = '@media (max-width:760px){ .coastal-window.aw{display:none} }';
-  document.head.appendChild(stl);
-  areaBox.classList.add('aw');
-}
-areaBox.innerHTML = '<div class="cw-head"><b>疆域面积（合计·示意）</b><span class="cw-area"></span></div>';
+areaBox.className = 'coastal-window aw';
+areaBox.innerHTML = '<div class="cw-head"><b>疆域面积（合计·示意）</b><span class="cw-area"></span><button class="fold-btn" id="areaFoldBtn" type="button" aria-label="收起面积曲线窗" aria-expanded="true" aria-controls="areaCurve" title="收起面积曲线窗">−</button></div>';
 const areaCanvas = document.createElement('canvas');
+areaCanvas.id = 'areaCurve';
 areaCanvas.width = 560; areaCanvas.height = 210;
-areaCanvas.style.cssText = 'position:relative;display:block;width:280px;height:105px;margin:0 auto 8px;';
 areaBox.appendChild(areaCanvas);
+const areaBadge = document.createElement('button');
+areaBadge.className = 'area-badge';
+areaBadge.type = 'button';
+areaBadge.setAttribute('aria-label', '展开面积曲线窗');
+areaBadge.title = '展开面积曲线窗';
+areaBadge.textContent = '积';
+areaBox.appendChild(areaBadge);
 stage.appendChild(areaBox);
 const actx = areaCanvas.getContext('2d');
 const areaHeadVal = areaBox.querySelector('.cw-area');
@@ -656,8 +653,9 @@ function drawArea(time) {
 }
 
 const ctl = createControlsPanel(document.getElementById('controls'));
-const hud = makeHUD(stage, [['a', '时期'], ['b', '年代'], ['x', '']]);
-hud.show(false);
+/* 数据读数收进右栏手风琴（时期 / 年代，随时间轴滚动更新） */
+const hud = makeHUD(document.getElementById('lcData'), [['a', '时期'], ['b', '年代']]);
+hud.show(true);
 
 let sliderRef = null;
 function buildControls() {
@@ -674,7 +672,7 @@ function buildControls() {
   sliderRef = ctl.slider({
     label: '时间轴', min: 0, max: PERIODS.length - 1, step: 0.01, value: state.time,
     fmt: (v) => PERIODS[Math.min(Math.round(v), PERIODS.length - 1)].short,
-    onInput: (v) => { state.time = v; state.playing = false; playBtn.textContent = '▶ 自动播放'; syncCaption(); },
+    onInput: (v) => { state.time = v; state.playing = false; playBtn.textContent = '▶ 自动播放'; syncCaption(); applyChapterUI(Math.round(v)); },
   });
   ctl.sep();
   ctl.toggle({ label: '都城', value: true, onChange: (v) => { state.showCaps = v; } });
@@ -708,28 +706,201 @@ const SECTIONS = PERIODS.map((p, i) => ({
   },
 }));
 
+/* ---------------- 章节管理（左栏时期列表驱动；时间轴/自动播放时右栏联动跟随） ---------------- */
+
+const chapNav = document.getElementById('chapNav');
+const chapCount = document.getElementById('chapCount');
+const detailNo = document.getElementById('detailNo');
+const detailTitle = document.getElementById('detailTitle');
+const lessonEl = document.getElementById('lesson');
+const detailBody = document.getElementById('detailBody');
+
+/* 16 期竖排按钮：序号 + 标题，点击切期，当前期 .on 高亮 */
+const chapBtns = SECTIONS.map((s, i) => {
+  const b = document.createElement('button');
+  b.type = 'button';
+  b.className = 'chap-btn';
+  b.dataset.idx = String(i);
+  const n = document.createElement('span');
+  n.className = 'chap-n';
+  n.textContent = String(i + 1).padStart(2, '0');
+  const t = document.createElement('span');
+  t.className = 'chap-t';
+  t.textContent = s.title;
+  b.append(n, t);
+  b.addEventListener('click', () => selectChapter(i));
+  chapNav.appendChild(b);
+  return b;
+});
+
+/* 右栏 UI 跟随当前期（时间轴拖动 / 自动播放时只刷 UI，不重置播放状态） */
+let uiChapter = -1;
+function applyChapterUI(i) {
+  i = clamp(i, 0, SECTIONS.length - 1);
+  if (i === uiChapter) return;
+  uiChapter = i;
+  chapBtns.forEach((b, j) => {
+    const on = j === i;
+    b.classList.toggle('on', on);
+    if (on) {
+      b.setAttribute('aria-current', 'true');
+      b.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+    } else {
+      b.removeAttribute('aria-current');
+    }
+  });
+  const sec = SECTIONS[i];
+  chapCount.textContent = `${String(i + 1).padStart(2, '0')}/${SECTIONS.length}`;
+  detailNo.textContent = String(i + 1).padStart(2, '0');
+  detailTitle.textContent = sec.title;
+  /* 折叠竖条上的时期信息同步（左栏序号 / 右栏竖排标题） */
+  railNoL.textContent = String(i + 1).padStart(2, '0');
+  railTitleR.textContent = sec.title;
+  lessonEl.innerHTML = sec.html || '';
+  detailBody.scrollTop = 0;
+}
+
+/* 点左栏切期：刷 UI + enter()（重置时间轴到该期、停播） */
+function selectChapter(i) {
+  const idx = clamp(i, 0, SECTIONS.length - 1);
+  uiChapter = -1;   /* 强制刷新（即使目标期与当前相同） */
+  applyChapterUI(idx);
+  SECTIONS[idx].enter();
+}
+
+/* ---------------- 栏折叠（左右独立 28px 竖条）× 专注模式（双栏同折）统一管理 ---------------- */
+
+const foldLBtn = document.getElementById('foldLBtn');
+const unfoldLBtn = document.getElementById('unfoldLBtn');
+const foldRBtn = document.getElementById('foldRBtn');
+const unfoldRBtn = document.getElementById('unfoldRBtn');
+const railNoL = document.getElementById('railNoL');
+const railTitleR = document.getElementById('railTitleR');
+const atlasShell = document.getElementById('atlasShell');
+const focusBtn = document.getElementById('focusBtn');
+
+const FOLD_KEY = { l: 'atlas.foldL', r: 'atlas.foldR' };
+let foldL = false;
+let foldR = false;
+let focusSaved = null; /* 进入专注模式前的独立折叠状态 [foldL, foldR]，退出时恢复 */
+try {
+  foldL = localStorage.getItem(FOLD_KEY.l) === '1';
+  foldR = localStorage.getItem(FOLD_KEY.r) === '1';
+} catch (e) { /* localStorage 不可用（隐私模式等）时仅本次会话内生效 */ }
+
+/* 把折叠状态落到 shell 类名与按钮 aria 态（布局/竖条显隐全在 CSS） */
+function applyFold() {
+  atlasShell.classList.toggle('fold-l', foldL);
+  atlasShell.classList.toggle('fold-r', foldR);
+  for (const [btn, folded] of [[foldLBtn, foldL], [unfoldLBtn, foldL], [foldRBtn, foldR], [unfoldRBtn, foldR]]) {
+    btn.setAttribute('aria-expanded', String(!folded));
+  }
+}
+
+/* 专注模式：双栏同时折叠；退出恢复进入前状态（不写 localStorage，保持独立折叠记忆不变） */
+function setFocus(on) {
+  if (on && focusSaved === null) {
+    focusSaved = [foldL, foldR];
+    foldL = true;
+    foldR = true;
+  } else if (!on && focusSaved !== null) {
+    [foldL, foldR] = focusSaved;
+    focusSaved = null;
+  }
+  atlasShell.classList.toggle('focus-mode', on);
+  focusBtn.textContent = on ? '退出专注' : '专注模式';
+  focusBtn.setAttribute('aria-pressed', String(on));
+  applyFold();
+}
+
+/* 独立折叠翻转并持久化；专注模式中点竖条展开钮 = 先退出专注（恢复原状）再翻转该侧 */
+function toggleFold(side) {
+  if (focusSaved !== null) setFocus(false);
+  if (side === 'l') foldL = !foldL;
+  else foldR = !foldR;
+  try {
+    localStorage.setItem(FOLD_KEY[side], (side === 'l' ? foldL : foldR) ? '1' : '0');
+  } catch (e) { /* 同上，忽略持久化失败 */ }
+  applyFold();
+}
+
+foldLBtn.addEventListener('click', () => toggleFold('l'));
+unfoldLBtn.addEventListener('click', () => toggleFold('l'));
+foldRBtn.addEventListener('click', () => toggleFold('r'));
+unfoldRBtn.addEventListener('click', () => toggleFold('r'));
+focusBtn.addEventListener('click', () => setFocus(focusSaved === null));
+applyFold();
+
+/* ---------------- 面积曲线窗折叠：整窗收成 40px 圆形「积」徽标（浮于原位） ---------------- */
+
+const areaFoldBtn = document.getElementById('areaFoldBtn');
+const AREA_FOLD_KEY = 'atlas.foldArea';
+let areaFolded = false;
+try {
+  const savedArea = localStorage.getItem(AREA_FOLD_KEY);
+  /* 无记忆时：≤1100px 小屏首访默认折叠（清爽态）；用户手动操作后按记忆走 */
+  areaFolded = savedArea !== null ? savedArea === '1' : window.innerWidth <= 1100;
+} catch (e) {
+  areaFolded = window.innerWidth <= 1100; /* localStorage 不可用（隐私模式等）时按视口给默认 */
+}
+function applyAreaFold() {
+  areaBox.classList.toggle('folded', areaFolded);
+  areaFoldBtn.textContent = areaFolded ? '+' : '−';
+  areaFoldBtn.setAttribute('aria-expanded', String(!areaFolded));
+}
+function setAreaFolded(v) {
+  areaFolded = v;
+  try { localStorage.setItem(AREA_FOLD_KEY, v ? '1' : '0'); } catch (e) { /* 忽略持久化失败 */ }
+  applyAreaFold();
+}
+areaFoldBtn.addEventListener('click', () => setAreaFolded(!areaFolded));
+areaBadge.addEventListener('click', () => setAreaFolded(false));
+applyAreaFold();
+
+/* ---------------- 右栏三块手风琴（详解 / 控件 / 读数）：每块独立 key 记忆，切期不重置 ---------------- */
+
+const ACC_KEYS = { lesson: 'atlas.accLesson', controls: 'atlas.accControls', data: 'atlas.accData' };
+const accSecs = {
+  lesson: document.getElementById('accLesson'),
+  controls: document.getElementById('accControls'),
+  data: document.getElementById('accData'),
+};
+const NARROW_VIEW = window.innerWidth <= 1100;   /* 小屏首访清爽态判据 */
+const accClosed = {};
+for (const name of Object.keys(accSecs)) {
+  let saved = null;
+  try { saved = localStorage.getItem(ACC_KEYS[name]); } catch (e) { /* 同上，忽略 */ }
+  /* 无记忆：默认全展开，仅小屏首访把「数据读数」默认收起；用户操作后按记忆走 */
+  accClosed[name] = saved !== null ? saved === '1' : (name === 'data' && NARROW_VIEW);
+}
+function applyAcc(name) {
+  const sec = accSecs[name];
+  sec.classList.toggle('closed', accClosed[name]);
+  sec.querySelector('.acc-head').setAttribute('aria-expanded', String(!accClosed[name]));
+}
+function toggleAcc(name) {
+  accClosed[name] = !accClosed[name];
+  try { localStorage.setItem(ACC_KEYS[name], accClosed[name] ? '1' : '0'); } catch (e) { /* 忽略 */ }
+  applyAcc(name);
+}
+for (const name of Object.keys(accSecs)) {
+  accSecs[name].querySelector('.acc-head').addEventListener('click', () => toggleAcc(name));
+  applyAcc(name);
+}
+
+/* ---------------- 启动 ---------------- */
+
+window.__eduSections = { select: selectChapter };
 loader.setText('正在绘制东亚地形…');
 setTimeout(() => {
   baseMap = buildBaseMap();
   fitView();
   buildControls();
-  const sections = createSections({
-    nav: document.getElementById('sideNav'),
-    descPanel: document.getElementById('descPanel'),
-    sections: SECTIONS,
-    onSelect(i, sec) {
-      activeSectionCleanup();
-      activeSectionCleanup = () => {};
-      sec.enter();
-    },
-  });
-  window.__eduSections = sections;
-  sections.select(0);
+  selectChapter(0);
   loader.hide();
 }, 30);
 
 let lastTs = 0;
-let activeSectionCleanup = () => {};
 function loop(ts) {
   requestAnimationFrame(loop);
   const dt = Math.min((ts - lastTs) / 1000 || 0.016, 0.1);
@@ -754,6 +925,7 @@ function loop(ts) {
   if (i !== loop._lastI) {
     loop._lastI = i;
     syncCaption();
+    applyChapterUI(i);   /* 时间轴滚动 / 自动播放时左栏高亮与右栏内容联动跟随 */
   }
 }
 requestAnimationFrame(loop);
