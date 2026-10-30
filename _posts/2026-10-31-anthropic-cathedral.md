@@ -3,6 +3,7 @@ title: "干安全的被 AI 从侧门进了：Anthropic 的机密，躺在聊天�
 description: "Cathedral 用 AI agent 从第三方软件漏洞进入 Anthropic 内部系统，读到 Slack 上讨论先进模型的聊天记录。模型权重没丢，丢的是 Anthropic 的安全叙事。"
 tags: [AI安全, Anthropic, AIAgent, 网络安全, AI评论]
 series: "哟哟鹿鸣"
+podcast: /assets/audio/2026-10-31-anthropic-cathedral.mp3
 ---
 
 ![旧金山 500 Howard Street，Anthropic 转租的前 Slack 总部大楼。这家 AI 安全明星公司的机密，就躺在这栋楼里曾经属于 Slack 的办公网络中（资料图，图源：connectcre.com）](/assets/images/2026-10-31-anthropic-cathedral/final_01_anthropic_hq.jpg)
