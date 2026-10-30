@@ -69,8 +69,16 @@
     var card = document.getElementById('media-' + cardKey);
     var h3 = card ? card.querySelector('h3') : null;
     var src = card ? card.querySelector('.media-source') : null;
+    var desc = card ? card.querySelector('.media-meta p') : null;
     title.textContent = (h3 ? h3.textContent : '本地存档') + (src ? ' · ' + src.textContent : '');
     body.innerHTML = render(items);
+    // 把报道的文字说明一并带进模态框，避免单图存档“只有一张图没文字”
+    if (desc && desc.textContent.trim()) {
+      var dp = document.createElement('p');
+      dp.className = 'arch-desc';
+      dp.textContent = desc.textContent.trim();
+      body.appendChild(dp);
+    }
 
     var main = document.getElementById('archMain');
     if (main) {
