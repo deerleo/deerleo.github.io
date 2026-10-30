@@ -8,6 +8,10 @@ podcast: /assets/audio/2026-10-29-gemini-carbon-cyber-first.mp3
 
 ![Google DeepMind 品牌实拍（图源 TechCrunch）](/assets/images/2026-10-29-gemini-carbon-cyber-first/cover-deepmind.jpg)
 
+<video controls preload="metadata" style="display:block;max-width:100%;width:720px;margin:0 auto;" poster="/assets/videos/2026-10-29-gemini-carbon-cyber-first-cover.jpg" src="/assets/videos/2026-10-29-gemini-carbon-cyber-first.mp4"></video>
+
+*本文视频版：真人开场收尾加动画拆解，125 秒讲完这份榜单的疑点。*
+
 早上那条微头条刚说过，Artificial Analysis 的新版 v5 榜单，闭源榜首是 Claude Opus 5.5，58 分。
 
 那是榜单上线一刻的成绩。同一天晚些时候，Google 把新旗舰 Gemini 4 Carbon 放上了同一个榜：59 分，接管榜首。
