@@ -9,6 +9,10 @@ podcast: /assets/audio/2026-10-27-walmart-agent-gateway.mp3
 
 上个月，Amazon 把 Meta 的购物 Agent 拦在了门外。据 TechCrunch 报道，理由有三条：没提前通知、不亮明身份、疑似存了客户凭证。Meta 否认。
 
+<video controls preload="metadata" style="display:block;max-width:100%;width:720px;margin:0 auto;" poster="/assets/videos/2026-10-27-walmart-agent-gateway-cover.jpg" src="/assets/videos/2026-10-27-walmart-agent-gateway.mp4"></video>
+
+*视频版：约两分半，开头结尾真人出镜，四道锁用动画逐一拆开。*
+
 这个月，沃尔玛朝反方向迈了一步。10 月 21 日官宣 Agent Gateway：一个正经的 MCP 服务器，让守规矩的 Agent 进来搜商品、加购、下单、查订单。beta 入口开在 walmart.com/agents，Walmart 和 Sam's Club 两个品牌都覆盖，不需要会员。
 
 很多解读把这讲成"开放对封杀"。我不这么看。Amazon 自己也有自营的 Buy for Me，同样自报身份，品牌还可以选择退出。真正的分歧只有一个：给不给守规矩、自报身份的 Agent 一个官方入口。沃尔玛给出了答案，而且这份答案的工程质量，比想象中高。
