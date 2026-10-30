@@ -309,6 +309,53 @@ body.lab.micro {
 }
 .lc-data .hud-card:empty { display: none; }
 
+/* ---------- 右栏三块手风琴（详解 / 控件 / 读数，标题行点击收起 body） ---------- */
+
+.acc {
+  flex: none;
+  border: 1px solid var(--card-border);
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--card) 42%, transparent);
+  overflow: hidden;
+}
+.acc.acc-empty { display: none; }   /* 本章无控件 / 读数隐藏时整块收走 */
+.acc-head {
+  appearance: none;
+  font-family: inherit;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 9px 12px;
+  border: none;
+  background: transparent;
+  color: var(--text-faint);
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-align: left;
+  cursor: pointer;
+  transition: color 0.15s;
+}
+.acc-head:hover { color: var(--accent); }
+.acc-arrow {
+  margin-left: auto;
+  font-style: normal;
+  font-size: 10px;
+  line-height: 1;
+  transition: transform 0.25s ease;   /* 收起时旋转为 ▸ */
+}
+.acc.closed .acc-arrow { transform: rotate(-90deg); }
+/* 0.25s 高度动画：grid-template-rows 1fr → 0fr，免 JS 量高 */
+.acc-fold-wrap {
+  display: grid;
+  grid-template-rows: 1fr;
+  transition: grid-template-rows 0.25s ease;
+}
+.acc.closed .acc-fold-wrap { grid-template-rows: 0fr; }
+.acc-fold-body { min-height: 0; overflow: hidden; }
+.acc-fold-inner { padding: 2px 12px 12px; }
+
 /* ---------- 中栏浮动：目镜视野窗（读数 + 虚拟准焦旋钮） ---------- */
 
 .micro-eye {
@@ -444,6 +491,72 @@ body.lab.micro {
 .micro-eye.expanded .eye-wrap { max-width: 480px; }
 .micro-eye.expanded .eye-exit { display: inline-flex; }
 
+/* ---------- 目镜窗折叠：整窗收成 40px 圆形「目」徽标，浮于原位 ---------- */
+
+.sec-h .fold-btn { align-self: center; margin-left: 2px; }
+.micro-eye.folded {
+  width: auto;
+  background: transparent;
+  border-color: transparent;
+  box-shadow: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  overflow: visible;
+  align-items: flex-end;   /* 徽标贴右上角，与展开态窗体同锚点 */
+}
+.micro-eye.folded .sec-h,
+.micro-eye.folded .eye-body { display: none; }
+.eye-badge {
+  appearance: none;
+  font-family: inherit;
+  display: none;   /* 默认隐藏，.folded 时显示 */
+  width: 40px;
+  height: 40px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  border: 3px solid #14171c;
+  background:
+    radial-gradient(circle at 34% 30%, #454c55, #1b1e24 72%),
+    #101216;
+  color: #cfd6df;
+  font-size: 17px;
+  font-weight: 600;
+  line-height: 1;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4), inset 0 1px 2px rgba(255, 255, 255, 0.16);
+  transition: color 0.15s, box-shadow 0.15s;
+}
+.eye-badge:hover {
+  color: var(--accent);
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.5), inset 0 1px 2px rgba(255, 255, 255, 0.22);
+}
+.micro-eye.folded .eye-badge { display: inline-flex; animation: eyeBadgeIn 0.25s ease; }
+.micro-eye:not(.folded) .sec-h,
+.micro-eye:not(.folded) .eye-body { animation: eyePanelIn 0.25s ease; }
+@keyframes eyeBadgeIn {
+  from { transform: scale(0.55); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+@keyframes eyePanelIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* ---------- 窄屏（≤1100px）：顶栏收窄为 logo+标题一行，手风琴更紧凑
+   （目镜默认折叠 / 数据读数默认收起的首访清爽态由 JS 按 viewport 决定） ---------- */
+
+@media (max-width: 1100px) {
+  .micro-toprow { padding: 8px 12px; gap: 8px; }
+  .micro-toprow .lab-title span { display: none; }
+  .micro-toprow .lab-title b { font-size: 15px; }
+  .micro-toprow a.edu-header-btn[href='../'] { display: none; }   /* 返回走 logo，省一行宽度 */
+
+  .detail-body { padding: 10px 12px 14px; gap: 10px; }
+  .acc-head { padding: 8px 10px; }
+  .acc-fold-inner { padding: 2px 10px 10px; }
+}
+
 /* ---------- 移动端（≤860px）：纵向堆叠（章节横滚条 / 3D / 知识点在下） ---------- */
 
 @media (max-width: 860px) {
@@ -499,9 +612,11 @@ body.lab.micro {
   .detail-title { font-size: 14.5px; }
   .detail-body { padding: 10px 12px 14px; }
   .lc-lesson { font-size: 12.5px; }
+  .acc-head { padding: 8px 10px; }
+  .acc-fold-inner { padding: 2px 10px 10px; }
 
-  /* 目镜窗收小，仍浮在中栏右上 */
-  .micro-eye { top: 8px; right: 8px; width: 196px; border-radius: 14px; }
+  /* 目镜窗收小，仍浮在中栏右上；内容高于舞台时浮窗内部滚动（折叠徽标态不受影响） */
+  .micro-eye { top: 8px; right: 8px; width: 196px; border-radius: 14px; max-height: calc(100% - 16px); overflow-y: auto; }
   .sec-h { padding: 9px 12px 8px; }
   .sec-h .mag-big { font-size: 18px; }
   .eye-body { padding: 10px 12px 12px; gap: 8px; }

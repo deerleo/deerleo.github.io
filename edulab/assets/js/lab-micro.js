@@ -1699,6 +1699,33 @@ window.addEventListener('keydown', (e) => {
   if (e.key === 'Escape') setEyeExpanded(false);
 });
 
+/* 目镜窗折叠：整窗收成 40px 圆形「目」徽标（浮于原位），localStorage 记忆 micro.foldEye */
+const eyeFoldBtn = document.getElementById('eyeFoldBtn');
+const eyeBadge = document.getElementById('eyeBadge');
+const EYE_FOLD_KEY = 'micro.foldEye';
+let eyeFolded = false;
+try {
+  const savedEye = localStorage.getItem(EYE_FOLD_KEY);
+  /* 无记忆时：≤1100px 小屏首访默认折叠（清爽态）；用户手动操作后按记忆走 */
+  eyeFolded = savedEye !== null ? savedEye === '1' : window.innerWidth <= 1100;
+} catch (e) {
+  eyeFolded = window.innerWidth <= 1100; /* localStorage 不可用（隐私模式等）时按视口给默认 */
+}
+function applyEyeFold() {
+  if (eyeFolded && eyePanel.classList.contains('expanded')) setEyeExpanded(false); /* 折叠时自动退出放大 */
+  eyePanel.classList.toggle('folded', eyeFolded);
+  eyeFoldBtn.textContent = eyeFolded ? '+' : '−';
+  eyeFoldBtn.setAttribute('aria-expanded', String(!eyeFolded));
+}
+function setEyeFolded(v) {
+  eyeFolded = v;
+  try { localStorage.setItem(EYE_FOLD_KEY, v ? '1' : '0'); } catch (e) { /* 忽略持久化失败 */ }
+  applyEyeFold();
+}
+eyeFoldBtn.addEventListener('click', () => setEyeFolded(!eyeFolded));
+eyeBadge.addEventListener('click', () => setEyeFolded(false));
+applyEyeFold();
+
 /* ---------------- 虚拟准焦旋钮（拖拽 → focus，3D 镜身旋钮同步转动） ---------------- */
 
 document.querySelectorAll('.knob-dial').forEach((dial) => {
@@ -2372,6 +2399,8 @@ function selectChapter(i) {
   if (sec.id !== 'imaging') optic.letterRot = 0;
   activeSectionId = sec.id;
   sec.enter();
+  /* 本章无控件时整块手风琴收走（不动用户的手风琴偏好） */
+  accSecs.controls.classList.toggle('acc-empty', !controlsEl.children.length);
   detailBody.scrollTop = 0;
 }
 
@@ -2438,6 +2467,38 @@ unfoldRBtn.addEventListener('click', () => toggleFold('r'));
 focusBtn.addEventListener('click', () => setFocus(focusSaved === null));
 applyFold();
 
+/* ---------------- 右栏三块手风琴（详解 / 控件 / 读数）：每块独立 key 记忆，切章不重置 ---------------- */
+
+const ACC_KEYS = { lesson: 'micro.accLesson', controls: 'micro.accControls', data: 'micro.accData' };
+const accSecs = {
+  lesson: document.getElementById('accLesson'),
+  controls: document.getElementById('accControls'),
+  data: document.getElementById('accData'),
+};
+const controlsEl = document.getElementById('controls');
+const NARROW_VIEW = window.innerWidth <= 1100;   /* 小屏首访清爽态判据 */
+const accClosed = {};
+for (const name of Object.keys(accSecs)) {
+  let saved = null;
+  try { saved = localStorage.getItem(ACC_KEYS[name]); } catch (e) { /* 同上，忽略 */ }
+  /* 无记忆：默认全展开，仅小屏首访把「数据读数」默认收起；用户操作后按记忆走 */
+  accClosed[name] = saved !== null ? saved === '1' : (name === 'data' && NARROW_VIEW);
+}
+function applyAcc(name) {
+  const sec = accSecs[name];
+  sec.classList.toggle('closed', accClosed[name]);
+  sec.querySelector('.acc-head').setAttribute('aria-expanded', String(!accClosed[name]));
+}
+function toggleAcc(name) {
+  accClosed[name] = !accClosed[name];
+  try { localStorage.setItem(ACC_KEYS[name], accClosed[name] ? '1' : '0'); } catch (e) { /* 忽略 */ }
+  applyAcc(name);
+}
+for (const name of Object.keys(accSecs)) {
+  accSecs[name].querySelector('.acc-head').addEventListener('click', () => toggleAcc(name));
+  applyAcc(name);
+}
+
 /* ================= 主循环 ================= */
 
 const magBigEl = document.getElementById('magBig');
@@ -2447,6 +2508,7 @@ let lastMag = -1;
 
 app.onFrame((dt, t) => {
   hud.el.style.display = hud.visibleNow ? '' : 'none';
+  accSecs.data.classList.toggle('acc-empty', !hud.visibleNow);   /* 读数隐藏时数据块一并收走 */
   /* 调焦旋钮联动（3D 镜身 + 右栏虚拟旋钮）+ 载物台微升降 */
   if (parts.knobCoarse) {
     parts.knobCoarse.rotation.x = optic.focus * 0.08;
