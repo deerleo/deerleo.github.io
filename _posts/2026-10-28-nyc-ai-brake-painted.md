@@ -8,6 +8,10 @@ podcast: /assets/audio/2026-10-28-nyc-ai-brake-painted.mp3
 
 ![布鲁克林的纽约公立学校。美国最大学区这一年对 AI 踩了刹车。](/assets/images/2026-10-28-nyc-ai-ban/school-building.jpg)
 
+<video controls preload="metadata" style="display:block;max-width:100%;width:720px;margin:0 auto;" poster="/assets/videos/2026-10-28-nyc-ai-brake-painted-cover.jpg" src="/assets/videos/2026-10-28-nyc-ai-brake-painted.mp4"></video>
+
+*本文视频版：真人开场收尾加动画拆解，143 秒讲完这份名单的问题。*
+
 9 月 2 日开学前几天，纽约市长 Mamdani 站在镜头前，宣布了全美最广的校园生成式 AI 暂停令：学前班到八年级，60 万学生，一整年不能用。原话说得挺漂亮："科技行业想让我们相信，AI 驱动的早期教育不仅不可避免，而且必要。我们不这么看。"
 
 先把态度摆足，再谈执行。执行部分，才是这篇文章要说的事。
