@@ -3,16 +3,8 @@
  * 实现：全 2D canvas 夜间实验室仿真（仪器矢量绘制），复用 edu-core 的章节/控制条/HUD/quiz。
  */
 import {
-  createSections, createControlsPanel, makeHUD, clamp,
+  createControlsPanel, makeHUD, clamp,
 } from './edu-core.js';
-
-/* ---------------- 专属样式（动态注入，不改共享 CSS） ---------------- */
-
-const styleEl = document.createElement('style');
-styleEl.textContent = `
-.lab-controls:empty{display:none}
-`;
-document.head.appendChild(styleEl);
 
 /* ---------------- 画布与设计坐标 ---------------- */
 
@@ -446,14 +438,15 @@ const ctl = createControlsPanel(document.getElementById('controls'));
 let chapterTick = null;
 let activeCleanup = null;
 let hits = [];
+/* HUD 读数卡收进右栏「数据读数」手风琴（setHud(null) 时整块收走） */
 const hudBox = document.createElement('div');
-hudBox.className = 'lab-hud';
-stage.appendChild(hudBox);
+document.getElementById('lcData').appendChild(hudBox);
 let hud = null;
 function setHud(rows) {
   hudBox.innerHTML = '';
   hud = null;
   if (rows) hud = makeHUD(hudBox, rows);
+  accSecs.data.classList.toggle('acc-empty', !hud);
   return hud;
 }
 let downPos = null;
@@ -2111,25 +2104,166 @@ const secQuiz = {
   },
 };
 
-/* ---------------- 启动 ---------------- */
+/* ---------------- 章节管理（左栏课程大纲列表驱动） ---------------- */
 
 const SECTIONS = [secTools, secTitr, secCurve, secErr, secCation, secAnion, secFlame, secSalt, secQuiz];
 
-const sections = createSections({
-  nav: document.getElementById('sideNav'),
-  descPanel: document.getElementById('descPanel'),
-  sections: SECTIONS,
-  onSelect(i, sec) {
-    if (activeCleanup) { activeCleanup(); activeCleanup = null; }
-    chapterTick = null;
-    hits = [];
-    setHud(null);
-    canvas.style.cursor = 'default';
-    if (sec.leave) sec.leave();
-    sec.enter();
-  },
+const chapNav = document.getElementById('chapNav');
+const chapCount = document.getElementById('chapCount');
+const detailNo = document.getElementById('detailNo');
+const detailTitle = document.getElementById('detailTitle');
+const lessonEl = document.getElementById('lesson');
+const detailBody = document.getElementById('detailBody');
+let chapterIdx = 0;
+
+/* 9 章竖排按钮：序号 + 标题，点击切章，当前章 .on 高亮 */
+const chapBtns = SECTIONS.map((s, i) => {
+  const b = document.createElement('button');
+  b.type = 'button';
+  b.className = 'chap-btn';
+  b.dataset.idx = String(i);
+  const n = document.createElement('span');
+  n.className = 'chap-n';
+  n.textContent = String(i + 1).padStart(2, '0');
+  const t = document.createElement('span');
+  t.className = 'chap-t';
+  t.textContent = s.title;
+  b.append(n, t);
+  b.addEventListener('click', () => selectChapter(i));
+  chapNav.appendChild(b);
+  return b;
 });
-window.__eduSections = sections;
+
+function selectChapter(i) {
+  chapterIdx = clamp(i, 0, SECTIONS.length - 1);
+  const sec = SECTIONS[chapterIdx];
+  chapBtns.forEach((b, j) => {
+    const on = j === chapterIdx;
+    b.classList.toggle('on', on);
+    if (on) {
+      b.setAttribute('aria-current', 'true');
+      b.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+    } else {
+      b.removeAttribute('aria-current');
+    }
+  });
+  chapCount.textContent = `${String(chapterIdx + 1).padStart(2, '0')}/${SECTIONS.length}`;
+  detailNo.textContent = String(chapterIdx + 1).padStart(2, '0');
+  detailTitle.textContent = sec.title;
+  /* 折叠竖条上的章节信息同步（左栏序号 / 右栏竖排标题） */
+  railNoL.textContent = String(chapterIdx + 1).padStart(2, '0');
+  railTitleR.textContent = sec.title;
+  lessonEl.innerHTML = sec.html || '';
+  if (activeCleanup) { activeCleanup(); activeCleanup = null; }
+  chapterTick = null;
+  hits = [];
+  setHud(null);
+  canvas.style.cursor = 'default';
+  if (sec.leave) sec.leave();
+  sec.enter();
+  /* 本章无控件时整块手风琴收走（不动用户的手风琴偏好） */
+  accSecs.controls.classList.toggle('acc-empty', !controlsEl.children.length);
+  detailBody.scrollTop = 0;
+}
+
+/* ---------------- 栏折叠（左右独立 28px 竖条）× 专注模式（双栏同折）统一管理 ---------------- */
+
+const foldLBtn = document.getElementById('foldLBtn');
+const unfoldLBtn = document.getElementById('unfoldLBtn');
+const foldRBtn = document.getElementById('foldRBtn');
+const unfoldRBtn = document.getElementById('unfoldRBtn');
+const railNoL = document.getElementById('railNoL');
+const railTitleR = document.getElementById('railTitleR');
+const anlShell = document.getElementById('anlShell');
+const focusBtn = document.getElementById('focusBtn');
+
+const FOLD_KEY = { l: 'analysis.foldL', r: 'analysis.foldR' };
+let foldL = false;
+let foldR = false;
+let focusSaved = null; /* 进入专注模式前的独立折叠状态 [foldL, foldR]，退出时恢复 */
+try {
+  foldL = localStorage.getItem(FOLD_KEY.l) === '1';
+  foldR = localStorage.getItem(FOLD_KEY.r) === '1';
+} catch (e) { /* localStorage 不可用（隐私模式等）时仅本次会话内生效 */ }
+
+/* 把折叠状态落到 shell 类名与按钮 aria 态（布局/竖条显隐全在 CSS） */
+function applyFold() {
+  anlShell.classList.toggle('fold-l', foldL);
+  anlShell.classList.toggle('fold-r', foldR);
+  for (const [btn, folded] of [[foldLBtn, foldL], [unfoldLBtn, foldL], [foldRBtn, foldR], [unfoldRBtn, foldR]]) {
+    btn.setAttribute('aria-expanded', String(!folded));
+  }
+}
+
+/* 专注模式：双栏同时折叠；退出恢复进入前状态（不写 localStorage，保持独立折叠记忆不变） */
+function setFocus(on) {
+  if (on && focusSaved === null) {
+    focusSaved = [foldL, foldR];
+    foldL = true;
+    foldR = true;
+  } else if (!on && focusSaved !== null) {
+    [foldL, foldR] = focusSaved;
+    focusSaved = null;
+  }
+  anlShell.classList.toggle('focus-mode', on);
+  focusBtn.textContent = on ? '退出专注' : '专注模式';
+  focusBtn.setAttribute('aria-pressed', String(on));
+  applyFold();
+}
+
+/* 独立折叠翻转并持久化；专注模式中点竖条展开钮 = 先退出专注（恢复原状）再翻转该侧 */
+function toggleFold(side) {
+  if (focusSaved !== null) setFocus(false);
+  if (side === 'l') foldL = !foldL;
+  else foldR = !foldR;
+  try {
+    localStorage.setItem(FOLD_KEY[side], (side === 'l' ? foldL : foldR) ? '1' : '0');
+  } catch (e) { /* 同上，忽略持久化失败 */ }
+  applyFold();
+}
+
+foldLBtn.addEventListener('click', () => toggleFold('l'));
+unfoldLBtn.addEventListener('click', () => toggleFold('l'));
+foldRBtn.addEventListener('click', () => toggleFold('r'));
+unfoldRBtn.addEventListener('click', () => toggleFold('r'));
+focusBtn.addEventListener('click', () => setFocus(focusSaved === null));
+applyFold();
+
+/* ---------------- 右栏三块手风琴（详解 / 控件 / 读数）：每块独立 key 记忆，切章不重置 ---------------- */
+
+const ACC_KEYS = { lesson: 'analysis.accLesson', controls: 'analysis.accControls', data: 'analysis.accData' };
+const accSecs = {
+  lesson: document.getElementById('accLesson'),
+  controls: document.getElementById('accControls'),
+  data: document.getElementById('accData'),
+};
+const controlsEl = document.getElementById('controls');
+const NARROW_VIEW = window.innerWidth <= 1100;   /* 小屏首访清爽态判据 */
+const accClosed = {};
+for (const name of Object.keys(accSecs)) {
+  let saved = null;
+  try { saved = localStorage.getItem(ACC_KEYS[name]); } catch (e) { /* 同上，忽略 */ }
+  /* 无记忆：默认全展开，仅小屏首访把「数据读数」默认收起；用户操作后按记忆走 */
+  accClosed[name] = saved !== null ? saved === '1' : (name === 'data' && NARROW_VIEW);
+}
+function applyAcc(name) {
+  const sec = accSecs[name];
+  sec.classList.toggle('closed', accClosed[name]);
+  sec.querySelector('.acc-head').setAttribute('aria-expanded', String(!accClosed[name]));
+}
+function toggleAcc(name) {
+  accClosed[name] = !accClosed[name];
+  try { localStorage.setItem(ACC_KEYS[name], accClosed[name] ? '1' : '0'); } catch (e) { /* 忽略 */ }
+  applyAcc(name);
+}
+for (const name of Object.keys(accSecs)) {
+  accSecs[name].querySelector('.acc-head').addEventListener('click', () => toggleAcc(name));
+  applyAcc(name);
+}
+
+/* ---------------- 启动 ---------------- */
+
+window.__eduSections = { select: selectChapter };
 window.__anl = {
   tit,
   phAt: phAtTit,
@@ -2137,7 +2271,7 @@ window.__anl = {
   jump(v) { tit.vAdd = v; checkObs(); },
   records: () => ({ init: tit.init, final: tit.final, V: tit.V, c: tit.c, phase: tit.phase, cA: tit.cA }),
 };
-sections.select(0);
+selectChapter(0);
 
 let lastTs = 0;
 function appLoop(ts) {
