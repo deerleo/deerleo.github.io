@@ -3,12 +3,22 @@
  *       洛伦兹力 / 质谱仪与回旋加速器 / 电磁感应与楞次定律 / 交流发电机 / 自由实验 / 随堂检测
  * 场线用 RK2 数值积分（拖动电荷节流重建并 dispose 旧 geometry）；
  * 洛伦兹力用绕 B 轴精确旋转（速率恒定），沙盒合场用半隐式积分 F=qE+qv×B。
+ * 布局（micro 三件套移植）：真·三栏教学布局——左栏课程大纲列表（点击切章）/ 中栏 3D 舞台
+ *       （相机飞行）/ 右栏知识点详解 + 本章控件 + 数据读数；左右栏独立折叠（28px 竖条）+
+ *       专注模式 + 右栏三块手风琴（localStorage 记忆，切章不重置）；
+ *       角落浮窗（铁屑/检流计/波形）可折叠为 40px 圆形徽标。
+ * 视觉工艺（edu-vfx 轻接入）：后处理管线 + cubic 运镜；HDR 只作环境反射光，背景由工艺管理。
  */
 import {
   THREE, TAU, clamp,
-  loadTexture, loadHDR, loadAll, createApp, cameraTweenTick, makeLoader,
-  createSections, createControlsPanel, makeHUD, makeTextSprite, makeGlowTexture,
+  createApp, makeLoader,
+  createControlsPanel, makeHUD, makeTextSprite, makeGlowTexture,
 } from './edu-core.js';
+import {
+  attachVFX, PAL,
+  matCoat, matStd, matGlow,
+  makeStudioEnvironment, makeWoodTexture, makeLabelTexture,
+} from './edu-vfx.js';
 
 /* ---------------- 本实验专属样式（不改动共享 lab.css） ---------------- */
 
@@ -40,34 +50,449 @@ const app = createApp({
   keepBackground: true,
 });
 const { scene, camera, controls } = app;
+/* 视觉工艺轻接入：后处理管线接管渲染循环与相机缓动（setCamera 升级为 cubic 运镜），
+   背景交给 illus 模式管理；金属/玻璃反射走程序化摄影棚（不再引外部 HDR） */
+const vfx = attachVFX(app, 'illus');
+scene.environment = makeStudioEnvironment(app.renderer);
 
-scene.add(new THREE.AmbientLight(0xbcc6d4, 0.6));
-const sunLight = new THREE.DirectionalLight(0xfff2e2, 1.6);
+scene.add(new THREE.AmbientLight(0xbcc6d4, 0.52));
+const sunLight = new THREE.DirectionalLight(0xfff2e2, 1.55);
 sunLight.position.set(3.5, 5, 3);
 scene.add(sunLight);
-const fillLight = new THREE.DirectionalLight(0xdfe8ff, 0.45);
+const fillLight = new THREE.DirectionalLight(0xdfe8ff, 0.5);
 fillLight.position.set(-4, 3, -2.5);
 scene.add(fillLight);
+/* 台面暖色反弹：从木纹桌面往上补一层低强度暖光，压住"漂浮感" */
+const deskBounce = new THREE.PointLight(0xffd9a0, 0.4, 8, 1.8);
+deskBounce.position.set(0, 0.4, 1.1);
+scene.add(deskBounce);
 
 const PLANE_Y = 1.06; // 电荷 / 粒子所在水平面高度
 const UPV = new THREE.Vector3(0, 1, 0);
 const V3 = (x, y, z) => new THREE.Vector3(x, y, z);
 function stdMat(opts) { return new THREE.MeshStandardMaterial(opts); }
 function box(w, h, d, mat) { return new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mat); }
+function cyl(r1, r2, h, mat) { return new THREE.Mesh(new THREE.CylinderGeometry(r1, r2, h, 24), mat); }
+
+/* ================= 工艺基建（材质分层 / 程序化纹理 / 接触阴影 / 圆角几何） ================= */
+
+/* 画布贴图工厂（颜色空间 + 各向异性一次配齐） */
+function canvasTex(w, h, draw) {
+  const cv = document.createElement('canvas');
+  cv.width = w; cv.height = h;
+  draw(cv.getContext('2d'), w, h);
+  const tex = new THREE.CanvasTexture(cv);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  tex.anisotropy = 8;
+  return tex;
+}
+/* 灰度画布贴图（roughnessMap / normalMap 用，保持线性空间） */
+function dataTex(w, h, draw) {
+  const cv = document.createElement('canvas');
+  cv.width = w; cv.height = h;
+  draw(cv.getContext('2d'), w, h);
+  const tex = new THREE.CanvasTexture(cv);
+  tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+  return tex;
+}
+/* 烤漆微噪点粗糙度贴图（漆面橘皮/细划痕） */
+function paintNoiseTexture(size = 256, repeat = 3) {
+  const tex = dataTex(size, size, (ctx) => {
+    const img = ctx.createImageData(size, size);
+    for (let i = 0; i < img.data.length; i += 4) {
+      const v = clamp(150 + Math.random() * 90, 0, 255);
+      img.data[i] = img.data[i + 1] = img.data[i + 2] = v;
+      img.data[i + 3] = 255;
+    }
+    ctx.putImageData(img, 0, 0);
+  });
+  tex.repeat.set(repeat, repeat);
+  return tex;
+}
+/* 滚花法线贴图（接线柱/旋钮防滑纹） */
+function knurlNormalTexture(cols = 48) {
+  const w = 512, h = 32;
+  return dataTex(w, h, (ctx) => {
+    for (let x = 0; x < w; x++) {
+      const s = Math.sin((x / w) * cols * Math.PI * 2) * 0.75;
+      ctx.fillStyle = `rgb(${Math.round((s * 0.5 + 0.5) * 255)},128,${Math.round(Math.sqrt(Math.max(0, 1 - s * s)) * 127 + 128)})`;
+      ctx.fillRect(x, 0, 1, h);
+    }
+  });
+}
+
+/* ---- 材质分层（电磁教具族：烤漆 / 镀铬 / 黄铜 / 紫铜 / 胶木 / 陶瓷 / 玻璃） ---- */
+const F_PAINT_RED = matCoat(0xc23b30, { roughness: 0.4, metalness: 0.06, clearcoat: 0.7, clearcoatRoughness: 0.26 });
+F_PAINT_RED.roughnessMap = paintNoiseTexture(256, 3);
+F_PAINT_RED.envMapIntensity = 0.75;
+const F_PAINT_BLUE = matCoat(0x2e5fb8, { roughness: 0.4, metalness: 0.06, clearcoat: 0.7, clearcoatRoughness: 0.26 });
+F_PAINT_BLUE.envMapIntensity = 0.75;
+F_PAINT_BLUE.roughnessMap = F_PAINT_RED.roughnessMap;
+const F_BAKELITE = matCoat(0x27221d, { roughness: 0.46, metalness: 0.08, clearcoat: 0.4, clearcoatRoughness: 0.34 });
+const M_CHROME = matStd(0xe6e9ee, { roughness: 0.16, metalness: 1 });
+const M_SATIN = matStd(0xc9cdd3, { roughness: 0.3, metalness: 1 });
+M_SATIN.roughnessMap = paintNoiseTexture(128, 2);
+const M_BRASS = matStd(PAL.brass, { roughness: 0.3, metalness: 1 });
+const M_COPPER = matStd(0xb87346, { roughness: 0.34, metalness: 1 });
+const M_STEEL_DARK = matStd(0x3a3d42, { roughness: 0.35, metalness: 0.9 });
+const M_RUBBER = matStd(0x1d2126, { roughness: 0.88, metalness: 0.04 });
+const M_CERAMIC = matCoat(0xe9e4d6, { roughness: 0.34, metalness: 0.03, clearcoat: 0.5, clearcoatRoughness: 0.3 });
+const M_GLASS = matCoat(0xe6f0f2, { roughness: 0.05, opacity: 0.26 });
+const M_PLASTIC_SLAB = matCoat(0xe8e6da, { roughness: 0.42, opacity: 0.4 });
+const M_WOOD_DARK = matStd(0x4e341e, { roughness: 0.7 });
+function matKnurl(color, metal = 0.4, cols = 48) {
+  const m = matStd(color, { roughness: 0.38, metalness: metal });
+  m.normalMap = knurlNormalTexture(cols);
+  m.normalScale = new THREE.Vector2(1.3, 1.3);
+  return m;
+}
+const M_KNURL_BRASS = matKnurl(PAL.brass, 1, 44);
+
+/* ---- 圆角几何小工具 ---- */
+function roundedRectShape(w, d, r) {
+  const s = new THREE.Shape();
+  const x = -w / 2, y = -d / 2;
+  s.moveTo(x + r, y);
+  s.lineTo(x + w - r, y);
+  s.absarc(x + w - r, y + r, r, -Math.PI / 2, 0, false);
+  s.lineTo(x + w, y + d - r);
+  s.absarc(x + w - r, y + d - r, r, 0, Math.PI / 2, false);
+  s.lineTo(x + r, y + d);
+  s.absarc(x + r, y + d - r, r, Math.PI / 2, Math.PI, false);
+  s.lineTo(x, y + r);
+  s.absarc(x + r, y + r, r, Math.PI, Math.PI * 1.5, false);
+  return s;
+}
+/* 圆角平板（挤出+倒角，顶面 y=0），rot: 'flat' 平放 / 'up' 立起（厚度沿 Z） */
+function roundedSlab(w, d, h, r, mat, bevel = 0.015, rot = 'flat') {
+  const g = new THREE.ExtrudeGeometry(roundedRectShape(w, d, r), {
+    depth: h, bevelEnabled: true, bevelThickness: bevel, bevelSize: bevel,
+    bevelSegments: 3, curveSegments: 14,
+  });
+  g.rotateX(rot === 'flat' ? -Math.PI / 2 : 0);
+  if (rot === 'up') g.translate(0, 0, -h / 2);
+  return new THREE.Mesh(g, mat);
+}
+/* 铭牌贴花面片（多边形偏移防 z-fight） */
+function decalPlane(tex, w, h) {
+  const mat = new THREE.MeshStandardMaterial({
+    map: tex, transparent: true, roughness: 0.5, metalness: 0,
+    depthWrite: false, polygonOffset: true, polygonOffsetFactor: -2,
+  });
+  return new THREE.Mesh(new THREE.PlaneGeometry(w, h), mat);
+}
+/* 黄铜接线柱（底座圆盘 + 滚花旋钮 + 一字槽），教学装置通用件 */
+function makePost(h = 0.09) {
+  const g = new THREE.Group();
+  const base = new THREE.Mesh(new THREE.CylinderGeometry(0.045, 0.052, 0.016, 14), M_BRASS);
+  base.position.y = 0.008;
+  const stem = new THREE.Mesh(new THREE.CylinderGeometry(0.018, 0.018, h, 12), M_BRASS);
+  stem.position.y = h / 2 + 0.012;
+  const knob = new THREE.Mesh(new THREE.CylinderGeometry(0.031, 0.028, 0.024, 16), M_KNURL_BRASS);
+  knob.position.y = h + 0.03;
+  const slot = box(0.042, 0.006, 0.009, matStd(0x14161a, { roughness: 0.6 }));
+  slot.position.y = h + 0.043;
+  g.add(base, stem, knob, slot);
+  return g;
+}
+
+/* ---- 接触阴影：桌面一张烘焙径向渐变贴图（单 draw call，免实时 shadowMap） ---- */
+const SHADOW_BLOBS = [];
+function bakeContactShadow(x, z, w, d, opacity = 0.4) {
+  SHADOW_BLOBS.push({ x, z, w, d, opacity });
+}
+function buildBenchShadow() {
+  const CW = 1024, CH = 704;
+  const cv = document.createElement('canvas');
+  cv.width = CW; cv.height = CH;
+  const ctx = cv.getContext('2d');
+  for (const b of SHADOW_BLOBS) {
+    const px = ((b.x + 4.8) / 9.6) * CW;
+    const pz = ((b.z + 3.3) / 6.6) * CH;
+    const rx = (b.w / 9.6) * CW / 2;
+    const rz = (b.d / 6.6) * CH / 2;
+    const g = ctx.createRadialGradient(px, pz, 0, px, pz, Math.max(rx, rz));
+    g.addColorStop(0, `rgba(8,6,3,${b.opacity})`);
+    g.addColorStop(0.55, `rgba(8,6,3,${b.opacity * 0.5})`);
+    g.addColorStop(1, 'rgba(8,6,3,0)');
+    ctx.save();
+    ctx.translate(px, pz);
+    ctx.scale(rx / Math.max(rx, rz), rz / Math.max(rx, rz));
+    ctx.translate(-px, -pz);
+    ctx.fillStyle = g;
+    ctx.fillRect(px - Math.max(rx, rz), pz - Math.max(rx, rz), Math.max(rx, rz) * 2, Math.max(rx, rz) * 2);
+    ctx.restore();
+  }
+  const tex = new THREE.CanvasTexture(cv);
+  const m = new THREE.Mesh(new THREE.PlaneGeometry(9.6, 6.6), new THREE.MeshBasicMaterial({
+    map: tex, transparent: true, depthWrite: false,
+  }));
+  m.rotation.x = -Math.PI / 2;
+  m.position.y = 0.0045;
+  m.renderOrder = -1;
+  return m;
+}
+
+/* 沿曲线的变宽截面放样（教学装置 C 形 / 弯臂结构件）：
+ * 曲线 frame 的宽度轴固定世界 X、深度轴取切线×X；截面为圆角矩形环，
+ * 宽深沿弧长关键帧 + smoothstep 缓动；端帽扇面封口（法线朝向自动翻转绕序） */
+function sweepRoundedSection(curve, segs, wKeys, dKeys, groupBreaks = null) {
+  const rc = 0.3, seg = 5, ring = [];
+  const cs = [[0.5 - rc, 0.5 - rc, 0], [0.5 - rc, -0.5 + rc, Math.PI / 2], [-0.5 + rc, -0.5 + rc, Math.PI], [-0.5 + rc, 0.5 - rc, Math.PI * 1.5]];
+  for (const [cx, cy, a0] of cs) {
+    for (let k = 0; k <= seg; k++) {
+      const a = a0 + (k / seg) * (Math.PI / 2);
+      ring.push([cx + Math.cos(a) * rc, cy + Math.sin(a) * rc]);
+    }
+  }
+  const keyAt = (keys, t) => {
+    for (let i = 0; i < keys.length - 1; i++) {
+      if (t <= keys[i + 1][0]) {
+        const [t0, v0] = keys[i], [t1, v1] = keys[i + 1];
+        const k = (t - t0) / Math.max(t1 - t0, 1e-6);
+        return v0 + (v1 - v0) * k * k * (3 - 2 * k);
+      }
+    }
+    return keys[keys.length - 1][1];
+  };
+  const pts = curve.getSpacedPoints(segs);
+  const ringM = ring.length;
+  const pos = [], idx = [];
+  const vAt = (i3) => new THREE.Vector3(pos[i3], pos[i3 + 1], pos[i3 + 2]);
+  for (let i = 0; i <= segs; i++) {
+    const t = i / segs, p = pts[i];
+    const T = new THREE.Vector3().subVectors(pts[Math.min(segs, i + 1)], pts[Math.max(0, i - 1)]).normalize();
+    const Nn = new THREE.Vector3().crossVectors(T, new THREE.Vector3(1, 0, 0)).normalize();
+    const w = keyAt(wKeys, t), d = keyAt(dKeys, t);
+    for (let k = 0; k < ringM; k++) {
+      const [ux, vy] = ring[k];
+      pos.push(p.x + ux * w, p.y + vy * d * Nn.y, p.z + vy * d * Nn.z);
+    }
+  }
+  for (let i = 0; i < segs; i++) {
+    for (let k = 0; k < ringM; k++) {
+      const k1 = (k + 1) % ringM;
+      const a = i * ringM + k, b = (i + 1) * ringM + k, c = (i + 1) * ringM + k1, dd = i * ringM + k1;
+      idx.push(a, b, c, a, c, dd);
+    }
+    if (i === 0 || i === segs - 1) {
+      const centerBase = pos.length / 3;
+      const p = pts[i === 0 ? 0 : segs];
+      pos.push(p.x, p.y, p.z);
+      const T = new THREE.Vector3().subVectors(pts[Math.min(segs, i + 1)], pts[Math.max(0, i - 1)]).normalize();
+      const ringBase = i * ringM;
+      for (let k = 0; k < ringM; k++) {
+        const k1 = (k + 1) % ringM;
+        const tri = [centerBase, ringBase + k, ringBase + k1];
+        const n = new THREE.Vector3().subVectors(vAt(tri[1] * 3), vAt(tri[0] * 3))
+          .cross(new THREE.Vector3().subVectors(vAt(tri[2] * 3), vAt(tri[0] * 3)));
+        idx.push(...(n.dot(T) < 0 ? tri : [tri[0], tri[2], tri[1]]));
+      }
+    }
+  }
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+  geo.setIndex(idx);
+  if (groupBreaks) {
+    geo.clearGroups();
+    const brs = [...groupBreaks.map((f) => Math.round(ringM * (6 * f + 3))), idx.length];
+    let start = 0;
+    brs.forEach((end, gi) => { geo.addGroup(start, end - start, gi); start = end; });
+  }
+  geo.computeVertexNormals();
+  return geo;
+}
 
 const worldG = new THREE.Group();
 scene.add(worldG);
 function buildWorld() {
-  const floor = new THREE.Mesh(
-    new THREE.CircleGeometry(9, 48),
-    stdMat({ color: 0x9aa2ab, roughness: 0.95, metalness: 0 })
+  /* ---- 环境地面（深色摄影棚地台，承托实验桌） ---- */
+  const ground = new THREE.Mesh(
+    new THREE.CircleGeometry(14, 48),
+    matStd(0x1a2027, { roughness: 0.96, metalness: 0 })
   );
-  floor.rotation.x = -Math.PI / 2;
-  worldG.add(floor);
-  const grid = new THREE.GridHelper(16, 32, 0x6d7680, 0x8d96a0);
-  grid.material.transparent = true;
-  grid.material.opacity = 0.45;
-  worldG.add(grid);
+  ground.rotation.x = -Math.PI / 2;
+  ground.position.y = -0.96;
+  worldG.add(ground);
+
+  /* ---- 木纹实验桌（顶面 y=0：台面板 + 前后封边 + 四条车削桌腿 + 拉杆） ---- */
+  const woodTop = makeWoodTexture({ base: '#6e4c2c', dark: '#4a3120', light: '#8a6640', streaks: 105, bands: 8, seed: 41 });
+  woodTop.repeat.set(2.2, 1.6);
+  const benchMat = matStd(0xffffff, { roughness: 0.6, metalness: 0.04 });
+  benchMat.map = woodTop;
+  const top = box(9.6, 0.16, 6.6, benchMat);
+  top.position.y = -0.08;
+  worldG.add(top);
+  for (const zs of [3.3, -3.3]) {
+    const edge = box(9.6, 0.5, 0.16, M_WOOD_DARK);
+    edge.position.set(0, -0.42, zs);
+    worldG.add(edge);
+  }
+  /* 车削桌腿（LatheGeometry 轮廓：柱头 → 鼓腹 → 收脚 → 踢脚） */
+  const legProf = [
+    [0.11, 0], [0.13, 0.05], [0.095, 0.16], [0.085, 0.5], [0.105, 0.72],
+    [0.075, 0.88], [0.07, 0.93], [0.085, 0.97],
+  ].map(([r, y]) => new THREE.Vector2(r, y));
+  for (const [lx, lz] of [[-4.4, -2.9], [4.4, -2.9], [-4.4, 2.9], [4.4, 2.9]]) {
+    const leg = new THREE.Mesh(new THREE.LatheGeometry(legProf, 18), M_WOOD_DARK);
+    leg.position.set(lx, -0.98, lz);
+    leg.scale.y = -1;   /* 轮廓以 y∈[0,0.97] 向下生长 */
+    worldG.add(leg);
+  }
+  for (const zs of [-2.9, 2.9]) {
+    const bar = box(8.5, 0.07, 0.1, M_WOOD_DARK);
+    bar.position.set(0, -0.78, zs);
+    worldG.add(bar);
+  }
+
+  /* ---- 坐标纸垫（深色制图纸：细格 + 10 格加重线 + 边框），场区教学锚点 ---- */
+  const matTex = canvasTex(512, 384, (ctx) => {
+    ctx.fillStyle = '#2c3641';
+    ctx.fillRect(0, 0, 512, 384);
+    ctx.strokeStyle = 'rgba(255,255,255,0.09)';
+    ctx.lineWidth = 1;
+    for (let x = 0; x <= 512; x += 16) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, 384); ctx.stroke(); }
+    for (let y = 0; y <= 384; y += 16) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(512, y); ctx.stroke(); }
+    ctx.strokeStyle = 'rgba(255,255,255,0.17)';
+    for (let x = 0; x <= 512; x += 80) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, 384); ctx.stroke(); }
+    for (let y = 0; y <= 384; y += 80) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(512, y); ctx.stroke(); }
+    ctx.strokeStyle = 'rgba(255,255,255,0.2)';
+    ctx.lineWidth = 3;
+    ctx.strokeRect(2, 2, 508, 380);
+  });
+  const matMesh = new THREE.Mesh(new THREE.PlaneGeometry(4.8, 3.6), matStd(0xffffff, { roughness: 0.85, metalness: 0 }));
+  matMesh.material.map = matTex;
+  matMesh.rotation.x = -Math.PI / 2;
+  matMesh.position.y = 0.003;
+  matMesh.renderOrder = -1;
+  worldG.add(matMesh);
+
+  /* ---- 道具阵列（电磁实验室语境件，全部带接触阴影） ---- */
+
+  /* 小磁针：黄铜底座 + 顶针 + 菱形磁针（红 N / 米白 S）+ 玻璃罩 */
+  {
+    const g = new THREE.Group();
+    g.position.set(3.55, 0, -1.85);
+    g.rotation.y = 0.42;
+    const base = new THREE.Mesh(new THREE.LatheGeometry([
+      [0.02, 0], [0.22, 0], [0.24, 0.03], [0.19, 0.06], [0.07, 0.1], [0.045, 0.16], [0.02, 0.2],
+    ].map(([r, y]) => new THREE.Vector2(r, y)), 22), M_BRASS);
+    const needleG = new THREE.Group();
+    needleG.position.y = 0.21;
+    const nCone = new THREE.Mesh(new THREE.ConeGeometry(0.035, 0.19, 10), F_PAINT_RED);
+    nCone.position.y = 0.095;
+    const sCone = new THREE.Mesh(new THREE.ConeGeometry(0.035, 0.19, 10), matStd(0xe8e2d2, { roughness: 0.5 }));
+    sCone.rotation.x = Math.PI;
+    sCone.position.y = -0.095;
+    const cap = new THREE.Mesh(new THREE.SphereGeometry(0.024, 10, 8), M_BRASS);
+    needleG.add(nCone, sCone, cap);
+    needleG.rotation.y = -0.7;
+    const dome = new THREE.Mesh(new THREE.SphereGeometry(0.27, 22, 12, 0, TAU, 0, Math.PI / 2), M_GLASS);
+    dome.position.y = 0.1;
+    g.add(base, needleG, dome);
+    bakeContactShadow(3.55, -1.85, 0.85, 0.85, 0.3);
+    worldG.add(g);
+  }
+
+  /* 铁屑罐：铁皮罐身 + 撒孔穹顶（凸点纹理）+ 提环 + 标签 */
+  {
+    const g = new THREE.Group();
+    g.position.set(4.15, 0, -0.95);
+    g.rotation.y = -0.3;
+    const body = cyl(0.17, 0.17, 0.3, matStd(0x8b939c, { roughness: 0.42, metalness: 0.75 }));
+    body.position.y = 0.15;
+    const lidTex = canvasTex(128, 128, (ctx) => {
+      ctx.fillStyle = '#7c848d';
+      ctx.fillRect(0, 0, 128, 128);
+      for (let i = 0; i < 46; i++) {
+        const a = (i * 2.399) % TAU, r = 6 + (i / 46) * 52;
+        ctx.fillStyle = '#191d21';
+        ctx.beginPath();
+        ctx.arc(64 + Math.cos(a) * r, 64 + Math.sin(a) * r, 3.1, 0, TAU);
+        ctx.fill();
+      }
+    });
+    const dome = new THREE.Mesh(new THREE.SphereGeometry(0.17, 20, 10, 0, TAU, 0, Math.PI / 2),
+      matStd(0xffffff, { roughness: 0.45, metalness: 0.7 }));
+    dome.material.map = lidTex;
+    dome.scale.y = 0.55;
+    dome.position.y = 0.3;
+    const handle = new THREE.Mesh(new THREE.TorusGeometry(0.05, 0.008, 6, 18, Math.PI), M_STEEL_DARK);
+    handle.position.y = 0.41;
+    const lblMat = matStd(0xffffff, { roughness: 0.85 });
+    lblMat.map = makeLabelTexture(['铁屑', '磁感线演示用'], { w: 220, h: 130, lineSizes: [40, 22] });
+    const lbl = new THREE.Mesh(new THREE.CylinderGeometry(0.175, 0.175, 0.16, 18, 1, true, -0.7, 1.4), lblMat);
+    lbl.position.y = 0.16;
+    g.add(body, dome, handle, lbl);
+    bakeContactShadow(4.15, -0.95, 0.75, 0.75, 0.3);
+    worldG.add(g);
+  }
+
+  /* 漆包线线轴：木质轴体 + 两端挡板 + 紫铜绕线 + 标签 */
+  {
+    const g = new THREE.Group();
+    g.position.set(3.8, 0, 1.95);
+    g.rotation.set(Math.PI / 2, 0, -0.5);
+    const windTex = canvasTex(256, 64, (ctx) => {
+      ctx.fillStyle = '#8a4f28';
+      ctx.fillRect(0, 0, 256, 64);
+      for (let x = 0; x < 256; x += 5) {
+        ctx.fillStyle = x % 10 ? '#c07a40' : '#a3602f';
+        ctx.fillRect(x, 0, 3, 64);
+      }
+      ctx.fillStyle = 'rgba(255,220,180,0.25)';
+      for (let x = 0; x < 256; x += 5) ctx.fillRect(x, 6, 1.4, 52);
+    });
+    const windMat = matStd(0xffffff, { roughness: 0.35, metalness: 0.8 });
+    windMat.map = windTex;
+    const core = cyl(0.11, 0.11, 0.34, M_WOOD_DARK);
+    core.rotation.z = Math.PI / 2;
+    const wind = cyl(0.155, 0.155, 0.26, windMat);
+    wind.rotation.z = Math.PI / 2;
+    g.add(core, wind);
+    for (const s of [-1, 1]) {
+      const flange = cyl(0.21, 0.21, 0.028, M_WOOD_DARK);
+      flange.rotation.z = Math.PI / 2;
+      flange.position.x = s * 0.185;
+      g.add(flange);
+    }
+    bakeContactShadow(3.8, 1.95, 0.8, 0.55, 0.28);
+    worldG.add(g);
+  }
+
+  /* 干电池盒：双节电池 + 极性标 + 接线柱 + 引线 */
+  {
+    const g = new THREE.Group();
+    g.position.set(-3.9, 0, 1.6);
+    g.rotation.y = 0.35;
+    const holder = box(0.62, 0.12, 0.24, F_BAKELITE);
+    holder.position.y = 0.06;
+    g.add(holder);
+    for (const sx of [-1, 1]) {
+      const cell = cyl(0.052, 0.052, 0.28, matStd(sx > 0 ? 0xb8452f : 0x2f3f56, { roughness: 0.4, metalness: 0.15 }));
+      cell.rotation.z = Math.PI / 2;
+      cell.position.set(sx * 0.15, 0.14, 0);
+      const nub = cyl(0.018, 0.018, 0.02, M_BRASS);
+      nub.rotation.z = Math.PI / 2;
+      nub.position.set(sx * 0.15 + 0.15, 0.14, 0);
+      g.add(cell, nub);
+    }
+    const post1 = makePost(0.07);
+    post1.position.set(-0.26, 0.12, 0.06);
+    const post2 = makePost(0.07);
+    post2.position.set(0.26, 0.12, 0.06);
+    g.add(post1, post2);
+    const lblMat2 = matStd(0xffffff, { roughness: 0.85 });
+    lblMat2.map = makeLabelTexture(['干电池', '1.5 V × 2'], { w: 220, h: 120, lineSizes: [38, 24] });
+    const lbl2 = new THREE.Mesh(new THREE.PlaneGeometry(0.3, 0.16), lblMat2);
+    lbl2.position.set(0, 0.062, 0.125);
+    lbl2.rotation.x = -Math.PI / 2;
+    g.add(lbl2);
+    bakeContactShadow(-3.9, 1.6, 1.0, 0.7, 0.3);
+    worldG.add(g);
+  }
+
+  worldG.add(buildBenchShadow());
 }
 
 /* ---------------- 通用小工具：箭头 / 条形磁铁 / 角落窗 / 提示 ---------------- */
@@ -92,22 +517,62 @@ function setArrow(g, pos, dir, len) {
   g.scale.setScalar(len);
 }
 
+/* 条形磁铁（教学主力件，第 5/9 章共用）：圆角挤出红/蓝烤漆半体（橘皮漆面）+
+ * 镀铬磁轭中带 + 两端缎面极帽 + 侧面 N/S 刻字贴花 + 顶部教学字标 */
 function makeBarMagnet(len = 1.1, h = 0.16) {
   const g = new THREE.Group();
-  const nMat = stdMat({ color: 0xd34b41, roughness: 0.5, metalness: 0.25 });
-  const sMat = stdMat({ color: 0x3b6fc9, roughness: 0.5, metalness: 0.25 });
-  const n = box(len / 2, h, h * 0.9, nMat); n.position.x = len / 4;
-  const s = box(len / 2, h, h * 0.9, sMat); s.position.x = -len / 4;
+  const halfGeo = new THREE.ExtrudeGeometry(roundedRectShape(h, h * 0.9, 0.035), {
+    depth: len / 2 - 0.02, bevelEnabled: true, bevelThickness: 0.012, bevelSize: 0.012,
+    bevelSegments: 2, curveSegments: 10,
+  });
+  halfGeo.rotateY(Math.PI / 2);   /* 轮廓 XY→截面，挤出沿 -X 后翻转 */
+  halfGeo.translate(0.024, 0, 0);
+  const n = new THREE.Mesh(halfGeo, F_PAINT_RED); n.position.x = 0.012;
+  const s = new THREE.Mesh(halfGeo, F_PAINT_BLUE); s.rotation.y = Math.PI; s.position.x = -0.012;
+  /* 中带磁轭（微宽于漆面，车削件观感） */
+  const keeper = box(0.09, h * 1.04, h * 0.94, M_CHROME);
+  const capGeoR = new THREE.CylinderGeometry(h * 0.47, h * 0.47, 0.03, 18);
+  const capN = new THREE.Mesh(capGeoR, M_SATIN);
+  capN.rotation.z = Math.PI / 2; capN.position.x = len / 2 + 0.004;
+  const capS = new THREE.Mesh(capGeoR, M_SATIN);
+  capS.rotation.z = Math.PI / 2; capS.position.x = -len / 2 - 0.004;
   const nLbl = makeTextSprite('N', { fontSize: 60, color: '#ffd9d4', scale: 0.0026 });
   nLbl.position.set(len / 4, h * 0.9, 0);
   const sLbl = makeTextSprite('S', { fontSize: 60, color: '#cfe2ff', scale: 0.0026 });
   sLbl.position.set(-len / 4, h * 0.9, 0);
-  g.add(n, s, nLbl, sLbl);
+  /* 两侧刻字贴花（阳极氧化白字，直接读面） */
+  const sideTex = (t) => canvasTex(160, 96, (ctx) => {
+    ctx.clearRect(0, 0, 160, 96);
+    ctx.fillStyle = t;
+    ctx.font = `800 74px 'Avenir Next', 'Helvetica Neue', sans-serif`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(t, 80, 52);
+  });
+  const nDecal = decalPlane(sideTex('N'), h * 0.6, h * 0.36);
+  nDecal.position.set(len / 4, 0, h * 0.452);
+  const sDecal = decalPlane(sideTex('S'), h * 0.6, h * 0.36);
+  sDecal.position.set(-len / 4, 0, h * 0.452);
+  g.add(n, s, keeper, capN, capS, nLbl, sLbl, nDecal, sDecal);
   g.userData.halfLen = len / 2;
   return g;
 }
 
+let cornerFolded = false;   /* 浮窗折叠态（会话内共享，一个实验同一时刻只有一角窗）；初值在下方读取偏好 */
+{
+  let saved = null;
+  try { saved = localStorage.getItem('fields.foldCorner'); } catch (e) { /* 忽略 */ }
+  cornerFolded = saved !== null ? saved === '1' : window.innerWidth <= 1100;
+}
+
 const cornerWins = [];
+/* 浮窗折叠偏好：localStorage 记忆（fields.foldCorner），首访不写、用户操作后落盘；
+   无记忆时 ≤1100px 首访清爽态默认折叠 */
+function cornerFoldPref() {
+  let saved = null;
+  try { saved = localStorage.getItem('fields.foldCorner'); } catch (e) { /* 隐私模式忽略 */ }
+  return saved !== null ? saved === '1' : window.innerWidth <= 1100;
+}
 function makeCorner(title, width = 280) {
   const win = document.createElement('div');
   win.className = 'fields-corner2';
@@ -117,18 +582,49 @@ function makeCorner(title, width = 280) {
   const b = document.createElement('b');
   b.textContent = title;
   head.appendChild(b);
+  const foldBtn = document.createElement('button');
+  foldBtn.type = 'button';
+  foldBtn.className = 'cw-fold';
+  foldBtn.textContent = '−';
+  foldBtn.title = '收起浮窗';
+  head.appendChild(foldBtn);
   const cv = document.createElement('canvas');
   cv.width = width * 2;
   cv.height = 300;
+  const badge = document.createElement('button');
+  badge.type = 'button';
+  badge.className = 'cw-badge';
+  badge.textContent = title.charAt(0);
+  badge.title = '展开「' + title + '」浮窗';
   win.appendChild(head);
   win.appendChild(cv);
+  win.appendChild(badge);
+  /* 折叠态：头部与画布隐藏，整窗收成 40px 圆形徽标（贴原锚点）；偏好落盘 */
+  const applyFold = () => {
+    win.classList.toggle('folded', cornerFolded);
+    foldBtn.textContent = cornerFolded ? '+' : '−';
+    foldBtn.setAttribute('aria-expanded', String(!cornerFolded));
+  };
+  foldBtn.addEventListener('click', () => {
+    cornerFolded = !cornerFolded;
+    try { localStorage.setItem('fields.foldCorner', cornerFolded ? '1' : '0'); } catch (e) { /* 忽略 */ }
+    applyFold();
+  });
+  badge.addEventListener('click', () => {
+    cornerFolded = false;
+    try { localStorage.setItem('fields.foldCorner', '0'); } catch (e) { /* 忽略 */ }
+    applyFold();
+  });
   stage.appendChild(win);
   cornerWins.push(win);
+  stage.classList.add('has-corner');   /* 让图例避让同锚点的浮窗（历史重叠） */
+  applyFold();
   return { win, cv, ctx: cv.getContext('2d') };
 }
 function clearCorners() {
   cornerWins.forEach((w) => w.remove());
   cornerWins.length = 0;
+  stage.classList.remove('has-corner');
 }
 
 let hintEl = null;
@@ -151,9 +647,10 @@ function setHint(rows) {
 /* ---------------- 电荷场工厂（第 1 章 / 自由实验共用） ---------------- */
 
 const CHARGE_SPHERE_GEO = new THREE.SphereGeometry(0.13, 24, 18);
+const CHARGE_BAND_GEO = new THREE.TorusGeometry(0.131, 0.006, 6, 32);
 const SEL_RING_GEO = new THREE.RingGeometry(0.18, 0.23, 32);
-const posMat = stdMat({ color: 0xe5484d, emissive: 0x571512, roughness: 0.35, metalness: 0.1 });
-const negMat = stdMat({ color: 0x3f7de0, emissive: 0x11295c, roughness: 0.35, metalness: 0.1 });
+const posMat = matCoat(0xe5484d, { roughness: 0.3, metalness: 0.15, clearcoat: 0.7, emissive: 0x571512 });
+const negMat = matCoat(0x3f7de0, { roughness: 0.3, metalness: 0.15, clearcoat: 0.7, emissive: 0x11295c });
 const selMat = new THREE.MeshBasicMaterial({ color: 0xffd166, transparent: true, opacity: 0.9, side: THREE.DoubleSide });
 const ARROW_CONE_GEO = new THREE.ConeGeometry(0.02, 0.058, 6);
 
@@ -284,6 +781,9 @@ function createChargeField(parent, colors, hidden = false) {
     } else {
       mesh = new THREE.Mesh(CHARGE_SPHERE_GEO, q > 0 ? posMat : negMat);
       mesh.position.set(x, 0, z);
+      const band = new THREE.Mesh(CHARGE_BAND_GEO, M_SATIN);
+      band.rotation.x = Math.PI / 2;   /* 赤道金属环：可拖点电荷的"极"味 */
+      mesh.add(band);
       const lbl = makeTextSprite(q > 0 ? '+' : '−', { fontSize: 64, color: q > 0 ? '#ffd9d4' : '#cfe2ff', scale: 0.0034 });
       lbl.position.set(0, 0.17, 0);
       mesh.add(lbl);
@@ -442,10 +942,30 @@ scene.add(g2);
 const st2 = { q: 2, E: 4, d: 0.8, path: 'along', anim: null };
 let w2 = {};
 function buildWork() {
-  const plateMat = stdMat({ color: 0xb7413a, roughness: 0.4, metalness: 0.3 });
-  const negPlateMat = stdMat({ color: 0x3661a8, roughness: 0.4, metalness: 0.3 });
-  const pL = box(0.07, 1.5, 1.15, plateMat); pL.position.set(-1.3, 1.06, 0);
-  const pR = box(0.07, 1.5, 1.15, negPlateMat); pR.position.set(1.3, 1.06, 0);
+  /* 极板：圆角挤出烤漆钢板（正/负双色）+ 顶缘接线柱 + 双瓷绝缘支脚落台 */
+  const plateGeo = new THREE.ExtrudeGeometry(roundedRectShape(1.15, 1.5, 0.05), {
+    depth: 0.07, bevelEnabled: true, bevelThickness: 0.012, bevelSize: 0.012,
+    bevelSegments: 2, curveSegments: 10,
+  });
+  plateGeo.rotateY(Math.PI / 2);
+  const plateMat = matCoat(0xb7413a, { roughness: 0.36, metalness: 0.35, clearcoat: 0.5 });
+  const negPlateMat = matCoat(0x3661a8, { roughness: 0.36, metalness: 0.35, clearcoat: 0.5 });
+  const standGeo = new THREE.CylinderGeometry(0.042, 0.05, 0.3, 12);
+  const footGeo = new THREE.CylinderGeometry(0.09, 0.1, 0.024, 14);
+  for (const [px, mat] of [[-1.3, plateMat], [1.3, negPlateMat]]) {
+    const p = new THREE.Mesh(plateGeo, mat);
+    p.position.set(px, 1.06, 0);
+    const post = makePost(0.05);
+    post.position.set(px, 1.83, 0);
+    g2.add(p, post);
+    for (const zs of [-0.42, 0.42]) {
+      const st = new THREE.Mesh(standGeo, M_CERAMIC);
+      st.position.set(px, 0.16, zs);
+      const ft = new THREE.Mesh(footGeo, M_STEEL_DARK);
+      ft.position.set(px, 0.012, zs);
+      g2.add(st, ft);
+    }
+  }
   const lblL = makeTextSprite('＋', { fontSize: 70, color: '#ffd0cb', scale: 0.004 });
   lblL.position.set(-1.3, 1.95, 0);
   const lblR = makeTextSprite('－', { fontSize: 70, color: '#cfe0ff', scale: 0.004 });
@@ -458,12 +978,19 @@ function buildWork() {
       g2.add(a); arrows.push(a);
     }
   }
-  const probe = new THREE.Mesh(new THREE.SphereGeometry(0.09, 18, 14), stdMat({ color: 0xffd166, emissive: 0x5c430e, roughness: 0.3 }));
-  probe.position.set(-1.05, 1.06, 0);
+  /* 试探电荷：导电小球 + 绝缘手柄（对比/demo 两用教具形制） */
+  const probe = new THREE.Group();
+  const ball = new THREE.Mesh(new THREE.SphereGeometry(0.09, 18, 14),
+    matCoat(0xffd166, { roughness: 0.28, metalness: 0.3, clearcoat: 0.7, emissive: 0x5c430e }));
+  const stem = cyl(0.012, 0.012, 0.2, M_CERAMIC);
+  stem.position.y = 0.19;
+  const ring = new THREE.Mesh(new THREE.TorusGeometry(0.026, 0.007, 8, 16), M_BRASS);
+  ring.position.y = 0.3;
   const probeLbl = makeTextSprite('试探电荷', { fontSize: 30, color: '#ffe2a8', scale: 0.0028 });
-  probeLbl.position.set(0, 0.25, 0);
-  probe.add(probeLbl);
-  g2.add(pL, pR, lblL, lblR, probe);
+  probeLbl.position.set(0, 0.48, 0);
+  probe.add(ball, stem, ring, probeLbl);
+  probe.position.set(-1.05, 1.06, 0);
+  g2.add(lblL, lblR, probe);
   w2 = { arrows, probe };
 }
 function probeStart() {
@@ -493,9 +1020,39 @@ const DIELECTRICS = [
 ];
 let w3 = {};
 function buildCap() {
-  const plateMat = stdMat({ color: 0xc9ccd2, roughness: 0.35, metalness: 0.7 });
-  const pL = box(0.05, 0.8, 0.8, plateMat);
-  const pR = box(0.05, 0.8, 0.8, plateMat);
+  /* 底座导轨：钢槽 + 双导轨条（瓷支脚随板距在轨上滑动） */
+  const channel = box(2.5, 0.05, 1.0, M_STEEL_DARK);
+  channel.position.y = 0.025;
+  g3.add(channel);
+  for (const zs of [-0.2, 0.2]) {
+    const rail = box(2.4, 0.012, 0.05, matStd(0x14161a, { roughness: 0.5, metalness: 0.6 }));
+    rail.position.set(0, 0.056, zs);
+    g3.add(rail);
+  }
+  /* 极板总成（左右各一）：圆角钢板 + 顶部接线柱 + 瓷支脚（组内随板平移） */
+  const plateGeo = new THREE.ExtrudeGeometry(roundedRectShape(0.8, 0.8, 0.04), {
+    depth: 0.05, bevelEnabled: true, bevelThickness: 0.01, bevelSize: 0.01,
+    bevelSegments: 2, curveSegments: 10,
+  });
+  plateGeo.rotateY(Math.PI / 2);
+  const plateMat = matCoat(0xd6dade, { roughness: 0.3, metalness: 0.85, clearcoat: 0.4 });
+  const colGeo = new THREE.CylinderGeometry(0.036, 0.042, 0.6, 12);
+  const footGeo = new THREE.CylinderGeometry(0.075, 0.085, 0.02, 14);
+  const mkPlateAsm = () => {
+    const asm = new THREE.Group();
+    const slab = new THREE.Mesh(plateGeo, plateMat);
+    const post = makePost(0.05);
+    post.position.y = 0.44;
+    const column = new THREE.Mesh(colGeo, M_CERAMIC);
+    column.position.y = -0.72;
+    const foot = new THREE.Mesh(footGeo, M_STEEL_DARK);
+    foot.position.y = -1.03;
+    asm.add(slab, post, column, foot);
+    asm.userData.slab = slab;
+    return asm;
+  };
+  const pL = mkPlateAsm();
+  const pR = mkPlateAsm();
   const lblL = makeTextSprite('＋', { fontSize: 64, color: '#ffd0cb', scale: 0.0036 });
   const lblR = makeTextSprite('－', { fontSize: 64, color: '#cfe0ff', scale: 0.0036 });
   const arrows = [];
@@ -505,8 +1062,13 @@ function buildCap() {
       g3.add(a); arrows.push(a);
     }
   }
-  g3.add(pL, pR, lblL, lblR);
-  w3 = { pL, pR, lblL, lblR, arrows };
+  /* 介质板：插入/抽出动画（塑料=乳白半透 / 玻璃=青玻），与 εr 联动 */
+  const glassSlabMat = matCoat(0xbcd8d2, { roughness: 0.06, opacity: 0.34 });
+  const slab = box(1, 0.72, 0.66, M_PLASTIC_SLAB);
+  slab.position.y = 2.4;   /* 待插入位（上方），applyCap 设定目标高度 */
+  g3.add(pL, pR, lblL, lblR, slab);
+  bakeContactShadow(0, 0, 3.0, 1.5, 0.26);
+  w3 = { pL, pR, lblL, lblR, arrows, slab, glassMat: glassSlabMat, slabTargetY: 2.4 };
 }
 function capC() { return (0.885 * st3.eps * st3.S) / st3.d; }          // pF
 function capU() { return st3.mode === 'U' ? st3.U : (st3.Q * 1e-9) / (capC() * 1e-12); } // V
@@ -514,12 +1076,18 @@ function capE() { return capU() / st3.d; }                             // V/mm
 function applyCap() {
   const gap = 0.25 + (st3.d - 2) * (0.95 / 18); // 板距视觉映射 2~20mm
   const s = Math.sqrt(st3.S / 100);
-  w3.pL.position.set(-gap / 2, 1.06, 0);
-  w3.pR.position.set(gap / 2, 1.06, 0);
-  w3.pL.scale.set(1, s, s);
-  w3.pR.scale.set(1, s, s);
+  for (const [asm, sx] of [[w3.pL, -1], [w3.pR, 1]]) {
+    asm.position.set(sx * gap / 2, 1.06, 0);
+    asm.userData.slab.scale.set(1, s, s);
+    asm.children[1].position.y = 0.44 * s + 0.03;   /* 接线柱随板缘 */
+  }
   w3.lblL.position.set(-gap / 2 - 0.06, 1.06 + 0.42 * s, 0);
   w3.lblR.position.set(gap / 2 + 0.06, 1.06 + 0.42 * s, 0);
+  /* 介质板：厚度贴合板距（单位厚度 × x 缩放），材质按介质切换；空气=抽出待命 */
+  const slab = w3.slab;
+  slab.scale.set(Math.max(gap - 0.045, 0.03), s, s);
+  slab.material = st3.eps >= 5 ? w3.glassMat : M_PLASTIC_SLAB;
+  w3.slabTargetY = st3.eps > 1 ? 1.06 : 2.4;
   const Evm = capE(); // V/mm
   const len = Evm <= 0 ? 0 : 0.18 + clamp(Evm / 60, 0, 1) * 0.5;
   let i = 0;
@@ -540,38 +1108,118 @@ scene.add(g4);
 const st4 = { Uy: 60, freq: 1.5, gain: 1.4, sweep: true, U1: 1.5 };
 let w4 = {};
 function buildScope() {
-  const glass = new THREE.MeshPhysicalMaterial({ color: 0xaec6d4, roughness: 0.06, transparent: true, opacity: 0.12, side: THREE.DoubleSide, depthWrite: false });
-  const tube = new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.34, 3.6, 24, 1, true), glass);
-  tube.rotation.x = Math.PI / 2;
-  tube.position.set(0, 1.06, -0.45);
-  const cone = new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.14, 0.5, 24, 1, true), glass);
-  cone.rotation.x = -Math.PI / 2;
-  cone.position.set(0, 1.06, 1.15);
-  const gun = box(0.16, 0.16, 0.3, stdMat({ color: 0x5a6470, roughness: 0.4, metalness: 0.6 }));
-  gun.position.set(0, 1.06, -2.0);
+  /* ---- 玻壳总成：LatheGeometry 旋转轮廓（灯尾 → 管颈 → 漏斗锥 → 屏面） ---- */
+  const glassEnv = matCoat(0xaec6d4, { roughness: 0.05, opacity: 0.17, side: THREE.DoubleSide, depthWrite: false });
+  glassEnv.envMapIntensity = 1.35;
+  const prof = [
+    [0.0, 0.02], [0.1, 0.05], [0.155, 0.14], [0.16, 0.5], [0.16, 1.28],
+    [0.19, 1.4], [0.3, 1.92], [0.352, 2.66], [0.362, 3.18], [0.358, 3.6], [0.34, 3.88], [0.315, 3.98],
+  ].map(([r, t]) => new THREE.Vector2(r, t));
+  const envGeo = new THREE.LatheGeometry(prof, 40);
+  envGeo.rotateX(Math.PI / 2);          /* 旋转轴 +Y → +Z（屏朝 +Z） */
+  const envelope = new THREE.Mesh(envGeo, glassEnv);
+  envelope.position.set(0, 1.06, -2.4); /* t=0 对齐管颈尾端 */
+  g4.add(envelope);
+
+  /* ---- 电子枪总成：阴极（灯丝辉点）+ 调制极杯 + 两级阳极膜片 + 云母隔片 ---- */
+  const gunG = new THREE.Group();
+  gunG.position.set(0, 1.06, -2.0);
+  const cathode = cyl(0.05, 0.055, 0.16, M_STEEL_DARK);
+  const heatSpot = new THREE.Mesh(new THREE.SphereGeometry(0.02, 10, 8),
+    matGlow(0xffc46a, 0.85, { color: 0xffe2b0 }));
+  heatSpot.position.z = -0.1;
+  const wehnelt = new THREE.Mesh(new THREE.CylinderGeometry(0.085, 0.075, 0.055, 18, 1, true), M_SATIN);
+  wehnelt.rotation.x = Math.PI / 2;
+  wehnelt.position.z = -0.045;
+  const anodeGeo = new THREE.CylinderGeometry(0.105, 0.105, 0.016, 20);
+  const a1 = new THREE.Mesh(anodeGeo, M_SATIN); a1.rotation.x = Math.PI / 2; a1.position.z = 0.14;
+  const a2 = new THREE.Mesh(anodeGeo, M_SATIN); a2.rotation.x = Math.PI / 2; a2.position.z = 0.38;
+  for (const az of [a1, a2]) {
+    const hole = new THREE.Mesh(new THREE.CircleGeometry(0.024, 14), new THREE.MeshBasicMaterial({ color: 0x0a0d10 }));
+    hole.position.set(0, 0, az.position.z + 0.012);
+    gunG.add(hole);
+  }
+  const mica = new THREE.Mesh(new THREE.CylinderGeometry(0.13, 0.13, 0.012, 18),
+    matStd(0xd8d2c4, { roughness: 0.7, transparent: true, opacity: 0.5 }));
+  mica.rotation.x = Math.PI / 2; mica.position.z = 0.26;
+  const rail = cyl(0.012, 0.012, 0.6, M_STEEL_DARK);
+  rail.rotation.x = Math.PI / 2; rail.position.set(0, -0.14, 0.16);
+  gunG.add(cathode, heatSpot, wehnelt, a1, a2, mica, rail);
   const gunLbl = makeTextSprite('电子枪', { fontSize: 30, color: '#c9d4de', scale: 0.0028 });
-  gunLbl.position.set(0.3, 1.4, -2.0);
-  const yyTop = box(0.5, 0.02, 0.3, stdMat({ color: 0xb7413a, roughness: 0.4, metalness: 0.4 }));
+  gunLbl.position.set(0.3, 1.44, -2.0);
+  g4.add(gunG, gunLbl);
+
+  /* ---- 偏转板：YY′/XX′ 板对 + 边缘引脚 + 出线软管（TubeGeometry 走线） ---- */
+  const yyTop = box(0.5, 0.02, 0.3, matCoat(0xb7413a, { roughness: 0.38, metalness: 0.4, clearcoat: 0.4 }));
   yyTop.position.set(0, 1.3, -0.95);
-  const yyBot = box(0.5, 0.02, 0.3, stdMat({ color: 0x3661a8, roughness: 0.4, metalness: 0.4 }));
+  const yyBot = box(0.5, 0.02, 0.3, matCoat(0x3661a8, { roughness: 0.38, metalness: 0.4, clearcoat: 0.4 }));
   yyBot.position.set(0, 0.82, -0.95);
-  const yyLbl = makeTextSprite('YY′ 竖直偏转板', { fontSize: 30, color: '#e8c9b8', scale: 0.0028 });
-  yyLbl.position.set(0.55, 1.5, -0.95);
-  const xxL = box(0.02, 0.24, 0.3, stdMat({ color: 0xb7413a, roughness: 0.4, metalness: 0.4 }));
+  const xxL = box(0.02, 0.24, 0.3, matCoat(0xb7413a, { roughness: 0.38, metalness: 0.4, clearcoat: 0.4 }));
   xxL.position.set(-0.22, 1.06, -0.4);
   const xxR = xxL.clone(); xxR.position.x = 0.22;
+  const yyLbl = makeTextSprite('YY′ 竖直偏转板', { fontSize: 30, color: '#e8c9b8', scale: 0.0028 });
+  yyLbl.position.set(0.55, 1.5, -0.95);
   const xxLbl = makeTextSprite('XX′ 扫描板', { fontSize: 30, color: '#e8c9b8', scale: 0.0028 });
   xxLbl.position.set(0.5, 0.72, -0.4);
+  g4.add(yyTop, yyBot, yyLbl, xxL, xxR, xxLbl);
+  const wireMat = matStd(0x2c3138, { roughness: 0.6 });
+  const leadDefs = [
+    [[0.24, 1.3, -0.85], [0.42, 1.05, -1.2], [0.5, 0.72, -1.62], [0.44, 0.5, -2.2]],
+    [[-0.24, 0.84, -0.85], [-0.4, 0.75, -1.3], [-0.42, 0.55, -1.7], [-0.34, 0.46, -2.16]],
+    [[-0.2, 1.06, -0.3], [-0.3, 0.86, -0.66], [-0.36, 0.6, -1.3], [-0.3, 0.48, -2.1]],
+    [[0.2, 1.06, -0.3], [0.32, 0.9, -0.72], [0.4, 0.62, -1.4], [0.38, 0.48, -2.14]],
+  ];
+  for (const pts of leadDefs) {
+    const c = new THREE.CatmullRomCurve3(pts.map((p) => V3(...p)));
+    g4.add(new THREE.Mesh(new THREE.TubeGeometry(c, 24, 0.008, 6), wireMat));
+  }
+
+  /* ---- 荧光屏：磷光底衬 + 显示画布 + 面环压圈 ---- */
   const scrCv = document.createElement('canvas');
   scrCv.width = 256; scrCv.height = 256;
   const scrTex = new THREE.CanvasTexture(scrCv);
   scrTex.colorSpace = THREE.SRGBColorSpace;
-  const screen = new THREE.Mesh(new THREE.CircleGeometry(0.32, 40), new THREE.MeshBasicMaterial({ map: scrTex }));
-  screen.position.set(0, 1.06, 1.42);
-  const bezel = new THREE.Mesh(new THREE.TorusGeometry(0.33, 0.035, 10, 40), stdMat({ color: 0x3a4048, roughness: 0.5 }));
-  bezel.position.copy(screen.position);
+  const phosphor = new THREE.Mesh(new THREE.CircleGeometry(0.312, 40),
+    matGlow(0x0e2f1c, 0.35, { color: 0x123522 }));
+  phosphor.position.set(0, 1.06, 1.418);   /* 磷光底衬在描迹画布之后（画布在前发亮） */
+  const screen = new THREE.Mesh(new THREE.CircleGeometry(0.31, 40), new THREE.MeshBasicMaterial({ map: scrTex }));
+  screen.position.set(0, 1.06, 1.43);
+  const bezel = new THREE.Mesh(new THREE.TorusGeometry(0.325, 0.028, 10, 44), matStd(0x3a4048, { roughness: 0.42, metalness: 0.5 }));
+  bezel.position.set(0, 1.06, 1.47);
   const scrLbl = makeTextSprite('荧光屏', { fontSize: 30, color: '#a8ffd0', scale: 0.0028 });
   scrLbl.position.set(0, 1.56, 1.42);
+  g4.add(phosphor, screen, bezel, scrLbl);
+
+  /* ---- 管座 + 引脚 + 支鞍座（前后两座，弧口托住玻壳） ---- */
+  const socket = cyl(0.13, 0.145, 0.1, F_BAKELITE);
+  socket.rotation.x = Math.PI / 2;
+  socket.position.set(0, 1.06, -2.42);
+  g4.add(socket);
+  const pinGeo = new THREE.CylinderGeometry(0.011, 0.011, 0.07, 8);
+  for (let k = 0; k < 6; k++) {
+    const a = (k / 6) * TAU + 0.3;
+    const pin = new THREE.Mesh(pinGeo, M_BRASS);
+    pin.rotation.x = Math.PI / 2;
+    pin.position.set(Math.cos(a) * 0.085, 1.06 + Math.sin(a) * 0.085, -2.49);
+    g4.add(pin);
+  }
+  const saddleDef = [
+    [-1.7, 0.175, 0.28], [0.72, 0.375, 0.42],
+  ];
+  for (const [sz, sr, footW] of saddleDef) {
+    const arc = 3.4;
+    const saddle = new THREE.Mesh(new THREE.TorusGeometry(sr, 0.022, 8, 24, arc), M_STEEL_DARK);
+    saddle.rotation.z = -Math.PI / 2 - arc / 2;   /* 弧口朝上托住玻壳 */
+    saddle.position.set(0, 1.06, sz);
+    const colH = 1.06 - sr - 0.03;
+    const column = box(0.055, colH, 0.055, M_STEEL_DARK);
+    column.position.set(0, colH / 2, sz);
+    const foot = box(footW, 0.03, 0.3, M_STEEL_DARK);
+    foot.position.set(0, 0.015, sz);
+    g4.add(saddle, column, foot);
+  }
+  bakeContactShadow(0, -0.4, 3.6, 1.4, 0.24);
+
   const MAXDOT = 8;
   const beamMesh = new THREE.InstancedMesh(
     new THREE.SphereGeometry(0.02, 8, 6),
@@ -580,7 +1228,7 @@ function buildScope() {
   );
   beamMesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
   beamMesh.frustumCulled = false;
-  g4.add(tube, cone, gun, gunLbl, yyTop, yyBot, yyLbl, xxL, xxR, xxLbl, screen, bezel, scrLbl, beamMesh);
+  g4.add(beamMesh);
   const dots = Array.from({ length: MAXDOT }, (_, i) => ({ p: i / MAXDOT }));
   w4 = { scrCv, scrCtx: scrCv.getContext('2d'), scrTex, beamMesh, dots };
   w4.scrCtx.fillStyle = '#04140a';
@@ -601,12 +1249,28 @@ let w5 = {};
 function buildMagnet() {
   const magA = makeBarMagnet(1.1);
   const magB = makeBarMagnet(1.1);
-  // 通电直导线（沿 y 轴）+ 同心圆磁感线
-  const wire = cyl(0.018, 0.018, 1.3, stdMat({ color: 0xd9a441, roughness: 0.3, metalness: 0.8 }));
+  // 通电直导线（沿 y 轴，双支架装夹）+ 同心圆磁感线
+  const wire = cyl(0.018, 0.018, 1.3, M_COPPER);
   wire.position.set(0, PLANE_Y, 0);
   const wireLbl = makeTextSprite('通电直导线', { fontSize: 28, color: '#e0c9b8', scale: 0.0026 });
   wireLbl.position.set(0, PLANE_Y + 0.8, 0);
   wire.add(wireLbl);
+  /* 鼓架式装夹：底座 + 立杆 + 横臂 + 导线夹环（导线绷直的物理交代，随直导线模式显隐） */
+  const wireStands = new THREE.Group();
+  for (const sx of [-1, 1]) {
+    const stand = new THREE.Group();
+    stand.position.set(sx * 0.62, 0, 0);
+    const foot = cyl(0.11, 0.13, 0.03, M_STEEL_DARK);
+    foot.position.y = 0.015;
+    const rod = cyl(0.016, 0.016, 1.62, M_SATIN);
+    rod.position.y = 0.83;
+    const arm = box(0.62, 0.028, 0.028, M_SATIN);
+    arm.position.set(-sx * 0.31, 1.58, 0);
+    const collar = new THREE.Mesh(new THREE.TorusGeometry(0.032, 0.01, 8, 16), M_BRASS);
+    collar.position.set(0, 1.58, 0);
+    stand.add(foot, rod, arm, collar);
+    wireStands.add(stand);
+  }
   const circlesG = new THREE.Group();
   const cMat = new THREE.LineBasicMaterial({ color: 0x35b5c9, transparent: true, opacity: 0.75 });
   const wireArrows = [];
@@ -626,7 +1290,7 @@ function buildMagnet() {
     }
   }
   const wireG = new THREE.Group();
-  wireG.add(wire, circlesG);
+  wireG.add(wire, circlesG, wireStands);
   wireG.visible = false;
   g5.add(magA, magB, wireG);
   w5 = { magA, magB, filingsCv: null, wireG, wireArrows };
@@ -727,15 +1391,31 @@ scene.add(g6);
 const st6 = { I: 1.5, B: 0.8, L: 0.8, dir: 1, z: 0, v: 0 };
 let w6 = {};
 function buildAmpere() {
-  const railMat = stdMat({ color: 0x7a828c, roughness: 0.35, metalness: 0.7 });
-  const railA = box(0.06, 0.04, 2.8, railMat); railA.position.set(-0.34, 0.94, 0);
+  /* ---- 导轨桥：双轨 + 四腿落台 + 黄铜导体棒（含端帽，电流箭头组随动） ---- */
+  const railA = box(0.06, 0.04, 2.8, M_SATIN); railA.position.set(-0.34, 0.94, 0);
   const railB = railA.clone(); railB.position.x = 0.34;
-  const legA = box(0.1, 0.9, 0.1, railMat); legA.position.set(-0.34, 0.45, -1.3);
-  const legB = legA.clone(); legB.position.x = 0.34;
-  const rod = box(1.0, 0.07, 0.07, stdMat({ color: 0xd9a441, roughness: 0.3, metalness: 0.8 }));
-  rod.position.set(0, 1.0, 0);
+  g6.add(railA, railB);
+  const legGeo6 = new THREE.BoxGeometry(0.09, 0.92, 0.09);
+  const footGeo6 = new THREE.CylinderGeometry(0.075, 0.09, 0.024, 12);
+  for (const lx of [-0.34, 0.34]) {
+    for (const lz of [-1.3, 1.3]) {
+      const leg = new THREE.Mesh(legGeo6, M_STEEL_DARK);
+      leg.position.set(lx, 0.46, lz);
+      const foot = new THREE.Mesh(footGeo6, M_STEEL_DARK);
+      foot.position.set(lx, 0.012, lz);
+      g6.add(leg, foot);
+    }
+  }
+  const rod = box(0.94, 0.07, 0.07, M_BRASS);
   const rodG = new THREE.Group();
   rodG.add(rod);
+  const endCapGeo = new THREE.CylinderGeometry(0.052, 0.052, 0.03, 14);
+  for (const sx of [-1, 1]) {
+    const cap = new THREE.Mesh(endCapGeo, M_KNURL_BRASS);
+    cap.rotation.z = Math.PI / 2;
+    cap.position.x = sx * 0.485;
+    rodG.add(cap);
+  }
   const curArrows = new THREE.Group();
   const coneGeo = new THREE.ConeGeometry(0.032, 0.1, 8);
   const curMat = new THREE.MeshBasicMaterial({ color: 0x35d07a });
@@ -747,14 +1427,43 @@ function buildAmpere() {
   }
   rodG.add(curArrows);
   rodG.position.set(0, 1.0, 0);
-  const magTop = box(1.7, 0.16, 1.6, stdMat({ color: 0xd34b41, roughness: 0.5, metalness: 0.25 }));
-  magTop.position.set(0, 1.5, 0);
-  const magBot = box(1.7, 0.16, 1.6, stdMat({ color: 0x3b6fc9, roughness: 0.5, metalness: 0.25 }));
-  magBot.position.set(0, 0.62, 0);
+  g6.add(rodG);
+
+  /* ---- 蹄形磁铁：CatmullRom 变截面放样 C 形轭铁（红烤漆）+ 上下钢质极靴 ----
+   * 磁场区（导轨/导体棒所在间隙）的几何与旧版一致：极面 y≈0.64 / 1.48，z 跨 ±0.8 */
+  const shoeMat = matCoat(0x9ba3ac, { roughness: 0.3, metalness: 0.9, clearcoat: 0.3 });
+  const shoeGeo = roundedSlab(1.5, 1.4, 0.05, 0.05, shoeMat, 0.012);
+  const shoeTop = shoeGeo.clone(); shoeTop.position.set(0, 1.4775, 0);
+  const shoeBot = shoeGeo.clone(); shoeBot.position.set(0, 0.5975, 0);
+  const yokeCurve = new THREE.CatmullRomCurve3([
+    V3(0, 0.62, -0.55), V3(0, 0.60, -0.85), V3(0, 0.75, -1.12), V3(0, 1.05, -1.22),
+    V3(0, 1.38, -1.12), V3(0, 1.52, -0.85), V3(0, 1.50, -0.55),
+  ], false, 'catmullrom', 0.6);
+  const yokeWKeys = [[0, 2.0], [0.22, 2.06], [0.5, 2.1], [0.78, 2.06], [1, 2.0]];
+  const yokeDKeys = [[0, 0.3], [0.22, 0.33], [0.5, 0.36], [0.78, 0.33], [1, 0.3]];
+  const yoke = new THREE.Mesh(sweepRoundedSection(yokeCurve, 56, yokeWKeys, yokeDKeys), F_PAINT_RED);
+  g6.add(shoeTop, shoeBot, yoke);
+  /* 轭铁入靴处的镀铬压板（机械衔接交代，随宽轭同宽） */
+  for (const fy of [0.63, 1.49]) {
+    const clampPlate = box(2.12, 0.36, 0.05, M_CHROME);
+    clampPlate.position.set(0, fy, -0.52);
+    g6.add(clampPlate);
+  }
   const nLbl = makeTextSprite('N', { fontSize: 60, color: '#ffd9d4', scale: 0.0026 });
   nLbl.position.set(0, 1.68, 0);
   const sLbl = makeTextSprite('S', { fontSize: 60, color: '#cfe2ff', scale: 0.0026 });
   sLbl.position.set(0, 0.44, 0);
+  /* 磁铁支脚：轭靴整体落在四只钢支脚上 */
+  const postGeo6 = new THREE.BoxGeometry(0.1, 0.58, 0.1);
+  for (const px of [-0.68, 0.68]) {
+    for (const pz of [-0.6, 0.6]) {
+      const post = new THREE.Mesh(postGeo6, M_STEEL_DARK);
+      post.position.set(px, 0.29, pz);
+      const foot = new THREE.Mesh(footGeo6, M_STEEL_DARK);
+      foot.position.set(px, 0.012, pz);
+      g6.add(post, foot);
+    }
+  }
   const arrows = [];
   for (const x of [-0.5, 0, 0.5]) {
     for (const z of [-0.55, 0, 0.55]) {
@@ -762,11 +1471,25 @@ function buildAmpere() {
       g6.add(a); arrows.push(a);
     }
   }
-  const batt = box(0.22, 0.16, 0.22, stdMat({ color: 0x2f3338, roughness: 0.6 }));
-  batt.position.set(0, 0.86, -1.45);
+  /* ---- 电源盒（胶木壳 + 铭牌 + 双接线柱）+ 引线到轨尾 ---- */
+  const batt = box(0.4, 0.2, 0.28, F_BAKELITE);
+  batt.position.set(1.1, 0.1, -1.62);
+  const battLblMat = matStd(0xffffff, { roughness: 0.85 });
+  battLblMat.map = makeLabelTexture(['低压电源', 'DC 0-12V'], { w: 200, h: 110, lineSizes: [34, 22] });
+  const battLblPlate = new THREE.Mesh(new THREE.PlaneGeometry(0.3, 0.16), battLblMat);
+  battLblPlate.position.set(1.1, 0.1, -1.477);
+  const battP1 = makePost(0.06); battP1.position.set(0.97, 0.2, -1.56);
+  const battP2 = makePost(0.06); battP2.position.set(1.23, 0.2, -1.56);
+  const wireMat6 = matStd(0x2c3138, { roughness: 0.6 });
+  const wCurve1 = new THREE.CatmullRomCurve3([V3(0.97, 0.26, -1.56), V3(0.7, 0.2, -1.5), V3(0.42, 0.3, -1.36), V3(0.34, 0.9, -1.32)]);
+  const wCurve2 = new THREE.CatmullRomCurve3([V3(1.23, 0.26, -1.56), V3(1.05, 0.24, -1.52), V3(-0.1, 0.16, -1.42), V3(-0.34, 0.9, -1.32)]);
+  g6.add(batt, battLblPlate, battP1, battP2,
+    new THREE.Mesh(new THREE.TubeGeometry(wCurve1, 20, 0.01, 6), wireMat6),
+    new THREE.Mesh(new THREE.TubeGeometry(wCurve2, 20, 0.01, 6), wireMat6));
   const battLbl = makeTextSprite('电源', { fontSize: 30, color: '#c9d4de', scale: 0.0026 });
-  battLbl.position.set(0, 1.12, -1.45);
-  g6.add(railA, railB, legA, legB, rodG, magTop, magBot, nLbl, sLbl, batt, battLbl);
+  battLbl.position.set(1.1, 0.42, -1.62);
+  g6.add(nLbl, sLbl, battLbl);
+  bakeContactShadow(0, 0, 3.4, 3.4, 0.3);
   w6 = { rodG, curArrows, arrows };
 }
 function applyAmpereArrows() {
@@ -788,9 +1511,43 @@ const st7 = { v: 1.5, B: 0.8, m: 1, q: 1, alpha: 0, active: false, pos: new THRE
 let w7 = {};
 const TRAIL7 = 240;
 function buildLorentz() {
-  const frameGeo = new THREE.EdgesGeometry(new THREE.BoxGeometry(2.9, 1.05, 2.9));
-  const frame = new THREE.LineSegments(frameGeo, new THREE.LineBasicMaterial({ color: 0x7f8b98, transparent: true, opacity: 0.5 }));
-  frame.position.y = 1.06;
+  /* ---- 磁场区玻璃室：轻透明玻璃罩 + 钢质棱柱/顶框 + 底托盘（原线框实体化） ---- */
+  const chamberGlass = matCoat(0xcfe2ea, { roughness: 0.06, opacity: 0.15, side: THREE.DoubleSide, depthWrite: false });
+  const chamber = new THREE.Mesh(new THREE.BoxGeometry(2.9, 1.05, 2.9), chamberGlass);
+  chamber.position.y = 1.06;
+  g7.add(chamber);
+  const postGeo7 = new THREE.BoxGeometry(0.035, 1.05, 0.035);
+  for (const px of [-1.45, 1.45]) {
+    for (const pz of [-1.45, 1.45]) {
+      const post = new THREE.Mesh(postGeo7, M_SATIN);
+      post.position.set(px, 1.06, pz);
+      g7.add(post);
+    }
+  }
+  const barX = new THREE.BoxGeometry(2.9, 0.03, 0.03);
+  const barZ = new THREE.BoxGeometry(0.03, 0.03, 2.9);
+  for (const pz of [-1.45, 1.45]) {
+    const bar = new THREE.Mesh(barX, M_SATIN);
+    bar.position.set(0, 1.585, pz);
+    g7.add(bar);
+  }
+  for (const px of [-1.45, 1.45]) {
+    const bar = new THREE.Mesh(barZ, M_SATIN);
+    bar.position.set(px, 1.585, 0);
+    g7.add(bar);
+  }
+  const tray = roundedSlab(3.2, 3.2, 0.045, 0.05, M_STEEL_DARK, 0.012);
+  tray.position.y = 0.492;
+  g7.add(tray);
+  const footGeo7 = new THREE.CylinderGeometry(0.06, 0.075, 0.47, 12);
+  for (const px of [-1.4, 1.4]) {
+    for (const pz of [-1.4, 1.4]) {
+      const ft = new THREE.Mesh(footGeo7, M_STEEL_DARK);
+      ft.position.set(px, 0.257, pz);
+      g7.add(ft);
+    }
+  }
+  bakeContactShadow(0, 0, 3.8, 3.8, 0.26);
   const arrows = [];
   for (const x of [-0.9, -0.3, 0.3, 0.9]) {
     for (const z of [-0.9, -0.3, 0.3, 0.9]) {
@@ -809,7 +1566,7 @@ function buildLorentz() {
   trailGeo.setDrawRange(0, 0);
   const trail = new THREE.Line(trailGeo, new THREE.LineBasicMaterial({ color: 0x35e0c8, transparent: true, opacity: 0.8 }));
   trail.frustumCulled = false;
-  g7.add(frame, particle, trail);
+  g7.add(particle, trail);
   w7 = { arrows, particle, trail, trailPos, trailGeo, trailLen: 0 };
 }
 function launch7() {
@@ -846,24 +1603,75 @@ const ISOTOPES = [
 ];
 let w8ms = {};
 function buildMS() {
-  const src = box(0.3, 0.3, 0.3, stdMat({ color: 0x5a6470, roughness: 0.45, metalness: 0.5 }));
-  src.position.set(-2.35, 1.06, 0);
+  /* ---- 离子源：枪体（散热鳍 + 喷口辉点）+ 落台支柱 ---- */
+  const srcG = new THREE.Group();
+  srcG.position.set(-2.35, 1.06, 0);
+  const gunBody = cyl(0.13, 0.15, 0.42, matStd(0x5a6470, { roughness: 0.4, metalness: 0.75 }));
+  gunBody.rotation.x = Math.PI / 2;
+  const nozzle = cyl(0.05, 0.09, 0.1, M_SATIN);
+  nozzle.rotation.x = Math.PI / 2;
+  nozzle.position.z = 0.25;
+  const beamDot = new THREE.Mesh(new THREE.SphereGeometry(0.03, 10, 8), matGlow(0xffc46a, 1.4, { color: 0xffe2b0 }));
+  beamDot.position.z = 0.27;
+  for (let k = 0; k < 4; k++) {
+    const fin = box(0.3, 0.014, 0.1, M_STEEL_DARK);
+    fin.position.set(0, 0.16 - k * 0.005, -0.08 - k * 0.05);
+    srcG.add(fin);
+  }
+  const srcPost = cyl(0.05, 0.07, 0.85, M_STEEL_DARK);
+  srcPost.position.y = -0.62;
+  const srcFoot = cyl(0.14, 0.17, 0.03, M_STEEL_DARK);
+  srcFoot.position.y = -1.045;
+  srcG.add(gunBody, nozzle, beamDot, srcPost, srcFoot);
   const srcLbl = makeTextSprite('离子源', { fontSize: 30, color: '#c9d4de', scale: 0.0028 });
-  srcLbl.position.set(-2.35, 1.45, 0);
-  const plateMat = stdMat({ color: 0xb7413a, roughness: 0.4, metalness: 0.4 });
-  const plateMat2 = stdMat({ color: 0x3661a8, roughness: 0.4, metalness: 0.4 });
+  srcLbl.position.set(-2.35, 1.5, 0);
+  g8ms.add(srcG, srcLbl);
+
+  /* ---- 速度选择器：板对 + 侧框杆 + 支架 ---- */
+  const plateMat = matCoat(0xb7413a, { roughness: 0.38, metalness: 0.4, clearcoat: 0.4 });
+  const plateMat2 = matCoat(0x3661a8, { roughness: 0.38, metalness: 0.4, clearcoat: 0.4 });
   const selTop = box(0.7, 0.03, 0.45, plateMat); selTop.position.set(-1.35, 1.28, 0);
   const selBot = box(0.7, 0.03, 0.45, plateMat2); selBot.position.set(-1.35, 0.84, 0);
+  const selRodGeo = new THREE.CylinderGeometry(0.014, 0.014, 0.47, 8);
+  for (const sz of [-0.2, 0.2]) {
+    const rod = new THREE.Mesh(selRodGeo, M_SATIN);
+    rod.position.set(-1.68, 1.06, sz);
+    g8ms.add(rod);
+  }
+  const selPost = cyl(0.045, 0.06, 0.8, M_STEEL_DARK);
+  selPost.position.set(-1.68, 0.43, 0.2);
+  const selFoot = cyl(0.12, 0.15, 0.03, M_STEEL_DARK);
+  selFoot.position.set(-1.68, 0.015, 0.2);
   const selLbl = makeTextSprite('速度选择器', { fontSize: 30, color: '#e8c9b8', scale: 0.0028 });
   selLbl.position.set(-1.35, 1.62, 0);
-  const slit1 = box(0.09, 0.5, 0.09, stdMat({ color: 0x5a6470, roughness: 0.5, metalness: 0.5 }));
+  g8ms.add(selTop, selBot, selLbl, selPost, selFoot);
+
+  /* ---- 窄缝：双挡板（真实缝口）+ 门形架 ---- */
+  const slitMat = matStd(0x5a6470, { roughness: 0.42, metalness: 0.7 });
+  const slit1 = box(0.09, 0.5, 0.09, slitMat);
   slit1.position.set(-0.62, 1.35, 0);
   const slit2 = slit1.clone(); slit2.position.y = 0.77;
+  const slitTopBar = box(0.1, 0.03, 0.12, M_SATIN);
+  slitTopBar.position.set(-0.62, 1.62, 0);
+  const slitPost2 = cyl(0.03, 0.04, 1.64, M_STEEL_DARK);
+  slitPost2.position.set(-0.62, 0.82, 0);
   const slitLbl = makeTextSprite('窄缝', { fontSize: 26, color: '#c9d4de', scale: 0.0026 });
-  slitLbl.position.set(-0.62, 1.68, 0);
-  const regionGeo = new THREE.EdgesGeometry(new THREE.BoxGeometry(2.6, 0.95, 2.6));
-  const region = new THREE.LineSegments(regionGeo, new THREE.LineBasicMaterial({ color: 0x6d8398, transparent: true, opacity: 0.5 }));
+  slitLbl.position.set(-0.62, 1.78, 0);
+  g8ms.add(slit1, slit2, slitTopBar, slitPost2, slitLbl);
+
+  /* ---- 偏转磁场区：轻玻璃罩 + 四角棱柱（示界不挡视线） ---- */
+  const regionGlass = matCoat(0xcfe2ea, { roughness: 0.06, opacity: 0.12, side: THREE.DoubleSide, depthWrite: false });
+  const region = new THREE.Mesh(new THREE.BoxGeometry(2.6, 0.95, 2.6), regionGlass);
   region.position.set(0.85, 1.06, -1.2);
+  g8ms.add(region);
+  const regionPostGeo = new THREE.BoxGeometry(0.03, 0.95, 0.03);
+  for (const px of [-0.45, 2.15]) {
+    for (const pz of [-2.5, 0.1]) {
+      const p = new THREE.Mesh(regionPostGeo, M_SATIN);
+      p.position.set(px, 1.06, pz);
+      g8ms.add(p);
+    }
+  }
   const arrows = [];
   for (const x of [-0.1, 0.85, 1.8]) {
     for (const z of [-2.0, -1.2, -0.4]) {
@@ -871,11 +1679,28 @@ function buildMS() {
       g8ms.add(a); arrows.push(a);
     }
   }
-  const detector = box(0.05, 0.4, 2.5, stdMat({ color: 0xe8e2d2, roughness: 0.9 }));
-  detector.position.set(-0.62, 1.06, -1.2);
+
+  /* ---- 感光屏：钢背板 + 乳白感光膜 + 上下夹条 + 支架 ---- */
+  const detBack = box(0.03, 0.44, 2.56, M_STEEL_DARK);
+  detBack.position.set(-0.655, 1.06, -1.2);
+  const film = box(0.018, 0.36, 2.5, matStd(0xe8e2d2, { roughness: 0.55, emissive: 0x8a8474, emissiveIntensity: 0.12 }));
+  film.position.set(-0.63, 1.06, -1.2);
+  const clipGeo8 = box(0.06, 0.03, 2.56, M_SATIN);
+  const clipT = clipGeo8.clone();
+  clipT.position.set(-0.63, 1.3, -1.2);
+  const clipB = clipGeo8.clone();
+  clipB.position.set(-0.63, 0.82, -1.2);
+  for (const dz of [-1.15, 1.15]) {
+    const leg = cyl(0.03, 0.04, 0.84, M_STEEL_DARK);
+    leg.position.set(-0.66, 0.42, -1.2 + dz);
+    const ft = cyl(0.09, 0.11, 0.024, 12);
+    ft.position.set(-0.66, 0.012, -1.2 + dz);
+    g8ms.add(leg, ft);
+  }
   const detLbl = makeTextSprite('感光屏', { fontSize: 30, color: '#e8e2d2', scale: 0.0028 });
-  detLbl.position.set(-0.62, 1.42, -2.3);
-  g8ms.add(src, srcLbl, selTop, selBot, selLbl, slit1, slit2, slitLbl, region, detector, detLbl);
+  detLbl.position.set(-0.62, 1.46, -2.3);
+  g8ms.add(detBack, film, clipT, clipB, detLbl);
+  bakeContactShadow(0, -1.2, 4.4, 3.4, 0.24);
   const ions = [];
   const trails = [];
   const labels = [];
@@ -944,15 +1769,68 @@ function msRadiusText() {
 let w8c = {};
 const TRAIL8 = 420;
 function buildCyc() {
-  const deeMat = stdMat({ color: 0x8f9aa6, roughness: 0.35, metalness: 0.7 });
+  /* ---- D 形盒：半圆扁盒（外缘车削倒边）+ 馈电铜杆 + 高频电源箱 ---- */
+  const deeMat = matCoat(0x8f9aa6, { roughness: 0.3, metalness: 0.85, clearcoat: 0.35 });
   const dee1 = new THREE.Mesh(new THREE.CylinderGeometry(1.15, 1.15, 0.15, 40, 1, false, 0, Math.PI), deeMat);
   dee1.position.set(0.07, PLANE_Y, 0);
   const dee2 = new THREE.Mesh(new THREE.CylinderGeometry(1.15, 1.15, 0.15, 40, 1, false, Math.PI, Math.PI), deeMat);
   dee2.position.set(-0.07, PLANE_Y, 0);
+  const lipGeoPos = new THREE.TorusGeometry(1.15, 0.018, 8, 40, Math.PI);
+  lipGeoPos.rotateX(Math.PI / 2);       /* 放平：π 弧先盖 z>0 半边 */
+  lipGeoPos.rotateY(Math.PI / 2);       /* 转到 x>0 半边（对齐 D₁ 盒） */
+  const lipGeoNeg = lipGeoPos.clone();
+  lipGeoNeg.rotateY(Math.PI);           /* 镜像到 x<0（D₂ 盒） */
+  for (const [geo, dx] of [[lipGeoPos, 0.07], [lipGeoNeg, -0.07]]) {
+    for (const ly of [PLANE_Y + 0.075, PLANE_Y - 0.075]) {
+      const lip = new THREE.Mesh(geo, M_SATIN);
+      lip.position.set(dx, ly, 0);
+      g8cyc.add(lip);
+    }
+  }
   const d1Lbl = makeTextSprite('D₁', { fontSize: 36, color: '#dfe6ee', scale: 0.003 });
   d1Lbl.position.set(0.65, PLANE_Y + 0.2, 0.65);
   const d2Lbl = makeTextSprite('D₂', { fontSize: 36, color: '#dfe6ee', scale: 0.003 });
   d2Lbl.position.set(-0.65, PLANE_Y + 0.2, -0.65);
+  /* 馈电杆：D 盒底 → 高频电源箱 */
+  const stemMat = M_COPPER;
+  for (const sx of [-1, 1]) {
+    const stem = cyl(0.035, 0.045, 0.85, stemMat);
+    stem.position.set(sx * 0.55, 0.56, 0.42);
+    g8cyc.add(stem);
+    const bend = new THREE.Mesh(new THREE.TorusGeometry(0.09, 0.035, 8, 14, Math.PI / 1.6), stemMat);
+    bend.rotation.set(0, Math.PI / 2, sx > 0 ? -0.5 : Math.PI + 0.5);
+    bend.position.set(sx * 0.62, 0.17, 0.42);
+    g8cyc.add(bend);
+  }
+  const rfBox = box(1.05, 0.26, 0.5, F_BAKELITE);
+  rfBox.position.set(0, 0.13, 0.55);
+  const rfVentTex = canvasTex(256, 96, (ctx) => {
+    ctx.fillStyle = '#27221d';
+    ctx.fillRect(0, 0, 256, 96);
+    ctx.fillStyle = '#12100d';
+    for (let y = 14; y < 82; y += 18) ctx.fillRect(20, y, 216, 7);
+    ctx.strokeStyle = 'rgba(255,255,255,0.08)';
+    ctx.lineWidth = 2;
+    for (let y = 14; y < 82; y += 18) ctx.strokeRect(20, y, 216, 7);
+  });
+  const rfVentMat = matStd(0xffffff, { roughness: 0.55 });
+  rfVentMat.map = rfVentTex;
+  const rfVent = new THREE.Mesh(new THREE.PlaneGeometry(0.85, 0.18), rfVentMat);
+  rfVent.position.set(0, 0.15, 0.802);
+  const rfKnob = cyl(0.045, 0.05, 0.05, matKnurl(0x1d2126, 0.3, 36));
+  rfKnob.rotation.x = Math.PI / 2;
+  rfKnob.position.set(0.38, 0.16, 0.83);
+  const rfLblMat = matStd(0xffffff, { roughness: 0.85 });
+  rfLblMat.map = makeLabelTexture(['射频电源', 'f = qB/2πm'], { w: 230, h: 110, lineSizes: [34, 22] });
+  const rfLblPlate = new THREE.Mesh(new THREE.PlaneGeometry(0.42, 0.2), rfLblMat);
+  rfLblPlate.position.set(-0.2, 0.15, 0.802);
+  const rfFootGeo = new THREE.CylinderGeometry(0.05, 0.06, 0.04, 10);
+  for (const fx of [-0.45, 0.45]) {
+    const ffoot = new THREE.Mesh(rfFootGeo, M_STEEL_DARK);
+    ffoot.position.set(fx, 0.02, 0.55);
+    g8cyc.add(ffoot);
+  }
+  g8cyc.add(rfBox, rfVent, rfKnob, rfLblPlate);
   const gapFlash = new THREE.Mesh(
     new THREE.BoxGeometry(0.12, 0.2, 0.5),
     new THREE.MeshBasicMaterial({ color: 0xffb347, transparent: true, opacity: 0 })
@@ -970,6 +1848,7 @@ function buildCyc() {
   const trail = new THREE.Line(trailGeo, new THREE.LineBasicMaterial({ color: 0xffd166, transparent: true, opacity: 0.85 }));
   trail.frustumCulled = false;
   g8cyc.add(dee1, dee2, d1Lbl, d2Lbl, gapFlash, particle, trail);
+  bakeContactShadow(0, 0.3, 3.0, 2.6, 0.26);
   w8c = { dee1, dee2, gapFlash, particle, trail, trailPos, trailGeo, trailLen: 0, flashT: 0 };
 }
 function launchCyc() {
@@ -993,15 +1872,28 @@ const st9r = { F: 0.12, B: 0.5, L: 0.8, R: 2, v: 0, x: -0.7 };
 let w9 = {};
 let w9r = {};
 function buildInduction() {
-  const coilMat = stdMat({ color: 0xc08040, roughness: 0.35, metalness: 0.7 });
+  /* ---- 线圈总成：漆包铜线匝（匝数可调）+ 骨架圆管 + 两端木挡板 + 底板支柱 + 引线接线柱 ---- */
+  const coilMat = M_COPPER;
   const coilG = new THREE.Group();
   coilG.position.y = PLANE_Y;
   const tori = [];
+  const torusGeo9 = new THREE.TorusGeometry(0.36, 0.021, 8, 30);
   for (let i = 0; i < 18; i++) {
-    const t = new THREE.Mesh(new THREE.TorusGeometry(0.36, 0.02, 8, 28), coilMat);
+    const t = new THREE.Mesh(torusGeo9, coilMat);
     t.rotation.y = Math.PI / 2;
     coilG.add(t);
     tori.push(t);
+  }
+  const coreTube = new THREE.Mesh(new THREE.CylinderGeometry(0.33, 0.33, 1.46, 24, 1, true), matStd(0xd8cdb4, { roughness: 0.8 }));
+  coreTube.rotation.z = Math.PI / 2;
+  coilG.add(coreTube);
+  const cheekGeo = new THREE.CylinderGeometry(0.45, 0.45, 0.035, 26);
+  for (const sx of [-1, 1]) {
+    const cheek = new THREE.Mesh(cheekGeo, matStd(0xffffff, { roughness: 0.6 }));
+    cheek.material.map = makeWoodTexture({ base: '#7a5836', dark: '#54371e', light: '#95713f', streaks: 60, bands: 5, seed: 77 });
+    cheek.rotation.z = Math.PI / 2;
+    cheek.position.x = sx * 0.76;
+    coilG.add(cheek);
   }
   const curArrows = new THREE.Group();
   const coneGeo = new THREE.ConeGeometry(0.035, 0.1, 8);
@@ -1011,27 +1903,125 @@ function buildInduction() {
     curArrows.add(c);
   }
   coilG.add(curArrows);
-  const track = box(3.6, 0.02, 0.07, stdMat({ color: 0x7a828c, roughness: 0.4, metalness: 0.6 }));
-  track.position.set(0.4, 0.9, 0);
+  g9.add(coilG);
+  /* 底板 + 双支柱托住线圈 + 接线柱 + 引线 */
+  const coilBoard = roundedSlab(2.1, 0.9, 0.05, 0.04, matStd(0xffffff, { roughness: 0.62 }), 0.012);
+  coilBoard.material.map = makeWoodTexture({ base: '#6e4c2c', dark: '#4a3120', light: '#8a6640', streaks: 80, bands: 6, seed: 55 });
+  coilBoard.position.set(0, 0.025, 0);
+  const riserGeo9 = new THREE.CylinderGeometry(0.045, 0.06, 0.66, 12);
+  for (const sx of [-1, 1]) {
+    const riser = new THREE.Mesh(riserGeo9, M_STEEL_DARK);
+    riser.position.set(sx * 0.82, 0.35, 0);
+    g9.add(riser);
+  }
+  const cp1 = makePost(0.06); cp1.position.set(-0.88, 0.05, 0.32);
+  const cp2 = makePost(0.06); cp2.position.set(-0.68, 0.05, 0.32);
+  g9.add(coilBoard, cp1, cp2);
+  /* ---- 磁铁导轨（双轨 + 端挡 + 支脚），磁铁沿轨插拔 ---- */
+  const railGeo9 = new THREE.BoxGeometry(3.6, 0.035, 0.06);
+  const magnetRails = new THREE.Group();
+  for (const rz of [-0.09, 0.09]) {
+    const rail = new THREE.Mesh(railGeo9, M_SATIN);
+    rail.position.set(0.4, 0.9, rz);
+    magnetRails.add(rail);
+  }
+  for (const sx of [-1.38, 2.18]) {
+    const stop = box(0.05, 0.1, 0.24, M_STEEL_DARK);
+    stop.position.set(sx, 0.92, 0);
+    magnetRails.add(stop);
+  }
+  const railFootGeo = new THREE.CylinderGeometry(0.06, 0.075, 0.88, 12);
+  for (const rx of [-1.1, 0.4, 1.9]) {
+    const rf = new THREE.Mesh(railFootGeo, M_STEEL_DARK);
+    rf.position.set(rx, 0.455, 0);
+    magnetRails.add(rf);
+  }
+  g9.add(magnetRails);
   const magnet = makeBarMagnet(1.0, 0.14);
   magnet.rotation.y = Math.PI; // N 极朝 −x，先插入的是 N 极
   const magLbl = makeTextSprite('条形磁铁', { fontSize: 28, color: '#e0c9b8', scale: 0.0026 });
   magLbl.position.set(0, 0.26, 0);
   magnet.add(magLbl);
-  g9.add(coilG, track, magnet);
-  w9 = { coilG, track, tori, curArrows, magnet, galvCv: null };
+  g9.add(magnet);
+
+  /* ---- 灵敏电流计（3D 实体）：胶木壳 + 表盘贴花 + 动圈指针（帧循环随 e 偏转）+ 玻璃面 ---- */
+  const galv = new THREE.Group();
+  galv.position.set(-1.1, 0, 1.35);
+  galv.rotation.y = 0.42;
+  const case9 = roundedSlab(0.58, 0.5, 0.26, 0.05, F_BAKELITE, 0.018, 'up');
+  case9.position.y = 0.27;   /* 壳体前脸含倒角 ≈ z+0.148，表盘 0.16 露出 12mm 不 z-fight */
+  const dialTex = canvasTex(256, 160, (ctx) => {
+    ctx.fillStyle = '#efe9d8';
+    ctx.fillRect(0, 0, 256, 160);
+    ctx.strokeStyle = '#8a4030';
+    ctx.lineWidth = 4;
+    ctx.strokeRect(6, 6, 244, 148);
+    const cx = 128, cy = 152, R = 118;
+    ctx.strokeStyle = '#3a3a3a';
+    ctx.lineWidth = 2.4;
+    ctx.beginPath();
+    ctx.arc(cx, cy, R, Math.PI + Math.PI / 7, TAU - Math.PI / 7);
+    ctx.stroke();
+    ctx.fillStyle = '#3a3a3a';
+    ctx.font = '600 17px sans-serif';
+    ctx.textAlign = 'center';
+    for (let k = -3; k <= 3; k++) {
+      const a = Math.PI / 2 + (k / 3.4) * (Math.PI * 5 / 12);
+      ctx.strokeStyle = '#3a3a3a';
+      ctx.lineWidth = k % 2 ? 1.6 : 2.6;
+      ctx.beginPath();
+      ctx.moveTo(cx + Math.cos(a) * (R - 12), cy - Math.sin(a) * (R - 12));
+      ctx.lineTo(cx + Math.cos(a) * R, cy - Math.sin(a) * R);
+      ctx.stroke();
+      if (k % 2 === 0) ctx.fillText(String(Math.abs(k) * 30), cx + Math.cos(a) * (R - 28), cy - Math.sin(a) * (R - 28) + 5);
+    }
+    ctx.font = '500 15px sans-serif';
+    ctx.fillText('μA', cx, 26);
+    ctx.fillText('0', cx, cy - 8);
+  });
+  const dial = new THREE.Mesh(new THREE.PlaneGeometry(0.5, 0.3), matStd(0xffffff, { roughness: 0.6 }));
+  dial.material.map = dialTex;
+  dial.position.set(0, 0.3, 0.16);
+  const needle9 = new THREE.Group();
+  needle9.position.set(0, 0.19, 0.166);
+  const nBar = box(0.012, 0.24, 0.005, matStd(0xd23b30, { roughness: 0.4 }));
+  nBar.position.y = 0.1;
+  const nHub = new THREE.Mesh(new THREE.CylinderGeometry(0.016, 0.016, 0.014, 10), M_BRASS);
+  nHub.rotation.x = Math.PI / 2;
+  needle9.add(nBar, nHub);
+  const glassFace = new THREE.Mesh(new THREE.PlaneGeometry(0.52, 0.32), matCoat(0xdfeef2, { roughness: 0.04, opacity: 0.14 }));
+  glassFace.position.set(0, 0.3, 0.174);
+  const gp1 = makePost(0.05); gp1.position.set(-0.18, 0.52, 0.05);
+  const gp2 = makePost(0.05); gp2.position.set(0.18, 0.52, 0.05);
+  galv.add(case9, dial, needle9, glassFace, gp1, gp2);
+  /* 线圈 → 电流计 引线（两根软管走线） */
+  const wireMat9 = matStd(0x2c3138, { roughness: 0.6 });
+  const gCurve1 = new THREE.CatmullRomCurve3([V3(-0.88, 0.14, 0.32), V3(-1.0, 0.1, 0.7), V3(-1.18, 0.56, 1.28), V3(-1.28, 0.55, 1.4)]);
+  const gCurve2 = new THREE.CatmullRomCurve3([V3(-0.68, 0.14, 0.32), V3(-0.7, 0.1, 0.85), V3(-0.92, 0.55, 1.35), V3(-0.92, 0.55, 1.4)]);
+  g9.add(galv,
+    new THREE.Mesh(new THREE.TubeGeometry(gCurve1, 20, 0.009, 6), wireMat9),
+    new THREE.Mesh(new THREE.TubeGeometry(gCurve2, 20, 0.009, 6), wireMat9));
+  bakeContactShadow(0, 0, 4.6, 2.4, 0.26);
+  w9 = { coilG, magnetRails, tori, curArrows, magnet, galvCv: null, galvNeedle: needle9 };
 
   /* 导体棒切割子台（mode='rod' 时显示） */
   const rg = new THREE.Group();
   rg.visible = false;
-  const railMat = stdMat({ color: 0x7a828c, roughness: 0.35, metalness: 0.7 });
+  const railMat = M_SATIN;
   const railA = box(2.6, 0.04, 0.06, railMat); railA.position.set(0.1, 0.94, -0.3);
   const railB = railA.clone(); railB.position.z = 0.3;
-  const legA = box(0.1, 0.9, 0.1, railMat); legA.position.set(-1.1, 0.45, -0.3);
-  const legB = legA.clone(); legB.position.z = 0.3;
-  const legC = legA.clone(); legC.position.x = 1.3;
-  const legD = legC.clone(); legD.position.z = 0.3;
-  const rod = box(0.07, 0.07, 0.66, stdMat({ color: 0xd9a441, roughness: 0.3, metalness: 0.8 }));
+  const legGeo9 = new THREE.BoxGeometry(0.09, 0.92, 0.09);
+  const legFootGeo = new THREE.CylinderGeometry(0.07, 0.085, 0.024, 12);
+  for (const lx of [-1.1, 1.3]) {
+    for (const lz of [-0.3, 0.3]) {
+      const leg = new THREE.Mesh(legGeo9, M_STEEL_DARK);
+      leg.position.set(lx, 0.46, lz);
+      const lfoot = new THREE.Mesh(legFootGeo, M_STEEL_DARK);
+      lfoot.position.set(lx, 0.012, lz);
+      rg.add(leg, lfoot);
+    }
+  }
+  const rod = box(0.07, 0.07, 0.66, M_BRASS);
   rod.position.y = 1.0;
   const rodG = new THREE.Group();
   rodG.add(rod);
@@ -1047,18 +2037,41 @@ function buildInduction() {
     const a = makeArrow(0x7fb2ff, 0.6);
     rg.add(a); bArrows.push(a);
   }
-  const resBox = box(0.16, 0.2, 0.2, stdMat({ color: 0x2f3338, roughness: 0.6 }));
-  resBox.position.set(-1.35, 1.0, 0);
+  /* 电阻：瓷管绕线电阻（色环 + 端帽）+ 支架 */
+  const resG = new THREE.Group();
+  resG.position.set(-1.35, 1.0, 0);
+  const resTube = cyl(0.07, 0.07, 0.2, M_CERAMIC);
+  resTube.rotation.z = Math.PI / 2;
+  const bandMat = matStd(0x2f3338, { roughness: 0.5 });
+  for (const bx of [-0.055, 0, 0.055]) {
+    const band = new THREE.Mesh(new THREE.CylinderGeometry(0.072, 0.072, 0.02, 16), bandMat);
+    band.rotation.z = Math.PI / 2;
+    band.position.x = bx;
+    resG.add(band);
+  }
+  for (const sx of [-1, 1]) {
+    const endCap = new THREE.Mesh(new THREE.CylinderGeometry(0.045, 0.045, 0.03, 12), M_BRASS);
+    endCap.rotation.z = Math.PI / 2;
+    endCap.position.x = sx * 0.125;
+    const lead = cyl(0.008, 0.008, 0.1, M_BRASS);
+    lead.rotation.z = Math.PI / 2;
+    lead.position.x = sx * 0.19;
+    resG.add(endCap, lead);
+  }
+  const resStand = box(0.09, 0.9, 0.09, M_STEEL_DARK);
+  resStand.position.set(-1.35, 0.46, 0);
+  const resFoot = new THREE.Mesh(legFootGeo, M_STEEL_DARK);
+  resFoot.position.set(-1.35, 0.012, 0);
   const resLbl = makeTextSprite('电阻 R', { fontSize: 26, color: '#c9d4de', scale: 0.0024 });
-  resLbl.position.set(-1.35, 1.24, 0);
-  rg.add(railA, railB, legA, legB, legC, legD, rodG, resBox, resLbl);
+  resLbl.position.set(-1.35, 1.3, 0);
+  rg.add(resG, resStand, resFoot, resLbl);
   g9.add(rg);
   w9r = { g: rg, rodG, bArrows };
 }
 function applyMode9() {
   const rod = st9.mode === 'rod';
   w9.coilG.visible = !rod;
-  w9.track.visible = !rod;
+  w9.magnetRails.visible = !rod;
   w9.magnet.visible = !rod;
   w9r.g.visible = rod;
   w9r.bArrows.forEach((a) => {
@@ -1135,15 +2148,30 @@ scene.add(g10);
 const st10 = { n: 1.2, B: 0.8, Nt: 12, bulb: true, theta: 0 };
 let w10 = {};
 function buildGenerator() {
-  const statorMat = stdMat({ color: 0x9aa2ab, roughness: 0.45, metalness: 0.3 });
-  const poleN = box(0.3, 1.3, 1.3, stdMat({ color: 0xd34b41, roughness: 0.5, metalness: 0.25 }));
+  /* ---- 定子：红/蓝烤漆磁极 + 钢质极靴（展磁面）+ 机座轭背 + 双支座落台 ---- */
+  const poleN = box(0.3, 1.3, 1.3, F_PAINT_RED);
   poleN.position.set(-1.5, 1.06, 0);
-  const poleS = box(0.3, 1.3, 1.3, stdMat({ color: 0x3b6fc9, roughness: 0.5, metalness: 0.25 }));
+  const poleS = box(0.3, 1.3, 1.3, F_PAINT_BLUE);
   poleS.position.set(1.5, 1.06, 0);
+  const shoeGeo10 = box(0.06, 1.5, 1.5, matCoat(0x9ba3ac, { roughness: 0.3, metalness: 0.9, clearcoat: 0.3 }));
+  const shoeN = shoeGeo10.clone(); shoeN.position.set(-1.32, 1.06, 0);
+  const shoeS = shoeGeo10.clone(); shoeS.position.set(1.32, 1.06, 0);
+  const yokeBack = box(3.4, 1.5, 0.24, matStd(0x454b52, { roughness: 0.5, metalness: 0.6 }));
+  yokeBack.position.set(0, 1.06, -0.86);
+  const basePlate10 = box(3.6, 0.08, 2.0, matStd(0x454b52, { roughness: 0.55, metalness: 0.5 }));
+  basePlate10.position.set(0, 0.04, -0.1);
+  const pedGeo10 = new THREE.BoxGeometry(0.26, 0.33, 1.3);
+  for (const px of [-1.5, 1.5]) {
+    const ped = new THREE.Mesh(pedGeo10, matStd(0x454b52, { roughness: 0.55, metalness: 0.5 }));
+    ped.position.set(px, 0.245, 0);
+    g10.add(ped);
+  }
   const nLbl = makeTextSprite('N', { fontSize: 60, color: '#ffd9d4', scale: 0.0026 });
   nLbl.position.set(-1.5, 1.85, 0);
   const sLbl = makeTextSprite('S', { fontSize: 60, color: '#cfe2ff', scale: 0.0026 });
   sLbl.position.set(1.5, 1.85, 0);
+  g10.add(poleN, poleS, shoeN, shoeS, yokeBack, basePlate10, nLbl, sLbl);
+  bakeContactShadow(0, -0.1, 4.4, 2.8, 0.28);
   const arrows = [];
   for (const y of [0.68, 1.44]) {
     for (const z of [-0.42, 0, 0.42]) {
@@ -1151,7 +2179,9 @@ function buildGenerator() {
       g10.add(a); arrows.push(a);
     }
   }
-  const coilMat = stdMat({ color: 0xc08040, roughness: 0.35, metalness: 0.7 });
+
+  /* ---- 转子：多匝矩形线圈 + 轴 + 换向器（双铜半环 + 云母隔层）+ 碳刷（弹簧压臂）---- */
+  const coilMat = M_COPPER;
   const coilG = new THREE.Group();
   coilG.position.y = PLANE_Y;
   const loopPts = [
@@ -1162,41 +2192,82 @@ function buildGenerator() {
     const curve = new THREE.CatmullRomCurve3(pts, true, 'catmullrom', 0.6);
     coilG.add(new THREE.Mesh(new THREE.TubeGeometry(curve, 48, 0.016, 8, true), coilMat));
   }
-  const shaft = new THREE.Mesh(new THREE.CylinderGeometry(0.02, 0.02, 1.7, 10), coilMat);
+  const shaft = new THREE.Mesh(new THREE.CylinderGeometry(0.02, 0.02, 1.7, 10), M_SATIN);
   shaft.rotation.x = Math.PI / 2;
   coilG.add(shaft);
-  for (const z of [-0.1, 0.1]) {
-    const ring = new THREE.Mesh(new THREE.CylinderGeometry(0.045, 0.045, 0.04, 16), coilMat);
-    ring.rotation.x = Math.PI / 2;
-    ring.position.z = z;
-    coilG.add(ring);
-    const brush = box(0.03, 0.1, 0.03, stdMat({ color: 0x2f3338, roughness: 0.7 }));
-    brush.position.set(0, 0, z);
-    coilG.add(brush);
+  /* 换向器：两只铜半环（缝隙 8°）+ 云母芯 */
+  const segGeo = new THREE.CylinderGeometry(0.05, 0.05, 0.075, 18, 1, false, 0, Math.PI - 0.14);
+  for (const rot of [0, Math.PI + 0.14]) {
+    const seg = new THREE.Mesh(segGeo, M_BRASS);
+    seg.rotation.x = Math.PI / 2;
+    seg.rotation.y = rot;
+    seg.position.z = 0.14;
+    coilG.add(seg);
   }
-  const bulbBase = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.05, 0.08, 14), stdMat({ color: 0x5a6470, roughness: 0.5, metalness: 0.5 }));
-  bulbBase.position.set(0.85, 0.86, 0.55);
-  const bulbMat = stdMat({ color: 0xffe9b8, emissive: 0xffb347, emissiveIntensity: 0, roughness: 0.25 });
-  const bulb = new THREE.Mesh(new THREE.SphereGeometry(0.09, 18, 14), bulbMat);
-  bulb.position.set(0.85, 0.98, 0.55);
+  const micaCore = new THREE.Mesh(new THREE.CylinderGeometry(0.036, 0.036, 0.08, 12), matStd(0xd8d2c4, { roughness: 0.7 }));
+  micaCore.rotation.x = Math.PI / 2;
+  micaCore.position.z = 0.14;
+  coilG.add(micaCore);
+  g10.add(coilG);
+  /* 电刷架：碳块 + 弹簧压臂 + 支柱 + 出线接线柱 */
+  const brushG = new THREE.Group();
+  brushG.position.set(0, PLANE_Y, 0.14);
+  for (const sa of [0.3, Math.PI + 0.3]) {
+    const holder = new THREE.Group();
+    const carbon = box(0.03, 0.05, 0.035, matStd(0x2f3338, { roughness: 0.7 }));
+    carbon.position.set(Math.cos(sa) * 0.072, Math.sin(sa) * 0.072, 0);
+    carbon.rotation.z = sa;
+    const arm = box(0.016, 0.11, 0.02, M_SATIN);
+    arm.position.set(Math.cos(sa) * 0.115, Math.sin(sa) * 0.115, 0);
+    arm.rotation.z = sa;
+    const post10 = new THREE.Mesh(new THREE.CylinderGeometry(0.014, 0.014, 0.09, 8), M_SATIN);
+    post10.position.set(Math.cos(sa) * 0.15, Math.sin(sa) * 0.15, 0);
+    holder.add(carbon, arm, post10);
+    brushG.add(holder);
+  }
+  g10.add(brushG);
+
+  /* ---- 演示灯泡：车削玻壳 + 灯丝（螺旋管，与玻璃同步发光）+ 黄铜螺口 + 灯座 ---- */
+  const bulbBase = new THREE.Mesh(new THREE.CylinderGeometry(0.045, 0.055, 0.09, 14), matStd(0x5a6470, { roughness: 0.5, metalness: 0.5 }));
+  bulbBase.position.set(1.0, 0.875, 0.8);
+  const bulbGlassMat = matCoat(0xffe9b8, { roughness: 0.22, emissive: 0xffb347, emissiveIntensity: 0 });
+  const bulbProf = [
+    [0.0, 0], [0.055, 0.005], [0.075, 0.04], [0.085, 0.1], [0.08, 0.17], [0.06, 0.2],
+  ].map(([r, y]) => new THREE.Vector2(r, y));
+  const bulb = new THREE.Mesh(new THREE.LatheGeometry(bulbProf, 20), bulbGlassMat);
+  bulb.position.set(1.0, 0.92, 0.8);
+  const filamentMat = matGlow(0xffb347, 0, { color: 0xffd9a0 });
+  const filCurve = new THREE.CatmullRomCurve3([
+    V3(-0.03, 0.05, 0), V3(-0.015, 0.09, 0.012), V3(0, 0.05, -0.012), V3(0.015, 0.09, 0.012), V3(0.03, 0.05, 0),
+  ]);
+  const filament = new THREE.Mesh(new THREE.TubeGeometry(filCurve, 24, 0.004, 5), filamentMat);
+  filament.position.copy(bulb.position);
+  const screwShell = new THREE.Mesh(new THREE.CylinderGeometry(0.045, 0.048, 0.07, 14), M_BRASS);
+  screwShell.position.set(1.0, 0.895, 0.8);
+  for (const ty of [0.876, 0.893, 0.91]) {
+    const thread = new THREE.Mesh(new THREE.TorusGeometry(0.046, 0.005, 6, 16), M_BRASS);
+    thread.rotation.x = Math.PI / 2;
+    thread.position.set(1.0, ty, 0.8);
+    g10.add(thread);
+  }
   const bulbGlow = new THREE.Sprite(new THREE.SpriteMaterial({
     map: makeGlowTexture('255,220,150'), blending: THREE.AdditiveBlending, transparent: true, depthWrite: false, opacity: 0,
   }));
-  bulbGlow.position.copy(bulb.position);
+  bulbGlow.position.set(1.0, 1.03, 0.8);
   bulbGlow.scale.set(0.3, 0.3, 1);
-  const stand = box(0.18, 0.04, 0.18, stdMat({ color: 0x7a828c, roughness: 0.5, metalness: 0.5 }));
-  stand.position.set(0.85, 0.82, 0.55);
+  const stand = box(0.18, 0.04, 0.18, M_STEEL_DARK);
+  stand.position.set(1.0, 0.82, 0.8);
   const wireCurve = new THREE.CatmullRomCurve3([
-    V3(0, PLANE_Y - 0.1, -0.1), V3(0.3, 0.8, -0.1), V3(0.62, 0.9, 0.3), V3(0.85, 0.9, 0.48),
+    V3(0, PLANE_Y - 0.1, -0.1), V3(0.32, 0.8, -0.05), V3(0.68, 0.92, 0.45), V3(0.97, 0.9, 0.72),
   ]);
   const wireCurve2 = new THREE.CatmullRomCurve3([
-    V3(0, PLANE_Y + 0.1, 0.1), V3(0.35, 1.3, 0.35), V3(0.68, 1.1, 0.55), V3(0.85, 1.02, 0.58),
+    V3(0, PLANE_Y + 0.1, 0.1), V3(0.4, 1.34, 0.4), V3(0.78, 1.12, 0.68), V3(0.99, 1.02, 0.78),
   ]);
-  const wireMat = new THREE.MeshBasicMaterial({ color: 0x3a4048 });
-  g10.add(poleN, poleS, nLbl, sLbl, coilG, bulbBase, bulb, bulbGlow, stand,
+  const wireMat = matStd(0x2c3138, { roughness: 0.6 });
+  g10.add(bulbBase, bulb, filament, screwShell, bulbGlow, stand,
     new THREE.Mesh(new THREE.TubeGeometry(wireCurve, 32, 0.008, 6), wireMat),
     new THREE.Mesh(new THREE.TubeGeometry(wireCurve2, 32, 0.008, 6), wireMat));
-  w10 = { arrows, coilG, bulbMat, bulbGlow, waveCv: null, samples: new Array(160).fill(0) };
+  w10 = { arrows, coilG, bulbMat: bulbGlassMat, filamentMat, bulbGlow, waveCv: null, samples: new Array(160).fill(0) };
 }
 function applyGenArrows() {
   let i = 0;
@@ -1241,6 +2312,23 @@ const PTYPE11 = {
 };
 let w11 = {};
 function buildSandbox() {
+  /* 匀强磁场线圈对（亥姆霍兹式骨架环）：开启磁场时现身，与蓝色箭头同义 */
+  const coilRings = new THREE.Group();
+  const ringMat11 = M_COPPER;
+  for (const rz of [-1.5, 1.5]) {
+    const ring = new THREE.Mesh(new THREE.TorusGeometry(1.85, 0.035, 10, 48), ringMat11);
+    ring.position.set(0, 1.06, rz);
+    coilRings.add(ring);
+    for (const sx of [-1, 1]) {
+      const leg = cyl(0.03, 0.04, 1.06, M_STEEL_DARK);
+      leg.position.set(sx * 1.62, 0.53, rz);
+      const lfoot = cyl(0.07, 0.085, 0.024, 12);
+      lfoot.position.set(sx * 1.62, 0.012, rz);
+      coilRings.add(leg, lfoot);
+    }
+  }
+  coilRings.visible = false;
+  g11.add(coilRings);
   const arrows = [];
   for (const x of [-1.6, -0.8, 0, 0.8, 1.6]) {
     for (const z of [-1.6, -0.8, 0, 0.8, 1.6]) {
@@ -1271,7 +2359,7 @@ function buildSandbox() {
     g11.add(line);
     parts.push({ mesh: m, vel: new THREE.Vector3(), active: false, q: -1, mm: 0.5, tPos, tGeo, tLen: 0 });
   }
-  w11 = { arrows, parts, TRP, selected: null, partMats };
+  w11 = { arrows, parts, TRP, selected: null, partMats, coilRings };
 }
 function launchParticle11() {
   const p = w11.parts.find((q) => !q.active);
@@ -1326,11 +2414,9 @@ function clearSandbox11() {
   w11.parts.forEach((p) => { p.active = false; p.mesh.visible = false; p.tGeo.setDrawRange(0, 0); p.tLen = 0; });
 }
 
-/* ---------------- HUD 卡片 ---------------- */
+/* ---------------- HUD 卡片（收纳进右栏「数据读数」坞） ---------------- */
 
-const hudWrap = document.createElement('div');
-hudWrap.className = 'lab-hud';
-stage.appendChild(hudWrap);
+const hudWrap = document.getElementById('lcData');
 function mkHud(rows) { const h = makeHUD(hudWrap, rows); h.el.style.display = 'none'; return h; }
 const huds = [
   mkHud([['cfg', '配置'], ['lines', '每电荷场线'], ['drag', '电荷可拖动']]),
@@ -1350,6 +2436,9 @@ const hudsRod = mkHud([['e', '电动势 E=BLv'], ['i', '感应电流 I=E/R'], ['
 function showHud(i) {
   huds.forEach((h, j) => h.el.style.display = j === i ? '' : 'none');
   hudsRod.el.style.display = i === 'rod' ? '' : 'none';
+  /* 本章无读数时「数据读数」手风琴整块收走（不动用户的手风琴偏好；
+     showHud 仅在章节 enter() 内被调用，此时布局管理段已初始化完毕） */
+  accSecs.data.classList.toggle('acc-empty', i === -1);
 }
 
 /* ---------------- 帧循环 ---------------- */
@@ -1360,7 +2449,7 @@ const _zerof = new THREE.Matrix4().makeScale(1e-4, 1e-4, 1e-4);
 
 app.onFrame((dt) => {
   if (!labReady) return;
-  cameraTweenTick(app, dt);
+  /* 相机缓动由 attachVFX 接管（tickCamera 在渲染钩子内） */
   const time = performance.now() * 0.001;
 
   cf1.tick(time);
@@ -1390,6 +2479,12 @@ app.onFrame((dt) => {
       a.W = a.q * a.E * traveled; // μC·kV/m·m = mJ
     }
     a.done = k >= 1;
+  }
+
+  /* 第 3 章：介质板插入/抽出（指数缓动滑入板间） */
+  if (g3.visible && w3.slab) {
+    w3.slab.position.y += (w3.slabTargetY - w3.slab.position.y) * Math.min(1, dt * 6.5);
+    w3.slab.visible = w3.slab.position.y < 2.3;
   }
 
   /* 第 4 章：示波管 */
@@ -1562,6 +2657,7 @@ app.onFrame((dt) => {
     const needle = clamp(st9.emf / 900, -1, 1);
     st9.needle = needle;
     drawGalv(needle);
+    if (w9.galvNeedle) w9.galvNeedle.rotation.z = -needle * 0.85;   /* 3D 表针与浮窗同步偏转 */
     const s = needle > 0.05 ? 1 : needle < -0.05 ? -1 : 0;
     if (st9.showArrows && s !== 0) {
       w9.curArrows.visible = true;
@@ -1585,6 +2681,7 @@ app.onFrame((dt) => {
     const e = Em * Math.sin(st10.theta);
     const eN = Em > 1e-6 ? e / Em : 0;
     w10.bulbMat.emissiveIntensity = st10.bulb ? Math.abs(eN) * 1.9 : 0;
+    w10.filamentMat.emissiveIntensity = st10.bulb ? Math.abs(eN) * 2.2 : 0;
     w10.bulbGlow.material.opacity = st10.bulb ? Math.abs(eN) * 0.85 : 0;
     drawWave(eN);
   }
@@ -1935,7 +3032,7 @@ const SECTIONS = [
     enter() {
       hideAllChapters();
       g4.visible = true;
-      app.setCamera([0.3, 1.7, 4.3], [0, 1.06, -0.3]);
+      app.setCamera([2.5, 1.85, 3.4], [0, 1.06, -0.4]);
       showHud(3);
       ctl.clear();
       ctl.slider({
@@ -2265,6 +3362,7 @@ const SECTIONS = [
         onChange: (v) => {
           st11.Bon = v;
           w11.arrows.forEach((a) => { a.visible = v; });
+          w11.coilRings.visible = v;
         },
       });
       ctl.slider({
@@ -2409,17 +3507,9 @@ function showQuiz() {
 
 /* ---------------- 启动 ---------------- */
 
-const skyHdr = '../assets/textures/sky/sky_court-BLHJ2ADI.hdr';
-const skyWebp = '../assets/textures/sky/sky_court-BKHrsJQE.webp';
-
-loadAll([
-  { key: 'sky', label: '环境光', job: loadHDR(skyHdr) },
-  { key: 'skyBg', label: '背景', job: loadTexture(skyWebp) },
-], (d, t, label) => loader.setText(`正在加载 ${d}/${t}（${label}）`)).then((t) => {
-  scene.environment = t.sky;
-  t.skyBg.mapping = THREE.EquirectangularReflectionMapping;
-  scene.background = t.skyBg;
-
+/* 环境反射走程序化摄影棚（makeStudioEnvironment，按 renderer 缓存）；
+   背景由 attachVFX 的 illus 模式管理，零外部 HDR 依赖 */
+setTimeout(() => {
   buildWorld();
   buildWork();
   buildCap();
@@ -2435,18 +3525,159 @@ loadAll([
   labReady = true;
 
   loader.hide();
-  const sections = createSections({
-    nav: document.getElementById('sideNav'),
-    descPanel: document.getElementById('descPanel'),
-    sections: SECTIONS,
-    onSelect(i, sec) {
-      if (activeSectionCleanup) { activeSectionCleanup(); activeSectionCleanup = null; }
-      sec.enter();
-    },
-  });
-  window.__eduSections = sections;
-  sections.select(0);
-}).catch((err) => {
-  loader.setText('资源加载失败：' + err.message);
-  console.error(err);
+  window.__eduSections = { select: selectChapter };
+  /* 调试句柄（自动化验收/性能自查用） */
+  window.__fieldsDebug = { vfx, app };
+  selectChapter(0);
+}, 60);
+
+/* ================= 三栏布局驱动（左栏章节列表 / 右栏详解联动 / 栏折叠 / 专注模式） ================= */
+
+const chapNav = document.getElementById('chapNav');
+const chapCount = document.getElementById('chapCount');
+const detailNo = document.getElementById('detailNo');
+const detailTitle = document.getElementById('detailTitle');
+const lessonEl = document.getElementById('lesson');
+const detailBody = document.getElementById('detailBody');
+const controlsEl = document.getElementById('controls');
+const fieldsShell = document.getElementById('fieldsShell');
+let chapterIdx = 0;
+
+/* 章节竖排按钮：序号 + 标题，点击切章，当前章 .on 高亮 */
+const chapBtns = SECTIONS.map((s, i) => {
+  const b = document.createElement('button');
+  b.type = 'button';
+  b.className = 'chap-btn';
+  b.dataset.idx = String(i);
+  const n = document.createElement('span');
+  n.className = 'chap-n';
+  n.textContent = String(i + 1).padStart(2, '0');
+  const t = document.createElement('span');
+  t.className = 'chap-t';
+  t.textContent = s.title;
+  b.append(n, t);
+  b.addEventListener('click', () => selectChapter(i));
+  chapNav.appendChild(b);
+  return b;
 });
+
+function selectChapter(i) {
+  chapterIdx = clamp(i, 0, SECTIONS.length - 1);
+  const sec = SECTIONS[chapterIdx];
+  chapBtns.forEach((b, j) => {
+    const on = j === chapterIdx;
+    b.classList.toggle('on', on);
+    if (on) {
+      b.setAttribute('aria-current', 'true');
+      b.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+    } else {
+      b.removeAttribute('aria-current');
+    }
+  });
+  chapCount.textContent = `${String(chapterIdx + 1).padStart(2, '0')}/${SECTIONS.length}`;
+  detailNo.textContent = String(chapterIdx + 1).padStart(2, '0');
+  detailTitle.textContent = sec.title;
+  /* 折叠竖条上的章节信息同步（左栏序号 / 右栏竖排标题） */
+  railNoL.textContent = String(chapterIdx + 1).padStart(2, '0');
+  railTitleR.textContent = sec.title;
+  lessonEl.innerHTML = sec.html || '';
+  if (activeSectionCleanup) { activeSectionCleanup(); activeSectionCleanup = null; }
+  sec.enter();
+  /* 本章无控件时整块手风琴收走（不动用户的手风琴偏好；数据块由 showHud 按章同步） */
+  accSecs.controls.classList.toggle('acc-empty', !controlsEl.children.length);
+  detailBody.scrollTop = 0;
+}
+
+/* ---------------- 栏折叠（左右独立 28px 竖条）× 专注模式（双栏同折）统一管理 ---------------- */
+
+const foldLBtn = document.getElementById('foldLBtn');
+const unfoldLBtn = document.getElementById('unfoldLBtn');
+const foldRBtn = document.getElementById('foldRBtn');
+const unfoldRBtn = document.getElementById('unfoldRBtn');
+const railNoL = document.getElementById('railNoL');
+const railTitleR = document.getElementById('railTitleR');
+const focusBtn = document.getElementById('focusBtn');
+
+const FOLD_KEY = { l: 'fields.foldL', r: 'fields.foldR' };
+let foldL = false;
+let foldR = false;
+let focusSaved = null; /* 进入专注模式前的独立折叠状态 [foldL, foldR]，退出时恢复 */
+
+try {
+  foldL = localStorage.getItem(FOLD_KEY.l) === '1';
+  foldR = localStorage.getItem(FOLD_KEY.r) === '1';
+} catch (e) { /* localStorage 不可用（隐私模式等）时仅本次会话内生效 */ }
+
+function applyFold() {
+  fieldsShell.classList.toggle('fold-l', foldL);
+  fieldsShell.classList.toggle('fold-r', foldR);
+  for (const [btn, folded] of [[foldLBtn, foldL], [unfoldLBtn, foldL], [foldRBtn, foldR], [unfoldRBtn, foldR]]) {
+    btn.setAttribute('aria-expanded', String(!folded));
+  }
+}
+
+/* 专注模式：双栏同时折叠；退出恢复进入前状态（不写 localStorage，保持独立折叠记忆不变） */
+function setFocus(on) {
+  if (on && focusSaved === null) {
+    focusSaved = [foldL, foldR];
+    foldL = true;
+    foldR = true;
+  } else if (!on && focusSaved !== null) {
+    [foldL, foldR] = focusSaved;
+    focusSaved = null;
+  }
+  fieldsShell.classList.toggle('focus-mode', on);
+  focusBtn.textContent = on ? '退出专注' : '专注模式';
+  focusBtn.setAttribute('aria-pressed', String(on));
+  applyFold();
+}
+
+/* 独立折叠翻转并持久化；专注模式中点竖条展开钮 = 先退出专注（恢复原状）再翻转该侧 */
+function toggleFold(side) {
+  if (focusSaved !== null) setFocus(false);
+  if (side === 'l') foldL = !foldL;
+  else foldR = !foldR;
+  try {
+    localStorage.setItem(FOLD_KEY[side], (side === 'l' ? foldL : foldR) ? '1' : '0');
+  } catch (e) { /* 忽略持久化失败 */ }
+  applyFold();
+}
+
+foldLBtn.addEventListener('click', () => toggleFold('l'));
+unfoldLBtn.addEventListener('click', () => toggleFold('l'));
+foldRBtn.addEventListener('click', () => toggleFold('r'));
+unfoldRBtn.addEventListener('click', () => toggleFold('r'));
+focusBtn.addEventListener('click', () => setFocus(focusSaved === null));
+applyFold();
+
+/* ---------------- 右栏三块手风琴（详解 / 控件 / 读数），localStorage 记忆、切章不重置 ---------------- */
+
+const ACC_KEYS = { lesson: 'fields.accLesson', controls: 'fields.accControls', data: 'fields.accData' };
+const accSecs = {
+  lesson: document.getElementById('accLesson'),
+  controls: document.getElementById('accControls'),
+  data: document.getElementById('accData'),
+};
+
+const NARROW_VIEW = window.innerWidth <= 1100;   /* 小屏首访清爽态判据 */
+const accClosed = {};
+for (const name of Object.keys(accSecs)) {
+  let saved = null;
+  try { saved = localStorage.getItem(ACC_KEYS[name]); } catch (e) { /* 忽略 */ }
+  /* 首访（无记忆）：≤1100px 默认收起数据读数；此后记忆优先，不随视口变 */
+  accClosed[name] = saved !== null ? saved === '1' : (name === 'data' && NARROW_VIEW);
+}
+function applyAcc(name) {
+  const sec = accSecs[name];
+  sec.classList.toggle('closed', accClosed[name]);
+  sec.querySelector('.acc-head').setAttribute('aria-expanded', String(!accClosed[name]));
+}
+function toggleAcc(name) {
+  accClosed[name] = !accClosed[name];
+  try { localStorage.setItem(ACC_KEYS[name], accClosed[name] ? '1' : '0'); } catch (e) { /* 忽略 */ }
+  applyAcc(name);
+}
+for (const name of Object.keys(accSecs)) {
+  accSecs[name].querySelector('.acc-head').addEventListener('click', () => toggleAcc(name));
+  applyAcc(name);
+}
