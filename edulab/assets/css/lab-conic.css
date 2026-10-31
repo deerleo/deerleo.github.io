@@ -1,0 +1,432 @@
+/* EduLab · conic 圆锥曲线布局（真·三栏：左课程大纲 / 中 3D 舞台 / 右知识点详解）
+   依赖 edu.css 的主题变量与 lab.css 的通用控件（ctl/quiz/loader/chap 视觉）。
+   本文件只管 conic 页面骨架，不动共享布局。 */
+
+html, body { height: 100%; }
+
+body.lab.conic {
+  display: block;
+  overflow: hidden;
+}
+
+/* ---------- 三栏骨架（顶栏细条 + 左大纲 / 中舞台 / 右详解） ---------- */
+
+.conic-shell {
+  display: grid;
+  grid-template-columns: 246px minmax(0, 1fr) 352px;
+  grid-template-rows: auto minmax(0, 1fr);
+  grid-template-areas:
+    "top      top   top"
+    "chapters stage detail";
+  height: 100dvh;
+}
+
+/* ---------- 顶栏细条 ---------- */
+
+.conic-toprow {
+  grid-area: top;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 9px 16px;
+  border-bottom: 1px solid var(--card-border);
+  background: color-mix(in srgb, var(--card) 60%, transparent);
+}
+.conic-toprow .edu-logo { flex: none; }
+.conic-toprow .lab-title {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  min-width: 0;
+  color: var(--text);
+}
+.conic-toprow .lab-title b { font-size: 16px; white-space: nowrap; }
+.conic-toprow .lab-title span {
+  font-size: 12.5px;
+  color: var(--text-faint);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.conic-toprow .spacer { flex: 1; }
+.conic-toprow .edu-header-btn { white-space: nowrap; }
+
+/* ---------- 左栏：课程大纲 ---------- */
+
+.lab-chapters {
+  grid-area: chapters;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  background: var(--bg-soft);
+  border-right: 1px solid var(--card-border);
+}
+.chap-head {
+  flex: none;
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  padding: 13px 14px 7px;
+}
+.chap-head .chap-title {
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  color: var(--text-faint);
+}
+.chap-count {
+  margin-left: auto;
+  font-size: 11.5px;
+  color: var(--text-faint);
+  font-variant-numeric: tabular-nums;
+}
+.chap-list {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 2px 8px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+/* 当前章高亮态（基础视觉复用 lab.css 的 .chap-btn，这里只补 .on） */
+.chap-list .chap-btn.on {
+  color: var(--accent);
+  background: var(--accent-soft);
+  border-color: color-mix(in srgb, var(--accent) 35%, transparent);
+  font-weight: 600;
+}
+.chap-list .chap-btn.on .chap-n { color: var(--accent); }
+
+/* ---------- 中栏：3D 舞台 ---------- */
+
+.lab-stage3d {
+  grid-area: stage;
+  position: relative;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  background: var(--bg);
+}
+.conic-stage {
+  position: absolute;
+  inset: 0;
+}
+.conic-stage canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; outline: none; }
+.conic-stage .lab-loader { position: absolute; }
+
+/* 专注模式按钮（中栏左下角） */
+.stage-focus-btn {
+  position: absolute;
+  left: 14px;
+  bottom: 14px;
+  z-index: 24;
+  appearance: none;
+  font-family: inherit;
+  font-size: 12px;
+  line-height: 1;
+  padding: 7px 13px;
+  border-radius: 999px;
+  border: 1px solid var(--card-border);
+  background: color-mix(in srgb, var(--card) 74%, transparent);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  color: var(--text-dim);
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s;
+}
+.stage-focus-btn:hover { color: var(--accent); border-color: var(--accent); }
+
+.stage-foot {
+  position: absolute;
+  right: 16px;
+  bottom: 14px;
+  z-index: 24;
+  font-size: 11.5px;
+  color: var(--text-faint);
+}
+.stage-foot a { color: var(--text-faint); text-decoration: underline; text-underline-offset: 2px; }
+
+/* ---------- 栏折叠（左右独立 28px 竖条）与专注模式（双栏同折） ---------- */
+
+/* 栏宽过渡：grid-template-columns 数值插值，ResizeObserver 逐帧跟随画布 */
+.conic-shell { transition: grid-template-columns 0.3s ease; }
+.conic-shell.fold-l { grid-template-columns: 28px minmax(0, 1fr) 352px; }
+.conic-shell.fold-r { grid-template-columns: 246px minmax(0, 1fr) 28px; }
+.conic-shell.fold-l.fold-r { grid-template-columns: 28px minmax(0, 1fr) 28px; }
+
+/* 折叠态：原栏内容保持固有宽度淡出（免挤压跳动），由 overflow 裁切 */
+.chap-head, .chap-list { min-width: 246px; }
+.detail-head, .detail-body { min-width: 352px; }
+.chap-head, .chap-list, .detail-head, .detail-body { transition: opacity 0.16s ease; }
+.conic-shell.fold-l .chap-head,
+.conic-shell.fold-l .chap-list { opacity: 0; pointer-events: none; }
+.conic-shell.fold-r .detail-head,
+.conic-shell.fold-r .detail-body { opacity: 0; pointer-events: none; }
+
+/* 折叠按钮（栏头收起 / 竖条展开共用视觉） */
+.fold-btn {
+  flex: none;
+  appearance: none;
+  font-family: inherit;
+  width: 22px;
+  height: 22px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  line-height: 1;
+  border-radius: 7px;
+  border: 1px solid var(--card-border);
+  background: var(--chip-bg);
+  color: var(--text-faint);
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s, background 0.15s;
+}
+.fold-btn:hover {
+  color: var(--accent);
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+.detail-head .fold-btn { margin-left: auto; align-self: center; }
+
+/* 竖条导轨（折叠态显示：展开钮 + 章序号 / 竖排标题） */
+.fold-rail {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 0 12px;
+  background: var(--bg-soft);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.2s ease, visibility 0s linear 0.2s;
+}
+.conic-shell.fold-l .lab-chapters .fold-rail,
+.conic-shell.fold-r .lab-detail .fold-rail {
+  opacity: 1;
+  visibility: visible;
+  transition: opacity 0.2s ease 0.1s;
+}
+.rail-no {
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--accent);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.04em;
+}
+.rail-title {
+  writing-mode: vertical-rl;
+  max-height: 210px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 12px;
+  color: var(--text-faint);
+  letter-spacing: 0.14em;
+}
+
+/* 专注模式：语义 = 双栏同时折叠，布局完全复用 .fold-l/.fold-r 竖条形态
+   （JS 保证 focus-mode 必伴随两个 fold 类），进入前状态由 JS 保存、退出时恢复，
+   .focus-mode 类本身只作按钮态标记，不参与布局 */
+
+/* ---------- 右栏：知识点详解 + 控件 + 读数 ---------- */
+
+.lab-detail {
+  grid-area: detail;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  background: var(--bg-soft);
+  border-left: 1px solid var(--card-border);
+}
+.detail-head {
+  flex: none;
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  padding: 14px 16px 11px;
+  border-bottom: 1px solid var(--card-border);
+}
+.detail-no {
+  flex: none;
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--accent);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.02em;
+}
+.detail-title {
+  margin: 0;
+  font-size: 16px;
+  color: var(--text);
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.detail-body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 14px 16px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* 知识点正文 */
+.lc-lesson { font-size: 13.5px; line-height: 1.7; color: var(--text-dim); }
+.lc-lesson p { margin: 0 0 8px; }
+.lc-lesson p:last-child { margin-bottom: 0; }
+.lc-lesson b { color: var(--text); }
+.lc-lesson .hl { color: var(--accent); font-weight: 600; }
+
+/* 本章控件（复用 lab.css 的 ctl 组件，纵向排列） */
+.lc-controls { display: flex; flex-flow: row wrap; gap: 8px 10px; align-items: center; }
+.lc-controls .ctl, .lc-controls .ctl-toggle { flex: 1 1 100%; }
+.lc-controls .ctl input[type="range"] { flex: 1; width: auto; }
+.lc-controls .ctl-sep { flex: 1 1 100%; width: auto; height: 1px; background: var(--card-border); }
+.lc-controls:empty { display: none; }
+
+/* 数据坞（读数卡收纳进栏内） */
+.lc-data .hud-card {
+  background: var(--chip-bg);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  border: 1px solid var(--card-border);
+  box-shadow: none;
+  min-width: 0;
+  width: 100%;
+}
+.lc-data .hud-card:empty { display: none; }
+
+/* ---------- 右栏三块手风琴（详解 / 控件 / 读数，标题行点击收起 body） ---------- */
+
+.acc {
+  flex: none;
+  border: 1px solid var(--card-border);
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--card) 42%, transparent);
+  overflow: hidden;
+}
+.acc.acc-empty { display: none; }   /* 本章无控件 / 读数隐藏时整块收走 */
+.acc-head {
+  appearance: none;
+  font-family: inherit;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 9px 12px;
+  border: none;
+  background: transparent;
+  color: var(--text-faint);
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-align: left;
+  cursor: pointer;
+  transition: color 0.15s;
+}
+.acc-head:hover { color: var(--accent); }
+.acc-arrow {
+  margin-left: auto;
+  font-style: normal;
+  font-size: 10px;
+  line-height: 1;
+  transition: transform 0.25s ease;   /* 收起时旋转为 ▸ */
+}
+.acc.closed .acc-arrow { transform: rotate(-90deg); }
+/* 0.25s 高度动画：grid-template-rows 1fr → 0fr，免 JS 量高 */
+.acc-fold-wrap {
+  display: grid;
+  grid-template-rows: 1fr;
+  transition: grid-template-rows 0.25s ease;
+}
+.acc.closed .acc-fold-wrap { grid-template-rows: 0fr; }
+.acc-fold-body { min-height: 0; overflow: hidden; }
+.acc-fold-inner { padding: 2px 12px 12px; }
+
+/* ---------- 窄屏（≤1100px）：顶栏收窄为 logo+标题一行，手风琴更紧凑
+   （数据读数默认收起的首访清爽态由 JS 按 viewport 决定） ---------- */
+
+@media (max-width: 1100px) {
+  .conic-toprow { padding: 8px 12px; gap: 8px; }
+  .conic-toprow .lab-title span { display: none; }
+  .conic-toprow .lab-title b { font-size: 15px; }
+  .conic-toprow a.edu-header-btn[href='../'] { display: none; }   /* 返回走 logo，省一行宽度 */
+
+  .detail-body { padding: 10px 12px 14px; gap: 10px; }
+  .acc-head { padding: 8px 10px; }
+  .acc-fold-inner { padding: 2px 10px 10px; }
+}
+
+/* ---------- 移动端（≤860px）：纵向堆叠（章节横滚条 / 3D / 知识点在下） ---------- */
+
+@media (max-width: 860px) {
+  .conic-shell {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto auto minmax(230px, 42dvh) minmax(0, 1fr);
+    grid-template-areas:
+      "top"
+      "chapters"
+      "stage"
+      "detail";
+  }
+
+  /* 折叠 / 专注模式为桌面端专属：移动端压回纵向堆叠并隐藏折叠控件
+     （localStorage 可能带着折叠态进来，内容透明度须复原） */
+  .conic-shell { transition: none; }
+  .conic-shell.fold-l,
+  .conic-shell.fold-r,
+  .conic-shell.fold-l.fold-r,
+  .conic-shell.focus-mode { grid-template-columns: minmax(0, 1fr); }
+  .fold-btn, .fold-rail { display: none; }
+  .conic-shell.fold-l .chap-head,
+  .conic-shell.fold-l .chap-list,
+  .conic-shell.fold-r .detail-head,
+  .conic-shell.fold-r .detail-body { opacity: 1; pointer-events: auto; }
+
+  .conic-toprow {
+    padding: 8px 10px;
+    gap: 8px;
+  }
+  .conic-toprow .lab-title span { display: none; }
+  .conic-toprow .lab-title b { font-size: 14.5px; }
+  .conic-toprow a.edu-header-btn[href='../'] { display: none; }
+
+  /* 章节列表 → 顶部横向滚动条 */
+  .lab-chapters { border-right: none; border-bottom: 1px solid var(--card-border); }
+  .chap-head { padding: 8px 12px 2px; }
+  .chap-list {
+    flex-direction: row;
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding: 5px 8px 8px;
+    gap: 4px;
+    scrollbar-width: none;
+  }
+  .chap-list::-webkit-scrollbar { display: none; }
+  .chap-list .chap-btn { flex: none; padding: 6px 10px; font-size: 12.5px; white-space: nowrap; }
+  .chap-list .chap-btn .chap-n { width: auto; margin-right: 4px; }
+
+  .lab-detail { border-left: none; border-top: 1px solid var(--card-border); }
+  .detail-head { padding: 10px 12px 8px; }
+  .detail-no { font-size: 18px; }
+  .detail-title { font-size: 14.5px; }
+  .detail-body { padding: 10px 12px 14px; }
+  .lc-lesson { font-size: 12.5px; }
+  .acc-head { padding: 8px 10px; }
+  .acc-fold-inner { padding: 2px 10px 10px; }
+
+  .stage-focus-btn { left: 8px; bottom: 8px; }
+  .stage-foot { display: none; }
+}
