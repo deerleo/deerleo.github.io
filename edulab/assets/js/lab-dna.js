@@ -2,14 +2,17 @@
  * 章节：照片 51 号 / 动手搭 DNA 模型 / DNA 双螺旋的结构 / 随堂检测
  * 场景：X 射线衍射图样实时计算（螺距/半径/链数可调，对照照片 51 号）、
  *       脱氧核苷酸组装与互补配对、按序列生成的 B 型双螺旋（点碱基对看氢键、查哥夫规则计算器）。
+ * 布局：真·三栏（左章节大纲 / 中 3D 舞台 / 右知识点详解）+ 全元素折叠 + 专注模式，
+ *       视觉工艺经 attachVFX 轻接入（后处理管线 + cubic 运镜）。
  */
 import {
   THREE, DEG, TAU, clamp,
-  createApp, cameraTweenTick, makeLoader,
-  createSections, createControlsPanel, makeHUD, makeTextSprite, setSpriteText,
+  createApp, makeLoader,
+  createControlsPanel, makeHUD, makeTextSprite, setSpriteText,
 } from './edu-core.js';
+import { attachVFX } from './edu-vfx.js';
 
-/* ---------------- 基础 ---------------- */
+/* ---------------- 基础与工艺接入 ---------------- */
 
 const stage = document.getElementById('stage');
 const loader = makeLoader(stage, '正在生成双螺旋模型…');
@@ -18,8 +21,11 @@ const app = createApp({
   fov: 42, near: 0.1, far: 200,
   cameraPos: [0, 1.6, 8.2], target: [0, 1.4, 0],
   minDistance: 1.2, maxDistance: 40,
+  keepBackground: true,
 });
 const { scene, camera, controls } = app;
+/* 视觉工艺接入：后处理管线接管渲染与相机缓动（setCamera 升级为 cubic 运镜） */
+const vfx = attachVFX(app, 'illus');
 
 scene.add(new THREE.AmbientLight(0xe6ecf5, 1.15));
 const key = new THREE.DirectionalLight(0xfff2e0, 1.7);
@@ -485,7 +491,7 @@ const ctl = createControlsPanel(document.getElementById('controls'));
 let activeSectionId = null;
 let activeQuizCleanup = null;
 
-const hud = makeHUD(stage, [['a', '读数'], ['b', '校验'], ['c', '提示']]);
+const hud = makeHUD(document.getElementById('lcData'), [['a', '读数'], ['b', '校验'], ['c', '提示']]);
 hud.visibleNow = false;
 
 const SEQ_NOTE = '默认序列 AGTCATGCCTAG';
@@ -748,8 +754,10 @@ function showQuiz() {
 /* ---------------- 主循环 ---------------- */
 
 app.onFrame((dt, t) => {
-  cameraTweenTick(app, dt);
+  /* 相机缓动由 attachVFX 接管（tickCamera 在渲染钩子内） */
   hud.el.style.display = hud.visibleNow ? '' : 'none';
+  /* 读数隐藏时（quiz 章等）数据手风琴块一并收走 */
+  accSecs.data.classList.toggle('acc-empty', !hud.visibleNow);
   if (activeSectionId === 'photo51') {
     if (helix1 && photo.spin) helix1.rotation.y = t * 0.4;
     if (photo.dirty && t - photo.lastCalc > 0.22) {
@@ -776,6 +784,157 @@ app.onFrame((dt, t) => {
   }
 });
 
+/* ================= 三栏布局驱动（左栏章节列表 / 右栏详解联动 / 栏折叠 / 专注模式） ================= */
+
+const chapNav = document.getElementById('chapNav');
+const chapCount = document.getElementById('chapCount');
+const detailNo = document.getElementById('detailNo');
+const detailTitle = document.getElementById('detailTitle');
+const lessonEl = document.getElementById('lesson');
+const detailBody = document.getElementById('detailBody');
+const controlsEl = document.getElementById('controls');
+const dnaShell = document.getElementById('dnaShell');
+let chapterIdx = 0;
+
+/* 章节竖排按钮：序号 + 标题，点击切章，当前章 .on 高亮 */
+const chapBtns = SECTIONS.map((s, i) => {
+  const b = document.createElement('button');
+  b.type = 'button';
+  b.className = 'chap-btn';
+  b.dataset.idx = String(i);
+  const n = document.createElement('span');
+  n.className = 'chap-n';
+  n.textContent = String(i + 1).padStart(2, '0');
+  const t = document.createElement('span');
+  t.className = 'chap-t';
+  t.textContent = s.title;
+  b.append(n, t);
+  b.addEventListener('click', () => selectChapter(i));
+  chapNav.appendChild(b);
+  return b;
+});
+
+function selectChapter(i) {
+  chapterIdx = clamp(i, 0, SECTIONS.length - 1);
+  const sec = SECTIONS[chapterIdx];
+  chapBtns.forEach((b, j) => {
+    const on = j === chapterIdx;
+    b.classList.toggle('on', on);
+    if (on) {
+      b.setAttribute('aria-current', 'true');
+      b.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+    } else {
+      b.removeAttribute('aria-current');
+    }
+  });
+  chapCount.textContent = `${String(chapterIdx + 1).padStart(2, '0')}/${SECTIONS.length}`;
+  detailNo.textContent = String(chapterIdx + 1).padStart(2, '0');
+  detailTitle.textContent = sec.title;
+  /* 折叠竖条上的章节信息同步（左栏序号 / 右栏竖排标题） */
+  railNoL.textContent = String(chapterIdx + 1).padStart(2, '0');
+  railTitleR.textContent = sec.title;
+  lessonEl.innerHTML = sec.html || '';
+  if (activeQuizCleanup) { activeQuizCleanup(); activeQuizCleanup = null; }
+  activeSectionId = sec.id;
+  sec.enter();
+  /* 本章无控件时整块手风琴收走（不动用户的手风琴偏好；数据块由帧循环按读数显隐同步） */
+  accSecs.controls.classList.toggle('acc-empty', !controlsEl.children.length);
+  detailBody.scrollTop = 0;
+}
+
+/* ---------------- 栏折叠（左右独立 28px 竖条）× 专注模式（双栏同折）统一管理 ---------------- */
+
+const foldLBtn = document.getElementById('foldLBtn');
+const unfoldLBtn = document.getElementById('unfoldLBtn');
+const foldRBtn = document.getElementById('foldRBtn');
+const unfoldRBtn = document.getElementById('unfoldRBtn');
+const railNoL = document.getElementById('railNoL');
+const railTitleR = document.getElementById('railTitleR');
+const focusBtn = document.getElementById('focusBtn');
+
+const FOLD_KEY = { l: 'dna.foldL', r: 'dna.foldR' };
+let foldL = false;
+let foldR = false;
+let focusSaved = null; /* 进入专注模式前的独立折叠状态 [foldL, foldR]，退出时恢复 */
+
+try {
+  foldL = localStorage.getItem(FOLD_KEY.l) === '1';
+  foldR = localStorage.getItem(FOLD_KEY.r) === '1';
+} catch (e) { /* localStorage 不可用（隐私模式等）时仅本次会话内生效 */ }
+
+function applyFold() {
+  dnaShell.classList.toggle('fold-l', foldL);
+  dnaShell.classList.toggle('fold-r', foldR);
+  for (const [btn, folded] of [[foldLBtn, foldL], [unfoldLBtn, foldL], [foldRBtn, foldR], [unfoldRBtn, foldR]]) {
+    btn.setAttribute('aria-expanded', String(!folded));
+  }
+}
+
+/* 专注模式：双栏同时折叠；退出恢复进入前状态（不写 localStorage，保持独立折叠记忆不变） */
+function setFocus(on) {
+  if (on && focusSaved === null) {
+    focusSaved = [foldL, foldR];
+    foldL = true;
+    foldR = true;
+  } else if (!on && focusSaved !== null) {
+    [foldL, foldR] = focusSaved;
+    focusSaved = null;
+  }
+  dnaShell.classList.toggle('focus-mode', on);
+  focusBtn.textContent = on ? '退出专注' : '专注模式';
+  focusBtn.setAttribute('aria-pressed', String(on));
+  applyFold();
+}
+
+function toggleFold(side) {
+  if (focusSaved !== null) setFocus(false);
+  if (side === 'l') foldL = !foldL;
+  else foldR = !foldR;
+  try {
+    localStorage.setItem(FOLD_KEY[side], (side === 'l' ? foldL : foldR) ? '1' : '0');
+  } catch (e) { /* 忽略持久化失败 */ }
+  applyFold();
+}
+
+foldLBtn.addEventListener('click', () => toggleFold('l'));
+unfoldLBtn.addEventListener('click', () => toggleFold('l'));
+foldRBtn.addEventListener('click', () => toggleFold('r'));
+unfoldRBtn.addEventListener('click', () => toggleFold('r'));
+focusBtn.addEventListener('click', () => setFocus(focusSaved === null));
+applyFold();
+
+/* ---------------- 右栏三块手风琴（详解 / 控件 / 读数），localStorage 记忆、切章不重置 ---------------- */
+
+const ACC_KEYS = { lesson: 'dna.accLesson', controls: 'dna.accControls', data: 'dna.accData' };
+const accSecs = {
+  lesson: document.getElementById('accLesson'),
+  controls: document.getElementById('accControls'),
+  data: document.getElementById('accData'),
+};
+
+const NARROW_VIEW = window.innerWidth <= 1100;   /* 小屏首访清爽态判据 */
+const accClosed = {};
+for (const name of Object.keys(accSecs)) {
+  let saved = null;
+  try { saved = localStorage.getItem(ACC_KEYS[name]); } catch (e) { /* 忽略 */ }
+  /* 首访（无记忆）：≤1100px 默认收起数据读数；此后记忆优先，不随视口变 */
+  accClosed[name] = saved !== null ? saved === '1' : (name === 'data' && NARROW_VIEW);
+}
+function applyAcc(name) {
+  const sec = accSecs[name];
+  sec.classList.toggle('closed', accClosed[name]);
+  sec.querySelector('.acc-head').setAttribute('aria-expanded', String(!accClosed[name]));
+}
+function toggleAcc(name) {
+  accClosed[name] = !accClosed[name];
+  try { localStorage.setItem(ACC_KEYS[name], accClosed[name] ? '1' : '0'); } catch (e) { /* 忽略 */ }
+  applyAcc(name);
+}
+for (const name of Object.keys(accSecs)) {
+  accSecs[name].querySelector('.acc-head').addEventListener('click', () => toggleAcc(name));
+  applyAcc(name);
+}
+
 /* ---------------- 启动 ---------------- */
 
 loader.setText('正在生成 B 型双螺旋…');
@@ -783,15 +942,8 @@ rebuildHelix1();
 buildBModel(struct.seq);
 loader.hide();
 
-const sections = createSections({
-  nav: document.getElementById('sideNav'),
-  descPanel: document.getElementById('descPanel'),
-  sections: SECTIONS,
-  onSelect(i, sec) {
-    if (activeQuizCleanup) { activeQuizCleanup(); activeQuizCleanup = null; }
-    activeSectionId = sec.id;
-    sec.enter();
-  },
-});
-window.__eduSections = sections;
-sections.select(0);
+window.__eduSections = { select: selectChapter };
+/* 调试句柄（自动化验收/像素级自查用） */
+window.__dnaDebug = { vfx, app, photo, buildState, struct };
+
+selectChapter(0);

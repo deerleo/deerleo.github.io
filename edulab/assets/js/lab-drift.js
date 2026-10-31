@@ -2,15 +2,18 @@
  * 章节：沧海桑田 / 高山上的海洋化石 / 海峡下的古河道 / 大陆漂移假说 /
  *       泛大陆的分裂 / 六大板块 / 火山与地震 / 张裂与碰撞 / 随堂检测
  * 场景：海岸升降 3D 模型、褶皱地层剖面、海峡剖面、世界地图大陆拼合与泛大陆分裂动画、板块边界图
+ * 布局：真·三栏（左章节大纲 / 中 3D 舞台 / 右知识点详解）+ 全元素折叠 + 专注模式，
+ *       视觉工艺经 attachVFX 轻接入（后处理管线 + cubic 运镜；HDR 只作环境光，背景由工艺管理）。
  */
 import {
-  THREE, DEG, TAU, clamp, loadHDR, loadTexture, loadAll, createApp, cameraTweenTick,
-  makeLoader, createSections, createControlsPanel, makeHUD, makeTextSprite,
+  THREE, DEG, clamp, loadHDR, loadAll, createApp,
+  makeLoader, createControlsPanel, makeHUD, makeTextSprite,
 } from './edu-core.js';
+import { attachVFX } from './edu-vfx.js';
 
 const TEXDIR = '../assets/textures/';
 
-/* ---------------- 场景 ---------------- */
+/* ---------------- 场景与工艺接入 ---------------- */
 
 const stage = document.getElementById('stage');
 const loader = makeLoader(stage, '正在准备海陆变迁实验…');
@@ -19,8 +22,11 @@ const app = createApp({
   container: stage, fov: 44, near: 0.1, far: 400,
   cameraPos: [7, 6, 10], target: [0, 0.4, 0],
   minDistance: 2, maxDistance: 40, exposure: 1.05,
+  keepBackground: true,
 });
 const { scene, camera, controls } = app;
+/* 视觉工艺接入：后处理管线接管渲染与相机缓动（setCamera 升级为 cubic 运镜） */
+const vfx = attachVFX(app, 'illus');
 
 scene.add(new THREE.HemisphereLight(0xe8f1ff, 0xa89a80, 1.1));
 const sunL = new THREE.DirectionalLight(0xfff2dc, 1.9);
@@ -417,7 +423,7 @@ function updateBound() {
 
 /* ---------------- HUD ---------------- */
 
-const hud = makeHUD(stage, [['a', '读数'], ['b', ''], ['x', '']]);
+const hud = makeHUD(document.getElementById('lcData'), [['a', '读数'], ['b', ''], ['x', '']]);
 hud.show(false);
 
 /* ---------------- 控制条与章节 ---------------- */
@@ -853,44 +859,187 @@ function showQuiz() {
   activeSectionCleanup = () => panel.remove();
 }
 
+/* ================= 三栏布局驱动（左栏章节列表 / 右栏详解联动 / 栏折叠 / 专注模式） ================= */
+
+const chapNav = document.getElementById('chapNav');
+const chapCount = document.getElementById('chapCount');
+const detailNo = document.getElementById('detailNo');
+const detailTitle = document.getElementById('detailTitle');
+const lessonEl = document.getElementById('lesson');
+const detailBody = document.getElementById('detailBody');
+const controlsEl = document.getElementById('controls');
+const driftShell = document.getElementById('driftShell');
+let chapterIdx = 0;
+
+/* 9 章竖排按钮：序号 + 标题，点击切章，当前章 .on 高亮 */
+const chapBtns = SECTIONS.map((s, i) => {
+  const b = document.createElement('button');
+  b.type = 'button';
+  b.className = 'chap-btn';
+  b.dataset.idx = String(i);
+  const n = document.createElement('span');
+  n.className = 'chap-n';
+  n.textContent = String(i + 1).padStart(2, '0');
+  const t = document.createElement('span');
+  t.className = 'chap-t';
+  t.textContent = s.title;
+  b.append(n, t);
+  b.addEventListener('click', () => selectChapter(i));
+  chapNav.appendChild(b);
+  return b;
+});
+
+function selectChapter(i) {
+  chapterIdx = clamp(i, 0, SECTIONS.length - 1);
+  const sec = SECTIONS[chapterIdx];
+  chapBtns.forEach((b, j) => {
+    const on = j === chapterIdx;
+    b.classList.toggle('on', on);
+    if (on) {
+      b.setAttribute('aria-current', 'true');
+      b.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+    } else {
+      b.removeAttribute('aria-current');
+    }
+  });
+  chapCount.textContent = `${String(chapterIdx + 1).padStart(2, '0')}/${SECTIONS.length}`;
+  detailNo.textContent = String(chapterIdx + 1).padStart(2, '0');
+  detailTitle.textContent = sec.title;
+  /* 折叠竖条上的章节信息同步（左栏序号 / 右栏竖排标题） */
+  railNoL.textContent = String(chapterIdx + 1).padStart(2, '0');
+  railTitleR.textContent = sec.title;
+  lessonEl.innerHTML = sec.html || '';
+  activeSectionCleanup();
+  activeSectionCleanup = () => {};
+  state.strataAnim = false;
+  state.driftAnim = false;
+  state.playing = false;
+  state.coastAuto = false;
+  hideAllSprites();
+  sec.enter();
+  /* 本章无控件时整块手风琴收走（不动用户的手风琴偏好；数据块由帧循环按读数显隐同步） */
+  accSecs.controls.classList.toggle('acc-empty', !controlsEl.children.length);
+  detailBody.scrollTop = 0;
+}
+
+/* ---------------- 栏折叠（左右独立 28px 竖条）× 专注模式（双栏同折）统一管理 ---------------- */
+
+const foldLBtn = document.getElementById('foldLBtn');
+const unfoldLBtn = document.getElementById('unfoldLBtn');
+const foldRBtn = document.getElementById('foldRBtn');
+const unfoldRBtn = document.getElementById('unfoldRBtn');
+const railNoL = document.getElementById('railNoL');
+const railTitleR = document.getElementById('railTitleR');
+const focusBtn = document.getElementById('focusBtn');
+
+const FOLD_KEY = { l: 'drift.foldL', r: 'drift.foldR' };
+let foldL = false;
+let foldR = false;
+let focusSaved = null; /* 进入专注模式前的独立折叠状态 [foldL, foldR]，退出时恢复 */
+
+try {
+  foldL = localStorage.getItem(FOLD_KEY.l) === '1';
+  foldR = localStorage.getItem(FOLD_KEY.r) === '1';
+} catch (e) { /* localStorage 不可用（隐私模式等）时仅本次会话内生效 */ }
+
+function applyFold() {
+  driftShell.classList.toggle('fold-l', foldL);
+  driftShell.classList.toggle('fold-r', foldR);
+  for (const [btn, folded] of [[foldLBtn, foldL], [unfoldLBtn, foldL], [foldRBtn, foldR], [unfoldRBtn, foldR]]) {
+    btn.setAttribute('aria-expanded', String(!folded));
+  }
+}
+
+/* 专注模式：双栏同时折叠；退出恢复进入前状态（不写 localStorage，保持独立折叠记忆不变） */
+function setFocus(on) {
+  if (on && focusSaved === null) {
+    focusSaved = [foldL, foldR];
+    foldL = true;
+    foldR = true;
+  } else if (!on && focusSaved !== null) {
+    [foldL, foldR] = focusSaved;
+    focusSaved = null;
+  }
+  driftShell.classList.toggle('focus-mode', on);
+  focusBtn.textContent = on ? '退出专注' : '专注模式';
+  focusBtn.setAttribute('aria-pressed', String(on));
+  applyFold();
+}
+
+function toggleFold(side) {
+  if (focusSaved !== null) setFocus(false);
+  if (side === 'l') foldL = !foldL;
+  else foldR = !foldR;
+  try {
+    localStorage.setItem(FOLD_KEY[side], (side === 'l' ? foldL : foldR) ? '1' : '0');
+  } catch (e) { /* 忽略持久化失败 */ }
+  applyFold();
+}
+
+foldLBtn.addEventListener('click', () => toggleFold('l'));
+unfoldLBtn.addEventListener('click', () => toggleFold('l'));
+foldRBtn.addEventListener('click', () => toggleFold('r'));
+unfoldRBtn.addEventListener('click', () => toggleFold('r'));
+focusBtn.addEventListener('click', () => setFocus(focusSaved === null));
+applyFold();
+
+/* ---------------- 右栏三块手风琴（详解 / 控件 / 读数），localStorage 记忆、切章不重置 ---------------- */
+
+const ACC_KEYS = { lesson: 'drift.accLesson', controls: 'drift.accControls', data: 'drift.accData' };
+const accSecs = {
+  lesson: document.getElementById('accLesson'),
+  controls: document.getElementById('accControls'),
+  data: document.getElementById('accData'),
+};
+
+const NARROW_VIEW = window.innerWidth <= 1100;   /* 小屏首访清爽态判据 */
+const accClosed = {};
+for (const name of Object.keys(accSecs)) {
+  let saved = null;
+  try { saved = localStorage.getItem(ACC_KEYS[name]); } catch (e) { /* 忽略 */ }
+  /* 首访（无记忆）：≤1100px 默认收起数据读数；此后记忆优先，不随视口变 */
+  accClosed[name] = saved !== null ? saved === '1' : (name === 'data' && NARROW_VIEW);
+}
+function applyAcc(name) {
+  const sec = accSecs[name];
+  sec.classList.toggle('closed', accClosed[name]);
+  sec.querySelector('.acc-head').setAttribute('aria-expanded', String(!accClosed[name]));
+}
+function toggleAcc(name) {
+  accClosed[name] = !accClosed[name];
+  try { localStorage.setItem(ACC_KEYS[name], accClosed[name] ? '1' : '0'); } catch (e) { /* 忽略 */ }
+  applyAcc(name);
+}
+for (const name of Object.keys(accSecs)) {
+  accSecs[name].querySelector('.acc-head').addEventListener('click', () => toggleAcc(name));
+  applyAcc(name);
+}
+
 /* ---------------- 启动 ---------------- */
 
 let clockT = 0;
 
 loadAll([
   { key: 'sky', label: '环境光', job: loadHDR(TEXDIR + 'sky/sky_court-BLHJ2ADI.hdr') },
-  { key: 'skyBg', label: '天空', job: loadTexture(TEXDIR + 'sky/sky_court-BKHrsJQE.webp') },
 ], (d, t, label) => loader.setText(`正在加载 ${d}/${t}（${label}）`)).then((t) => {
-  scene.environment = t.sky;
-  scene.background = t.skyBg;
+  scene.environment = t.sky;   /* HDR 只作环境反射光；背景由 attachVFX 的 illus 模式管理 */
 
   pangaeaAt(0);
   updateStrata();
   updateBound();
 
   loader.hide();
-  const sections = createSections({
-    nav: document.getElementById('sideNav'),
-    descPanel: document.getElementById('descPanel'),
-    sections: SECTIONS,
-    onSelect(i, sec) {
-      activeSectionCleanup();
-      activeSectionCleanup = () => {};
-      state.strataAnim = false;
-      state.driftAnim = false;
-      state.playing = false;
-      state.coastAuto = false;
-      hideAllSprites();
-      sec.enter();
-    },
-  });
-  window.__eduSections = sections;
-  sections.select(0);
+  window.__eduSections = { select: selectChapter };
+  /* 调试句柄（自动化验收/像素级自查用） */
+  window.__driftDebug = { vfx, app, state };
+  selectChapter(0);
 
   app.onFrame((dt) => {
-    cameraTweenTick(app, dt);
+    /* 相机缓动由 attachVFX 接管（tickCamera 在渲染钩子内） */
     clockT += dt;
-    const sec = SECTIONS[sections.buttons.findIndex((b) => b.classList.contains('active'))] || SECTIONS[0];
+    /* 读数隐藏时（多数章节）数据手风琴块一并收走 */
+    accSecs.data.classList.toggle('acc-empty', hud.el.style.display === 'none');
+    const sec = SECTIONS[chapterIdx] || SECTIONS[0];
     if (sec.tick) sec.tick(dt);
     // 沧海桑田水位应用
     const w = gCoast.getObjectByName('coastWater');
