@@ -1,10 +1,11 @@
-# 工单模板：单实验三栏布局 + 全元素折叠改造（每轮执行方必读）
+# 工单模板：单实验 Micro 级深改（每轮执行方必读）
 
-> 本文件是 38 个实验逐个改造的**通用工艺工单**。每小时调度任务会指派 1-2 个实验，执行方先读本文件，再读指派的实验名。
+> 本文件是各实验深改的**通用工艺工单**。每小时调度任务会指派 1 个实验，执行方先读本文件与 `docs/ORIGINAL-ANALYSIS.md`（原版逆向档案——查该实验行的原版 KB/函数数/功能密度，作为 1:1 对齐基准），再动手。
 > 工作目录：`/Users/leo/milulab/edulab/`
-> 工艺基准（真源，先读）：`docs/CRAFT-STANDARD.md` + `docs/REPORT-MICRO-LAYOUT3.md` + `docs/REPORT-MICRO-FOLD.md` + `docs/REPORT-MICRO-FOLD-ALL.md`
+> 工艺基准（真源，先读）：`docs/CRAFT-STANDARD.md` + `docs/ORIGINAL-ANALYSIS.md` + `docs/REPORT-MICRO-*.md` 五件套
 > 参考实现（照着做）：`micro/index.html` + `assets/css/lab-micro.css` + `assets/js/lab-micro.js`
 > 铁律：只改指派的实验文件（`<slug>/index.html`、`assets/css/lab-<slug>.css`、`assets/js/lab-<slug>.js`、可选扩 `assets/js/edu-vfx.js` 且必须向后兼容）。**严禁改动 micro 及其他实验、共享文件 edu-core/lab.css。**
+> **功能 1:1 硬要求（Leo 2026-10-31 定）**：以原版中文文案块为功能盘点单位，自研必须全覆盖原版全部教学演示与交互，交互语义等价（实现可不同、功能不可缺），缺一打回。体量基准见 3+ 节。
 
 ## 改造内容（对 micro 已验证的三件套，按实验特性裁剪）
 
@@ -37,7 +38,7 @@
 5. **程序化纹理**：需要贴图的部位（标签/木纹/刻度）用 CanvasTexture 程序化生成，密度参照 micro（fillStyle/arc 大量矢量绘制）
 6. **互动可视反馈**：可动部件（旋钮/滑杆对应物）拖拽时 3D 同步转动；焦距类参数与视觉模糊/景深非线性联动
 
-**体量基准**：改造后该实验 lab-<slug>.js 应达到 90-120K 量级（当前多数 45-65K），低于 85K 视为未达标，需继续加深。
+**体量基准（对齐 ORIGINAL-ANALYSIS.md）**：改造后该实验 lab-<slug>.js 应 ≥ 原版 KB × 0.5（T1 旗舰级 ≥ 原版 × 0.4 且 ≥ 100K）；对照档案第二部分逐实验行查基准。**功能 1:1**：先按原版文案块列功能清单，改造后逐项核对。
 
 **JS 逻辑零回归**：建模加码不得破坏既有章节切换/quiz/数据读数；每章遍历验证。
 
