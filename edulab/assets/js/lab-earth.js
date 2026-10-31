@@ -1,13 +1,38 @@
 /* EduLab · 地球运动课堂（earth）
  * 章节：总览 / 自转 / 昼夜交替与晨昏线 / 公转 / 直射点移动 / 昼夜长短 / 正午太阳高度 / 四季更替 / 随堂检测
  * 场景：贴图地球（day/night/clouds/normal/specular）+ 太阳，黄赤交角 23.44°，自转公转联动。
+ * 布局（micro 三件套移植）：真·三栏教学布局——左栏课程大纲列表（点击切章）/ 中栏 3D 舞台
+ *       （相机飞行）/ 右栏知识点详解 + 本章控件 + 数据读数；左右栏独立折叠（28px 竖条）+
+ *       专注模式 + 右栏三块手风琴（localStorage 记忆，切章不重置）。
+ * 视觉工艺（edu-vfx 接入）：后处理管线 + cubic 运镜（attachVFX 接管渲染与相机缓动）。
+ * 建模深改（Micro 级标准）：
+ *   - 太阳总装：程序化米粒组织光球贴图（granule/超米粒/黑子对/光斑）+ 临边昏暗 shader
+ *     + 色球边缘壳 + 双层日冕射线 sprite（自旋呼吸）
+ *   - 地轴总装：钢质轴杆 + 黄铜车削轴端（LatheGeometry 车削轮廓：轴环→颈→球→尖顶）
+ *     + 极区轴环 + 配重尾锥
+ *   - 纬线环实体化：赤道/回归线/极圈 Torus 管环 + 虚线伴随环 + 赤道度数刻 Tick（InstancedMesh）
+ *     + 五环名称标签（随环组显隐）
+ *   - 教具化标记：北京/直射点图钉（锥杆 + 发光珠 + 切面光环，直射点光环脉动）
+ *   - 晨昏线升级：虚线主环 + 贴球暮光带（晨昏蒙影双层，随晨昏面同转）+ 标注
+ *   - 方向弧工厂 makeDirArc（自转/公转共用）：弧管 + 雪佛龙 + 端头箭锥，走向与真实转向一致
+ *   - 黄赤交角演示装置：黄道面盘 + 赤道面盘 + 二分线 + ε 交角弧（章节淡入淡出）
+ *   - 彗星道具：开普勒方程解算椭圆轨道（近日点加速可见）+ 离子尾/尘埃尾双尾粒子
+ *     （反日向 + 速度滞后弯曲，尾长随日距变化）
+ *   - 公转刻度环：CanvasTexture 环面贴图（12 月名 + 365 日刻 + 度数环 + 二分二至金刻）
+ *     + 近日点/远日点标记 + 黄铜车削月份针
+ *   - 深空叙事：银河带 fbm 星云 ×5 + 旋涡星系 ×3 + 四针衍射亮星 ×6（程序化贴图）
+ *   - 光照氛围：程序化摄影棚环境反射（金属件 PBR）+ 冷色银河补光 + 半球环境
  */
 import {
   THREE, DEG, TAU, clamp,
-  loadTexture, loadAll, createApp, cameraTweenTick, makeLoader,
-  createSections, createControlsPanel, makeHUD, makeTextSprite, setSpriteText, makeGlowTexture,
+  loadTexture, loadAll, createApp, makeLoader,
+  createControlsPanel, makeHUD, makeTextSprite, setSpriteText, makeGlowTexture,
   circleLine, makeStars,
 } from './edu-core.js';
+import {
+  attachVFX, PAL, matStd, matCoat, matGlow, ghostify,
+  fbm3, makeStudioEnvironment,
+} from './edu-vfx.js';
 
 /* ---------------- 常量与天文公式 ---------------- */
 
@@ -60,27 +85,641 @@ const app = createApp({
   minDistance: 1.25,
   maxDistance: 40,
   toneMapping: THREE.NoToneMapping,
+  keepBackground: true,
 });
 const { scene, camera, controls } = app;
+/* 视觉工艺轻接入：后处理管线接管渲染循环与相机缓动（setCamera 升级为 cubic 运镜），
+   背景交给 illus 模式管理（星空仍为场景内容，不受影响） */
+const vfx = attachVFX(app, 'illus');
 
-// —— 太阳系骨架 ——
-const sunSys = new THREE.Group();      // 近景模式下移动到 -sunDir*SUN_DIST
+/* ================= 视觉工艺车间（Micro 级建模精修：色板 / 材质 / 程序化贴图 / 造型工厂） ================= */
+
+const mesh = (geo, mat) => new THREE.Mesh(geo, mat);
+
+/* 太空族色板（本实验本地族，深空黑背景高对比；金属件复用 PAL.brass/steel） */
+const SKY = {
+  sunCore: 0xfff3c4, granuleHot: '255,246,214', granuleCool: '214,132,38',
+  sunspot: '#3a1c08', penumbra: '120,55,15', facula: '255,238,190',
+  corona: '255,205,130', chromo: 0xff9440,
+  axisSteel: 0x39404a, pinMetal: 0x8f9aa6,
+  equator: 0x9adfff, tropic: 0xffb35c, polar: 0x8fd3ff,
+  ecliptic: 0xf2c979, celestEq: 0x74bfe8, hinge: 0xffe08a,
+  cometIce: 0xcfd9e4, coma: '172,224,255', ionTail: [0.42, 0.72, 1.0], dustTail: [1.0, 0.84, 0.62],
+  dialTick: 'rgba(190,208,232,0.34)', dialTickHi: 'rgba(255,209,102,0.95)',
+  dialText: 'rgba(206,221,240,0.88)', dialDeg: 'rgba(152,172,198,0.66)',
+};
+
+/* —— 材质分层（四级分工：主体 coat / 次要 std / 发光 glow；金属只给真金属件） —— */
+const M_SHAFT = matStd(SKY.axisSteel, { roughness: 0.32, metalness: 0.92 });     // 地轴钢杆
+const M_BRASS2 = matStd(PAL.brass, { roughness: 0.27, metalness: 1 });           // 黄铜车削件（轴端/月份针）
+const M_PINMETAL = matStd(SKY.pinMetal, { roughness: 0.36, metalness: 0.85 });   // 图钉锥杆
+const M_COMETICE = matStd(SKY.cometIce, { roughness: 0.85, metalness: 0.05, emissive: 0x1c2a3a, emissiveIntensity: 0.5 }); // 彗核脏冰
+
+/* —— 可播种随机（本页纹理需可复现，截图可对照） —— */
+function sRand(seed) {
+  let a = seed >>> 0;
+  return () => {
+    a |= 0; a = (a + 0x6D2B79F5) | 0;
+    let t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+/* 画布贴图工厂（颜色空间 + 各向异性，micro 同款习惯） */
+function canvasTex(w, h, draw) {
+  const cv = document.createElement('canvas');
+  cv.width = w; cv.height = h;
+  draw(cv.getContext('2d'), w, h);
+  const tex = new THREE.CanvasTexture(cv);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  tex.anisotropy = 8;
+  return tex;
+}
+
+/* ---------------- 程序化贴图工厂 ---------------- */
+
+/** 太阳光球米粒组织（等距圆柱 1024×512）：
+ *  底色暖黄 → 2600 颗米粒胞元（亮核暖白 + 暗缘橙褐）→ 60 个超米粒大胞 →
+ *  3 组黑子（本影 + 半影晕 + 伴生微孔）→ 50 处光斑增亮。同 seed 可复现。 */
+function sunGranulationTexture() {
+  const W = 1024, H = 512;
+  const rnd = sRand(20261031);
+  return canvasTex(W, H, (ctx) => {
+    ctx.fillStyle = '#ffd47e';
+    ctx.fillRect(0, 0, W, H);
+    /* 超米粒大胞（低频亮暗起伏） */
+    for (let i = 0; i < 60; i++) {
+      const x = rnd() * W, y = rnd() * H, r = 26 + rnd() * 34;
+      const g = ctx.createRadialGradient(x, y, 0, x, y, r);
+      const hot = rnd() > 0.5;
+      g.addColorStop(0, `rgba(${hot ? '255,240,200' : '212,132,38'},${0.05 + rnd() * 0.06})`);
+      g.addColorStop(1, 'rgba(212,132,38,0)');
+      ctx.fillStyle = g;
+      ctx.fillRect(x - r, y - r, r * 2, r * 2);
+    }
+    /* 米粒胞元：亮核（lighter）+ 暗缘（source-over）两遍 */
+    ctx.globalCompositeOperation = 'lighter';
+    for (let i = 0; i < 1600; i++) {
+      const x = rnd() * W, y = rnd() * H, r = 2.5 + rnd() * 6;
+      const g = ctx.createRadialGradient(x, y, 0, x, y, r);
+      g.addColorStop(0, `rgba(${SKY.granuleHot},${0.30 + rnd() * 0.30})`);
+      g.addColorStop(1, `rgba(${SKY.granuleHot},0)`);
+      ctx.fillStyle = g;
+      ctx.fillRect(x - r, y - r, r * 2, r * 2);
+    }
+    ctx.globalCompositeOperation = 'source-over';
+    for (let i = 0; i < 1100; i++) {
+      const x = rnd() * W, y = rnd() * H, r = 2 + rnd() * 5;
+      const g = ctx.createRadialGradient(x, y, 0, x, y, r);
+      g.addColorStop(0, 'rgba(0,0,0,0)');
+      g.addColorStop(0.7, `rgba(${SKY.granuleCool},${0.10 + rnd() * 0.12})`);
+      g.addColorStop(1, `rgba(${SKY.granuleCool},0)`);
+      ctx.fillStyle = g;
+      ctx.fillRect(x - r, y - r, r * 2, r * 2);
+    }
+    /* 黑子对：中纬度三组（本影椭圆 + 半影径向晕 + 伴生微孔/光斑） */
+    const spot = (x0, y0, s) => {
+      const pg = ctx.createRadialGradient(x0, y0, 0, x0, y0, s * 2.6);
+      pg.addColorStop(0, `rgba(${SKY.penumbra},0.52)`);
+      pg.addColorStop(0.55, `rgba(${SKY.penumbra},0.22)`);
+      pg.addColorStop(1, `rgba(${SKY.penumbra},0)`);
+      ctx.fillStyle = pg;
+      ctx.fillRect(x0 - s * 2.6, y0 - s * 2.6, s * 5.2, s * 5.2);
+      ctx.save();
+      ctx.translate(x0, y0);
+      ctx.rotate((rnd() - 0.5) * 0.8);
+      ctx.scale(1, 0.62 + rnd() * 0.2);
+      ctx.fillStyle = SKY.sunspot;
+      ctx.globalAlpha = 0.88;
+      ctx.beginPath();
+      ctx.arc(0, 0, s, 0, TAU);
+      ctx.fill();
+      ctx.globalAlpha = 1;
+      ctx.restore();
+      for (let k = 0; k < 5; k++) {   /* 伴生微孔 */
+        const a = rnd() * TAU, d = s * (1.6 + rnd() * 1.4);
+        ctx.fillStyle = `rgba(70,32,10,${0.35 + rnd() * 0.3})`;
+        ctx.beginPath();
+        ctx.arc(x0 + Math.cos(a) * d, y0 + Math.sin(a) * d * 0.7, 1.2 + rnd() * 2.2, 0, TAU);
+        ctx.fill();
+      }
+      for (let k = 0; k < 8; k++) {   /* 邻近光斑 */
+        const a = rnd() * TAU, d = s * (2.4 + rnd() * 2.6);
+        const fx = x0 + Math.cos(a) * d, fy = y0 + Math.sin(a) * d * 0.7;
+        const fg = ctx.createRadialGradient(fx, fy, 0, fx, fy, 4 + rnd() * 5);
+        fg.addColorStop(0, `rgba(${SKY.facula},0.4)`);
+        fg.addColorStop(1, `rgba(${SKY.facula},0)`);
+        ctx.fillStyle = fg;
+        ctx.fillRect(fx - 10, fy - 10, 20, 20);
+      }
+    };
+    spot(W * (0.18 + rnd() * 0.1), H * 0.30, 9 + rnd() * 4);
+    spot(W * (0.46 + rnd() * 0.08), H * 0.68, 12 + rnd() * 5);
+    spot(W * (0.72 + rnd() * 0.1), H * 0.36, 7 + rnd() * 3);
+    /* 散布光斑提亮 */
+    ctx.globalCompositeOperation = 'lighter';
+    for (let i = 0; i < 50; i++) {
+      const x = rnd() * W, y = rnd() * H, r = 3 + rnd() * 6;
+      const g = ctx.createRadialGradient(x, y, 0, x, y, r);
+      g.addColorStop(0, `rgba(${SKY.facula},0.22)`);
+      g.addColorStop(1, `rgba(${SKY.facula},0)`);
+      ctx.fillStyle = g;
+      ctx.fillRect(x - r, y - r, r * 2, r * 2);
+    }
+    ctx.globalCompositeOperation = 'source-over';
+  });
+}
+
+/** 日冕射线贴图（叠加混合 sprite 用）：140 条随机长度软射线 + 内核晕 + 中层辉光 */
+function coronaRayTexture(seed) {
+  const S = 512, C = S / 2;
+  const rnd = sRand(seed);
+  return canvasTex(S, S, (ctx) => {
+    ctx.translate(C, C);
+    for (let i = 0; i < 140; i++) {
+      const a = rnd() * TAU;
+      const len = S * (0.14 + Math.pow(rnd(), 2.1) * 0.34);
+      const w = 0.8 + rnd() * 2.4;
+      const g = ctx.createLinearGradient(0, 0, Math.cos(a) * len, Math.sin(a) * len);
+      g.addColorStop(0, `rgba(${SKY.corona},${0.10 + rnd() * 0.10})`);
+      g.addColorStop(1, `rgba(${SKY.corona},0)`);
+      ctx.strokeStyle = g;
+      ctx.lineWidth = w;
+      ctx.beginPath();
+      ctx.moveTo(Math.cos(a) * S * 0.055, Math.sin(a) * S * 0.055);
+      ctx.lineTo(Math.cos(a) * len, Math.sin(a) * len);
+      ctx.stroke();
+    }
+    const core = ctx.createRadialGradient(0, 0, 0, 0, 0, S * 0.17);
+    core.addColorStop(0, 'rgba(255,244,214,0.95)');
+    core.addColorStop(0.5, 'rgba(255,222,150,0.42)');
+    core.addColorStop(1, 'rgba(255,222,150,0)');
+    ctx.fillStyle = core;
+    ctx.fillRect(-C, -C, S, S);
+    const halo = ctx.createRadialGradient(0, 0, 0, 0, 0, S * 0.48);
+    halo.addColorStop(0, `rgba(${SKY.corona},0.30)`);
+    halo.addColorStop(0.5, `rgba(${SKY.corona},0.10)`);
+    halo.addColorStop(1, `rgba(${SKY.corona},0)`);
+    ctx.fillStyle = halo;
+    ctx.fillRect(-C, -C, S, S);
+  });
+}
+
+/** 软粒子贴图（彗尾/星点通用）：径向柔斑 + 细噪环 */
+function softDotTexture(rgb = SKY.coma) {
+  const S = 64, C = S / 2;
+  return canvasTex(S, S, (ctx) => {
+    const g = ctx.createRadialGradient(C, C, 0, C, C, C);
+    g.addColorStop(0, `rgba(${rgb},0.95)`);
+    g.addColorStop(0.35, `rgba(${rgb},0.42)`);
+    g.addColorStop(1, `rgba(${rgb},0)`);
+    ctx.fillStyle = g;
+    ctx.fillRect(0, 0, S, S);
+  });
+}
+
+/** 四针衍射亮星贴图：亮核 + 主十字针 + 45° 弱针 + 外晕（深空亮星道具） */
+function diffractionStarTexture() {
+  const S = 256, C = S / 2;
+  return canvasTex(S, S, (ctx) => {
+    ctx.translate(C, C);
+    const spike = (ang, len, w, a0) => {
+      ctx.save();
+      ctx.rotate(ang);
+      const g = ctx.createLinearGradient(0, 0, len, 0);
+      g.addColorStop(0, `rgba(255,255,255,${a0})`);
+      g.addColorStop(1, 'rgba(255,255,255,0)');
+      ctx.fillStyle = g;
+      ctx.beginPath();
+      ctx.moveTo(0, -w);
+      ctx.lineTo(len, 0);
+      ctx.lineTo(0, w);
+      ctx.closePath();
+      ctx.fill();
+      ctx.restore();
+    };
+    for (const ang of [0, Math.PI / 2, Math.PI, Math.PI * 1.5]) spike(ang, S * 0.47, 1.6, 0.85);
+    for (const ang of [Math.PI / 4, Math.PI * 3 / 4, Math.PI * 5 / 4, Math.PI * 7 / 4]) spike(ang, S * 0.2, 1.1, 0.3);
+    const core = ctx.createRadialGradient(0, 0, 0, 0, 0, S * 0.1);
+    core.addColorStop(0, 'rgba(255,255,255,1)');
+    core.addColorStop(0.4, 'rgba(255,255,255,0.5)');
+    core.addColorStop(1, 'rgba(255,255,255,0)');
+    ctx.fillStyle = core;
+    ctx.fillRect(-C, -C, S, S);
+    const halo = ctx.createRadialGradient(0, 0, 0, 0, 0, C);
+    halo.addColorStop(0, 'rgba(220,235,255,0.20)');
+    halo.addColorStop(1, 'rgba(220,235,255,0)');
+    ctx.fillStyle = halo;
+    ctx.fillRect(-C, -C, S, S);
+  });
+}
+
+/** 旋涡星系贴图：核球暖晕 + 双对数螺臂点阵（HII 区点缀）+ 外盘雾 */
+function spiralGalaxyTexture(seed) {
+  const S = 512, C = S / 2;
+  const rnd = sRand(seed);
+  return canvasTex(S, S, (ctx) => {
+    ctx.translate(C, C);
+    const bulge = ctx.createRadialGradient(0, 0, 0, 0, 0, 92);
+    bulge.addColorStop(0, 'rgba(255,238,214,0.9)');
+    bulge.addColorStop(0.25, 'rgba(255,224,190,0.34)');
+    bulge.addColorStop(1, 'rgba(255,224,190,0)');
+    ctx.fillStyle = bulge;
+    ctx.fillRect(-C, -C, S, S);
+    const haze = ctx.createRadialGradient(0, 0, 0, 0, 0, C * 0.94);
+    haze.addColorStop(0, 'rgba(168,186,235,0.16)');
+    haze.addColorStop(1, 'rgba(168,186,235,0)');
+    ctx.fillStyle = haze;
+    ctx.fillRect(-C, -C, S, S);
+    for (const arm of [0, Math.PI]) {
+      for (let i = 0; i <= 640; i++) {
+        const t = i / 640;
+        const r = Math.min(18 * Math.exp(2.95 * t), C * 0.9);
+        const th = arm + t * 4.7 + (rnd() - 0.5) * 0.16;
+        const x = Math.cos(th) * r, y = Math.sin(th) * r * 0.96;
+        const fade = (1 - t) * (0.32 + rnd() * 0.4);
+        const pink = rnd() > 0.965;
+        ctx.fillStyle = pink
+          ? `rgba(255,178,196,${fade})`
+          : `rgba(${215 + rnd() * 40 | 0},${222 + rnd() * 30 | 0},255,${fade})`;
+        ctx.beginPath();
+        ctx.arc(x, y, Math.max(0.5, 1.7 - t * 1.2) * (0.7 + rnd() * 0.9), 0, TAU);
+        ctx.fill();
+      }
+    }
+    for (let i = 0; i < 130; i++) {   /* 盘面散星 */
+      const a = rnd() * TAU, r = Math.sqrt(rnd()) * C * 0.8;
+      ctx.fillStyle = `rgba(235,240,255,${0.08 + rnd() * 0.22})`;
+      ctx.fillRect(Math.cos(a) * r, Math.sin(a) * r, 1.1, 1.1);
+    }
+  });
+}
+
+/** 深空星云贴图（银河带用）：水平带内 fbm 团块叠加 + 散星点 */
+function nebulaTexture(seed, rgb = '96,128,190') {
+  const S = 512, C = S / 2;
+  const rnd = sRand(seed);
+  return canvasTex(S, S, (ctx) => {
+    ctx.globalCompositeOperation = 'lighter';
+    for (let i = 0; i < 120; i++) {
+      const x = C + (rnd() + rnd() + rnd() - 1.5) * C * 0.62;
+      const y = C + (rnd() + rnd() + rnd() - 1.5) * C * 0.3;
+      const r = 16 + rnd() * 74;
+      const g = ctx.createRadialGradient(x, y, 0, x, y, r);
+      g.addColorStop(0, `rgba(${rgb},${0.035 + rnd() * 0.055})`);
+      g.addColorStop(1, `rgba(${rgb},0)`);
+      ctx.fillStyle = g;
+      ctx.fillRect(x - r, y - r, r * 2, r * 2);
+    }
+    /* 暖色尘埃带暗芯（银河核心方向） */
+    const core = ctx.createRadialGradient(C * 0.7, C, 0, C * 0.7, C, 120);
+    core.addColorStop(0, 'rgba(228,196,150,0.10)');
+    core.addColorStop(1, 'rgba(228,196,150,0)');
+    ctx.fillStyle = core;
+    ctx.fillRect(0, 0, S, S);
+    for (let i = 0; i < 340; i++) {
+      const x = rnd() * S, y = C + (rnd() - 0.5) * S * 0.5;
+      ctx.fillStyle = `rgba(240,244,255,${0.10 + rnd() * 0.4})`;
+      ctx.fillRect(x, y, rnd() > 0.94 ? 1.8 : 1, 1);
+    }
+    ctx.globalCompositeOperation = 'source-over';
+  });
+}
+
+/** 公转刻度环贴图（2048² 环面）：12 月名 + 365 日刻（每 10 日加强 + 二分二至金刻）
+ *  + 内圈度数环。贴图角 → 世界 φ 映射：本地 +Y 对世界 −Z，rotate(φ+π/2) 后画在 (0,−r)。 */
+function orbitGraduatedTexture() {
+  const S = 2048, C = S / 2, ROUT = C - 10, RIN = ROUT * (11.5 / 12.5);
+  const K = S / (12.5 * 2 * ORBIT_R);   /* 环带宽 → 画布像素比例（RingGeometry UV 按外径归一） */
+  return canvasTex(S, S, (ctx) => {
+    /* 环面底 */
+    ctx.beginPath();
+    ctx.arc(C, C, ROUT, 0, TAU);
+    ctx.arc(C, C, RIN, 0, TAU, true);
+    ctx.fillStyle = 'rgba(150,178,214,0.055)';
+    ctx.fill();
+    /* 内外圈细描线 */
+    for (const [r, a] of [[ROUT, 0.4], [RIN, 0.3]]) {
+      ctx.strokeStyle = `rgba(170,195,225,${a})`;
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(C, C, r, 0, TAU);
+      ctx.stroke();
+    }
+    const at = (phi, fn) => {
+      /* 世界方位角 φ → 画布：rotate(π/2 − φ) 后画在 (0,−r)（推导见构造处注释） */
+      ctx.save();
+      ctx.translate(C, C);
+      ctx.rotate(Math.PI / 2 - phi);
+      fn();
+      ctx.restore();
+    };
+    /* 365 日刻 */
+    for (let d = 1; d <= 365; d++) {
+      const phi = TAU * (d - 80) / 365;
+      const season = d === 80 || d === 173 || d === 266 || d === 355;
+      const big = season || d % 10 === 0;
+      const r1 = ROUT - (season ? 34 : big ? 20 : 11);
+      at(phi, () => {
+        ctx.strokeStyle = season ? SKY.dialTickHi : SKY.dialTick;
+        ctx.lineWidth = season ? 5 : big ? 3 : 1.6;
+        ctx.beginPath();
+        ctx.moveTo(0, -ROUT);
+        ctx.lineTo(0, -r1);
+        ctx.stroke();
+      });
+    }
+    /* 12 月名（各月月中位置） */
+    const cum = [0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334];
+    ctx.font = '600 46px "PingFang SC", sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    for (let m = 0; m < 12; m++) {
+      const phi = TAU * (cum[m] + 15.5 - 80) / 365;
+      at(phi, () => {
+        ctx.fillStyle = SKY.dialText;
+        ctx.fillText(`${m + 1}月`, 0, -(RIN + (ROUT - RIN) * 0.56));
+      });
+    }
+    /* 内圈度数环（每 5° 细刻 / 每 30° 长刻 + 数字） */
+    const RDEG = RIN - 26;
+    for (let deg = 0; deg < 360; deg += 5) {
+      const big = deg % 30 === 0;
+      at(deg * DEG, () => {
+        ctx.strokeStyle = big ? 'rgba(170,195,225,0.5)' : SKY.dialTick;
+        ctx.lineWidth = big ? 3 : 1.5;
+        ctx.beginPath();
+        ctx.moveTo(0, -RIN);
+        ctx.lineTo(0, -(RIN - (big ? 22 : 11)));
+        ctx.stroke();
+      });
+    }
+    ctx.font = '400 30px "Helvetica Neue", sans-serif';
+    for (let deg = 0; deg < 360; deg += 30) {
+      at(deg * DEG, () => {
+        ctx.fillStyle = SKY.dialDeg;
+        ctx.fillText(`${deg}°`, 0, -(RDEG + 14));
+      });
+    }
+    void K;
+  });
+}
+
+/* ---------------- 造型工厂 ---------------- */
+
+/** 黄铜车削轮廓（LatheGeometry）：点列 [半径, y] → 车削件网格（轴端/针座共用） */
+function lathe(points, mat, seg = 22) {
+  return mesh(new THREE.LatheGeometry(points.map((p) => new THREE.Vector2(p[0], p[1])), seg), mat);
+}
+
+/** 地轴总装：钢质轴杆 + 北极黄铜车削端（轴环→颈→鼓腹→球→尖顶）
+ *  + 南极配重尾锥 + 极区轴环 ×2。放在 tilt 固定系（不随自转）。 */
+function buildAxisAssembly() {
+  const g = new THREE.Group();
+  const shaft = mesh(new THREE.CylinderGeometry(0.014, 0.014, 3.1, 12), M_SHAFT);
+  g.add(shaft);
+  /* 北端车削件：LatheGeometry 车削轮廓（机床车削件观感的关键是轮廓转折） */
+  const finial = lathe([
+    [0.034, 0.000], [0.034, 0.024], [0.020, 0.038], [0.013, 0.056],
+    [0.022, 0.074], [0.022, 0.092], [0.012, 0.106],
+    [0.030, 0.126], [0.046, 0.152], [0.052, 0.186], [0.044, 0.220],
+    [0.024, 0.244], [0.008, 0.258], [0.000, 0.264],
+  ], M_BRASS2);
+  finial.position.y = 1.44;
+  /* 南端：轴环 + 配重尾锥（车削收尾） */
+  const tail = lathe([
+    [0.034, 0.000], [0.034, 0.022], [0.018, 0.036], [0.026, 0.060],
+    [0.026, 0.082], [0.012, 0.104], [0.000, 0.118],
+  ], M_BRASS2);
+  tail.rotation.x = Math.PI;
+  tail.position.y = -1.44;
+  /* 极区轴环：轴杆穿入球体处的车削装饰环 */
+  for (const y of [1.045, -1.045]) {
+    const collar = mesh(new THREE.TorusGeometry(0.030, 0.010, 10, 24), M_BRASS2);
+    collar.rotation.x = Math.PI / 2;
+    collar.position.y = y;
+    g.add(collar);
+  }
+  g.add(finial, tail);
+  return g;
+}
+
+/** 纬线环实体化：Torus 管环（主）+ 内侧虚线伴随环（辅）；
+ *  equator 档加 36 枚度数刻 Tick（InstancedMesh 单 draw call）。 */
+function latRing(latDeg, colorHex, opts = {}) {
+  const lat = latDeg * DEG;
+  const r = Math.cos(lat) * 1.008;
+  const g = new THREE.Group();
+  g.position.y = Math.sin(lat) * 1.008;
+  const tube = opts.tube ?? 0.0062;
+  const ring = mesh(
+    new THREE.TorusGeometry(r, tube, 8, 160),
+    matStd(colorHex, {
+      roughness: 0.42, metalness: 0.12,
+      emissive: colorHex, emissiveIntensity: opts.glow ?? 0.4,
+    })
+  );
+  ring.rotation.x = Math.PI / 2;
+  g.add(ring);
+  const dash = circleLine(r * 0.994, colorHex, 160);
+  dash.material = new THREE.LineDashedMaterial({
+    color: colorHex, transparent: true, opacity: 0.42, dashSize: 0.045, gapSize: 0.035,
+  });
+  dash.computeLineDistances();
+  g.add(dash);
+  if (opts.ticks) {
+    const tickGeo = new THREE.BoxGeometry(0.020, 0.0032, 0.0032);
+    const tickMat = matStd(colorHex, { roughness: 0.4, metalness: 0.2, emissive: colorHex, emissiveIntensity: 0.55 });
+    const inst = new THREE.InstancedMesh(tickGeo, tickMat, 36);
+    const m4 = new THREE.Matrix4();
+    for (let i = 0; i < 36; i++) {
+      const a = (i / 36) * TAU;
+      m4.makeRotationY(-a);
+      m4.setPosition(Math.cos(a) * (r + tube + 0.006), 0, -Math.sin(a) * (r + tube + 0.006));
+      inst.setMatrixAt(i, m4);
+    }
+    inst.instanceMatrix.needsUpdate = true;
+    g.add(inst);
+  }
+  if (opts.label) {
+    /* 名称标签挂在环组内：章节 setVis 开关环组时标签随行 */
+    const lbl = makeTextSprite(opts.label, { fontSize: 26, color: '#c3cfe0', scale: 0.0042 });
+    lbl.position.set(0, 0.03, r + 0.09);
+    g.add(lbl);
+  }
+  return g;
+}
+
+/** 教具图钉：锥杆（插地表）+ 发光珠头 + 切面光环。径向朝外摆放由调用方 quaternion 完成。 */
+const UP_Y = new THREE.Vector3(0, 1, 0);
+function makeMapPin({ color, head = 0.022, stem = 0.05, halo = 0.05, glow = 1.5 }) {
+  const g = new THREE.Group();
+  const pin = mesh(new THREE.ConeGeometry(0.011, stem, 10), M_PINMETAL);
+  pin.rotation.x = Math.PI;                     /* 锥尖朝下插入地表 */
+  pin.position.y = stem / 2;
+  const bead = mesh(new THREE.SphereGeometry(head, 18, 14), matGlow(color, glow, { roughness: 0.35 }));
+  bead.position.y = stem + head * 0.5;
+  const ring = mesh(
+    new THREE.TorusGeometry(halo, 0.0042, 8, 40),
+    new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0.75, blending: THREE.AdditiveBlending, depthWrite: false })
+  );
+  ring.rotation.x = Math.PI / 2;
+  ring.position.y = stem * 0.45;
+  g.add(pin, bead, ring);
+  g.userData.halo = ring;
+  return g;
+}
+
+/** 方向弧管（自转/公转箭头共用工厂）：沿半径 R 圆弧放 TubeGeometry + 雪佛龙 ×3 + 端头箭锥。
+ *  走向 = t 递减（+X 处朝 −Z），与地球自转/公转的实际转向（北极上空看逆时针）一致。 */
+function makeDirArc(R, opts = {}) {
+  const g = new THREE.Group();
+  const col = opts.color ?? 0xffe08a;
+  const chev = opts.chev ?? 1;
+  const t0 = opts.t0 ?? 0.5;
+  const span = opts.span ?? 1.6;
+  const n = opts.segs ?? 56;
+  const pts = [];
+  for (let i = 0; i <= n; i++) {
+    const t = t0 - (i / n) * span;
+    pts.push(new THREE.Vector3(Math.cos(t) * R, 0, Math.sin(t) * R));
+  }
+  g.add(mesh(
+    new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts), n, opts.tubeR ?? 0.011, 8, false),
+    matGlow(col, 0.85, { roughness: 0.4 })
+  ));
+  const chevAt = (t, s = 1) => {
+    const p = new THREE.Vector3(Math.cos(t) * R, 0, Math.sin(t) * R);
+    const tan = new THREE.Vector3(Math.sin(t), 0, -Math.cos(t)).normalize();
+    const c = mesh(new THREE.ConeGeometry(0.036 * chev, 0.1 * chev, 10), matGlow(col, 1.0, { roughness: 0.4 }));
+    c.position.copy(p);
+    c.quaternion.setFromUnitVectors(UP_Y, tan);
+    c.scale.setScalar(s);
+    return c;
+  };
+  for (const f of [0.78, 0.5, 0.22]) g.add(chevAt(t0 - f * span));
+  g.add(chevAt(t0 - span * 0.94, 1.5));
+  if (opts.label) {
+    const lbl = makeTextSprite(opts.label, { fontSize: 30, color: opts.labelColor || '#ffe08a', scale: opts.labelScale ?? 0.0045 });
+    lbl.position.set(0, opts.labelY ?? 0.35, -R - 0.28);
+    g.add(lbl);
+  }
+  return g;
+}
+
+/* ================= 太阳总装（程序化光球 + 色球壳 + 双层日冕） ================= */
+
+/* —— 太阳系骨架 —— */
+const sunSys = new THREE.Group();      // 近景模式下移动到 -sunDir*SUN_DIST，公转模式回中心
 scene.add(sunSys);
-const sunMesh = new THREE.Mesh(
-  new THREE.SphereGeometry(1.6, 32, 16),
-  new THREE.MeshBasicMaterial({ color: 0xfff2c8 })
-);
-const sunGlow = new THREE.Sprite(new THREE.SpriteMaterial({
-  map: makeGlowTexture('255,236,180'),
-  blending: THREE.AdditiveBlending, depthWrite: false, transparent: true,
-}));
-sunGlow.scale.set(14, 14, 1);
-sunSys.add(sunMesh, sunGlow);
+
+/** 太阳装配体：光球 shader（米粒组织贴图 + 时间扰动 + 临边昏暗）
+ *  + 色球边缘壳（BackSide 加色 fresnel）+ 内外两层日冕射线 sprite（反向慢旋）。 */
+function buildSunAssembly(radius) {
+  const g = new THREE.Group();
+  const granTex = sunGranulationTexture();
+  granTex.wrapS = THREE.RepeatWrapping;
+  const sunUniforms = { uMap: { value: granTex }, uTime: { value: 0 } };
+  const core = mesh(new THREE.SphereGeometry(radius, 48, 32), new THREE.ShaderMaterial({
+    uniforms: sunUniforms,
+    vertexShader: /* glsl */`
+      varying vec2 vUv; varying vec3 vN; varying vec3 vWp;
+      void main() {
+        vUv = uv;
+        vN = normalize(mat3(modelMatrix) * normal);
+        vec4 wp = modelMatrix * vec4(position, 1.0);
+        vWp = wp.xyz;
+        gl_Position = projectionMatrix * viewMatrix * wp;
+      }`,
+    fragmentShader: /* glsl */`
+      uniform sampler2D uMap; uniform float uTime;
+      varying vec2 vUv; varying vec3 vN; varying vec3 vWp;
+      void main() {
+        /* 米粒组织翻滚：两级正弦扰动 uv（uTime 由全局播放速度驱动） */
+        vec2 uv = vUv;
+        uv.x += sin(uv.y * 28.0 + uTime * 0.55) * 0.0022 + sin(uv.y * 13.0 - uTime * 0.23) * 0.0031;
+        uv.y += cos(uv.x * 22.0 + uTime * 0.41) * 0.0020;
+        vec3 col = texture2D(uMap, uv).rgb;
+        /* 临边昏暗：盘面边缘变暗转橙（真实太阳盘面观感） */
+        vec3 N = normalize(vN);
+        vec3 V = normalize(cameraPosition - vWp);
+        float mu = max(dot(N, V), 0.0);
+        float limb = pow(mu, 0.52);
+        col *= 0.40 + 0.60 * limb;
+        col = mix(vec3(1.0, 0.46, 0.17), col, 0.30 + 0.70 * limb);
+        gl_FragColor = vec4(col * 1.30, 1.0);
+        #include <tonemapping_fragment>
+        #include <colorspace_fragment>
+      }`,
+  }));
+  /* 色球边缘壳：BackSide 加色 fresnel（沿用本页大气壳的成熟写法，换暖橙） */
+  const chromo = mesh(new THREE.SphereGeometry(radius * 1.035, 48, 32), new THREE.ShaderMaterial({
+    transparent: true,
+    blending: THREE.AdditiveBlending,
+    side: THREE.BackSide,
+    depthWrite: false,
+    vertexShader: /* glsl */`
+      varying vec3 vN; varying vec3 vWp;
+      void main() {
+        vN = normalize(mat3(modelMatrix) * normal);
+        vec4 wp = modelMatrix * vec4(position, 1.0);
+        vWp = wp.xyz;
+        gl_Position = projectionMatrix * viewMatrix * wp;
+      }`,
+    fragmentShader: /* glsl */`
+      varying vec3 vN; varying vec3 vWp;
+      void main() {
+        vec3 v = normalize(cameraPosition - vWp);
+        float rim = pow(max(dot(normalize(vN), v), 0.0), 2.6);
+        gl_FragColor = vec4(vec3(1.0, 0.58, 0.25) * rim, rim * 0.85);
+        #include <tonemapping_fragment>
+        #include <colorspace_fragment>
+      }`,
+  }));
+  /* 双层日冕：内层密集射线 + 外层大范围晕，反向慢旋（呼吸感） */
+  const coronaIn = new THREE.Sprite(new THREE.SpriteMaterial({
+    map: coronaRayTexture(4101), blending: THREE.AdditiveBlending,
+    depthWrite: false, transparent: true, opacity: 0.85,
+  }));
+  coronaIn.scale.setScalar(radius * 3.6);
+  const coronaOut = new THREE.Sprite(new THREE.SpriteMaterial({
+    map: coronaRayTexture(8207), blending: THREE.AdditiveBlending,
+    depthWrite: false, transparent: true, opacity: 0.5,
+  }));
+  coronaOut.scale.setScalar(radius * 6.2);
+  g.add(core, chromo, coronaIn, coronaOut);
+  return {
+    group: g, core,
+    tick(dt) {
+      sunUniforms.uTime.value += dt;
+      core.rotation.y += dt * 0.012;             /* 光球缓慢自转，米粒纹理随之漂移 */
+      coronaIn.material.rotation += dt * 0.02;
+      coronaOut.material.rotation -= dt * 0.013;
+    },
+  };
+}
+const sunAsm = buildSunAssembly(1.6);
+sunSys.add(sunAsm.group);
+
 const sunLight = new THREE.DirectionalLight(0xffffff, 2.4);
 scene.add(sunLight);
 sunLight.target = null; // 每帧指向地球
 
-scene.add(new THREE.AmbientLight(0x334455, 0.5));
+/* —— 光照氛围：低环境 + 冷色银河补光 + 半球环境（夜侧金属件不至于死黑）；
+      scene.environment 走程序化摄影棚，只作用于 PBR 金属件（地球自绘 shader / 云层不受影响） —— */
+scene.add(new THREE.AmbientLight(0x334455, 0.42));
+const starFill = new THREE.DirectionalLight(0x8fb2d9, 0.32);
+starFill.position.set(-6, -2.5, -5);
+scene.add(starFill);
+scene.add(new THREE.HemisphereLight(0x2c3e55, 0x11131a, 0.3));
+scene.environment = makeStudioEnvironment(app.renderer);
+
+/* 太阳名称标签（挂 scene，帧循环跟随 sunSys 并按模式调比例——sunSys 双模式缩放不同） */
+const sunLbl = makeTextSprite('太阳', { fontSize: 34, color: '#ffd9a0', scale: 0.013 });
+scene.add(sunLbl);
+const SUN_LBL_BASE = { w: sunLbl.scale.x, h: sunLbl.scale.y };
+
 scene.add(makeStars(700, 3000));
 
 // —— 地球装配体 ——
@@ -164,93 +803,168 @@ const EARTH_FRAG = /* glsl */`
 const marks = new THREE.Group();
 tiltG.add(marks);
 
-const AXIS_COLOR = 0xffd166;
-const axisLine = new THREE.Line(
-  new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(0, -1.45, 0), new THREE.Vector3(0, 1.45, 0)]),
-  new THREE.LineBasicMaterial({ color: AXIS_COLOR, transparent: true, opacity: 0.9 })
-);
+/* 地轴总装（钢杆 + 黄铜车削端）替代旧细线；axisLine 符号保留指向总装组，
+   各章节 setVis/visible 切换逻辑零改动 */
+const axisLine = buildAxisAssembly();
 const axisN = makeTextSprite('N', { fontSize: 40, color: '#ffd166', scale: 0.006 });
-axisN.position.set(0, 1.62, 0);
+axisN.position.set(0, 1.86, 0);
 marks.add(axisLine, axisN);
 
-const equatorRing = circleLine(1.002, 0x9adfff, 160);
-marks.add(equatorRing);
+/* 纬线环实体化：赤道（管环+虚线+36 刻度 Tick）/ 南北回归线 / 南北极圈（带名称标签） */
+const equatorRing = latRing(0, SKY.equator, { ticks: true, glow: 0.5, label: '赤道 0°' });
+const tropicN = latRing(23.44, SKY.tropic, { label: '北回归线 23°26′N' });
+const tropicS = latRing(-23.44, SKY.tropic, { label: '南回归线 23°26′S' });
+const polarN = latRing(66.56, SKY.polar, { tube: 0.005, glow: 0.32, label: '北极圈 66°34′N' });
+const polarS = latRing(-66.56, SKY.polar, { tube: 0.005, glow: 0.32, label: '南极圈 66°34′S' });
+marks.add(equatorRing, tropicN, tropicS, polarN, polarS);
 
-function latCircle(latDeg, color, radius = 1.004) {
-  const lat = latDeg * DEG;
-  const r = Math.cos(lat) * radius;
-  const y = Math.sin(lat) * radius;
-  const ring = circleLine(r, color, 160);
-  ring.position.y = y;
-  return ring;
+// 晨昏线圈（法向 = 太阳方向的大圆）：虚线主环 + 贴球暮光带（晨昏蒙影，双层）+ 标注
+const terminator = new THREE.Group();
+{
+  const termPts = [];
+  for (let i = 0; i <= 180; i++) {
+    const a = (i / 180) * TAU;
+    termPts.push(new THREE.Vector3(Math.cos(a) * 1.006, Math.sin(a) * 1.006, 0));
+  }
+  const line = new THREE.Line(
+    new THREE.BufferGeometry().setFromPoints(termPts),
+    new THREE.LineDashedMaterial({ color: 0xffffff, dashSize: 0.055, gapSize: 0.035, transparent: true, opacity: 0.85 })
+  );
+  line.computeLineDistances();
+  /* 暮光带：主带 ±3.2°（较亮）+ 翼带 ±6.4°（渐隐），晨昏线两侧的大气过渡区示意；
+     几何 = 以环面自身为"赤道"的球面纬带，先 rotateX(π/2) 把带轴 (+Y) 转到环面法向 (+Z)，
+     再随晨昏面四元数同转（帧循环拨组四元数） */
+  const twiMat = (op) => new THREE.MeshBasicMaterial({
+    color: 0xff9a55, transparent: true, opacity: op,
+    blending: THREE.AdditiveBlending, side: THREE.DoubleSide, depthWrite: false,
+  });
+  const twiCoreGeo = new THREE.SphereGeometry(1.0035, 96, 8, 0, TAU, Math.PI / 2 - 0.056, 0.112);
+  twiCoreGeo.rotateX(Math.PI / 2);
+  const twiWingGeo = new THREE.SphereGeometry(1.0025, 96, 8, 0, TAU, Math.PI / 2 - 0.112, 0.224);
+  twiWingGeo.rotateX(Math.PI / 2);
+  const twiCore = mesh(twiCoreGeo, twiMat(0.13));
+  const twiWing = mesh(twiWingGeo, twiMat(0.06));
+  const lbl = makeTextSprite('晨昏线', { fontSize: 28, color: '#e8f0ff', scale: 0.0046 });
+  lbl.position.set(0, 1.14, 0);
+  terminator.add(line, twiWing, twiCore, lbl);
 }
-const tropicN = latCircle(23.44, 0xffb35c);
-const tropicS = latCircle(-23.44, 0xffb35c);
-const polarN = latCircle(66.56, 0x8fd3ff);
-const polarS = latCircle(-66.56, 0x8fd3ff);
-marks.add(tropicN, tropicS, polarN, polarS);
-
-// 晨昏线圈（法向 = 太阳方向的大圆）
-const termPts = [];
-for (let i = 0; i <= 180; i++) {
-  const a = (i / 180) * TAU;
-  termPts.push(new THREE.Vector3(Math.cos(a) * 1.006, Math.sin(a) * 1.006, 0));
-}
-const termGeo = new THREE.BufferGeometry().setFromPoints(termPts);
-const terminator = new THREE.Line(termGeo, new THREE.LineDashedMaterial({
-  color: 0xffffff, dashSize: 0.055, gapSize: 0.035, transparent: true, opacity: 0.85,
-}));
-terminator.computeLineDistances();
 marks.add(terminator);
 
-// 直射点标记
+// 直射点标记（教具图钉：锥杆 + 发光珠 + 脉动光环；姿态随直射位置径向朝外）
 const subSolar = new THREE.Group();
-const ssDot = new THREE.Mesh(
-  new THREE.SphereGeometry(0.028, 16, 12),
-  new THREE.MeshBasicMaterial({ color: 0xff5533 })
-);
+const ssPin = makeMapPin({ color: 0xff5533, head: 0.03, stem: 0.07, halo: 0.068, glow: 1.9 });
 const ssLabel = makeTextSprite('直射点', { fontSize: 34, color: '#ff8873', scale: 0.0052 });
-ssLabel.position.set(0.1, 0.16, 0);
-subSolar.add(ssDot, ssLabel);
+ssLabel.position.set(0.05, 0.17, 0);
+subSolar.add(ssPin, ssLabel);
 marks.add(subSolar);
 
-// 北京标记（随地球自转）
+// 北京标记（随地球自转；同款图钉语言，绿珠小一号）
 const spinMarks = new THREE.Group();
 spinG.add(spinMarks);
-const bjDot = new THREE.Mesh(
-  new THREE.SphereGeometry(0.024, 16, 12),
-  new THREE.MeshBasicMaterial({ color: 0x59d999 })
-);
 function latLonToVec(latDeg, lonDegE, r = 1.01) {
   const lat = latDeg * DEG, lon = lonDegE * DEG;
   return new THREE.Vector3(Math.cos(lat) * Math.cos(lon), Math.sin(lat), -Math.cos(lat) * Math.sin(lon)).multiplyScalar(r);
 }
+const bjDot = makeMapPin({ color: 0x59d999, head: 0.02, stem: 0.045, halo: 0.046, glow: 1.4 });
 bjDot.position.copy(latLonToVec(39.9, OBS_LON));
+bjDot.quaternion.setFromUnitVectors(UP_Y, bjDot.position.clone().normalize());
 const bjLabel = makeTextSprite('北京', { fontSize: 34, color: '#7df0b6', scale: 0.005 });
 bjLabel.position.copy(latLonToVec(39.9, OBS_LON, 1.1));
 spinMarks.add(bjDot, bjLabel);
 
-// 自转方向箭头（赤道上空的东向弧线箭头）
-const rotArrowGroup = new THREE.Group();
-{
-  const curve = new THREE.EllipseCurve(0, 0, 1.22, 1.22, -0.5, 1.1, false, 0);
-  const pts = curve.getPoints(40).map((p) => new THREE.Vector3(p.x, 0, p.y));
-  const geo = new THREE.BufferGeometry().setFromPoints(pts);
-  const line = new THREE.Line(geo, new THREE.LineBasicMaterial({ color: 0xffe08a, transparent: true, opacity: 0.9 }));
-  const tip = pts[pts.length - 1];
-  const prev = pts[pts.length - 4];
-  const cone = new THREE.Mesh(
-    new THREE.ConeGeometry(0.045, 0.14, 12),
-    new THREE.MeshBasicMaterial({ color: 0xffe08a })
-  );
-  cone.position.copy(tip);
-  cone.lookAt(tip.clone().sub(prev).add(tip));
-  cone.rotateX(Math.PI / 2);
-  const lbl = makeTextSprite('自转方向：自西向东', { fontSize: 30, color: '#ffe08a', scale: 0.0045 });
-  lbl.position.set(0, 0.35, -1.5);
-  rotArrowGroup.add(line, cone, lbl);
-}
+// 自转方向箭头（makeDirArc 共享工厂；走向与 spinG.rotation.y 实际转向一致）
+const rotArrowGroup = makeDirArc(1.22, { label: '自转方向：自西向东', labelY: 0.35 });
 marks.add(rotArrowGroup);
+
+/* —— 黄赤交角演示装置：黄道面盘 + 赤道面盘（随地轴倾斜 ε）+ 二分线（两平面交线）
+      + 交角弧与 ε 标注。挂 earthPos（未倾斜系 = 黄道参考面），总成淡入淡出，
+      总览/公转/直射点三章默认开启，其余章节由 enterDefaults 收走。 —— */
+const planeDemo = new THREE.Group();
+earthPos.add(planeDemo);
+planeDemo.visible = false;
+const planeFadeMats = [];                    /* { m, base }：淡入淡出按 baseOpacity 比例缩放 */
+function planeMatEntry(m, base) {
+  m.transparent = true;
+  m.opacity = 0;
+  m.depthWrite = false;
+  planeFadeMats.push({ m, base });
+  return m;
+}
+let planeDemoK = 0;                          /* 当前淡入系数（帧循环向 target 缓动） */
+let planeDemoTarget = 0;
+{
+  /* 黄道面盘：环带 1.32~2.55（暖黄，微发光）+ 外缘描线 */
+  const ecl = mesh(
+    new THREE.RingGeometry(1.32, 2.55, 96),
+    planeMatEntry(matCoat(SKY.ecliptic, { roughness: 0.55, metalness: 0, emissive: SKY.ecliptic, emissiveIntensity: 0.22, side: THREE.DoubleSide }), 0.15)
+  );
+  ecl.rotation.x = -Math.PI / 2;
+  const eclRim = circleLine(2.55, SKY.ecliptic, 128);
+  planeMatEntry(eclRim.material, 0.5);
+  planeDemo.add(ecl, eclRim);
+  /* 赤道面盘：整体绕 X 轴倾斜 ε（与 tiltG 同倾角），青色 */
+  const ceqG = new THREE.Group();
+  ceqG.rotation.x = EPS;
+  const ceq = mesh(
+    new THREE.RingGeometry(1.16, 2.34, 96),
+    planeMatEntry(matCoat(SKY.celestEq, { roughness: 0.55, metalness: 0, emissive: SKY.celestEq, emissiveIntensity: 0.2, side: THREE.DoubleSide }), 0.14)
+  );
+  ceq.rotation.x = -Math.PI / 2;
+  const ceqRim = circleLine(2.34, SKY.celestEq, 128);
+  planeMatEntry(ceqRim.material, 0.45);
+  ceqG.add(ceq, ceqRim);
+  const ceqLbl = makeTextSprite('赤道面', { fontSize: 30, color: '#9fd2f2', scale: 0.0052 });
+  ceqLbl.position.set(0, 0.02, 2.62);
+  ceqG.add(ceqLbl);
+  planeDemo.add(ceqG);
+  /* 二分线：两平面交线 = 本地 X 轴（黄赤交角绕 X 展开），虚线 + 春分/秋分方向标记 */
+  const hingeGeo = new THREE.BufferGeometry().setFromPoints([
+    new THREE.Vector3(-2.72, 0, 0), new THREE.Vector3(2.72, 0, 0),
+  ]);
+  const hinge = new THREE.Line(hingeGeo, new THREE.LineDashedMaterial({
+    color: SKY.hinge, transparent: true, opacity: 0.8, dashSize: 0.09, gapSize: 0.06,
+  }));
+  hinge.computeLineDistances();
+  planeMatEntry(hinge.material, 0.8);
+  const hingeLbl = makeTextSprite('二分线', { fontSize: 28, color: '#ffe08a', scale: 0.0048 });
+  hingeLbl.position.set(2.6, 0.14, 0);
+  planeDemo.add(hinge, hingeLbl);
+  for (const s of [-1, 1]) {
+    const node = mesh(new THREE.OctahedronGeometry(0.05), matStd(SKY.hinge, { roughness: 0.35, metalness: 0.4, emissive: SKY.hinge, emissiveIntensity: 0.5 }));
+    node.position.set(s * 2.55, 0, 0);
+    node.scale.y = 0.55;
+    planeDemo.add(node);
+  }
+  /* 交角弧：绕 X 轴从黄道法线 (+Y) 张开 ε 到赤道北极方向 (0, cosε, sinε) */
+  const arcPts = [];
+  for (let i = 0; i <= 24; i++) {
+    const a = (i / 24) * EPS;
+    arcPts.push(new THREE.Vector3(0, Math.cos(a) * 1.9, Math.sin(a) * 1.9));
+  }
+  const arcLine = new THREE.Line(
+    new THREE.BufferGeometry().setFromPoints(arcPts),
+    new THREE.LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.9 })
+  );
+  planeMatEntry(arcLine.material, 0.9);
+  const epsLbl = makeTextSprite('ε = 23°26′', { fontSize: 34, color: '#ffffff', scale: 0.0056, bg: 'rgba(10,16,24,0.72)' });
+  const mid = EPS / 2;
+  epsLbl.position.set(0, Math.cos(mid) * 2.14, Math.sin(mid) * 2.14);
+  const eclLbl = makeTextSprite('黄道面', { fontSize: 30, color: '#f2d488', scale: 0.0052 });
+  eclLbl.position.set(0, 0.02, -2.62);
+  planeDemo.add(arcLine, epsLbl, eclLbl);
+}
+/* 章节开关：只拨目标值，淡入淡出交给帧循环（切章不生硬跳变） */
+function setPlaneDemo(on) { planeDemoTarget = on ? 1 : 0; }
+function planeDemoTick(dt) {
+  const k0 = planeDemoK;
+  planeDemoK += (planeDemoTarget - planeDemoK) * Math.min(dt * 7, 1);
+  if (Math.abs(planeDemoK - planeDemoTarget) < 0.004) planeDemoK = planeDemoTarget;
+  const vis = planeDemoK > 0.02;
+  planeDemo.visible = vis;
+  if (vis || k0 > 0.02) {
+    for (const e of planeFadeMats) e.m.opacity = e.base * planeDemoK;
+  }
+}
 
 // 正午太阳高度演示组
 const noonG = new THREE.Group();
@@ -313,23 +1027,34 @@ function setPts2(entry, sourcePts) {
   line.visible = sourcePts.length > 1;
 }
 
-// 公转轨道元素（世界系）
+// 公转轨道元素（世界系）。太阳本体 = sunAsm（双模式常驻），公转模式归位原点并放大。
 const orbitG = new THREE.Group();
 scene.add(orbitG);
 const orbitRing = circleLine(ORBIT_R, 0x8899bb, 256);
 orbitRing.material.transparent = true;
 orbitRing.material.opacity = 0.45;
-const sunOrbitMesh = new THREE.Mesh(new THREE.SphereGeometry(1.6, 32, 16), new THREE.MeshBasicMaterial({ color: 0xfff2c8 }));
-const sunOrbitGlow = new THREE.Sprite(new THREE.SpriteMaterial({
-  map: makeGlowTexture('255,236,180'), blending: THREE.AdditiveBlending, depthWrite: false, transparent: true,
-}));
-sunOrbitGlow.scale.set(10, 10, 1);
-orbitG.add(orbitRing, sunOrbitMesh, sunOrbitGlow);
+orbitG.add(orbitRing);
 
-// 月份刻度
+// 月份刻度 + 公转刻度环 + 近日点/远日点（「轨道与月份」开关统一控制）
 const monthLabels = new THREE.Group();
 orbitG.add(monthLabels);
 {
+  /* 公转刻度环：CanvasTexture 环面（12 月名 + 365 日刻 + 度数环 + 二分二至金刻） */
+  const gradRing = mesh(
+    new THREE.RingGeometry(ORBIT_R - 0.5, ORBIT_R + 0.5, 256, 1),
+    new THREE.MeshBasicMaterial({
+      map: orbitGraduatedTexture(), transparent: true, opacity: 0.92,
+      depthWrite: false, side: THREE.DoubleSide,
+    })
+  );
+  gradRing.rotation.x = -Math.PI / 2;
+  monthLabels.add(gradRing);
+  /* 公转方向箭头：与地球公转实际走向一致（lambdaE 递增，+X 处朝 −Z） */
+  monthLabels.add(makeDirArc(ORBIT_R, {
+    tubeR: 0.028, chev: 3.2, span: 1.15, color: 0xffd166,
+    label: '公转方向：自西向东', labelScale: 0.010, labelY: 0.55, labelColor: '#ffd166',
+  }));
+  /* 二分二至：黄铜车削月份针（底座 + 针杆 + 顶珠）+ 原有文字 sprite */
   const names = ['3月21日', '6月22日', '9月23日', '12月22日'];
   const Ns = [80, 173, 266, 356];
   Ns.forEach((N, i) => {
@@ -337,16 +1062,198 @@ orbitG.add(monthLabels);
     const s = makeTextSprite(names[i], { fontSize: 32, color: '#c3cfe0', scale: 0.012 });
     s.position.copy(p);
     monthLabels.add(s);
-    const tick = new THREE.Mesh(new THREE.SphereGeometry(0.09, 10, 8), new THREE.MeshBasicMaterial({ color: 0xffcf6e }));
-    tick.position.copy(orbitPos(N, ORBIT_R));
-    monthLabels.add(tick);
+    const pin = new THREE.Group();
+    const foot = mesh(new THREE.CylinderGeometry(0.055, 0.07, 0.035, 14), M_BRASS2);
+    foot.position.y = 0.017;
+    const stem = mesh(new THREE.CylinderGeometry(0.013, 0.013, 0.2, 10), M_BRASS2);
+    stem.position.y = 0.13;
+    const bead = mesh(new THREE.SphereGeometry(0.036, 14, 10), matStd(0xffcf6e, { roughness: 0.35, metalness: 0.55, emissive: 0xcf9440, emissiveIntensity: 0.5 }));
+    bead.position.y = 0.25;
+    pin.add(foot, stem, bead);
+    pin.position.copy(orbitPos(N, ORBIT_R));
+    monthLabels.add(pin);
   });
+  /* 近日点 / 远日点：地球轨道上的两个位置标记（公转章节正文知识点） */
+  const ext = (N, txt) => {
+    const g = new THREE.Group();
+    const dia = mesh(new THREE.OctahedronGeometry(0.11), matStd(0xffd166, { roughness: 0.3, metalness: 0.5, emissive: 0xb98a2e, emissiveIntensity: 0.55 }));
+    dia.scale.y = 0.5;
+    dia.position.copy(orbitPos(N, ORBIT_R));
+    dia.position.y = 0.05;
+    const lbl = makeTextSprite(txt, { fontSize: 30, color: '#ffd166', scale: 0.0105 });
+    lbl.position.copy(orbitPos(N, ORBIT_R - 1.15));
+    lbl.position.y = 0.3;
+    g.add(dia, lbl);
+    return g;
+  };
+  monthLabels.add(ext(3, '近日点（1 月初）'), ext(184, '远日点（7 月初）'));
 }
 const sunEarthLine = new THREE.Line(
   new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(), new THREE.Vector3()]),
   new THREE.LineBasicMaterial({ color: 0xffd166, transparent: true, opacity: 0.7 })
 );
 orbitG.add(sunEarthLine);
+
+/* —— 彗星道具：开普勒椭圆轨道（牛顿迭代解 E）+ 彗发 + 离子尾/尘埃尾双尾粒子。
+      尾长随日距变化（近日拉长），尘埃尾沿轨道滞后弯曲；粒子 BufferAttribute 原位更新。 —— */
+function keplerPoint(st, M) {
+  let E = M;                                   /* 开普勒方程 M = E − e·sinE，牛顿迭代 4 步 */
+  for (let k = 0; k < 4; k++) E -= (E - st.e * Math.sin(E) - M) / (1 - st.e * Math.cos(E));
+  const x = st.a * (Math.cos(E) - st.e);
+  const zp = -st.a * Math.sqrt(1 - st.e * st.e) * Math.sin(E);
+  return new THREE.Vector3(x, -zp * Math.sin(st.inc), zp * Math.cos(st.inc));
+}
+const cometSt = { a: 9.4, e: 0.66, inc: 13 * DEG, M: 2.35, n: TAU / 30 };
+const cometG = new THREE.Group();
+orbitG.add(cometG);
+const cometTick = (() => {
+  /* 轨道虚线 */
+  const pathPts = [];
+  for (let i = 0; i <= 200; i++) pathPts.push(keplerPoint(cometSt, (i / 200) * TAU));
+  const path = new THREE.Line(
+    new THREE.BufferGeometry().setFromPoints(pathPts),
+    new THREE.LineDashedMaterial({ color: 0x7f95b5, transparent: true, opacity: 0.5, dashSize: 0.22, gapSize: 0.16 })
+  );
+  path.computeLineDistances();
+  cometG.add(path);
+  /* 彗核 + 彗发 + 标注 */
+  const nucleus = mesh(new THREE.IcosahedronGeometry(0.1, 1), M_COMETICE);
+  const coma = new THREE.Sprite(new THREE.SpriteMaterial({
+    map: softDotTexture(SKY.coma), blending: THREE.AdditiveBlending,
+    depthWrite: false, transparent: true, opacity: 0.85,
+  }));
+  const lbl = makeTextSprite('彗星（示意轨道）', { fontSize: 26, color: '#a9c4e2', scale: 0.0088 });
+  lbl.position.set(0.1, 0.34, 0);
+  cometG.add(nucleus, coma, lbl);
+  /* 双尾：预分配属性 + 逐粒子固定抖动向量（同帧可复现） */
+  const mkTail = (count, size, rgb) => {
+    const jit = [];
+    const rnd = sRand(count * 7919 + 13);
+    for (let i = 0; i < count; i++) {
+      jit.push(new THREE.Vector3(rnd() - 0.5, rnd() - 0.5, rnd() - 0.5).normalize().multiplyScalar(0.35 + rnd()));
+    }
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(count * 3), 3));
+    geo.setAttribute('color', new THREE.BufferAttribute(new Float32Array(count * 3), 3));
+    const pts = new THREE.Points(geo, new THREE.PointsMaterial({
+      size, map: softDotTexture(rgb), vertexColors: true,
+      blending: THREE.AdditiveBlending, depthWrite: false, transparent: true, opacity: 0.9,
+    }));
+    pts.frustumCulled = false;
+    cometG.add(pts);
+    return { geo, jit, count };
+  };
+  const ionTail = mkTail(140, 0.19, SKY.coma);
+  const ionCore = mkTail(90, 0.11, '210,236,255');   /* 离子尾亮芯：窄锥高亮，读出"尾"的形态 */
+  const dustTail = mkTail(100, 0.17, '255,214,160');
+  function updateTail(tail, dirMain, dirCurve, curveAmt, len, spread, colHi, colLo, t) {
+    /* 位置写彗星本地系（Points 是 cometG 子组，cometG 仅平移无旋转，方向量可直接用）；
+       此前误写世界坐标导致渲染位被二次平移到 2× 处（已修） */
+    const pos = tail.geo.attributes.position.array;
+    const col = tail.geo.attributes.color.array;
+    for (let i = 0; i < tail.count; i++) {
+      const f = (i + 0.5) / tail.count;
+      const j = tail.jit[i];
+      const sway = Math.sin(f * 8.5 + t * 1.6 + i * 0.7) * 0.1;
+      const w = 0.015 + f * spread;
+      const i3 = i * 3;
+      pos[i3] = (dirMain.x * f + dirCurve.x * f * f * curveAmt + (j.x + sway * j.z) * w) * len;
+      pos[i3 + 1] = (dirMain.y * f + dirCurve.y * f * f * curveAmt + j.y * w) * len;
+      pos[i3 + 2] = (dirMain.z * f + dirCurve.z * f * f * curveAmt + (j.z - sway * j.x) * w) * len;
+      const fade = Math.pow(f, 1.3);
+      const b = 0.75 + tail.jit[i].length() * 0.25;
+      col[i3] = (colHi[0] + (colLo[0] - colHi[0]) * fade) * b;
+      col[i3 + 1] = (colHi[1] + (colLo[1] - colHi[1]) * fade) * b;
+      col[i3 + 2] = (colHi[2] + (colLo[2] - colHi[2]) * fade) * b;
+    }
+    tail.geo.attributes.position.needsUpdate = true;
+    tail.geo.attributes.color.needsUpdate = true;
+  }
+  const prevP = keplerPoint(cometSt, cometSt.M - 0.02);
+  let t = 0;
+  return function tick(dt) {
+    t += dt;
+    if (state.playing) cometSt.M = (cometSt.M + dt * state.speed * cometSt.n) % TAU;
+    const p = keplerPoint(cometSt, cometSt.M);
+    cometG.position.copy(p);
+    const vel = p.clone().sub(prevP);
+    const dist = Math.max(p.length(), 1e-4);
+    const speed = vel.length() / Math.max(dt, 1e-4);
+    const velN = speed > 1e-6 ? vel.multiplyScalar(1 / (speed * Math.max(dt, 1e-4) + 1e-9)).normalize() : new THREE.Vector3(0, 0, 1);
+    prevP.copy(p);
+    nucleus.rotation.x += dt * 0.5;
+    nucleus.rotation.y += dt * 0.23;
+    /* 彗发呼吸 + 近日增亮 */
+    const near = clamp(5.2 / dist, 0.55, 2.1);
+    coma.scale.setScalar(1.0 + near * 0.8 + Math.sin(t * 2.3) * 0.06);
+    coma.material.opacity = 0.6 + clamp(near * 0.2, 0, 0.3);
+    const anti = p.clone().multiplyScalar(-1 / dist);
+    const lenIon = clamp(52 / dist, 1.0, 5.4);
+    const lenDust = clamp(40 / dist, 0.8, 4.2);
+    const dustDir = anti.clone().addScaledVector(velN, -0.5).normalize();
+    updateTail(ionTail, anti, velN, 0.0, lenIon, 0.07, [0.8, 1.05, 1.25], [0.05, 0.13, 0.34], t);
+    updateTail(ionCore, anti, velN, 0.0, lenIon * 1.04, 0.028, [1.15, 1.5, 1.8], [0.1, 0.22, 0.45], t);
+    updateTail(dustTail, dustDir, velN, -0.3, lenDust, 0.1, [1.25, 1.02, 0.72], [0.2, 0.13, 0.06], t);
+  };
+})();
+
+/* —— 深空叙事：银河带星云 ×5（倾斜大圆带）+ 旋涡星系 ×3 + 四针衍射亮星 ×6 —— */
+{
+  const deepSpace = new THREE.Group();
+  scene.add(deepSpace);
+  const bandQ = new THREE.Quaternion().setFromEuler(new THREE.Euler(1.02, 0.35, 0.42));
+  const bandCfg = [
+    { az: 0.2, dy: 0.12, s: 1350, o: 0.17, seed: 41, tint: 0xaac4ee },
+    { az: 1.35, dy: -0.06, s: 1150, o: 0.16, seed: 47, tint: 0x9db8e8 },
+    { az: 2.6, dy: 0.16, s: 1500, o: 0.19, seed: 53, tint: 0xbccdf2 },
+    { az: 3.9, dy: -0.1, s: 1250, o: 0.16, seed: 59, tint: 0xa2bce8 },
+    { az: 5.1, dy: 0.05, s: 1350, o: 0.17, seed: 61, tint: 0xb0c6ee },
+  ];
+  for (const c of bandCfg) {
+    const sp = new THREE.Sprite(new THREE.SpriteMaterial({
+      map: nebulaTexture(c.seed), transparent: true, opacity: c.o,
+      blending: THREE.AdditiveBlending, depthWrite: false,
+      rotation: (c.seed % 7) * 0.4,
+    }));
+    sp.material.color.setHex(c.tint);
+    sp.position.set(Math.cos(c.az), c.dy, Math.sin(c.az)).normalize().applyQuaternion(bandQ).multiplyScalar(2250);
+    sp.scale.setScalar(c.s);
+    deepSpace.add(sp);
+  }
+  const galCfg = [
+    { az: 0.9, el: 0.55, s: 82, seed: 71, tint: 0xd8e2ff },
+    { az: 3.4, el: -0.4, s: 64, seed: 73, tint: 0xe8dcff },
+    { az: 5.4, el: 0.25, s: 95, seed: 79, tint: 0xcfe0ff },
+  ];
+  for (const c of galCfg) {
+    const sp = new THREE.Sprite(new THREE.SpriteMaterial({
+      map: spiralGalaxyTexture(c.seed), transparent: true, opacity: 0.72,
+      depthWrite: false, rotation: (c.seed % 5) * 0.6,
+    }));
+    sp.material.color.setHex(c.tint);
+    sp.position.set(Math.cos(c.az), c.el, Math.sin(c.az)).normalize().multiplyScalar(2100);
+    sp.scale.setScalar(c.s);
+    deepSpace.add(sp);
+  }
+  const starTex = diffractionStarTexture();
+  const starCfg = [
+    { az: 0.4, el: 0.8, s: 12, tint: 0xcfe4ff },
+    { az: 1.8, el: -0.65, s: 9, tint: 0xffe9c9 },
+    { az: 2.9, el: 0.35, s: 14, tint: 0xffd9d0 },
+    { az: 4.2, el: 0.7, s: 8, tint: 0xd6e6ff },
+    { az: 5.6, el: -0.3, s: 11, tint: 0xfff2da },
+    { az: 2.2, el: 0.95, s: 10, tint: 0xdfe8ff },
+  ];
+  for (const c of starCfg) {
+    const sp = new THREE.Sprite(new THREE.SpriteMaterial({
+      map: starTex, transparent: true, opacity: 0.85, depthWrite: false,
+    }));
+    sp.material.color.setHex(c.tint);
+    sp.position.set(Math.cos(c.az), c.el, Math.sin(c.az)).normalize().multiplyScalar(2300);
+    sp.scale.setScalar(c.s);
+    deepSpace.add(sp);
+  }
+}
 
 /* ---------------- 状态 ---------------- */
 
@@ -373,22 +1280,27 @@ const _sunDirW = new THREE.Vector3();
 function applyMode() {
   const m = state.mode;
   orbitG.visible = m === 'orbit';
-  sunSys.visible = m === 'earth';
+  sunSys.visible = true;                  /* 太阳总装双模式常驻（近景远处 / 公转中心） */
   monthLabels.visible = m === 'orbit';
   sunEarthLine.visible = m === 'orbit';
   axisLine.visible = axisN.visible = true;
   if (m === 'earth') {
     earthPos.position.set(0, 0, 0);
     earthPos.scale.setScalar(1);
+    sunAsm.group.scale.setScalar(1);
     controls.target.set(0, 0, 0);
   } else {
     earthPos.scale.setScalar(0.55);
+    sunAsm.group.scale.setScalar(1.12);
     controls.target.set(0, 0, 0);
   }
 }
 
+let frameT = 0;
+
 app.onFrame((dt) => {
-  cameraTweenTick(app, dt);
+  /* 相机缓动由 attachVFX 接管（tickCamera 在渲染钩子内） */
+  frameT += dt;
   if (state.playing) {
     state.spin += (dt / state.spinPeriod) * TAU * state.speed;
     state.N += (dt / state.orbitPeriod) * YEAR_DAYS * state.speed;
@@ -397,6 +1309,17 @@ app.onFrame((dt) => {
   }
   spinG.rotation.y = state.spin;
   if (cloudsMesh) cloudsMesh.rotation.y += dt * 0.006 * (state.playing ? state.speed : 0);
+
+  /* 视觉工艺联动：太阳米粒翻滚/日冕慢旋（随播放速度）、彗星开普勒运动与双尾、平面装置淡入淡出 */
+  sunAsm.tick(dt * (state.playing ? state.speed : 0));
+  cometTick(dt);
+  planeDemoTick(dt);
+
+  /* 太阳标签跟随：近景悬于日轮上方（大），公转居中（小） */
+  sunLbl.position.copy(sunSys.position);
+  sunLbl.position.y += state.mode === 'earth' ? 2.7 : 2.75;
+  const kLbl = state.mode === 'earth' ? 2.1 : 1;
+  sunLbl.scale.set(SUN_LBL_BASE.w * kLbl, SUN_LBL_BASE.h * kLbl, 1);
 
   const sunDir = sunDirVec(state.N);
   _sunDirW.copy(sunDir);
@@ -418,10 +1341,15 @@ app.onFrame((dt) => {
   }
   earthUniforms.sunDir.value.copy(sunDir);
 
-  // 直射点（tilt 固定系）
+  // 直射点（tilt 固定系）：位置落在地表 + 图钉径向朝外 + 光环脉动
   tiltG.getWorldQuaternion(_qTilt);
   const sunLocal = sunDir.clone().applyQuaternion(_qTilt.clone().invert());
   subSolar.position.copy(sunLocal).setLength(1.02);
+  subSolar.quaternion.setFromUnitVectors(UP_Y, sunLocal.clone().normalize());
+  if (subSolar.visible) {
+    const pulse = 1 + Math.sin(frameT * 3.1) * 0.16;
+    ssPin.userData.halo.scale.setScalar(pulse);
+  }
   const delta = declination(state.N);
 
   // 晨昏线：平面法向 = 太阳方向
@@ -436,12 +1364,13 @@ app.onFrame((dt) => {
     if (activeSectionId === 'daynight' || activeSectionId === 'rotation') updateBeijingTime(sunLocal);
   }
   hud.el.style.display = hud.visibleNow ? '' : 'none';
+  accSecs.data.classList.toggle('acc-empty', !hud.visibleNow);   /* 读数隐藏时数据块一并收走 */
   if (hud.visibleNow) hudRefresh(delta);
 });
 
 /* ---------------- HUD ---------------- */
 
-const hud = makeHUD(stage, [['date', '日期'], ['delta', '直射纬度'], ['extra', '读数']]);
+const hud = makeHUD(document.getElementById('lcData'), [['date', '日期'], ['delta', '直射纬度'], ['extra', '读数']]);
 hud.visibleNow = false;
 function hudRefresh(delta) {
   hud.set('date', dateText(state.N));
@@ -548,6 +1477,7 @@ function enterDefaults() {
   setVis([tropicN, false], [tropicS, false], [polarN, false], [polarS, false],
     [rotArrowGroup, false], [noonG, false],
     [subSolar, false], [bjDot, false], [bjLabel, false]);
+  setPlaneDemo(false);
   dayNightArc.dayLines.forEach((e) => { e.line.visible = false; });
   dayNightArc.nightLines.forEach((e) => { e.line.visible = false; });
   cloudsMesh.visible = state.showClouds;
@@ -572,6 +1502,12 @@ const SECTIONS = [
       app.setCamera([0, 13.5, 10.5], [0, 0, 0]);
       const c = baseCtl();
       c.dateSync = true;
+      setPlaneDemo(true);
+      ctl.sep();
+      ctl.toggle({
+        label: '黄道面与交角', value: true,
+        onChange: (v) => setPlaneDemo(v),
+      });
     },
   },
   {
@@ -661,6 +1597,11 @@ const SECTIONS = [
         label: '地轴', value: true,
         onChange: (v) => { axisLine.visible = axisN.visible = v; },
       });
+      setPlaneDemo(true);
+      ctl.toggle({
+        label: '黄道面与交角', value: true,
+        onChange: (v) => setPlaneDemo(v),
+      });
     },
   },
   {
@@ -684,6 +1625,11 @@ const SECTIONS = [
       ctl.toggle({
         label: '极圈', value: true,
         onChange: (v) => setVis([polarN, v], [polarS, v]),
+      });
+      setPlaneDemo(true);
+      ctl.toggle({
+        label: '黄道面与交角', value: true,
+        onChange: (v) => setPlaneDemo(v),
       });
     },
   },
@@ -938,6 +1884,158 @@ function showQuiz() {
   activeSectionCleanup = () => panel.remove();
 }
 
+/* ================= 三栏布局驱动（左栏章节列表 / 右栏详解联动 / 栏折叠 / 专注模式） ================= */
+
+const chapNav = document.getElementById('chapNav');
+const chapCount = document.getElementById('chapCount');
+const detailNo = document.getElementById('detailNo');
+const detailTitle = document.getElementById('detailTitle');
+const lessonEl = document.getElementById('lesson');
+const detailBody = document.getElementById('detailBody');
+const controlsEl = document.getElementById('controls');
+const earthShell = document.getElementById('earthShell');
+let chapterIdx = 0;
+
+/* 章节竖排按钮：序号 + 标题，点击切章，当前章 .on 高亮 */
+const chapBtns = SECTIONS.map((s, i) => {
+  const b = document.createElement('button');
+  b.type = 'button';
+  b.className = 'chap-btn';
+  b.dataset.idx = String(i);
+  const n = document.createElement('span');
+  n.className = 'chap-n';
+  n.textContent = String(i + 1).padStart(2, '0');
+  const t = document.createElement('span');
+  t.className = 'chap-t';
+  t.textContent = s.title;
+  b.append(n, t);
+  b.addEventListener('click', () => selectChapter(i));
+  chapNav.appendChild(b);
+  return b;
+});
+
+function selectChapter(i) {
+  chapterIdx = clamp(i, 0, SECTIONS.length - 1);
+  const sec = SECTIONS[chapterIdx];
+  chapBtns.forEach((b, j) => {
+    const on = j === chapterIdx;
+    b.classList.toggle('on', on);
+    if (on) {
+      b.setAttribute('aria-current', 'true');
+      b.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+    } else {
+      b.removeAttribute('aria-current');
+    }
+  });
+  chapCount.textContent = `${String(chapterIdx + 1).padStart(2, '0')}/${SECTIONS.length}`;
+  detailNo.textContent = String(chapterIdx + 1).padStart(2, '0');
+  detailTitle.textContent = sec.title;
+  /* 折叠竖条上的章节信息同步（左栏序号 / 右栏竖排标题） */
+  railNoL.textContent = String(chapterIdx + 1).padStart(2, '0');
+  railTitleR.textContent = sec.title;
+  lessonEl.innerHTML = sec.html || '';
+  if (activeSectionCleanup) { activeSectionCleanup(); activeSectionCleanup = null; }
+  activeSectionId = sec.id;
+  sec.enter();
+  /* 本章无控件时整块手风琴收走（不动用户的手风琴偏好；数据块由帧循环按读数显隐同步） */
+  accSecs.controls.classList.toggle('acc-empty', !controlsEl.children.length);
+  detailBody.scrollTop = 0;
+}
+
+/* ---------------- 栏折叠（左右独立 28px 竖条）× 专注模式（双栏同折）统一管理 ---------------- */
+
+const foldLBtn = document.getElementById('foldLBtn');
+const unfoldLBtn = document.getElementById('unfoldLBtn');
+const foldRBtn = document.getElementById('foldRBtn');
+const unfoldRBtn = document.getElementById('unfoldRBtn');
+const railNoL = document.getElementById('railNoL');
+const railTitleR = document.getElementById('railTitleR');
+const focusBtn = document.getElementById('focusBtn');
+
+const FOLD_KEY = { l: 'earth.foldL', r: 'earth.foldR' };
+let foldL = false;
+let foldR = false;
+let focusSaved = null; /* 进入专注模式前的独立折叠状态 [foldL, foldR]，退出时恢复 */
+
+try {
+  foldL = localStorage.getItem(FOLD_KEY.l) === '1';
+  foldR = localStorage.getItem(FOLD_KEY.r) === '1';
+} catch (e) { /* localStorage 不可用（隐私模式等）时仅本次会话内生效 */ }
+
+function applyFold() {
+  earthShell.classList.toggle('fold-l', foldL);
+  earthShell.classList.toggle('fold-r', foldR);
+  for (const [btn, folded] of [[foldLBtn, foldL], [unfoldLBtn, foldL], [foldRBtn, foldR], [unfoldRBtn, foldR]]) {
+    btn.setAttribute('aria-expanded', String(!folded));
+  }
+}
+
+/* 专注模式：双栏同时折叠；退出恢复进入前状态（不写 localStorage，保持独立折叠记忆不变） */
+function setFocus(on) {
+  if (on && focusSaved === null) {
+    focusSaved = [foldL, foldR];
+    foldL = true;
+    foldR = true;
+  } else if (!on && focusSaved !== null) {
+    [foldL, foldR] = focusSaved;
+    focusSaved = null;
+  }
+  earthShell.classList.toggle('focus-mode', on);
+  focusBtn.textContent = on ? '退出专注' : '专注模式';
+  focusBtn.setAttribute('aria-pressed', String(on));
+  applyFold();
+}
+
+/* 独立折叠翻转并持久化；专注模式中点竖条展开钮 = 先退出专注（恢复原状）再翻转该侧 */
+function toggleFold(side) {
+  if (focusSaved !== null) setFocus(false);
+  if (side === 'l') foldL = !foldL;
+  else foldR = !foldR;
+  try {
+    localStorage.setItem(FOLD_KEY[side], (side === 'l' ? foldL : foldR) ? '1' : '0');
+  } catch (e) { /* 忽略持久化失败 */ }
+  applyFold();
+}
+
+foldLBtn.addEventListener('click', () => toggleFold('l'));
+unfoldLBtn.addEventListener('click', () => toggleFold('l'));
+foldRBtn.addEventListener('click', () => toggleFold('r'));
+unfoldRBtn.addEventListener('click', () => toggleFold('r'));
+focusBtn.addEventListener('click', () => setFocus(focusSaved === null));
+applyFold();
+
+/* ---------------- 右栏三块手风琴（详解 / 控件 / 读数），localStorage 记忆、切章不重置 ---------------- */
+
+const ACC_KEYS = { lesson: 'earth.accLesson', controls: 'earth.accControls', data: 'earth.accData' };
+const accSecs = {
+  lesson: document.getElementById('accLesson'),
+  controls: document.getElementById('accControls'),
+  data: document.getElementById('accData'),
+};
+
+const NARROW_VIEW = window.innerWidth <= 1100;   /* 小屏首访清爽态判据 */
+const accClosed = {};
+for (const name of Object.keys(accSecs)) {
+  let saved = null;
+  try { saved = localStorage.getItem(ACC_KEYS[name]); } catch (e) { /* 忽略 */ }
+  /* 首访（无记忆）：≤1100px 默认收起数据读数；此后记忆优先，不随视口变 */
+  accClosed[name] = saved !== null ? saved === '1' : (name === 'data' && NARROW_VIEW);
+}
+function applyAcc(name) {
+  const sec = accSecs[name];
+  sec.classList.toggle('closed', accClosed[name]);
+  sec.querySelector('.acc-head').setAttribute('aria-expanded', String(!accClosed[name]));
+}
+function toggleAcc(name) {
+  accClosed[name] = !accClosed[name];
+  try { localStorage.setItem(ACC_KEYS[name], accClosed[name] ? '1' : '0'); } catch (e) { /* 忽略 */ }
+  applyAcc(name);
+}
+for (const name of Object.keys(accSecs)) {
+  accSecs[name].querySelector('.acc-head').addEventListener('click', () => toggleAcc(name));
+  applyAcc(name);
+}
+
 /* ---------------- 启动 ---------------- */
 
 const texUrls = {
@@ -1008,18 +2106,10 @@ loadAll([
   earthPos.add(atmoMesh);
 
   loader.hide();
-  const sections = createSections({
-    nav: document.getElementById('sideNav'),
-    descPanel: document.getElementById('descPanel'),
-    sections: SECTIONS,
-    onSelect(i, sec) {
-      if (activeSectionCleanup) { activeSectionCleanup(); activeSectionCleanup = null; }
-      activeSectionId = sec.id;
-      sec.enter();
-    },
-  });
-  window.__eduSections = sections;
-  sections.select(0);
+  window.__eduSections = { select: selectChapter };
+  /* 调试句柄（自动化验收/性能自查用） */
+  window.__earthDebug = { vfx, app };
+  selectChapter(0);
 }).catch((err) => {
   loader.setText('资源加载失败：' + err.message);
   console.error(err);

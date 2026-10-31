@@ -19,48 +19,103 @@
 </script>
 <link rel="stylesheet" href="../assets/css/edu.css">
 <link rel="stylesheet" href="../assets/css/lab.css?v=2">
+<link rel="stylesheet" href="../assets/css/lab-earth.css?v=2">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'%3E%3Cpath d='M19 6h10M21 6v12.5L9.8 37.2A4 4 0 0 0 13.3 43h21.4a4 4 0 0 0 3.5-5.8L27 18.5V6' stroke='%23e8674a' stroke-width='4' fill='none' stroke-linecap='round'/%3E%3C/svg%3E">
 </head>
-<body class="lab">
+<body class="lab earth">
 
-<header class="lab-topbar">
-  <a class="edu-logo" href="../" aria-label="返回实验目录">
-    <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M19 6h10M21 6v12.5L9.8 37.2A4 4 0 0 0 13.3 43h21.4a4 4 0 0 0 3.5-5.8L27 18.5V6" stroke="var(--accent)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/><path d="M15.5 30h17" stroke="var(--accent)" stroke-width="3" stroke-linecap="round"/><circle cx="21" cy="36.5" r="1.8" fill="var(--accent)"/><circle cx="27.5" cy="34.5" r="1.4" fill="var(--accent)"/></svg>
-  </a>
-  <button class="edu-header-btn side-toggle" id="sideToggle" type="button" aria-label="章节目录">☰ 章节</button>
-  <div class="lab-title"><b>地球运动课堂 · EarthMotion</b><span>自转与晨昏线 · 公转与黄赤交角 · 直射点 · 昼夜长短 · 正午太阳高度 · 四季</span></div>
-  <span class="spacer"></span>
-  <a class="edu-header-btn" href="../">← 实验目录</a>
-  <button class="edu-header-btn" id="themeBtn" type="button" aria-label="切换主题">☾</button>
-</header>
+<div class="earth-shell" id="earthShell">
 
-<div class="lab-body">
-  <nav class="lab-side" id="sideNav" aria-label="章节目录">
-    <div class="side-label">章节 · CHAPTERS</div>
-  </nav>
-  <div class="lab-stage" id="stage">
-    <div class="lab-desc" id="descPanel">
-      <div class="desc-head">
-        <h2>章节说明</h2>
-        <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
-      </div>
-      <div class="desc-body"></div>
+  <!-- 顶栏细条：返回 + 标题 + 主题切换 -->
+  <header class="earth-toprow">
+    <a class="edu-logo" href="../" aria-label="返回实验目录">
+      <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M19 6h10M21 6v12.5L9.8 37.2A4 4 0 0 0 13.3 43h21.4a4 4 0 0 0 3.5-5.8L27 18.5V6" stroke="var(--accent)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/><path d="M15.5 30h17" stroke="var(--accent)" stroke-width="3" stroke-linecap="round"/><circle cx="21" cy="36.5" r="1.8" fill="var(--accent)"/><circle cx="27.5" cy="34.5" r="1.4" fill="var(--accent)"/></svg>
+    </a>
+    <div class="lab-title"><b>地球运动课堂 · EarthMotion</b><span>自转与晨昏线 · 公转与黄赤交角 · 直射点 · 昼夜长短 · 正午太阳高度 · 四季</span></div>
+    <span class="spacer"></span>
+    <a class="edu-header-btn" href="../">← 实验目录</a>
+    <button class="edu-header-btn" id="themeBtn" type="button" aria-label="切换主题">☾</button>
+  </header>
+
+  <!-- 左栏：课程大纲（章节列表，点击切章，当前章高亮；可折叠为 28px 竖条） -->
+  <aside class="lab-chapters" aria-label="课程大纲">
+    <div class="chap-head">
+      <span class="chap-title">课程大纲</span>
+      <b class="chap-count" id="chapCount">01/09</b>
+      <button class="fold-btn" id="foldLBtn" type="button" aria-label="收起课程大纲栏" aria-expanded="true" aria-controls="chapNav" title="收起课程大纲栏">‹</button>
     </div>
-    <div class="lab-controls" id="controls"></div>
-  </div>
-</div>
+    <nav class="chap-list" id="chapNav"></nav>
+    <div class="fold-rail">
+      <button class="fold-btn" id="unfoldLBtn" type="button" aria-label="展开课程大纲栏" aria-expanded="false" aria-controls="chapNav" title="展开课程大纲栏">›</button>
+      <span class="rail-no" id="railNoL">01</span>
+    </div>
+  </aside>
 
-<footer class="lab-footer">
-  <span>EduLab · <a href="/">milulab.com</a></span>
-</footer>
+  <!-- 中栏：3D 地球舞台（近景 / 公转全景，切章相机飞到对应机位） -->
+  <main class="lab-stage3d" aria-label="地球运动 3D 展示">
+    <div class="lab-stage earth-stage" id="stage"></div>
+    <button class="stage-focus-btn" id="focusBtn" type="button" aria-pressed="false" title="隐藏左右两栏，专注观察地球运动">专注模式</button>
+    <div class="stage-foot">EduLab · <a href="/">milulab.com</a></div>
+  </main>
+
+  <!-- 右栏：当前章节知识点详解 + 交互控件 + 数据读数（可折叠为 28px 竖条） -->
+  <aside class="lab-detail" aria-label="知识点详解">
+    <div class="detail-head">
+      <span class="detail-no" id="detailNo">01</span>
+      <h2 class="detail-title" id="detailTitle">地球运动总览</h2>
+      <button class="fold-btn" id="foldRBtn" type="button" aria-label="收起知识点栏" aria-expanded="true" aria-controls="detailBody" title="收起知识点栏">›</button>
+    </div>
+    <div class="detail-body" id="detailBody">
+      <!-- 右栏三块手风琴：知识点详解 / 实验控件 / 数据读数，各自独立折叠（localStorage 记忆，切章不重置） -->
+      <section class="acc" id="accLesson" data-acc="lesson">
+        <button class="acc-head" type="button" aria-expanded="true" aria-controls="lesson" title="收起知识点详解">
+          <span class="acc-title">知识点详解</span><i class="acc-arrow" aria-hidden="true">▾</i>
+        </button>
+        <div class="acc-fold-wrap">
+          <div class="acc-fold-body">
+            <div class="acc-fold-inner">
+              <div class="lc-lesson" id="lesson"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+      <section class="acc" id="accControls" data-acc="controls">
+        <button class="acc-head" type="button" aria-expanded="true" aria-controls="controls" title="收起实验控件">
+          <span class="acc-title">实验控件</span><i class="acc-arrow" aria-hidden="true">▾</i>
+        </button>
+        <div class="acc-fold-wrap">
+          <div class="acc-fold-body">
+            <div class="acc-fold-inner">
+              <div class="lc-controls" id="controls"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+      <section class="acc" id="accData" data-acc="data">
+        <button class="acc-head" type="button" aria-expanded="true" aria-controls="lcData" title="收起数据读数">
+          <span class="acc-title">数据读数</span><i class="acc-arrow" aria-hidden="true">▾</i>
+        </button>
+        <div class="acc-fold-wrap">
+          <div class="acc-fold-body">
+            <div class="acc-fold-inner">
+              <div class="lc-data" id="lcData"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+    <div class="fold-rail">
+      <button class="fold-btn" id="unfoldRBtn" type="button" aria-label="展开知识点栏" aria-expanded="false" aria-controls="detailBody" title="展开知识点栏">‹</button>
+      <span class="rail-title" id="railTitleR">地球运动总览</span>
+    </div>
+  </aside>
+
+</div>
 
 <script src="../assets/js/edu-theme.js"></script>
 <script type="module" src="../assets/js/lab-earth.js"></script>
 <script>
 eduBindThemeToggle(document.getElementById('themeBtn'));
-document.getElementById('sideToggle').addEventListener('click', function () {
-  document.getElementById('sideNav').classList.toggle('open');
-});
 </script>
 </body>
 </html>
