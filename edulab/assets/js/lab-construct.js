@@ -3,9 +3,12 @@
  * 实现：2D canvas 尺规引擎——只用「过两点的直线」与「以定 点/距 画圆」两种原语，
  *       交点（线×线 / 线×圆 / 圆×圆）自动生成并去重；12 关目标由几何谓词自动判定，
  *       按步数评星；回放模式逐步重演最少步解。
+ * 布局（micro 三件套移植）：真·三栏教学布局——左栏课程大纲列表（点击切章）/
+ *       中栏 2D 作图画布（ResizeObserver 跟随栏宽）/ 右栏知识点详解 + 本章控件 + 数据读数；
+ *       左右栏独立折叠（28px 竖条）+ 专注模式 + 右栏三块手风琴（localStorage 记忆，切章不重置）。
  */
 import {
-  createSections, createControlsPanel, makeHUD,
+  clamp, createControlsPanel, makeHUD,
 } from './edu-core.js';
 
 /* ---------------- 画布脚手架 ---------------- */
@@ -777,7 +780,7 @@ function drawEngine(engine, opts = {}) {
 /* ---------------- 章节框架 ---------------- */
 
 const ctl = createControlsPanel(document.getElementById('controls'));
-const hud = makeHUD(stage, [['v1', '读数'], ['v2', ''], ['v3', '']]);
+const hud = makeHUD(document.getElementById('lcData'), [['v1', '读数'], ['v2', ''], ['v3', '']]);
 hud.show(false);
 let chapterTick = null;
 let activeCleanup = null;
@@ -1290,26 +1293,172 @@ const SECTIONS = [secChallenge, secReplay, secCongruence, secSimilar, {
   },
 }];
 
-const sections = createSections({
-  nav: document.getElementById('sideNav'),
-  descPanel: document.getElementById('descPanel'),
-  sections: SECTIONS,
-  onSelect(i, sec) {
-    if (activeCleanup) { activeCleanup(); activeCleanup = null; }
-    chapterTick = null;
-    if (sec.leave) sec.leave();
-    sec.enter();
-  },
+/* ================= 三栏布局驱动（左栏章节列表 / 右栏详解联动 / 栏折叠 / 专注模式） ================= */
+
+const chapNav = document.getElementById('chapNav');
+const chapCount = document.getElementById('chapCount');
+const detailNo = document.getElementById('detailNo');
+const detailTitle = document.getElementById('detailTitle');
+const lessonEl = document.getElementById('lesson');
+const detailBody = document.getElementById('detailBody');
+const controlsEl = document.getElementById('controls');
+const constructShell = document.getElementById('constructShell');
+let chapterIdx = 0;
+let lastSectionIdx = -1;
+
+/* 5 章竖排按钮：序号 + 标题，点击切章，当前章 .on 高亮 */
+const chapBtns = SECTIONS.map((s, i) => {
+  const b = document.createElement('button');
+  b.type = 'button';
+  b.className = 'chap-btn';
+  b.dataset.idx = String(i);
+  const n = document.createElement('span');
+  n.className = 'chap-n';
+  n.textContent = String(i + 1).padStart(2, '0');
+  const t = document.createElement('span');
+  t.className = 'chap-t';
+  t.textContent = s.title;
+  b.append(n, t);
+  b.addEventListener('click', () => selectChapter(i));
+  chapNav.appendChild(b);
+  return b;
 });
-window.__eduSections = sections;
+
+function selectChapter(i) {
+  chapterIdx = clamp(i, 0, SECTIONS.length - 1);
+  const sec = SECTIONS[chapterIdx];
+  chapBtns.forEach((b, j) => {
+    const on = j === chapterIdx;
+    b.classList.toggle('on', on);
+    if (on) {
+      b.setAttribute('aria-current', 'true');
+      b.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+    } else {
+      b.removeAttribute('aria-current');
+    }
+  });
+  chapCount.textContent = `${String(chapterIdx + 1).padStart(2, '0')}/${SECTIONS.length}`;
+  detailNo.textContent = String(chapterIdx + 1).padStart(2, '0');
+  detailTitle.textContent = sec.title;
+  /* 折叠竖条上的章节信息同步（左栏序号 / 右栏竖排标题） */
+  railNoL.textContent = String(chapterIdx + 1).padStart(2, '0');
+  railTitleR.textContent = sec.title;
+  lessonEl.innerHTML = sec.html || '';
+  if (activeCleanup) { activeCleanup(); activeCleanup = null; }
+  chapterTick = null;
+  if (lastSectionIdx >= 0 && SECTIONS[lastSectionIdx].leave) SECTIONS[lastSectionIdx].leave();
+  lastSectionIdx = chapterIdx;
+  sec.enter();
+  /* 本章无控件时整块手风琴收走（不动用户的手风琴偏好；数据块由帧循环按 hud 显隐同步） */
+  accSecs.controls.classList.toggle('acc-empty', !controlsEl.children.length);
+  detailBody.scrollTop = 0;
+}
+
+/* ---------------- 栏折叠（左右独立 28px 竖条）× 专注模式（双栏同折）统一管理 ---------------- */
+
+const foldLBtn = document.getElementById('foldLBtn');
+const unfoldLBtn = document.getElementById('unfoldLBtn');
+const foldRBtn = document.getElementById('foldRBtn');
+const unfoldRBtn = document.getElementById('unfoldRBtn');
+const railNoL = document.getElementById('railNoL');
+const railTitleR = document.getElementById('railTitleR');
+const focusBtn = document.getElementById('focusBtn');
+
+const FOLD_KEY = { l: 'construct.foldL', r: 'construct.foldR' };
+let foldL = false;
+let foldR = false;
+let focusSaved = null; /* 进入专注模式前的独立折叠状态 [foldL, foldR]，退出时恢复 */
+
+try {
+  foldL = localStorage.getItem(FOLD_KEY.l) === '1';
+  foldR = localStorage.getItem(FOLD_KEY.r) === '1';
+} catch (e) { /* localStorage 不可用（隐私模式等）时仅本次会话内生效 */ }
+
+function applyFold() {
+  constructShell.classList.toggle('fold-l', foldL);
+  constructShell.classList.toggle('fold-r', foldR);
+  for (const [btn, folded] of [[foldLBtn, foldL], [unfoldLBtn, foldL], [foldRBtn, foldR], [unfoldRBtn, foldR]]) {
+    btn.setAttribute('aria-expanded', String(!folded));
+  }
+}
+
+/* 专注模式：双栏同时折叠；退出恢复进入前状态（不写 localStorage，保持独立折叠记忆不变） */
+function setFocus(on) {
+  if (on && focusSaved === null) {
+    focusSaved = [foldL, foldR];
+    foldL = true;
+    foldR = true;
+  } else if (!on && focusSaved !== null) {
+    [foldL, foldR] = focusSaved;
+    focusSaved = null;
+  }
+  constructShell.classList.toggle('focus-mode', on);
+  focusBtn.textContent = on ? '退出专注' : '专注模式';
+  focusBtn.setAttribute('aria-pressed', String(on));
+  applyFold();
+}
+
+function toggleFold(side) {
+  if (focusSaved !== null) setFocus(false);
+  if (side === 'l') foldL = !foldL;
+  else foldR = !foldR;
+  try {
+    localStorage.setItem(FOLD_KEY[side], (side === 'l' ? foldL : foldR) ? '1' : '0');
+  } catch (e) { /* 忽略持久化失败 */ }
+  applyFold();
+}
+
+foldLBtn.addEventListener('click', () => toggleFold('l'));
+unfoldLBtn.addEventListener('click', () => toggleFold('l'));
+foldRBtn.addEventListener('click', () => toggleFold('r'));
+unfoldRBtn.addEventListener('click', () => toggleFold('r'));
+focusBtn.addEventListener('click', () => setFocus(focusSaved === null));
+applyFold();
+
+/* ---------------- 右栏三块手风琴（详解 / 控件 / 读数），localStorage 记忆、切章不重置 ---------------- */
+
+const ACC_KEYS = { lesson: 'construct.accLesson', controls: 'construct.accControls', data: 'construct.accData' };
+const accSecs = {
+  lesson: document.getElementById('accLesson'),
+  controls: document.getElementById('accControls'),
+  data: document.getElementById('accData'),
+};
+
+const NARROW_VIEW = window.innerWidth <= 1100;   /* 小屏首访清爽态判据 */
+const accClosed = {};
+for (const name of Object.keys(accSecs)) {
+  let saved = null;
+  try { saved = localStorage.getItem(ACC_KEYS[name]); } catch (e) { /* 忽略 */ }
+  /* 首访（无记忆）：≤1100px 默认收起数据读数；此后记忆优先，不随视口变 */
+  accClosed[name] = saved !== null ? saved === '1' : (name === 'data' && NARROW_VIEW);
+}
+function applyAcc(name) {
+  const sec = accSecs[name];
+  sec.classList.toggle('closed', accClosed[name]);
+  sec.querySelector('.acc-head').setAttribute('aria-expanded', String(!accClosed[name]));
+}
+function toggleAcc(name) {
+  accClosed[name] = !accClosed[name];
+  try { localStorage.setItem(ACC_KEYS[name], accClosed[name] ? '1' : '0'); } catch (e) { /* 忽略 */ }
+  applyAcc(name);
+}
+for (const name of Object.keys(accSecs)) {
+  accSecs[name].querySelector('.acc-head').addEventListener('click', () => toggleAcc(name));
+  applyAcc(name);
+}
+
+window.__eduSections = { select: selectChapter };
 window.__construct = { ch1, LEVELS, addLine, addCircle, loadLevel, computeIntersections };  // 调试钩子
-sections.select(0);
+
+selectChapter(0);
 
 let lastTs = 0;
 function appLoop(ts) {
   requestAnimationFrame(appLoop);
   const dt = Math.min((ts - lastTs) / 1000 || 0.016, 0.1);
   lastTs = ts;
+  /* 数据读数隐藏（quiz 章等）时数据手风琴块一并收走 */
+  accSecs.data.classList.toggle('acc-empty', hud.el.style.display === 'none');
   if (chapterTick) chapterTick(dt);
 }
 requestAnimationFrame(appLoop);
