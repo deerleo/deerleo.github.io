@@ -26,6 +26,29 @@
 - 接入 `edu-vfx.js`：`attachVFX(app, 'illus')` 三行接入（API 见 CRAFT-STANDARD.md），色板用 PAL，材质按四级分工
 - 该实验已有的建模/交互/quiz 全部保留；**不要求**重做建模（建模深度按后续批次另行安排，本轮只做布局+折叠+轻接入）
 
+### 3+. 建模深度精修（Micro 级标准，Leo 2026-10-31 定：不允许打折）
+
+**每个实验的 3D 主体建模必须达到 lab-micro.js（113K）的工艺密度**。做法参照 `docs/REPORT-MICRO-REFINE.md` + `REPORT-MICRO-REFINE2.md` 两轮精修的全部手法：
+
+1. **主体建模**：核心物体用 CatmullRomCurve3 曲线放样变宽截面（非基础几何拼装）；每个可见部件独立造型+材质分层（烤漆 clearcoat / 金属 metalness 分区 / 橡胶 roughness 0.9 / 玻璃 transmission）；装饰线/倒角/滚花等细节到位
+2. **场景叙事**：实验台/环境语境道具阵列（参考 micro 的试剂瓶+玻片盒+培养皿），道具带标签纹理/液面色/接触阴影
+3. **材质工艺**：全走 edu-vfx 的 PAL 色板与四级材质工厂；主体 sheen/clearcoat；发光部件 emissive 与 fluor 联动
+4. **光照氛围**：主暖光+补光+bounce，程序化环境反射（makeStudioEnvironment），接触阴影贴片
+5. **程序化纹理**：需要贴图的部位（标签/木纹/刻度）用 CanvasTexture 程序化生成，密度参照 micro（fillStyle/arc 大量矢量绘制）
+6. **互动可视反馈**：可动部件（旋钮/滑杆对应物）拖拽时 3D 同步转动；焦距类参数与视觉模糊/景深非线性联动
+
+**体量基准**：改造后该实验 lab-<slug>.js 应达到 90-120K 量级（当前多数 45-65K），低于 85K 视为未达标，需继续加深。
+
+**JS 逻辑零回归**：建模加码不得破坏既有章节切换/quiz/数据读数；每章遍历验证。
+
+### 4. 质检标准（Leo 定：与 micro 完全一致，不打折扣）
+
+- [ ] 主控独立截图抽检（不只依赖执行方自检）：三栏布局、建模细节、材质质感逐项过目
+- [ ] 建模体量 ≥ 85K；draw call < 200；GPU 60fps
+- [ ] 全章节遍历 console 零报错；quiz/交互全保留
+- [ ] 四态折叠 + 375px + localStorage 全过
+- [ ] 工艺合规零命中原版
+
 ## 验收清单（playwright 实测，全过才算完成）
 
 - [ ] node --check 全过；console 零报错（宽屏/1000px/375px 三组）

@@ -1,81 +1,121 @@
 {
  "total": 38,
+ "standard": "micro-level",
  "rounds": [
   [
-   "analysis",
-   "atlas"
+   "earth"
   ],
   [
-   "atmos",
-   "atp"
-  ],
-  [
-   "cell",
-   "conic"
-  ],
-  [
-   "construct",
-   "contour"
-  ],
-  [
-   "dna",
-   "drift"
-  ],
-  [
-   "earth",
    "fields"
   ],
   [
-   "float",
+   "float"
+  ],
+  [
    "func"
   ],
   [
-   "gas",
+   "gas"
+  ],
+  [
    "geo"
   ],
   [
-   "heat",
+   "heat"
+  ],
+  [
    "immune"
   ],
   [
-   "machine",
+   "machine"
+  ],
+  [
    "mechanism"
   ],
   [
-   "motion",
+   "motion"
+  ],
+  [
    "neuro"
   ],
   [
-   "optics",
+   "optics"
+  ],
+  [
    "orbital"
   ],
   [
-   "pea",
+   "pea"
+  ],
+  [
    "periodic"
   ],
   [
-   "plant",
+   "plant"
+  ],
+  [
    "pythagoras"
   ],
   [
-   "reaction",
+   "reaction"
+  ],
+  [
    "rocket"
   ],
   [
-   "thermo",
+   "thermo"
+  ],
+  [
    "tide"
   ],
   [
-   "volt",
+   "volt"
+  ],
+  [
    "vsepr"
   ],
   [
-   "war",
+   "war"
+  ],
+  [
    "water"
   ],
   [
-   "waves",
+   "waves"
+  ],
+  [
    "wonder"
+  ],
+  [
+   "analysis"
+  ],
+  [
+   "atlas"
+  ],
+  [
+   "atmos"
+  ],
+  [
+   "atp"
+  ],
+  [
+   "cell"
+  ],
+  [
+   "conic"
+  ],
+  [
+   "construct"
+  ],
+  [
+   "contour"
+  ],
+  [
+   "dna"
+  ],
+  [
+   "drift"
   ]
- ]
+ ],
+ "note": "R01-R28 未改造实验(布局+Micro级建模); R29-R38 已布局实验的建模精修补课"
 }
