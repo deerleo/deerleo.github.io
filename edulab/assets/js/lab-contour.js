@@ -2,11 +2,17 @@
  * 章节：认识等高线地形图 / 等高线的形成 / 海拔与相对高度 / 等高距与坡度 /
  *       山顶与盆地 / 山脊与山谷 / 鞍部 / 陡崖 / 地形剖面图 / 随堂检测
  * 场景：程序化高度场地形 + Marching Squares 等高线 + 水平面切割 + 同步平面地形图 + 剖面图
+ * 视觉工艺（edu-vfx 接入）：后处理管线（bloom + 暗角 + 颗粒，深青棚拍背景）接管渲染循环；
+ *       app.setCamera 升级为 cubic 缓动运镜，切章即飞至对应地貌机位。
+ * 布局（micro 三件套移植）：真·三栏教学布局——左栏课程大纲列表（点击切章）/
+ *       中栏 3D 地形舞台（地形图/剖面图浮窗收成 40px 圆徽标）/ 右栏知识点详解 + 本章控件 + 数据读数；
+ *       左右栏独立折叠（28px 竖条）+ 专注模式 + 右栏三块手风琴（localStorage 记忆，切章不重置）。
  */
 import {
-  THREE, TAU, clamp, loadTexture, loadHDR, loadAll, createApp, cameraTweenTick,
-  makeLoader, createSections, createControlsPanel, makeHUD, makeTextSprite, setSpriteText,
+  THREE, TAU, clamp, loadTexture, loadHDR, loadAll, createApp,
+  makeLoader, createControlsPanel, makeHUD, makeTextSprite, setSpriteText,
 } from './edu-core.js';
+import { attachVFX } from './edu-vfx.js';
 
 const TEXDIR = '../assets/textures/';
 const S = 10;                 // 地形边长（世界单位）
@@ -62,8 +68,11 @@ const app = createApp({
   container: stage, fov: 42, near: 0.1, far: 300,
   cameraPos: [7.4, 6.4, 9.6], target: [0, 0.4, 0],
   minDistance: 2, maxDistance: 40, exposure: 1.0,
+  keepBackground: true,
 });
 const { scene, camera, controls } = app;
+/* 视觉工艺接入：后处理管线接管渲染与相机缓动（setCamera 升级为 cubic 运镜） */
+const vfx = attachVFX(app, 'illus');
 
 scene.add(new THREE.HemisphereLight(0xe8f1ff, 0xb0a184, 1.15));
 const sun = new THREE.DirectionalLight(0xfff2dc, 2.2);
@@ -284,6 +293,7 @@ const travelers = [];
 
 const mapBox = document.createElement('div');
 mapBox.className = 'coastal-window';
+mapBox.id = 'mapBox';
 mapBox.style.bottom = '86px';
 mapBox.innerHTML = '<div class="cw-head"><b>地形图（俯视）</b><span class="cw-info">等高线</span></div>';
 const mapCanvas = document.createElement('canvas');
@@ -372,6 +382,7 @@ function drawMap(waterLevel, showWater) {
 
 const profBox = document.createElement('div');
 profBox.className = 'coastal-window';
+profBox.id = 'profBox';
 profBox.style.cssText += 'left:14px;right:auto;bottom:86px;width:330px;';
 profBox.innerHTML = '<div class="cw-head"><b>地形剖面图</b><span class="cw-info">A → B</span></div>';
 const profCanvas = document.createElement('canvas');
@@ -382,6 +393,52 @@ profBox.appendChild(profCanvas);
 profBox.style.display = 'none';
 stage.appendChild(profBox);
 const pctx = profCanvas.getContext('2d');
+
+/* ---- 浮窗折叠：整窗收成 40px 圆形徽标（图/剖），localStorage 记忆 + ≤1100px 首访默认折叠 ---- */
+
+const FLOAT_SPECS = [
+  { name: 'map', win: mapBox, badge: '图', key: 'contour.foldMap', label: '收起地形图小窗' },
+  { name: 'prof', win: profBox, badge: '剖', key: 'contour.foldProf', label: '收起地形剖面图小窗' },
+];
+const floatFold = {};
+function makeFloatFold({ name, win, badge, key, label }) {
+  const head = win.querySelector('.cw-head');
+  const foldBtn = document.createElement('button');
+  foldBtn.type = 'button';
+  foldBtn.className = 'fold-btn';
+  foldBtn.textContent = '−';
+  foldBtn.setAttribute('aria-label', label);
+  foldBtn.setAttribute('aria-expanded', 'true');
+  foldBtn.setAttribute('aria-controls', win.id);
+  foldBtn.title = label;
+  head.appendChild(foldBtn);
+  const badgeBtn = document.createElement('button');
+  badgeBtn.type = 'button';
+  badgeBtn.className = 'cw-badge';
+  badgeBtn.textContent = badge;
+  badgeBtn.setAttribute('aria-label', label.replace('收起', '展开'));
+  badgeBtn.title = label.replace('收起', '展开');
+  win.appendChild(badgeBtn);
+  let saved = null;
+  try { saved = localStorage.getItem(key); } catch (e) { /* 忽略 */ }
+  /* 首访（无记忆）：≤1100px 默认折叠成徽标（清爽态）；用户操作后按记忆走 */
+  floatFold[name] = saved !== null ? saved === '1' : NARROW_VIEW;
+  const apply = () => {
+    win.classList.toggle('folded', floatFold[name]);
+    foldBtn.setAttribute('aria-expanded', String(!floatFold[name]));
+  };
+  foldBtn.addEventListener('click', () => {
+    floatFold[name] = !floatFold[name];
+    try { localStorage.setItem(key, floatFold[name] ? '1' : '0'); } catch (e) { /* 忽略 */ }
+    apply();
+  });
+  badgeBtn.addEventListener('click', () => {
+    floatFold[name] = !floatFold[name];
+    try { localStorage.setItem(key, floatFold[name] ? '1' : '0'); } catch (e) { /* 忽略 */ }
+    apply();
+  });
+  apply();
+}
 
 function profileHeights(dir, off, n = 120) {
   const pts = [];
@@ -454,7 +511,7 @@ function drawProfile(dir, off, smoothW) {
 
 /* ---------------- HUD ---------------- */
 
-const hud = makeHUD(stage, [['a', '读数 A'], ['b', '读数 B'], ['x', '']]);
+const hud = makeHUD(document.getElementById('lcData'), [['a', '读数 A'], ['b', '读数 B'], ['x', '']]);
 hud.show(false);
 
 /* ---------------- 状态与控制条 ---------------- */
@@ -969,12 +1026,169 @@ function showQuiz() {
   activeSectionCleanup = () => panel.remove();
 }
 
+/* ================= 三栏布局驱动（左栏章节列表 / 右栏详解联动 / 栏折叠 / 专注模式 / 浮窗折叠） ================= */
+
+const chapNav = document.getElementById('chapNav');
+const chapCount = document.getElementById('chapCount');
+const detailNo = document.getElementById('detailNo');
+const detailTitle = document.getElementById('detailTitle');
+const lessonEl = document.getElementById('lesson');
+const detailBody = document.getElementById('detailBody');
+const controlsEl = document.getElementById('controls');
+const contourShell = document.getElementById('contourShell');
+let chapterIdx = 0;
+let lastSectionIdx = -1;
+
+/* 10 章竖排按钮：序号 + 标题，点击切章，当前章 .on 高亮 */
+const chapBtns = SECTIONS.map((s, i) => {
+  const b = document.createElement('button');
+  b.type = 'button';
+  b.className = 'chap-btn';
+  b.dataset.idx = String(i);
+  const n = document.createElement('span');
+  n.className = 'chap-n';
+  n.textContent = String(i + 1).padStart(2, '0');
+  const t = document.createElement('span');
+  t.className = 'chap-t';
+  t.textContent = s.title;
+  b.append(n, t);
+  b.addEventListener('click', () => selectChapter(i));
+  chapNav.appendChild(b);
+  return b;
+});
+
+function selectChapter(i) {
+  chapterIdx = clamp(i, 0, SECTIONS.length - 1);
+  const sec = SECTIONS[chapterIdx];
+  chapBtns.forEach((b, j) => {
+    const on = j === chapterIdx;
+    b.classList.toggle('on', on);
+    if (on) {
+      b.setAttribute('aria-current', 'true');
+      b.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+    } else {
+      b.removeAttribute('aria-current');
+    }
+  });
+  chapCount.textContent = `${String(chapterIdx + 1).padStart(2, '0')}/${SECTIONS.length}`;
+  detailNo.textContent = String(chapterIdx + 1).padStart(2, '0');
+  detailTitle.textContent = sec.title;
+  /* 折叠竖条上的章节信息同步（左栏序号 / 右栏竖排标题） */
+  railNoL.textContent = String(chapterIdx + 1).padStart(2, '0');
+  railTitleR.textContent = sec.title;
+  lessonEl.innerHTML = sec.html || '';
+  activeSectionCleanup();
+  activeSectionCleanup = () => {};
+  if (lastSectionIdx >= 0 && SECTIONS[lastSectionIdx].leave) SECTIONS[lastSectionIdx].leave();
+  lastSectionIdx = chapterIdx;
+  sec.enter();
+  refreshProf();
+  /* 本章无控件时整块手风琴收走（不动用户的手风琴偏好；数据块由帧循环按 hud 显隐同步） */
+  accSecs.controls.classList.toggle('acc-empty', !controlsEl.children.length);
+  detailBody.scrollTop = 0;
+}
+
+/* ---------------- 栏折叠（左右独立 28px 竖条）× 专注模式（双栏同折）统一管理 ---------------- */
+
+const foldLBtn = document.getElementById('foldLBtn');
+const unfoldLBtn = document.getElementById('unfoldLBtn');
+const foldRBtn = document.getElementById('foldRBtn');
+const unfoldRBtn = document.getElementById('unfoldRBtn');
+const railNoL = document.getElementById('railNoL');
+const railTitleR = document.getElementById('railTitleR');
+const focusBtn = document.getElementById('focusBtn');
+
+const FOLD_KEY = { l: 'contour.foldL', r: 'contour.foldR' };
+let foldL = false;
+let foldR = false;
+let focusSaved = null; /* 进入专注模式前的独立折叠状态 [foldL, foldR]，退出时恢复 */
+
+try {
+  foldL = localStorage.getItem(FOLD_KEY.l) === '1';
+  foldR = localStorage.getItem(FOLD_KEY.r) === '1';
+} catch (e) { /* localStorage 不可用（隐私模式等）时仅本次会话内生效 */ }
+
+function applyFold() {
+  contourShell.classList.toggle('fold-l', foldL);
+  contourShell.classList.toggle('fold-r', foldR);
+  for (const [btn, folded] of [[foldLBtn, foldL], [unfoldLBtn, foldL], [foldRBtn, foldR], [unfoldRBtn, foldR]]) {
+    btn.setAttribute('aria-expanded', String(!folded));
+  }
+}
+
+/* 专注模式：双栏同时折叠；退出恢复进入前状态（不写 localStorage，保持独立折叠记忆不变） */
+function setFocus(on) {
+  if (on && focusSaved === null) {
+    focusSaved = [foldL, foldR];
+    foldL = true;
+    foldR = true;
+  } else if (!on && focusSaved !== null) {
+    [foldL, foldR] = focusSaved;
+    focusSaved = null;
+  }
+  contourShell.classList.toggle('focus-mode', on);
+  focusBtn.textContent = on ? '退出专注' : '专注模式';
+  focusBtn.setAttribute('aria-pressed', String(on));
+  applyFold();
+}
+
+function toggleFold(side) {
+  if (focusSaved !== null) setFocus(false);
+  if (side === 'l') foldL = !foldL;
+  else foldR = !foldR;
+  try {
+    localStorage.setItem(FOLD_KEY[side], (side === 'l' ? foldL : foldR) ? '1' : '0');
+  } catch (e) { /* 忽略持久化失败 */ }
+  applyFold();
+}
+
+foldLBtn.addEventListener('click', () => toggleFold('l'));
+unfoldLBtn.addEventListener('click', () => toggleFold('l'));
+foldRBtn.addEventListener('click', () => toggleFold('r'));
+unfoldRBtn.addEventListener('click', () => toggleFold('r'));
+focusBtn.addEventListener('click', () => setFocus(focusSaved === null));
+applyFold();
+
+/* ---------------- 右栏三块手风琴（详解 / 控件 / 读数），localStorage 记忆、切章不重置 ---------------- */
+
+const ACC_KEYS = { lesson: 'contour.accLesson', controls: 'contour.accControls', data: 'contour.accData' };
+const accSecs = {
+  lesson: document.getElementById('accLesson'),
+  controls: document.getElementById('accControls'),
+  data: document.getElementById('accData'),
+};
+
+const NARROW_VIEW = window.innerWidth <= 1100;   /* 小屏首访清爽态判据 */
+const accClosed = {};
+for (const name of Object.keys(accSecs)) {
+  let saved = null;
+  try { saved = localStorage.getItem(ACC_KEYS[name]); } catch (e) { /* 忽略 */ }
+  /* 首访（无记忆）：≤1100px 默认收起数据读数；此后记忆优先，不随视口变 */
+  accClosed[name] = saved !== null ? saved === '1' : (name === 'data' && NARROW_VIEW);
+}
+function applyAcc(name) {
+  const sec = accSecs[name];
+  sec.classList.toggle('closed', accClosed[name]);
+  sec.querySelector('.acc-head').setAttribute('aria-expanded', String(!accClosed[name]));
+}
+function toggleAcc(name) {
+  accClosed[name] = !accClosed[name];
+  try { localStorage.setItem(ACC_KEYS[name], accClosed[name] ? '1' : '0'); } catch (e) { /* 忽略 */ }
+  applyAcc(name);
+}
+for (const name of Object.keys(accSecs)) {
+  accSecs[name].querySelector('.acc-head').addEventListener('click', () => toggleAcc(name));
+  applyAcc(name);
+}
+
+/* 地形图 / 剖面图浮窗折叠（徽标态），首访按 NARROW_VIEW 默认折叠 */
+for (const spec of FLOAT_SPECS) makeFloatFold(spec);
+
 /* ---------------- 启动 ---------------- */
 
 loadAll([
   { key: 'rockNor', label: '岩石法线', job: loadTexture(TEXDIR + 'pbr/rock_nor-BD16lJKl.webp', { colorSpace: null, wrap: true, repeat: [5, 5] }) },
   { key: 'sky', label: '环境光', job: loadHDR(TEXDIR + 'sky/sky_site-C35ymwQp.hdr') },
-  { key: 'skyBg', label: '天空', job: loadTexture(TEXDIR + 'sky/sky_site-Co0CA3Qo.webp') },
 ], (d, t, label) => loader.setText(`正在加载 ${d}/${t}（${label}）`)).then((t) => {
   t.rockNor.channel = 0;
   const terrainMesh = new THREE.Mesh(terrainGeo, new THREE.MeshStandardMaterial({
@@ -983,8 +1197,7 @@ loadAll([
   }));
   terrainG.add(terrainMesh);
 
-  scene.environment = t.sky;
-  scene.background = t.skyBg;
+  /* 光照环境保留 HDR 天空（反射/补光）；背景交给 edu-vfx 的 illus 深青棚拍接管 */
 
   samplePreset(state.preset);
   applyHeights();
@@ -992,24 +1205,16 @@ loadAll([
   layoutAnnos();
 
   loader.hide();
-  const sections = createSections({
-    nav: document.getElementById('sideNav'),
-    descPanel: document.getElementById('descPanel'),
-    sections: SECTIONS,
-    onSelect(i, sec) {
-      activeSectionCleanup();
-      activeSectionCleanup = () => {};
-      sec.enter();
-      refreshProf();
-    },
-  });
-  window.__eduSections = sections;
-  sections.select(0);
+  window.__eduSections = { select: selectChapter };
+  window.__contourDebug = { vfx, app };   /* 调试句柄（自动化验收：draw call 自查） */
+  selectChapter(0);
 
   app.onFrame((dt) => {
-    cameraTweenTick(app, dt);
-    const sec = SECTIONS[sections.buttons.findIndex((b) => b.classList.contains('active'))] || SECTIONS[0];
+    /* 相机缓动由 attachVFX 接管（tickCamera 在渲染钩子内），这里只跑章内 tick */
+    const sec = SECTIONS[chapterIdx] || SECTIONS[0];
     if (sec.tick) sec.tick(dt);
+    /* 读数隐藏（quiz 章等）时数据手风琴块一并收走 */
+    accSecs.data.classList.toggle('acc-empty', hud.el.style.display === 'none');
     if (morphT < 1) {
       morphT = Math.min(1, morphT + dt / morphDur);
       const e = morphT * morphT * (3 - 2 * morphT);
