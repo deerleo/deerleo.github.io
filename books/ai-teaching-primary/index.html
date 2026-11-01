@@ -1,0 +1,113 @@
+---
+layout: null
+---
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#f1f2ec">
+  {% include theme-init.html %}
+  <link rel="stylesheet" href="{{ '/assets/css/theme.css' | relative_url }}?v=20261027">
+  <script src="{{ '/assets/js/theme.js' | relative_url }}" defer></script>
+  <meta name="description" content="《AI 怎么教：中小学教师人工智能教学指南》——摩豆智能卢章著，13 章按备课、课堂、批改、学情、通识课、班规与诚信教育全流程组织，零代码上手。">
+  <meta name="robots" content="index,follow">
+  <title>AI 怎么教：中小学教师人工智能教学指南 · 行业 AI 书系 · 迷鹿 MiLu</title>
+  <style>
+    *{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:var(--page-glow),var(--bg);color:var(--ink);font:16px/1.7 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
+    a{color:inherit}.wrap{max-width:1100px;margin:auto;padding:48px 24px 88px}
+    .eyebrow{color:var(--cyan);font-size:12px;font-weight:800;letter-spacing:.16em;text-transform:uppercase}
+    .hero{display:grid;grid-template-columns:200px 1fr;gap:36px;align-items:start;max-width:980px;margin-bottom:50px}
+    .cover{aspect-ratio:3/4.2;border:1px solid var(--line);border-radius:14px;background:linear-gradient(160deg,#10271d 0%,#173b2c 58%,#1f4a36 100%);color:#f1f2ec;display:flex;flex-direction:column;justify-content:space-between;padding:26px 22px;box-shadow:0 18px 40px rgba(16,39,29,.28)}
+    .cover .brand{font-size:11px;letter-spacing:.22em;color:rgba(241,242,236,.75)}
+    .cover h2{margin:0;font-size:24px;line-height:1.35;letter-spacing:.02em}
+    .cover .lime{color:#c3ed59}
+    .cover .author{font-size:12px;color:rgba(241,242,236,.85);line-height:1.7}
+    .hero h1{margin:10px 0 14px;font-size:clamp(30px,5vw,46px);line-height:1.12;letter-spacing:-.04em}.hero h1 em{color:var(--mint);font-style:normal}
+    .hero p{max-width:640px;color:var(--muted);font-size:16px;margin:0 0 14px}
+    .stats{display:flex;gap:10px;flex-wrap:wrap;margin-top:6px}.stats span{border:1px solid var(--line);border-radius:999px;padding:6px 12px;color:var(--ink-2);font-size:12px}
+    .cta{display:flex;gap:12px;flex-wrap:wrap;margin-top:18px}
+    .btn{display:inline-flex;align-items:center;gap:8px;padding:10px 16px;border-radius:11px;font-size:13px;font-weight:800;text-decoration:none}
+    .btn-primary{background:#c3ed59;color:#14231a}
+    .btn-ghost{border:1px solid var(--line-strong);color:var(--mint)}
+    .btn:hover{filter:brightness(1.04)}
+    section{max-width:980px;margin-bottom:44px}
+    section>h2{margin:0 0 16px;font-size:clamp(22px,3vw,30px);letter-spacing:-.03em}
+    .grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+    .card{padding:20px;border:1px solid var(--line);border-radius:16px;background:var(--card-grad)}
+    .card h3{margin:0 0 8px;font-size:16px}
+    .card p{margin:0;color:var(--muted);font-size:13.5px}
+    ol.toc{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:1fr 1fr;gap:8px 26px;counter-reset:ch}
+    ol.toc li{counter-increment:ch;display:flex;gap:10px;padding:9px 0;border-bottom:1px solid var(--line);font-size:14px;color:var(--ink-2)}
+    ol.toc li::before{content:counter(ch,decimal-leading-zero);color:var(--mint);font-weight:850;font-size:12px;padding-top:2px}
+    .qrline{display:flex;gap:14px;align-items:center;padding:20px 22px;border:1px solid var(--line);border-radius:16px;background:var(--panel-soft);max-width:520px}
+    .qrline img{width:104px;height:104px;border-radius:8px;background:#fff;padding:6px}
+    .qrline p{margin:0;font-size:13px;color:var(--muted)}
+    .qrline b{color:var(--ink)}
+    .footer{display:flex;justify-content:space-between;gap:16px;margin-top:60px;padding-top:18px;border-top:1px solid var(--line);color:var(--ink-3);font-size:12px;max-width:980px}
+    @media(max-width:680px){.hero{grid-template-columns:1fr;gap:22px}.cover{max-width:220px}.grid2{grid-template-columns:1fr}ol.toc{grid-template-columns:1fr}.footer{display:block}.footer span{display:block;margin:5px 0}}
+  </style>
+  <link rel="stylesheet" href="{{ '/assets/css/subpage-shell.css?v=20261027' | relative_url }}">
+</head>
+<body id="top">
+  {% include subpage-shell.html identity="AI 怎么教" descriptor="行业 AI 书系 · 02" %}
+  <main class="wrap">
+    <header class="hero">
+      <div class="cover" role="img" aria-label="书封：AI 怎么教">
+        <span class="brand">行业 AI 书系 · 02</span>
+        <h2><span class="lime">AI 怎么教</span><br><small style="font-size:13px;font-weight:400;opacity:.85">中小学教师人工智能教学指南</small></h2>
+        <span class="author">摩豆智能 卢章 著</span>
+      </div>
+      <div>
+        <p class="eyebrow">For K-12 Teachers</p>
+        <h1>学生已经在用了，<br><em>教师更需要一本章法。</em></h1>
+        <p>两份指南发布、「人工智能+教育」行动计划落地、AI 专题进国培省培——政策的时间表压到了每位中小学教师身上。这本书不聊概念：备课、课堂、批改、学情、自制资源、通识课、班规与诚信，按你的教学全流程组织，不写一行代码。</p>
+        <div class="stats"><span>13 章</span><span>网页对话 + 零代码两档</span><span>初稿完成 · 出版接洽中</span></div>
+        <div class="cta">
+          <a class="btn btn-primary" href="{{ '/books/' | relative_url }}">← 返回书系</a>
+          <a class="btn btn-ghost" href="mailto:dearsuley@gmail.com?subject=AI怎么教-选题合作">出版合作 ↗</a>
+        </div>
+      </div>
+    </header>
+
+    <section aria-label="读者与痛点">
+      <h2>这本书解决什么</h2>
+      <div class="grid2">
+        <div class="card"><h3>给谁看</h3><p>小学至高中各学科一线教师，零基础起步；师范生与新教师、教研员、电教负责人与国培省培课程设计人员同样适用。</p></div>
+        <div class="card"><h3>为什么现在</h3><p>北京已落地每学年 8 课时的 AI 地方课程，学生通识教材三线并进——「教学生」的书有了，「教老师怎么教」的还是空档。</p></div>
+        <div class="card"><h3>讲什么</h3><p>提问方法、备课提速、课堂互动与分层教学、作业批改、学情与成绩分析、自制插图微课音频、分学科实战、通识课教法、班规与防代写。</p></div>
+        <div class="card"><h3>怎么用</h3><p>按教学环节查读：备课看第 3 章、批改看第 5 章、通识课看第 9 章；每章配动手练习与思考题，可作校本研修教材。</p></div>
+      </div>
+    </section>
+
+    <section aria-label="全书章节">
+      <h2>十三章</h2>
+      <ol class="toc">
+        <li>AI 已经进了校门：躲不开，就接得住</li>
+        <li>先把 AI 用明白：会提问比会工具更重要</li>
+        <li>备课提速：教学设计和课件一次打底</li>
+        <li>课堂上怎么用：互动演示、提问链与分层教学</li>
+        <li>作业与批改：减量不减质</li>
+        <li>看懂你的学生：学情分析与成绩分析</li>
+        <li>自制教学资源：插图、微课和音频不求人</li>
+        <li>分学科实战：语文、数学、英语、理化、道法</li>
+        <li>AI 通识课怎么上：给要开这门课的你</li>
+        <li>学生用 AI 的边界：立班规、防代写、讲诚信</li>
+        <li>教研与课题：让 AI 帮你做研究型教师</li>
+        <li>家校沟通与日常事务：把时间还给教学</li>
+        <li>底线与成长：用得安全，走得长远</li>
+      </ol>
+    </section>
+
+    <section aria-label="二维码">
+      <h2>把这一页带走</h2>
+      <div class="qrline">
+        <img src="{{ '/assets/images/books/qr-ai-teaching-primary.png' | relative_url }}" alt="本书介绍页二维码" width="104" height="104">
+        <p><b>milulab.com/books/ai-teaching-primary</b><br>扫码回到本页，或转发给同事与教研组。</p>
+      </div>
+    </section>
+
+    <footer class="subpage-footer"><span>迷鹿 MiLu · 行业 AI 书系 · 摩豆智能 卢章 著</span><span><a style="color:inherit" href="{{ '/books/' | relative_url }}">← 书系列表</a></span></footer>
+  </main>
+</body>
+</html>

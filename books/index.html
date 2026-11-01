@@ -1,0 +1,121 @@
+---
+layout: null
+---
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#f1f2ec">
+  {% include theme-init.html %}
+  <link rel="stylesheet" href="{{ '/assets/css/theme.css' | relative_url }}?v=20261027">
+  <script src="{{ '/assets/js/theme.js' | relative_url }}" defer></script>
+  <meta name="description" content="行业 AI 书系：摩豆智能卢章面向职业院校教师、中小学教师、财务、传媒采编与基层医疗人员撰写的五本 AI 实务书。从真实政企培训项目中来，照着做就能用。">
+  <meta name="robots" content="index,follow">
+  <title>行业 AI 书系 · 迷鹿 MiLu</title>
+  <style>
+    *{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:var(--page-glow),var(--bg);color:var(--ink);font:16px/1.7 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
+    a{color:inherit}.wrap{max-width:1100px;margin:auto;padding:48px 24px 88px}
+    .hero{max-width:760px;margin-bottom:44px}.eyebrow{color:var(--cyan);font-size:12px;font-weight:800;letter-spacing:.16em;text-transform:uppercase}
+    .hero h1{margin:10px 0 16px;font-size:clamp(36px,6vw,60px);line-height:1.08;letter-spacing:-.05em}.hero h1 em{color:var(--mint);font-style:normal}
+    .hero p{max-width:700px;color:var(--muted);font-size:17px}
+    .stats{display:flex;gap:10px;flex-wrap:wrap;margin-top:24px}.stats span{border:1px solid var(--line);border-radius:999px;padding:6px 12px;color:var(--ink-2);font-size:12px}
+    .booklist{display:grid;gap:15px}
+    .book-card{display:flex;flex-direction:column;gap:10px;padding:26px;border:1px solid var(--line);border-radius:18px;background:var(--card-grad);text-decoration:none;transition:border-color .15s ease}
+    .book-card:hover{border-color:var(--line-strong)}
+    .book-top{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;color:var(--cyan);font-size:11px;font-weight:850;letter-spacing:.08em}
+    .book-top .level{padding:4px 10px;border:1px solid var(--line);border-radius:999px;color:var(--ink-2);font-size:11px;font-weight:700;letter-spacing:.04em}
+    .book-card h2{margin:2px 0 0;font-size:23px;line-height:1.3;letter-spacing:-.02em}
+    .book-card p{margin:0;color:var(--muted);font-size:14px;line-height:1.7}
+    .book-foot{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap;margin-top:8px}
+    .book-meta{color:var(--ink-3);font-size:12px;font-weight:650;letter-spacing:.04em}
+    .book-card .go{color:var(--mint);font-size:13px;font-weight:800}
+    .contact-line{margin-top:34px;padding:22px 24px;border:1px solid var(--line);border-radius:18px;background:var(--panel-soft);color:var(--muted);font-size:14px}
+    .contact-line a{color:var(--mint);font-weight:800;text-decoration:none;border-bottom:1px solid rgba(195,237,89,.5);padding-bottom:2px}
+    .footer{display:flex;justify-content:space-between;gap:16px;margin-top:60px;padding-top:18px;border-top:1px solid var(--line);color:var(--ink-3);font-size:12px}
+    @media (max-width:680px){.wrap{padding-top:38px}.book-card{padding:20px}.book-card h2{font-size:20px}.footer{display:block}.footer span{display:block;margin:5px 0}}
+  </style>
+  <link rel="stylesheet" href="{{ '/assets/css/subpage-shell.css?v=20261027' | relative_url }}">
+</head>
+<body id="top">
+  {% include subpage-shell.html identity="行业 AI 书系" descriptor="Books" %}
+  <main class="wrap">
+    <header class="hero">
+      <p class="eyebrow">Books · 行业 AI 书系</p>
+      <h1>写给千行百业的<br><em>AI 实务书。</em></h1>
+      <p>五本书，五个行业：职业院校教师、中小学教师、财务人、传媒采编、基层医疗。全部从真实的政企培训项目里长出来——不讲概念，讲你明天上班就能照着做的操作。每本配导读、动手练习与思考题，可作自学手册，也可作单位培训教材。</p>
+      <div class="stats"><span>5 本 · 64 章</span><span>作者：摩豆智能 卢章</span><span>初稿完成 · 出版接洽中</span></div>
+    </header>
+
+    <section class="booklist" aria-label="书籍列表">
+      <a class="book-card" href="{{ '/books/ai-vocational-teaching/' | relative_url }}">
+        <div class="book-top"><span>01 · 职业教育</span><span class="level">教师实务</span></div>
+        <h2>职业院校教师的 AI 课</h2>
+        <p>从备课、实训到科研的全场景实战。实训指导书、理实一体、产教融合这些职教主业场景，一本讲透；14 章，含教学智能体搭建与校企实践。</p>
+        <div class="book-foot"><span class="book-meta">14 章 · 全场景实战</span><span class="go">看这本书 ↗</span></div>
+      </a>
+
+      <a class="book-card" href="{{ '/books/ai-teaching-primary/' | relative_url }}">
+        <div class="book-top"><span>02 · 基础教育</span><span class="level">教师实务</span></div>
+        <h2>AI 怎么教：中小学教师人工智能教学指南</h2>
+        <p>备课、课堂、批改、学情、通识课、班规与诚信教育，按教学全流程组织；不写一行代码，全部操作控制在网页对话与零代码两档以内。</p>
+        <div class="book-foot"><span class="book-meta">13 章 · 全流程指南</span><span class="go">看这本书 ↗</span></div>
+      </a>
+
+      <a class="book-card" href="{{ '/books/ai-finance-practice/' | relative_url }}">
+        <div class="book-top"><span>03 · 财务会计</span><span class="level">岗位实务</span></div>
+        <h2>AI 财务实战</h2>
+        <p>大模型时代财务人的做账、报税与分析手册。凭证摘要、三大报表、税务自查、审计底稿到零代码自动化，按 90 学分继续教育的学习路线展开。</p>
+        <div class="book-foot"><span class="book-meta">12 章 · 做账报税分析</span><span class="go">看这本书 ↗</span></div>
+      </a>
+
+      <a class="book-card" href="{{ '/books/ai-newsroom/' | relative_url }}">
+        <div class="book-top"><span>04 · 传媒出版</span><span class="level">采编实务</span></div>
+        <h2>AI 采编实务：新闻传媒出版的 AIGC 工作流</h2>
+        <p>策采编发全流程的 AI 落地：选题资料员、写稿改稿、配图、视频与虚拟主播、数据新闻，附标识合规与三审三校底线；可作 90 学时研修课程母本。</p>
+        <div class="book-foot"><span class="book-meta">13 章 · 策采编发全流程</span><span class="go">看这本书 ↗</span></div>
+      </a>
+
+      <a class="book-card" href="{{ '/books/ai-grassroots-health/' | relative_url }}">
+        <div class="book-top"><span>05 · 基层医疗</span><span class="level">岗位实务</span></div>
+        <h2>基层医疗卫生人员的 AI 实务</h2>
+        <p>写文书、做随访、管慢病、报公卫数据、查文献攒学分——按基层卫生岗位查读；数据安全与责任边界单列成章，AI 打草稿、人做判断。</p>
+        <div class="book-foot"><span class="book-meta">12 章 · 按岗位查读</span><span class="go">看这本书 ↗</span></div>
+      </a>
+    </section>
+
+    <aside class="contact-line" aria-label="出版合作与培训定制">
+      出版社选题合作、单位批量培训教材定制，发邮件到 <a href="mailto:dearsuley@gmail.com">dearsuley@gmail.com</a>。
+    </aside>
+
+    <footer class="subpage-footer">迷鹿 MiLu · 行业 AI 书系 · 摩豆智能 卢章 著</footer>
+  </main>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "CollectionPage",
+    "name": "行业 AI 书系",
+    "url": "{{ site.url }}/books/",
+    "inLanguage": "zh-CN",
+    "description": "摩豆智能卢章面向职业院校教师、中小学教师、财务、传媒采编与基层医疗人员撰写的五本 AI 实务书。",
+    "author": {
+      "@type": "Person",
+      "name": "卢章",
+      "alternateName": "摩豆智能",
+      "url": "{{ site.url }}/"
+    },
+    "hasPart": {
+      "@type": "ItemList",
+      "name": "书籍列表",
+      "itemListElement": [
+        { "@type": "ListItem", "position": 1, "name": "职业院校教师的 AI 课", "url": "{{ site.url }}/books/ai-vocational-teaching/" },
+        { "@type": "ListItem", "position": 2, "name": "AI 怎么教：中小学教师人工智能教学指南", "url": "{{ site.url }}/books/ai-teaching-primary/" },
+        { "@type": "ListItem", "position": 3, "name": "AI 财务实战", "url": "{{ site.url }}/books/ai-finance-practice/" },
+        { "@type": "ListItem", "position": 4, "name": "AI 采编实务：新闻传媒出版的 AIGC 工作流", "url": "{{ site.url }}/books/ai-newsroom/" },
+        { "@type": "ListItem", "position": 5, "name": "基层医疗卫生人员的 AI 实务", "url": "{{ site.url }}/books/ai-grassroots-health/" }
+      ]
+    }
+  }
+  </script>
+</body>
+</html>
