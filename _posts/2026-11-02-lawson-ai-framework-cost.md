@@ -4,6 +4,7 @@ description: "Nolan Lawson 用 Claude Opus 5.5 把同一个 Pokémon 应用写�
 tags: [AI编程, 前端框架, Claude, benchmark, Agent]
 series: ""
 status: published
+podcast: /assets/audio/2026-11-02-lawson-ai-framework-cost.mp3
 ---
 
 ![AI 编程助手正在成为开发者日常，成本却藏在每次会话的 token 账单里（图源：Medium @ kemal bayindir，资料图）](/assets/images/2026-11-02-lawson-ai-framework-cost/hero.jpg)
