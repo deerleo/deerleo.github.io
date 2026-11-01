@@ -13,7 +13,7 @@ podcast: /assets/audio/2026-10-27-ai-daily-video-pipeline.mp3
 
 我的答案是：第一次，79 分钟。其中 25 分钟，我的自动化生产线试图杀死它自己。
 
-<video controls preload="metadata" style="display:block;max-width:100%;width:720px;margin:0 auto;" poster="/assets/videos/2026-10-27-ai-daily-video-pipeline-cover.jpg" src="/assets/videos/2026-10-27-ai-daily-video-pipeline.mp4"></video>
+<video data-vsrc="/assets/videos/2026-10-27-ai-daily-video-pipeline-v.mp4" data-vposter="/assets/videos/2026-10-27-ai-daily-video-pipeline-v-cover.jpg" controls preload="metadata" style="display:block;max-width:100%;width:720px;margin:0 auto;" poster="/assets/videos/2026-10-27-ai-daily-video-pipeline-cover.jpg" src="/assets/videos/2026-10-27-ai-daily-video-pipeline.mp4"></video>
 
 *这条视频就是那条生产线昨天的成片：真人开场收尾加动画解说，全程无人值守。*
 

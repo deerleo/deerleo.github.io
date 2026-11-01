@@ -8,7 +8,7 @@ podcast: /assets/audio/2026-10-29-gemini-carbon-cyber-first.mp3
 
 ![Google DeepMind 品牌实拍（图源 TechCrunch）](/assets/images/2026-10-29-gemini-carbon-cyber-first/cover-deepmind.jpg)
 
-<video controls preload="metadata" style="display:block;max-width:100%;width:720px;margin:0 auto;" poster="/assets/videos/2026-10-29-gemini-carbon-cyber-first-cover.jpg" src="/assets/videos/2026-10-29-gemini-carbon-cyber-first.mp4"></video>
+<video data-vsrc="/assets/videos/2026-10-29-gemini-carbon-cyber-first-v.mp4" data-vposter="/assets/videos/2026-10-29-gemini-carbon-cyber-first-v-cover.jpg" controls preload="metadata" style="display:block;max-width:100%;width:720px;margin:0 auto;" poster="/assets/videos/2026-10-29-gemini-carbon-cyber-first-cover.jpg" src="/assets/videos/2026-10-29-gemini-carbon-cyber-first.mp4"></video>
 
 *本文视频版：真人开场收尾加动画拆解，125 秒讲完这份榜单的疑点。*
 

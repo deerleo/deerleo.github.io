@@ -8,7 +8,7 @@ podcast: /assets/audio/2026-10-28-wenxin-ocr2-unlimited-worth.mp3
 
 ![办公桌上的成堆文件。几百页的合同、财报、卷宗，是每家公司的日常。](/assets/images/2026-10-28-ernie-ocr2/documents-pile.jpg)
 
-<video controls preload="metadata" style="display:block;max-width:100%;width:720px;margin:0 auto;" poster="/assets/videos/2026-10-28-wenxin-ocr2-unlimited-worth-cover.jpg" src="/assets/videos/2026-10-28-wenxin-ocr2-unlimited-worth.mp4"></video>
+<video data-vsrc="/assets/videos/2026-10-28-wenxin-ocr2-unlimited-worth-v.mp4" data-vposter="/assets/videos/2026-10-28-wenxin-ocr2-unlimited-worth-v-cover.jpg" controls preload="metadata" style="display:block;max-width:100%;width:720px;margin:0 auto;" poster="/assets/videos/2026-10-28-wenxin-ocr2-unlimited-worth-cover.jpg" src="/assets/videos/2026-10-28-wenxin-ocr2-unlimited-worth.mp4"></video>
 
 *本文视频版：真人开场收尾加动画拆解，170 秒讲清「无限」二字的成色。*
 

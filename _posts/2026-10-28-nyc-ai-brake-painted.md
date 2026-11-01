@@ -8,7 +8,7 @@ podcast: /assets/audio/2026-10-28-nyc-ai-brake-painted.mp3
 
 ![布鲁克林的纽约公立学校。美国最大学区这一年对 AI 踩了刹车。](/assets/images/2026-10-28-nyc-ai-ban/school-building.jpg)
 
-<video controls preload="metadata" style="display:block;max-width:100%;width:720px;margin:0 auto;" poster="/assets/videos/2026-10-28-nyc-ai-brake-painted-cover.jpg" src="/assets/videos/2026-10-28-nyc-ai-brake-painted.mp4"></video>
+<video data-vsrc="/assets/videos/2026-10-28-nyc-ai-brake-painted-v.mp4" data-vposter="/assets/videos/2026-10-28-nyc-ai-brake-painted-v-cover.jpg" controls preload="metadata" style="display:block;max-width:100%;width:720px;margin:0 auto;" poster="/assets/videos/2026-10-28-nyc-ai-brake-painted-cover.jpg" src="/assets/videos/2026-10-28-nyc-ai-brake-painted.mp4"></video>
 
 *本文视频版：真人开场收尾加动画拆解，143 秒讲完这份名单的问题。*
 

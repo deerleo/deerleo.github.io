@@ -8,7 +8,7 @@ podcast: /assets/audio/2026-10-28-one-person-drug-company-mithril.mp3
 
 ![实验室里，一只黑色小鼠待在戴紫色手套的手心。这个故事的分水岭，最终落在这一层动物实验上。](/assets/images/2026-10-28-one-person-drug-company-mithril/hero-lab-mice.jpg)
 
-<video controls preload="metadata" style="display:block;max-width:100%;width:720px;margin:0 auto;" poster="/assets/images/2026-10-28-one-person-drug-company-mithril/hero-lab-mice.jpg" src="/assets/videos/mithril-video.mp4"></video>
+<video data-vsrc="/assets/videos/2026-10-28-one-person-drug-company-mithril-v.mp4" data-vposter="/assets/videos/2026-10-28-one-person-drug-company-mithril-v-cover.jpg" controls preload="metadata" style="display:block;max-width:100%;width:720px;margin:0 auto;" poster="/assets/images/2026-10-28-one-person-drug-company-mithril/hero-lab-mice.jpg" src="/assets/videos/mithril-video.mp4"></video>
 
 *视频版《一个人做药》：四段混合形态——真人开场收尾、实验室实拍图 Ken Burns、数据动画对比，45 秒讲完整个故事。*
 
