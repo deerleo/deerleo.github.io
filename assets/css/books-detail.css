@@ -1,0 +1,116 @@
+/* ============================================================
+   books-detail.css — 行业 AI 书系 · 书籍详情页共用样式（5 页同构）
+   工单：执行工单-书籍详情页改版-20261101（2026-11-01）
+   依赖：assets/css/theme.css（主题变量）+ assets/css/subpage-shell.css
+   封面：当前为 CSS 占位书封。真图就绪后，把页面 .book-face 内的
+   .cover-css 整块替换为
+     <img class="cover-img" src="/assets/images/books/cover-<slug>.png" alt="《书名》封面">
+   书脊（::before）/书页（::after）/投影对真图同样生效，无需改本文件。
+   ============================================================ */
+
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--page-glow),var(--bg);color:var(--ink);font:16px/1.7 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
+a{color:inherit}
+.wrap{max-width:1100px;margin:auto;padding:52px 24px 88px}
+.eyebrow{color:var(--cyan);font-size:12px;font-weight:800;letter-spacing:.16em;text-transform:uppercase}
+
+/* ---------- 1. Hero：立体书封 + 核心信息 ---------- */
+.hero{display:grid;grid-template-columns:300px 1fr;gap:56px;align-items:start;max-width:1020px;margin-bottom:60px}
+
+/* 立体书封（CSS 占位 / 真图通用） */
+.cover-stage{perspective:1400px}
+.book{position:relative;margin:0 12px 16px 4px;transform:rotateY(-9deg);transition:transform .25s ease}
+.book:hover{transform:rotateY(-9deg) translateY(-7px)}
+.book-face{position:relative;z-index:2;width:100%;aspect-ratio:3/4.2;border-radius:3px 12px 12px 3px;overflow:hidden;background:linear-gradient(160deg,#10271d 0%,#173b2c 58%,#1f4a36 100%);color:#f1f2ec;box-shadow:0 26px 50px rgba(16,39,29,.30),0 8px 16px rgba(16,39,29,.20);padding:26px 26px 22px}
+/* 书脊：左缘明暗渐变 */
+.book-face::before{content:"";position:absolute;left:0;top:0;bottom:0;width:14px;z-index:4;pointer-events:none;background:linear-gradient(90deg,rgba(0,0,0,.42) 0,rgba(0,0,0,.16) 32%,rgba(255,255,255,.13) 62%,rgba(0,0,0,.14) 100%)}
+/* 书页：右缘纸边 */
+.book-face::after{content:"";position:absolute;right:-9px;top:9px;bottom:9px;width:9px;z-index:1;border-radius:0 3px 3px 0;background:repeating-linear-gradient(0deg,#f6f7ef 0 2px,#d8dcc8 2px 3px);box-shadow:3px 3px 8px rgba(16,39,29,.28)}
+.book-face .cover-img{position:absolute;inset:0;z-index:1;width:100%;height:100%;object-fit:cover}
+/* CSS 占位封面排版（真图就绪后此块随页面替换删除） */
+.cover-css{position:relative;z-index:3;display:flex;flex-direction:column;justify-content:space-between;height:100%}
+.cover-css .series{font-size:11px;letter-spacing:.22em;color:rgba(241,242,236,.72)}
+.cover-css .series b{color:#c3ed59;font-weight:800}
+.cover-css h2{margin:0;font-size:26px;line-height:1.42;letter-spacing:.02em;font-weight:800}
+.cover-css h2 small{display:block;margin-top:12px;font-size:13px;font-weight:400;opacity:.85;letter-spacing:.03em;line-height:1.6}
+.cover-css .lime{color:#c3ed59}
+.cover-css .author{display:block;font-size:12px;color:rgba(241,242,236,.88);letter-spacing:.06em}
+.cover-css .site{display:block;margin-top:8px;padding-top:10px;border-top:1px solid rgba(241,242,236,.28);font-size:10px;letter-spacing:.2em;color:rgba(241,242,236,.6);text-transform:uppercase}
+
+/* 右栏：书名 / 推荐语 / 关键信息条 / CTA */
+.hero-info h1{margin:12px 0 8px;font-size:clamp(30px,5vw,46px);line-height:1.14;letter-spacing:-.04em}
+.hero-info .h1-sub{display:block;margin-top:12px;color:var(--muted);font-size:clamp(15px,2vw,19px);font-weight:650;letter-spacing:-.01em;line-height:1.5}
+.lede{max-width:640px;color:var(--muted);font-size:16px;margin:0 0 20px}
+.info-bar{display:flex;flex-wrap:wrap;border:1px solid var(--line);border-radius:14px;background:var(--panel-soft);overflow:hidden;max-width:680px}
+.info-cell{flex:1 1 auto;padding:12px 18px;border-right:1px solid var(--line)}
+.info-cell:last-child{border-right:0}
+.info-cell small{display:block;color:var(--ink-3);font-size:10px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;margin-bottom:3px}
+.info-cell b{font-size:13px;font-weight:750;color:var(--ink);letter-spacing:.01em}
+.cta{display:flex;gap:12px;flex-wrap:wrap;margin-top:24px}
+.btn{display:inline-flex;align-items:center;gap:8px;padding:11px 18px;border-radius:11px;font-size:13px;font-weight:800;text-decoration:none}
+.btn-primary{background:#c3ed59;color:#14231a}
+.btn-ghost{border:1px solid var(--line-strong);color:var(--mint)}
+.btn:hover{filter:brightness(1.04)}
+.btn-disabled{border:1px dashed var(--line-strong);color:var(--ink-3);cursor:not-allowed}
+.btn-disabled:hover{filter:none}
+
+/* ---------- 2-6. 内容区块 ---------- */
+section{max-width:1020px;margin-bottom:56px}
+section>h2{margin:0 0 22px;font-size:clamp(22px,3vw,30px);letter-spacing:-.03em}
+
+/* 编辑推荐 */
+.rec-list{list-style:none;margin:0;padding:0;max-width:840px;counter-reset:rec}
+.rec-list li{counter-increment:rec;position:relative;padding:14px 0 14px 40px;border-bottom:1px solid var(--line);color:var(--ink-2);font-size:15px;line-height:1.8}
+.rec-list li::before{content:counter(rec,decimal-leading-zero);position:absolute;left:2px;top:17px;color:var(--mint);font-weight:850;font-size:12px;letter-spacing:.05em}
+
+/* 本书适合谁 */
+.aud-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;max-width:980px}
+.aud{padding:24px;border:1px solid var(--line);border-radius:16px;background:var(--card-grad)}
+.aud h3{margin:0 0 10px;font-size:16px;display:flex;align-items:center;gap:10px}
+.aud .tag{padding:3px 10px;border-radius:999px;font-size:11px;font-weight:800;letter-spacing:.05em}
+.aud-main .tag{background:#c3ed59;color:#14231a}
+.aud-sub .tag{border:1px solid var(--line-strong);color:var(--mint)}
+.aud p{margin:0;color:var(--muted);font-size:14px;line-height:1.8}
+
+/* 全书章节 */
+ol.toc{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:1fr 1fr;gap:8px 30px;counter-reset:ch;max-width:980px}
+ol.toc li{counter-increment:ch;display:flex;gap:12px;padding:10px 0;border-bottom:1px solid var(--line);font-size:14px;color:var(--ink-2);line-height:1.6}
+ol.toc li::before{content:counter(ch,decimal-leading-zero);flex:0 0 auto;color:var(--mint);font-weight:850;font-size:12px;padding-top:3px;letter-spacing:.05em}
+
+/* 作者简介 */
+.author-card{display:flex;gap:20px;padding:26px 28px;border:1px solid var(--line);border-radius:16px;background:var(--card-grad);max-width:840px}
+.author-card .monogram{flex:0 0 auto;width:54px;height:54px;border-radius:12px;background:linear-gradient(160deg,#173b2c,#1f4a36);color:#c3ed59;display:grid;place-items:center;font-size:22px;font-weight:800}
+.author-card p{margin:0;color:var(--muted);font-size:14px;line-height:1.9}
+.author-card b{color:var(--ink)}
+
+/* 二维码 */
+.qrline{display:flex;gap:14px;align-items:center;padding:20px 22px;border:1px solid var(--line);border-radius:16px;background:var(--panel-soft);max-width:520px}
+.qrline img{width:104px;height:104px;border-radius:8px;background:#fff;padding:6px}
+.qrline p{margin:0;font-size:13px;color:var(--muted)}
+.qrline b{color:var(--ink)}
+
+/* ---------- 移动端 ---------- */
+@media (max-width:720px){
+  .wrap{padding-top:38px}
+  .hero{grid-template-columns:1fr;gap:36px;margin-bottom:52px}
+  .cover-stage{max-width:260px;width:100%;margin:0 auto}
+  .book{transform:none;margin:0 9px 12px 0}
+  .book:hover{transform:translateY(-6px)}
+  .info-bar{max-width:none}
+  .info-cell{flex:1 1 46%;padding:10px 14px}
+  .info-cell:nth-child(2n){border-right:0}
+  .info-cell:nth-child(n+3){border-top:1px solid var(--line)}
+  .cta .btn{flex:1 1 100%;justify-content:center}
+  section{margin-bottom:48px}
+  .aud-grid{grid-template-columns:1fr}
+  ol.toc{grid-template-columns:1fr}
+  .author-card{padding:20px}
+}
+@media (max-width:400px){
+  .cover-stage{max-width:230px}
+}
+@media (prefers-reduced-motion: reduce){
+  .book{transition:none}
+  .book:hover{transform:rotateY(-9deg)}
+}
