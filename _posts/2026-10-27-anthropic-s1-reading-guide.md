@@ -7,7 +7,7 @@ podcast: /assets/audio/2026-10-27-anthropic-s1-reading-guide.mp3
 
 一家公司，半年营收 163 亿美元，净亏 807 亿。亏损是营收的 5 倍。但我读完它本周一交出的招股书，第一反应是：这家公司在好转。
 
-<video controls preload="metadata" style="display:block;max-width:100%;width:720px;margin:0 auto;" poster="/assets/videos/2026-10-27-anthropic-s1-reading-guide-cover.jpg" src="/assets/videos/2026-10-27-anthropic-s1-reading-guide.mp4"></video>
+<video data-vsrc="/assets/videos/2026-10-27-anthropic-s1-reading-guide-v.mp4" data-vposter="/assets/videos/2026-10-27-anthropic-s1-reading-guide-v-cover.jpg" controls preload="metadata" style="display:block;max-width:100%;width:720px;margin:0 auto;" poster="/assets/videos/2026-10-27-anthropic-s1-reading-guide-cover.jpg" src="/assets/videos/2026-10-27-anthropic-s1-reading-guide.mp4"></video>
 
 *这条视频是本文的讲解版：真人开场收尾加动画拆解三个数字。*
 

@@ -8,7 +8,7 @@ series: "AI 日报自动化"
 
 ![纽约曼哈顿中城的摩根大通新全球总部。五大行在这个十月集体对外部 AI 智能体关上了门（资料图，图源：jpmorganchase.com）](/assets/images/2026-10-31-anthropic-cathedral/final_B02_jpmorgan_hq.jpg)
 
-<video controls preload="metadata" style="display:block;max-width:100%;width:720px;margin:0 auto;" poster="/assets/videos/2026-10-31-banks-block-meta-muse-cover.jpg" src="/assets/videos/2026-10-31-banks-block-meta-muse.mp4"></video>
+<video data-vsrc="/assets/videos/2026-10-31-banks-block-meta-muse-v.mp4" data-vposter="/assets/videos/2026-10-31-banks-block-meta-muse-v-cover.jpg" controls preload="metadata" style="display:block;max-width:100%;width:720px;margin:0 auto;" poster="/assets/videos/2026-10-31-banks-block-meta-muse-cover.jpg" src="/assets/videos/2026-10-31-banks-block-meta-muse.mp4"></video>
 
 摩根大通、花旗、美国银行、富国银行、摩根士丹利——美国最大的五家银行，这个十月罕见地站成一排，封堵外部 AI 智能体进入客户账户。嘉信理财 CEO 里克·沃斯特也在彭博采访里点了名：不允许客户把密码交给 Meta 的 Muse 代为操作。
 

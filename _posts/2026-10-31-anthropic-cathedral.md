@@ -8,7 +8,7 @@ podcast: /assets/audio/2026-10-31-anthropic-cathedral.mp3
 
 ![旧金山 500 Howard Street，Anthropic 转租的前 Slack 总部大楼。这家 AI 安全明星公司的机密，就躺在这栋楼里曾经属于 Slack 的办公网络中（资料图，图源：connectcre.com）](/assets/images/2026-10-31-anthropic-cathedral/final_01_anthropic_hq.jpg)
 
-<video controls preload="metadata" style="display:block;max-width:100%;width:720px;margin:0 auto;" poster="/assets/videos/2026-10-31-anthropic-cathedral-cover.jpg" src="/assets/videos/2026-10-31-anthropic-cathedral.mp4"></video>
+<video data-vsrc="/assets/videos/2026-10-31-anthropic-cathedral-v.mp4" data-vposter="/assets/videos/2026-10-31-anthropic-cathedral-v-cover.jpg" controls preload="metadata" style="display:block;max-width:100%;width:720px;margin:0 auto;" poster="/assets/videos/2026-10-31-anthropic-cathedral-cover.jpg" src="/assets/videos/2026-10-31-anthropic-cathedral.mp4"></video>
 
 老话讲，钥匙丢了先查自己口袋。放到 AI 行业，得改改：先查你连的那些第三方软件的口袋。
 

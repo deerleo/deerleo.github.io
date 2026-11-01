@@ -7,7 +7,7 @@ podcast: /assets/audio/2026-10-27-skt-agent-employee-id.mp3
 
 "Agent 出了事算谁的？"做企业级 Agent 平台这两年，这是我被问得最多的问题，比"用哪个模型"多得多。
 
-<video controls preload="metadata" style="display:block;max-width:100%;width:720px;margin:0 auto;" poster="/assets/videos/2026-10-27-skt-agent-employee-id-cover.jpg" src="/assets/videos/2026-10-27-skt-agent-employee-id.mp4"></video>
+<video data-vsrc="/assets/videos/2026-10-27-skt-agent-employee-id-v.mp4" data-vposter="/assets/videos/2026-10-27-skt-agent-employee-id-v-cover.jpg" controls preload="metadata" style="display:block;max-width:100%;width:720px;margin:0 auto;" poster="/assets/videos/2026-10-27-skt-agent-employee-id-cover.jpg" src="/assets/videos/2026-10-27-skt-agent-employee-id.mp4"></video>
 
 *这条视频是本文的讲解版：真人开场收尾，动画拆解工号两级与落地五件事。*
 
