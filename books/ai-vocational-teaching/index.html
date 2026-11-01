@@ -1,0 +1,114 @@
+---
+layout: null
+---
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#f1f2ec">
+  {% include theme-init.html %}
+  <link rel="stylesheet" href="{{ '/assets/css/theme.css' | relative_url }}?v=20261027">
+  <script src="{{ '/assets/js/theme.js' | relative_url }}" defer></script>
+  <meta name="description" content="《职业院校教师的 AI 课：从备课、实训到科研的全场景实战》——摩豆智能卢章著，14 章覆盖职教教师备课、实训、评价、课程改造、科研与产教融合全场景。">
+  <meta name="robots" content="index,follow">
+  <title>职业院校教师的 AI 课 · 行业 AI 书系 · 迷鹿 MiLu</title>
+  <style>
+    *{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:var(--page-glow),var(--bg);color:var(--ink);font:16px/1.7 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
+    a{color:inherit}.wrap{max-width:1100px;margin:auto;padding:48px 24px 88px}
+    .eyebrow{color:var(--cyan);font-size:12px;font-weight:800;letter-spacing:.16em;text-transform:uppercase}
+    .hero{display:grid;grid-template-columns:200px 1fr;gap:36px;align-items:start;max-width:980px;margin-bottom:50px}
+    .cover{aspect-ratio:3/4.2;border:1px solid var(--line);border-radius:14px;background:linear-gradient(160deg,#10271d 0%,#173b2c 58%,#1f4a36 100%);color:#f1f2ec;display:flex;flex-direction:column;justify-content:space-between;padding:26px 22px;box-shadow:0 18px 40px rgba(16,39,29,.28)}
+    .cover .brand{font-size:11px;letter-spacing:.22em;color:rgba(241,242,236,.75)}
+    .cover h2{margin:0;font-size:24px;line-height:1.35;letter-spacing:.02em}
+    .cover .lime{color:#c3ed59}
+    .cover .author{font-size:12px;color:rgba(241,242,236,.85);line-height:1.7}
+    .hero h1{margin:10px 0 14px;font-size:clamp(30px,5vw,46px);line-height:1.12;letter-spacing:-.04em}.hero h1 em{color:var(--mint);font-style:normal}
+    .hero p{max-width:640px;color:var(--muted);font-size:16px;margin:0 0 14px}
+    .stats{display:flex;gap:10px;flex-wrap:wrap;margin-top:6px}.stats span{border:1px solid var(--line);border-radius:999px;padding:6px 12px;color:var(--ink-2);font-size:12px}
+    .cta{display:flex;gap:12px;flex-wrap:wrap;margin-top:18px}
+    .btn{display:inline-flex;align-items:center;gap:8px;padding:10px 16px;border-radius:11px;font-size:13px;font-weight:800;text-decoration:none}
+    .btn-primary{background:#c3ed59;color:#14231a}
+    .btn-ghost{border:1px solid var(--line-strong);color:var(--mint)}
+    .btn:hover{filter:brightness(1.04)}
+    section{max-width:980px;margin-bottom:44px}
+    section>h2{margin:0 0 16px;font-size:clamp(22px,3vw,30px);letter-spacing:-.03em}
+    .grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+    .card{padding:20px;border:1px solid var(--line);border-radius:16px;background:var(--card-grad)}
+    .card h3{margin:0 0 8px;font-size:16px}
+    .card p{margin:0;color:var(--muted);font-size:13.5px}
+    ol.toc{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:1fr 1fr;gap:8px 26px;counter-reset:ch}
+    ol.toc li{counter-increment:ch;display:flex;gap:10px;padding:9px 0;border-bottom:1px solid var(--line);font-size:14px;color:var(--ink-2)}
+    ol.toc li::before{content:counter(ch,decimal-leading-zero);color:var(--mint);font-weight:850;font-size:12px;padding-top:2px}
+    .qrline{display:flex;gap:14px;align-items:center;padding:20px 22px;border:1px solid var(--line);border-radius:16px;background:var(--panel-soft);max-width:520px}
+    .qrline img{width:104px;height:104px;border-radius:8px;background:#fff;padding:6px}
+    .qrline p{margin:0;font-size:13px;color:var(--muted)}
+    .qrline b{color:var(--ink)}
+    .footer{display:flex;justify-content:space-between;gap:16px;margin-top:60px;padding-top:18px;border-top:1px solid var(--line);color:var(--ink-3);font-size:12px;max-width:980px}
+    @media(max-width:680px){.hero{grid-template-columns:1fr;gap:22px}.cover{max-width:220px}.grid2{grid-template-columns:1fr}ol.toc{grid-template-columns:1fr}.footer{display:block}.footer span{display:block;margin:5px 0}}
+  </style>
+  <link rel="stylesheet" href="{{ '/assets/css/subpage-shell.css?v=20261027' | relative_url }}">
+</head>
+<body id="top">
+  {% include subpage-shell.html identity="职业院校教师的 AI 课" descriptor="行业 AI 书系 · 01" %}
+  <main class="wrap">
+    <header class="hero">
+      <div class="cover" role="img" aria-label="书封：职业院校教师的 AI 课">
+        <span class="brand">行业 AI 书系 · 01</span>
+        <h2>职业院校教师<br>的<span class="lime"> AI 课</span><br><small style="font-size:13px;font-weight:400;opacity:.85">从备课、实训到科研的全场景实战</small></h2>
+        <span class="author">摩豆智能 卢章 著</span>
+      </div>
+      <div>
+        <p class="eyebrow">For Vocational Teachers</p>
+        <h1>写给职教教师的<br><em>第一本 AI 实操书。</em></h1>
+        <p>「人工智能+教育」行动计划要求教师 AI 素养培训按岗位全覆盖，可实训指导书、实训工单、理实一体、产教融合这些职教主业场景，市面还没有一本专门的 AI 书。这本就是。全书 14 章，从备课提速到搭你自己的教学智能体，所有操作零代码起步。</p>
+        <div class="stats"><span>14 章</span><span>零代码起步</span><span>初稿完成 · 出版接洽中</span></div>
+        <div class="cta">
+          <a class="btn btn-primary" href="{{ '/books/' | relative_url }}">← 返回书系</a>
+          <a class="btn btn-ghost" href="mailto:dearsuley@gmail.com?subject=职教教师AI课-选题合作">出版合作 ↗</a>
+        </div>
+      </div>
+    </header>
+
+    <section aria-label="读者与痛点">
+      <h2>这本书解决什么</h2>
+      <div class="grid2">
+        <div class="card"><h3>给谁看</h3><p>高职/职业本科/中职专业课教师，公共课教师与应用型本科教师同样适用；教师发展中心与教务处可作全员研修教材。</p></div>
+        <div class="card"><h3>为什么现在</h3><p>培训全覆盖已写进政策，92.3% 的教师已把 AI 用进课堂，但 67.4% 找不到合适的教育资源——缺的不是工具，是一本照着做的手册。</p></div>
+        <div class="card"><h3>讲什么</h3><p>备课提速、实训指导书与工单、互动课堂、作业评价、专业课 AI 化改造、教学智能体、学生实训边界、科研、企业实践与产教融合。</p></div>
+        <div class="card"><h3>怎么用</h3><p>每章配导读、动手练习与思考题，可按章自学，可作国培省培与校本研修的课程母本。</p></div>
+      </div>
+    </section>
+
+    <section aria-label="全书章节">
+      <h2>十四章</h2>
+      <ol class="toc">
+        <li>AI 已经进校门：职教教师躲不开的三个变化</li>
+        <li>先把 AI 用明白：大模型能与不能，提示词怎么写</li>
+        <li>备课提速：教案和课件怎么让 AI 帮你打底稿</li>
+        <li>实训课怎么教：AI 帮你写实训指导书和工单</li>
+        <li>让课堂活起来：互动小应用与学情分析</li>
+        <li>从批作业到看过程：AI 时代的作业与评价</li>
+        <li>课程要跟上岗位：专业课的 AI 化改造</li>
+        <li>不写代码做工具：搭一个你自己的教学智能体</li>
+        <li>学生实训里的 AI：练技能，不是替学生干活</li>
+        <li>科研这条路：知识库、课题、数据分析和论文</li>
+        <li>走进企业：企业实践和产教融合中的 AI</li>
+        <li>边界在哪里：思政、诚信与数据安全</li>
+        <li>学校在花什么钱：读懂你身边的 AI 建设规划</li>
+        <li>从今天开始：你的下一个 45 分钟</li>
+      </ol>
+    </section>
+
+    <section aria-label="二维码">
+      <h2>把这一页带走</h2>
+      <div class="qrline">
+        <img src="{{ '/assets/images/books/qr-ai-vocational-teaching.png' | relative_url }}" alt="本书介绍页二维码" width="104" height="104">
+        <p><b>milulab.com/books/ai-vocational-teaching</b><br>扫码回到本页，或转发给同事与教师发展中心。</p>
+      </div>
+    </section>
+
+    <footer class="subpage-footer"><span>迷鹿 MiLu · 行业 AI 书系 · 摩豆智能 卢章 著</span><span><a style="color:inherit" href="{{ '/books/' | relative_url }}">← 书系列表</a></span></footer>
+  </main>
+</body>
+</html>
