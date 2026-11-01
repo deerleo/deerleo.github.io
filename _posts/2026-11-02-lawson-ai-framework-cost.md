@@ -9,6 +9,8 @@ podcast: /assets/audio/2026-11-02-lawson-ai-framework-cost.mp3
 
 ![AI 编程助手正在成为开发者日常，成本却藏在每次会话的 token 账单里（图源：Medium @ kemal bayindir，资料图）](/assets/images/2026-11-02-lawson-ai-framework-cost/hero.jpg)
 
+<video data-vsrc="/assets/videos/2026-11-02-lawson-ai-framework-cost-v.mp4" data-vposter="/assets/videos/2026-11-02-lawson-ai-framework-cost-v-cover.jpg" controls preload="metadata" style="display:block;max-width:100%;width:720px;margin:0 auto;" poster="/assets/videos/2026-11-02-lawson-ai-framework-cost-cover.jpg" src="/assets/videos/2026-11-02-lawson-ai-framework-cost.mp4"></video>
+
 写代码这件事，最贵的不是写不出来，是不知道账单从哪来。
 
 上周（10 月 28 号）微软的 Nolan Lawson 发了一个 benchmark，思路简单粗暴：同一个 Pokémon 图鉴应用，让 Claude Opus 5.5 分别用 12 个 JavaScript 框架写一遍。每个框架跑 5 次取中位数，Angular 只算 3 次，因为另外两次它写出来的应用根本跑不起来。
