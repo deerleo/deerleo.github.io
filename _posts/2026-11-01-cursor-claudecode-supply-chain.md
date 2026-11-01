@@ -3,6 +3,7 @@ title: "官方市场的官方扩展，给我装了个后门"
 description: "Cursor 市场里的正版 Claude Code 扩展被塞进 66 行后门代码，11 小时波及约 5000 名开发者。AI 时代的供应链攻击，攻击的不是漏洞，是你对「官方」两个字的信任。"
 tags: [AI安全, 供应链攻击, Claude Code, Cursor, 开发者]
 series: "哟哟鹿鸣"
+podcast: /assets/audio/2026-11-01-cursor-claudecode-supply-chain.mp3
 ---
 
 ![Cursor 官网「The AI Code Editor」落地页：这次后门事件的事发地，正是这条官方分发渠道](/assets/images/2026-11-01-cursor-claudecode-supply-chain/hero-cursor-site.jpg)
