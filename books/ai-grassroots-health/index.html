@@ -10,78 +10,81 @@ layout: null
   {% include theme-init.html %}
   <link rel="stylesheet" href="{{ '/assets/css/theme.css' | relative_url }}?v=20261027">
   <script src="{{ '/assets/js/theme.js' | relative_url }}" defer></script>
-  <meta name="description" content="《基层医疗卫生人员的 AI 实务》——摩豆智能卢章著，12 章按基层卫生岗位查读：文书、随访、慢病管理、公卫报表、文献与学分，数据安全与责任边界单列成章。">
+  <meta name="description" content="《基层医疗卫生人员的 AI 实务》——摩豆智能卢章著，12 章覆盖文书、随访、慢病管理、公卫报表、文献与学分，按基层岗位查读，数据安全与责任边界单列成章。">
   <meta name="robots" content="index,follow">
   <title>基层医疗卫生人员的 AI 实务 · 行业 AI 书系 · 迷鹿 MiLu</title>
-  <style>
-    *{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:var(--page-glow),var(--bg);color:var(--ink);font:16px/1.7 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
-    a{color:inherit}.wrap{max-width:1100px;margin:auto;padding:48px 24px 88px}
-    .eyebrow{color:var(--cyan);font-size:12px;font-weight:800;letter-spacing:.16em;text-transform:uppercase}
-    .hero{display:grid;grid-template-columns:200px 1fr;gap:36px;align-items:start;max-width:980px;margin-bottom:50px}
-    .cover{aspect-ratio:3/4.2;border:1px solid var(--line);border-radius:14px;background:linear-gradient(160deg,#10271d 0%,#173b2c 58%,#1f4a36 100%);color:#f1f2ec;display:flex;flex-direction:column;justify-content:space-between;padding:26px 22px;box-shadow:0 18px 40px rgba(16,39,29,.28)}
-    .cover .brand{font-size:11px;letter-spacing:.22em;color:rgba(241,242,236,.75)}
-    .cover h2{margin:0;font-size:24px;line-height:1.35;letter-spacing:.02em}
-    .cover .lime{color:#c3ed59}
-    .cover .author{font-size:12px;color:rgba(241,242,236,.85);line-height:1.7}
-    .hero h1{margin:10px 0 14px;font-size:clamp(30px,5vw,46px);line-height:1.12;letter-spacing:-.04em}.hero h1 em{color:var(--mint);font-style:normal}
-    .hero p{max-width:640px;color:var(--muted);font-size:16px;margin:0 0 14px}
-    .stats{display:flex;gap:10px;flex-wrap:wrap;margin-top:6px}.stats span{border:1px solid var(--line);border-radius:999px;padding:6px 12px;color:var(--ink-2);font-size:12px}
-    .cta{display:flex;gap:12px;flex-wrap:wrap;margin-top:18px}
-    .btn{display:inline-flex;align-items:center;gap:8px;padding:10px 16px;border-radius:11px;font-size:13px;font-weight:800;text-decoration:none}
-    .btn-primary{background:#c3ed59;color:#14231a}
-    .btn-ghost{border:1px solid var(--line-strong);color:var(--mint)}
-    .btn:hover{filter:brightness(1.04)}
-    section{max-width:980px;margin-bottom:44px}
-    section>h2{margin:0 0 16px;font-size:clamp(22px,3vw,30px);letter-spacing:-.03em}
-    .grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
-    .card{padding:20px;border:1px solid var(--line);border-radius:16px;background:var(--card-grad)}
-    .card h3{margin:0 0 8px;font-size:16px}
-    .card p{margin:0;color:var(--muted);font-size:13.5px}
-    ol.toc{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:1fr 1fr;gap:8px 26px;counter-reset:ch}
-    ol.toc li{counter-increment:ch;display:flex;gap:10px;padding:9px 0;border-bottom:1px solid var(--line);font-size:14px;color:var(--ink-2)}
-    ol.toc li::before{content:counter(ch,decimal-leading-zero);color:var(--mint);font-weight:850;font-size:12px;padding-top:2px}
-    .qrline{display:flex;gap:14px;align-items:center;padding:20px 22px;border:1px solid var(--line);border-radius:16px;background:var(--panel-soft);max-width:520px}
-    .qrline img{width:104px;height:104px;border-radius:8px;background:#fff;padding:6px}
-    .qrline p{margin:0;font-size:13px;color:var(--muted)}
-    .qrline b{color:var(--ink)}
-    .footer{display:flex;justify-content:space-between;gap:16px;margin-top:60px;padding-top:18px;border-top:1px solid var(--line);color:var(--ink-3);font-size:12px;max-width:980px}
-    @media(max-width:680px){.hero{grid-template-columns:1fr;gap:22px}.cover{max-width:220px}.grid2{grid-template-columns:1fr}ol.toc{grid-template-columns:1fr}.footer{display:block}.footer span{display:block;margin:5px 0}}
-  </style>
+  <link rel="stylesheet" href="{{ '/assets/css/books-detail.css' | relative_url }}?v=20261101">
   <link rel="stylesheet" href="{{ '/assets/css/subpage-shell.css?v=20261027' | relative_url }}">
 </head>
 <body id="top">
   {% include subpage-shell.html identity="基层医疗卫生人员的 AI 实务" descriptor="行业 AI 书系 · 05" %}
   <main class="wrap">
+
+    <!-- 1. 书封 + 核心信息 -->
     <header class="hero">
-      <div class="cover" role="img" aria-label="书封：基层医疗卫生人员的 AI 实务">
-        <span class="brand">行业 AI 书系 · 05</span>
-        <h2><span class="lime">基层医疗</span>卫生人员<br>的 AI 实务<br><small style="font-size:13px;font-weight:400;opacity:.85">写文书 · 做随访 · 攒学分</small></h2>
-        <span class="author">摩豆智能 卢章 著</span>
+      <div class="cover-stage">
+        <div class="book">
+          <div class="book-face">
+            <!-- 封面真图槽位：covers 就绪后，将下方 .cover-css 整块替换为：
+                 <img class="cover-img" src="/assets/images/books/cover-ai-grassroots-health.png" alt="《基层医疗卫生人员的 AI 实务》封面"> -->
+            <div class="cover-css" role="img" aria-label="书封：基层医疗卫生人员的 AI 实务">
+              <span class="series">行业 AI 书系 · <b>05</b></span>
+              <h2><span class="lime">基层医疗</span>卫生人员<br>的 AI 实务<small>写文书 · 做随访 · 攒学分</small></h2>
+              <div>
+                <span class="author">摩豆智能 卢章 著</span>
+                <span class="site">milulab.com</span>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
-      <div>
+      <div class="hero-info">
         <p class="eyebrow">For Grassroots Healthcare</p>
-        <h1>AI 打草稿，<br><em>你做判断。</em></h1>
-        <p>《「人工智能+医疗卫生」实施意见》刚发，基层的钱在真实流入，可基层实操书一本都没有。这本书写给县医院、社区卫生服务中心、乡镇卫生院的每一位工作人员：文书、随访、慢病管理、公卫报表、文献与学分，按岗位查读；患者数据与责任边界单列成章。</p>
-        <div class="stats"><span>12 章</span><span>按岗位查读</span><span>初稿完成 · 出版接洽中</span></div>
+        <h1>基层医疗卫生人员的 AI 实务<span class="h1-sub">写文书 · 做随访 · 攒学分</span></h1>
+        <p class="lede">写给县医院、社区与乡镇卫生院的每一个人：按岗位查读，AI 打草稿、你做判断。</p>
+        <div class="info-bar">
+          <div class="info-cell"><small>作者</small><b>摩豆智能 卢章</b></div>
+          <div class="info-cell"><small>章节</small><b>12 章</b></div>
+          <div class="info-cell"><small>定位</small><b>岗位实务 · 按岗位查读</b></div>
+          <div class="info-cell"><small>状态</small><b>初稿完成 · 出版接洽中</b></div>
+        </div>
         <div class="cta">
           <a class="btn btn-primary" href="{{ '/books/' | relative_url }}">← 返回书系</a>
           <a class="btn btn-ghost" href="mailto:dearsuley@gmail.com?subject=基层医疗AI实务-选题合作">出版合作 ↗</a>
+          <span class="btn btn-disabled" aria-disabled="true" title="全书排版中，线上试读即将开放">线上试读 · 排版中</span>
         </div>
       </div>
     </header>
 
-    <section aria-label="读者与痛点">
-      <h2>这本书解决什么</h2>
-      <div class="grid2">
-        <div class="card"><h3>给谁看</h3><p>县医院、社区卫生服务中心（站）、乡镇卫生院的医生、护士、公卫人员、医技与行政人员；医共体管理者与卫健局培训部门可作全员教材。</p></div>
-        <div class="card"><h3>为什么现在</h3><p>继续医学教育 25 学分/年（90 学时）是刚性要求，而面向基层的 AI 实操书零检出——需求真实、供给空白。</p></div>
-        <div class="card"><h3>讲什么</h3><p>大模型第一课、政策解读、患者数据规矩、文书减负、慢病随访、家庭医生签约、公卫数据报表、文献与学分、辅助诊断工具的配合与复核、机构落地路径。</p></div>
-        <div class="card"><h3>怎么用</h3><p>按岗位任务查读，所有场景守一条线：AI 打草稿、人做判断；第 4 章与第 12 章是全书的安全底座，建议先读。</p></div>
+    <!-- 2. 编辑推荐 -->
+    <section aria-label="编辑推荐">
+      <h2>编辑推荐</h2>
+      <ul class="rec-list">
+        <li>《「人工智能+医疗卫生」实施意见》刚发，基层的钱在真实流入——面向基层的 AI 实操书此前零检出，这本补上。</li>
+        <li>写文书、做随访、管慢病、报公卫数据、查文献攒学分，按基层卫生岗位任务查读。</li>
+        <li>患者数据、隐私与责任边界单列成章，全书守一条线：AI 打草稿、人做判断。</li>
+        <li>继续医学教育 25 学分/年是刚性要求，第 9 章给基层卫生人的 AI 文献与学分学习法。</li>
+      </ul>
+    </section>
+
+    <!-- 3. 本书适合谁 -->
+    <section aria-label="本书适合谁">
+      <h2>本书适合谁</h2>
+      <div class="aud-grid">
+        <div class="aud aud-main">
+          <h3>主读者<span class="tag">核心</span></h3>
+          <p>县医院、社区卫生服务中心（站）、乡镇卫生院的医生、护士、公卫、医技与行政人员。</p>
+        </div>
+        <div class="aud aud-sub">
+          <h3>延伸读者<span class="tag">同样适用</span></h3>
+          <p>医共体管理者与卫健局培训部门——可作全员教材与常态化培训方案。</p>
+        </div>
       </div>
     </section>
 
+    <!-- 4. 全书章节 -->
     <section aria-label="全书章节">
-      <h2>十二章</h2>
+      <h2>全书章节 · 12 章</h2>
       <ol class="toc">
         <li>基层卫生为什么站在 AI 应用的第一线</li>
         <li>第一堂 AI 课：大模型是什么、提示词怎么写</li>
@@ -98,6 +101,18 @@ layout: null
       </ol>
     </section>
 
+    <!-- 5. 作者简介 -->
+    <section aria-label="作者简介">
+      <h2>作者简介</h2>
+      <div class="author-card">
+        <span class="monogram" aria-hidden="true">卢</span>
+        <p><b>卢章</b>，摩豆智能创始人（milulab.com）。长期从事 AI 产品研发与政企培训交付，课程覆盖高校、职教与行业培训场景。著有「行业 AI 书系」，把真实培训项目中验证过的方法写成每个行业从业者能直接上手的操作手册。</p>
+      </div>
+    </section>
+
+    <!-- 6. 内页预览槽位：排版任务产出内页截图后，在此放 2-3 张横滑卡片 -->
+
+    <!-- 7. 二维码 -->
     <section aria-label="二维码">
       <h2>把这一页带走</h2>
       <div class="qrline">
@@ -108,5 +123,21 @@ layout: null
 
     <footer class="subpage-footer"><span>迷鹿 MiLu · 行业 AI 书系 · 摩豆智能 卢章 著</span><span><a style="color:inherit" href="{{ '/books/' | relative_url }}">← 书系列表</a></span></footer>
   </main>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Book",
+    "name": "基层医疗卫生人员的 AI 实务",
+    "url": "{{ site.url }}/books/ai-grassroots-health/",
+    "inLanguage": "zh-CN",
+    "description": "摩豆智能卢章著，12 章覆盖文书、随访、慢病管理、公卫报表、文献与学分，按基层岗位查读，数据安全与责任边界单列成章。",
+    "author": {
+      "@type": "Person",
+      "name": "卢章",
+      "alternateName": "摩豆智能",
+      "url": "{{ site.url }}/"
+    }
+  }
+  </script>
 </body>
 </html>
