@@ -12,6 +12,10 @@ tags: [AI安全, 开源模型, GLM, Firefox, 供应链安全]
 
 结果是 6 战 6 胜。9 月 17 日到 10 月 26 日之间发布的全部 6 个 Firefox 版本，全部被攻破。
 
+<video controls preload="metadata" style="display:block;max-width:100%;width:720px;margin:0 auto;" poster="/assets/videos/2026-11-01-epoch-firefox-patch-gap-cover.jpg" src="/assets/videos/2026-11-01-epoch-firefox-patch-gap.mp4"></video>
+
+*视频版：真人开场收尾加动画拆解，两分半讲完这条千美元攻击链。*
+
 ## 它是怎么干活的
 
 流程说出来不复杂，但每一步都超出预期。
