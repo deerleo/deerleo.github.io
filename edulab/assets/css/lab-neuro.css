@@ -1,0 +1,940 @@
+/* EduLab · neuro 神经网络识数字布局（真·三栏：左章节大纲 / 中 3D 舞台 / 右讲解+控件+读数）
+   依赖 edu.css 的主题变量与 lab.css 的通用控件（ctl/hud/bar 视觉）。
+   本文件只管 neuro 页面骨架与本章专属部件（手写板浮窗 / 像素图 / 权重图 / 训练曲线 /
+   权重画廊 / 卷积面板 / 错例画廊 / 小任务 / 引导），不动共享布局。 */
+
+html, body { height: 100%; }
+
+body.lab.neuro {
+  display: block;
+  overflow: hidden;
+}
+
+/* ---------- 三栏骨架（顶栏细条 + 左大纲 / 中舞台 / 右讲解） ---------- */
+
+.neuro-shell {
+  display: grid;
+  grid-template-columns: 246px minmax(0, 1fr) 352px;
+  grid-template-rows: auto minmax(0, 1fr);
+  grid-template-areas:
+    "top      top   top"
+    "chapters stage detail";
+  height: 100dvh;
+}
+
+/* ---------- 顶栏细条 ---------- */
+
+.neuro-toprow {
+  grid-area: top;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 9px 16px;
+  border-bottom: 1px solid var(--card-border);
+  background: color-mix(in srgb, var(--card) 60%, transparent);
+}
+.neuro-toprow .edu-logo { flex: none; }
+.neuro-toprow .lab-title {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  min-width: 0;
+  color: var(--text);
+}
+.neuro-toprow .lab-title b { font-size: 16px; white-space: nowrap; }
+.neuro-toprow .lab-title span {
+  font-size: 12.5px;
+  color: var(--text-faint);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.neuro-toprow .spacer { flex: 1; }
+.neuro-toprow .edu-header-btn { white-space: nowrap; }
+
+/* ---------- 左栏：章节大纲 ---------- */
+
+.lab-chapters {
+  grid-area: chapters;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  background: var(--bg-soft);
+  border-right: 1px solid var(--card-border);
+}
+.chap-head {
+  flex: none;
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  padding: 13px 14px 7px;
+}
+.chap-head .chap-title {
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  color: var(--text-faint);
+}
+.chap-pn {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.pn-btn {
+  appearance: none;
+  font-family: inherit;
+  width: 22px;
+  height: 22px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  line-height: 1;
+  border-radius: 7px;
+  border: 1px solid var(--card-border);
+  background: var(--chip-bg);
+  color: var(--text-faint);
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s;
+}
+.pn-btn:hover { color: var(--accent); border-color: var(--accent); }
+.chap-count {
+  font-size: 11.5px;
+  color: var(--text-faint);
+  font-variant-numeric: tabular-nums;
+  padding: 0 2px;
+}
+.chap-list {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 2px 8px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.chap-list .chap-btn.on {
+  color: var(--accent);
+  background: var(--accent-soft);
+  border-color: color-mix(in srgb, var(--accent) 35%, transparent);
+  font-weight: 600;
+}
+.chap-list .chap-btn.on .chap-n { color: var(--accent); }
+.chap-list .chap-btn .chap-sub {
+  display: block;
+  font-size: 11px;
+  color: var(--text-faint);
+  margin: 2px 0 0 18px;
+  line-height: 1.45;
+}
+.chap-list .chap-btn.on .chap-sub { color: color-mix(in srgb, var(--accent) 72%, var(--text-faint)); }
+
+/* ---------- 中栏：3D 舞台 ---------- */
+
+.lab-stage3d {
+  grid-area: stage;
+  position: relative;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  background: var(--bg);
+}
+.neuro-stage { position: absolute; inset: 0; }
+.neuro-stage canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; outline: none; }
+.neuro-stage .lab-loader { position: absolute; }
+
+/* 舞台工具排（重做 / 标签 / 视角 / 画质 / 大屏） */
+.stage-tools {
+  position: absolute;
+  left: 14px;
+  top: 14px;
+  z-index: 24;
+  display: flex;
+  gap: 7px;
+  flex-wrap: wrap;
+  max-width: calc(100% - 220px);
+}
+.stage-tool-btn {
+  appearance: none;
+  font-family: inherit;
+  font-size: 12px;
+  line-height: 1;
+  padding: 7px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--card-border);
+  background: color-mix(in srgb, var(--card) 74%, transparent);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  color: var(--text-dim);
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s;
+  white-space: nowrap;
+}
+.stage-tool-btn:hover { color: var(--accent); border-color: var(--accent); }
+.stage-tool-btn.on {
+  color: var(--accent);
+  border-color: color-mix(in srgb, var(--accent) 55%, transparent);
+  background: var(--accent-soft);
+}
+
+.stage-focus-btn {
+  position: absolute;
+  left: 14px;
+  bottom: 14px;
+  z-index: 24;
+  appearance: none;
+  font-family: inherit;
+  font-size: 12px;
+  line-height: 1;
+  padding: 7px 13px;
+  border-radius: 999px;
+  border: 1px solid var(--card-border);
+  background: color-mix(in srgb, var(--card) 74%, transparent);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  color: var(--text-dim);
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s;
+}
+.stage-focus-btn:hover { color: var(--accent); border-color: var(--accent); }
+
+.stage-foot {
+  position: absolute;
+  right: 16px;
+  bottom: 14px;
+  z-index: 24;
+  font-size: 11.5px;
+  color: var(--text-faint);
+}
+.stage-foot a { color: var(--text-faint); text-decoration: underline; text-underline-offset: 2px; }
+
+/* ---------- 栏折叠（左右独立 28px 竖条）与专注模式 ---------- */
+
+.neuro-shell { transition: grid-template-columns 0.3s ease; }
+.neuro-shell.fold-l { grid-template-columns: 28px minmax(0, 1fr) 352px; }
+.neuro-shell.fold-r { grid-template-columns: 246px minmax(0, 1fr) 28px; }
+.neuro-shell.fold-l.fold-r { grid-template-columns: 28px minmax(0, 1fr) 28px; }
+
+.chap-head, .chap-list { min-width: 246px; }
+.detail-head, .detail-body { min-width: 352px; }
+.chap-head, .chap-list, .detail-head, .detail-body { transition: opacity 0.16s ease; }
+.neuro-shell.fold-l .chap-head,
+.neuro-shell.fold-l .chap-list { opacity: 0; pointer-events: none; }
+.neuro-shell.fold-r .detail-head,
+.neuro-shell.fold-r .detail-body { opacity: 0; pointer-events: none; }
+
+.fold-btn {
+  flex: none;
+  appearance: none;
+  font-family: inherit;
+  width: 22px;
+  height: 22px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  line-height: 1;
+  border-radius: 7px;
+  border: 1px solid var(--card-border);
+  background: var(--chip-bg);
+  color: var(--text-faint);
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s, background 0.15s;
+}
+.fold-btn:hover {
+  color: var(--accent);
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+.detail-head .fold-btn { margin-left: auto; align-self: center; }
+
+.fold-rail {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 0 12px;
+  background: var(--bg-soft);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.2s ease, visibility 0s linear 0.2s;
+}
+.neuro-shell.fold-l .lab-chapters .fold-rail,
+.neuro-shell.fold-r .lab-detail .fold-rail {
+  opacity: 1;
+  visibility: visible;
+  transition: opacity 0.2s ease 0.1s;
+}
+.rail-no {
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--accent);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.04em;
+}
+.rail-title {
+  writing-mode: vertical-rl;
+  max-height: 210px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 12px;
+  color: var(--text-faint);
+  letter-spacing: 0.14em;
+}
+
+/* ---------- 右栏：讲解 + 控件 + 读数 ---------- */
+
+.lab-detail {
+  grid-area: detail;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  background: var(--bg-soft);
+  border-left: 1px solid var(--card-border);
+}
+.detail-head {
+  flex: none;
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  padding: 14px 16px 11px;
+  border-bottom: 1px solid var(--card-border);
+}
+.detail-no {
+  flex: none;
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--accent);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.02em;
+}
+.detail-title {
+  margin: 0;
+  font-size: 16px;
+  color: var(--text);
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.detail-body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 14px 16px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* 知识点正文 + 小任务清单 */
+.lc-lesson { font-size: 13.5px; line-height: 1.7; color: var(--text-dim); }
+.lc-lesson p { margin: 0 0 8px; }
+.lc-lesson p:last-child { margin-bottom: 0; }
+.lc-lesson b { color: var(--text); }
+.lc-lesson .hl { color: var(--accent); font-weight: 600; }
+.lc-lesson .eq {
+  font-family: var(--font-mono, ui-monospace, monospace);
+  text-align: center;
+  color: var(--text);
+  margin: 6px 0;
+  letter-spacing: 0.02em;
+}
+.lc-lesson .fnote {
+  margin-top: 10px;
+  padding-top: 8px;
+  border-top: 1px dashed var(--card-border);
+  font-size: 11.5px;
+  color: var(--text-faint);
+  line-height: 1.6;
+}
+
+/* 小任务清单：完成自动打勾 */
+.task-list {
+  margin: 10px 0 0;
+  padding: 10px 12px 8px;
+  border: 1px solid var(--card-border);
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--card) 40%, transparent);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.task-list .task-cap {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  color: var(--text-faint);
+  margin-bottom: 4px;
+}
+.task-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 12.5px;
+  line-height: 1.55;
+  color: var(--text-dim);
+  padding: 3px 0;
+}
+.task-item .tk-box {
+  flex: none;
+  width: 15px;
+  height: 15px;
+  margin-top: 2px;
+  border-radius: 5px;
+  border: 1.5px solid var(--card-border);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  color: transparent;
+  transition: all 0.2s;
+}
+.task-item.done .tk-box {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+.task-item.done .tk-text { color: var(--text-faint); text-decoration: line-through; text-decoration-color: color-mix(in srgb, var(--accent) 55%, transparent); }
+.task-item .tk-link {
+  appearance: none;
+  font-family: inherit;
+  background: none;
+  border: none;
+  padding: 0;
+  font-size: inherit;
+  line-height: inherit;
+  color: var(--accent);
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-style: dotted;
+}
+.task-item .tk-link:hover { text-decoration-style: solid; }
+
+/* 课堂模式（大屏）：讲解文字与读数放大 */
+body.neuro-big .lc-lesson { font-size: 15.5px; line-height: 1.75; }
+body.neuro-big .lc-data .hud-card { font-size: 14px; }
+body.neuro-big .hud-row { font-size: 14px; }
+body.neuro-big .hud-row b { font-size: 15px; }
+body.neuro-big .acc-title { font-size: 13px; }
+body.neuro-big .task-item { font-size: 14px; }
+body.neuro-big .nb-t { font-size: 15px; }
+
+/* 本章控件（复用 lab.css 的 ctl 组件，纵向排列） */
+.lc-controls { display: flex; flex-flow: row wrap; gap: 8px 10px; align-items: center; }
+.lc-controls .ctl, .lc-controls .ctl-toggle { flex: 1 1 100%; }
+.lc-controls .ctl input[type="range"] { flex: 1; width: auto; }
+.lc-controls .ctl-sep { flex: 1 1 100%; width: auto; height: 1px; background: var(--card-border); }
+.lc-controls .ctl-btn { flex: 0 0 auto; }
+.lc-controls:empty { display: none; }
+
+/* 数据读数通用卡 */
+.lc-data { display: flex; flex-direction: column; gap: 10px; }
+.lc-data .hud-card {
+  background: var(--chip-bg);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  border: 1px solid var(--card-border);
+  box-shadow: none;
+  min-width: 0;
+  width: 100%;
+}
+.lc-data .hud-card:empty { display: none; }
+
+.data-block {
+  border: 1px solid var(--card-border);
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--card) 42%, transparent);
+  padding: 10px 12px 11px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.data-block .db-cap {
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  color: var(--text-faint);
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+.data-block .db-cap em {
+  font-style: normal;
+  font-weight: 500;
+  letter-spacing: 0;
+  color: var(--accent);
+  margin-left: auto;
+  font-variant-numeric: tabular-nums;
+}
+.data-block canvas { display: block; width: 100%; height: auto; border-radius: 8px; background: color-mix(in srgb, var(--bg) 55%, transparent); }
+.data-block .db-note { font-size: 11.5px; color: var(--text-faint); line-height: 1.55; }
+
+/* 置信度柱 */
+.bars-10 { display: flex; flex-direction: column; gap: 1px; }
+.bars-10 .bar-row { line-height: 1.72; }
+.bars-10 .bar-row .bar-label { width: 18px; font-size: 11.5px; color: var(--text-faint); text-align: center; }
+.bars-10 .bar-row .bar-val { width: 40px; font-size: 11.5px; }
+
+/* 识别结果大数字 */
+.verdict {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.verdict .vd-digit {
+  flex: none;
+  width: 58px;
+  height: 58px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 34px;
+  font-weight: 800;
+  color: var(--accent);
+  background: var(--accent-soft);
+  border: 1px solid color-mix(in srgb, var(--accent) 35%, transparent);
+  font-variant-numeric: tabular-nums;
+  transition: transform 0.25s ease;
+}
+.verdict .vd-digit.pop { animation: vdPop 0.45s ease; }
+@keyframes vdPop {
+  0% { transform: scale(0.6); }
+  55% { transform: scale(1.18); }
+  100% { transform: scale(1); }
+}
+.verdict .vd-side { min-width: 0; flex: 1; }
+.verdict .vd-label { font-size: 11.5px; color: var(--text-faint); }
+.verdict .vd-conf { font-size: 19px; font-weight: 700; color: var(--text); font-variant-numeric: tabular-nums; line-height: 1.3; }
+
+/* 权重画廊（第一层 48 个神经元的权重图） */
+.wgallery {
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  gap: 4px;
+}
+.wgallery canvas {
+  width: 100%;
+  aspect-ratio: 1;
+  border-radius: 4px;
+  background: #0d1117;
+  cursor: pointer;
+  transition: outline 0.15s;
+  outline: 1px solid transparent;
+}
+.wgallery canvas:hover { outline: 1px solid var(--accent); }
+.wgallery canvas.picked { outline: 2px solid var(--accent); }
+
+/* 卷积面板：输入 / 卷积核 / 特征图三联 */
+.conv-row {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+}
+.conv-cell { flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+.conv-cell canvas {
+  width: 100%;
+  border-radius: 6px;
+  background: #0d1117;
+  image-rendering: pixelated;
+}
+.conv-cell .cc-cap { font-size: 10.5px; color: var(--text-faint); text-align: center; line-height: 1.4; }
+.conv-cell.clickable canvas { cursor: pointer; }
+.conv-cell.clickable canvas:hover { outline: 1px solid var(--accent); }
+.conv-cell.picked canvas { outline: 2px solid var(--accent); }
+.fmaps { display: grid; gap: 4px; }
+.fmaps.f6 { grid-template-columns: repeat(6, 1fr); }
+.fmaps.f12 { grid-template-columns: repeat(12, 1fr); }
+.fmaps canvas {
+  width: 100%;
+  aspect-ratio: 1;
+  border-radius: 3px;
+  background: #0d1117;
+  cursor: pointer;
+  outline: 1px solid transparent;
+}
+.fmaps canvas:hover { outline: 1px solid var(--accent); }
+.fmaps canvas.picked { outline: 2px solid var(--accent); }
+
+/* 错例画廊 */
+.err-view { display: flex; gap: 10px; align-items: center; }
+.err-view canvas {
+  flex: none;
+  width: 96px;
+  height: 96px;
+  border-radius: 8px;
+  background: #0d1117;
+  image-rendering: pixelated;
+}
+.err-view .err-side { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 6px; }
+.err-view .err-text { font-size: 12.5px; line-height: 1.6; color: var(--text-dim); }
+.err-view .err-text b.wrong { color: #e08a72; }
+.err-pager { display: flex; gap: 6px; align-items: center; }
+.err-pager .pn-btn { flex: none; }
+
+/* ---------- 中栏浮动：手写板浮窗 ---------- */
+
+.neuro-board {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  z-index: 25;
+  width: 268px;
+  display: flex;
+  flex-direction: column;
+  background: color-mix(in srgb, var(--card) 88%, transparent);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid var(--card-border);
+  border-radius: 16px;
+  box-shadow: var(--shadow-hover);
+  overflow: hidden;
+}
+.nb-head {
+  flex: none;
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  padding: 11px 14px 9px;
+  border-bottom: 1px solid var(--card-border);
+}
+.nb-head .nb-t { font-size: 13.5px; font-weight: 600; color: var(--text); flex: 1; }
+.nb-head .nb-hint { font-size: 11px; color: var(--text-faint); }
+.nb-head .fold-btn { align-self: center; }
+.nb-body {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 14px 13px;
+}
+.nb-wrap {
+  width: 100%;
+  aspect-ratio: 1;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid var(--card-border);
+  background: #0d1017;
+  touch-action: none;
+  cursor: crosshair;
+}
+.nb-wrap canvas { width: 100%; height: 100%; display: block; }
+.nb-tools { display: flex; gap: 6px; }
+.nb-btn {
+  appearance: none;
+  font-family: inherit;
+  font-size: 11.5px;
+  line-height: 1;
+  padding: 5px 11px;
+  border-radius: 999px;
+  border: 1px solid var(--card-border);
+  background: var(--chip-bg);
+  color: var(--text-dim);
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s;
+}
+.nb-btn:hover { color: var(--accent); border-color: var(--accent); }
+
+/* 手写板折叠态：40px 圆形徽标 */
+.neuro-board.folded {
+  width: auto;
+  background: transparent;
+  border-color: transparent;
+  box-shadow: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  overflow: visible;
+  align-items: flex-end;
+}
+.neuro-board.folded .nb-head,
+.neuro-board.folded .nb-body { display: none; }
+.board-badge {
+  appearance: none;
+  font-family: inherit;
+  display: none;
+  width: 40px;
+  height: 40px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  border: 1px solid var(--card-border);
+  background: color-mix(in srgb, var(--card) 88%, transparent);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  color: var(--text-dim);
+  font-size: 17px;
+  line-height: 1;
+  cursor: pointer;
+  box-shadow: var(--shadow);
+  transition: color 0.15s, box-shadow 0.15s;
+}
+.board-badge:hover { color: var(--accent); box-shadow: var(--shadow-hover); }
+.neuro-board.folded .board-badge { display: inline-flex; animation: nbBadgeIn 0.25s ease; }
+.neuro-board:not(.folded) .nb-head,
+.neuro-board:not(.folded) .nb-body { animation: nbPanelIn 0.25s ease; }
+@keyframes nbBadgeIn {
+  from { transform: scale(0.55); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+@keyframes nbPanelIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* 放大手写板态 */
+.neuro-board.expanded { width: min(92%, 430px); }
+.neuro-board.expanded .nb-btn#boardExpand { color: var(--accent); border-color: color-mix(in srgb, var(--accent) 55%, transparent); }
+
+/* ---------- 提示条 ---------- */
+
+.neuro-toast {
+  position: absolute;
+  left: 50%;
+  bottom: 18px;
+  transform: translate(-50%, 8px);
+  z-index: 40;
+  max-width: min(86%, 460px);
+  padding: 9px 16px;
+  border-radius: 12px;
+  border: 1px solid var(--card-border);
+  background: color-mix(in srgb, var(--card) 92%, transparent);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  color: var(--text);
+  font-size: 12.5px;
+  line-height: 1.6;
+  opacity: 0;
+  transition: opacity 0.25s, transform 0.25s;
+  pointer-events: none;
+}
+.neuro-toast.warn { border-color: color-mix(in srgb, #e08a72 55%, var(--card-border)); color: #eda28c; }
+.neuro-toast.show { opacity: 1; transform: translate(-50%, 0); }
+
+/* ---------- 引导（首次访问） ---------- */
+
+.tour-mask {
+  position: absolute;
+  inset: 0;
+  z-index: 60;
+  background: color-mix(in srgb, var(--bg) 52%, transparent);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s;
+}
+.tour-mask.on { opacity: 1; pointer-events: auto; }
+.tour-card {
+  position: absolute;
+  z-index: 61;
+  width: 300px;
+  padding: 14px 16px 13px;
+  border-radius: 14px;
+  border: 1px solid color-mix(in srgb, var(--accent) 40%, var(--card-border));
+  background: var(--card);
+  box-shadow: var(--shadow-hover);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s, transform 0.25s;
+}
+.tour-card.on { opacity: 1; pointer-events: auto; }
+.tour-card .tc-step { font-size: 11px; font-weight: 600; letter-spacing: 0.1em; color: var(--accent); }
+.tour-card h3 { margin: 5px 0 6px; font-size: 15.5px; color: var(--text); }
+.tour-card p { margin: 0 0 11px; font-size: 12.5px; line-height: 1.65; color: var(--text-dim); }
+.tour-card .tc-foot { display: flex; align-items: center; gap: 8px; }
+.tour-card .tc-foot .tc-skip {
+  appearance: none;
+  font-family: inherit;
+  background: none;
+  border: none;
+  font-size: 12px;
+  color: var(--text-faint);
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.tour-card .tc-foot .tc-skip:hover { color: var(--text-dim); }
+.tour-card .tc-foot .spacer { flex: 1; }
+.tour-card .tc-btn {
+  appearance: none;
+  font-family: inherit;
+  font-size: 12.5px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--card-border);
+  background: var(--chip-bg);
+  color: var(--text-dim);
+  cursor: pointer;
+}
+.tour-card .tc-btn.primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+  font-weight: 600;
+}
+.tour-card .tc-btn:disabled { opacity: 0.4; cursor: default; }
+
+/* 引导高亮：对应区域描一圈呼吸光环 */
+.tour-hi { position: relative; }
+.tour-hi::after {
+  content: "";
+  position: absolute;
+  inset: 4px;
+  border-radius: 12px;
+  border: 2px solid var(--accent);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 22%, transparent);
+  animation: tourBreath 1.6s ease-in-out infinite;
+  pointer-events: none;
+  z-index: 55;
+}
+@keyframes tourBreath {
+  0%, 100% { opacity: 0.55; }
+  50% { opacity: 1; }
+}
+
+/* ---------- 右栏三块手风琴 ---------- */
+
+.acc {
+  flex: none;
+  border: 1px solid var(--card-border);
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--card) 42%, transparent);
+  overflow: hidden;
+}
+.acc.acc-empty { display: none; }
+.acc-head {
+  appearance: none;
+  font-family: inherit;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 9px 12px;
+  border: none;
+  background: transparent;
+  color: var(--text-faint);
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-align: left;
+  cursor: pointer;
+  transition: color 0.15s;
+}
+.acc-head:hover { color: var(--accent); }
+.acc-arrow {
+  margin-left: auto;
+  font-style: normal;
+  font-size: 10px;
+  line-height: 1;
+  transition: transform 0.25s ease;
+}
+.acc.closed .acc-arrow { transform: rotate(-90deg); }
+.acc-fold-wrap {
+  display: grid;
+  grid-template-rows: 1fr;
+  transition: grid-template-rows 0.25s ease;
+}
+.acc.closed .acc-fold-wrap { grid-template-rows: 0fr; }
+.acc-fold-body { min-height: 0; overflow: hidden; }
+.acc-fold-inner { padding: 2px 12px 12px; }
+
+/* ---------- 窄屏（≤1100px） ---------- */
+
+@media (max-width: 1100px) {
+  .neuro-toprow { padding: 8px 12px; gap: 8px; }
+  .neuro-toprow .lab-title span { display: none; }
+  .neuro-toprow .lab-title b { font-size: 15px; }
+  .neuro-toprow a.edu-header-btn[href='../'] { display: none; }
+  .stage-tools { max-width: calc(100% - 200px); }
+
+  .detail-body { padding: 10px 12px 14px; gap: 10px; }
+  .acc-head { padding: 8px 10px; }
+  .acc-fold-inner { padding: 2px 10px 10px; }
+}
+
+/* ---------- 移动端（≤860px）：纵向堆叠 ---------- */
+
+@media (max-width: 860px) {
+  .neuro-shell {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto auto minmax(230px, 42dvh) minmax(0, 1fr);
+    grid-template-areas:
+      "top"
+      "chapters"
+      "stage"
+      "detail";
+  }
+
+  .neuro-shell { transition: none; }
+  .neuro-shell.fold-l,
+  .neuro-shell.fold-r,
+  .neuro-shell.fold-l.fold-r,
+  .neuro-shell.focus-mode { grid-template-columns: minmax(0, 1fr); }
+  .fold-btn, .fold-rail, .stage-tools { display: none; }
+  .neuro-shell.fold-l .chap-head,
+  .neuro-shell.fold-l .chap-list,
+  .neuro-shell.fold-r .detail-head,
+  .neuro-shell.fold-r .detail-body { opacity: 1; pointer-events: auto; }
+
+  .neuro-toprow { padding: 8px 10px; gap: 8px; }
+  .neuro-toprow .lab-title span { display: none; }
+  .neuro-toprow .lab-title b { font-size: 14.5px; }
+  .neuro-toprow a.edu-header-btn[href='../'] { display: none; }
+
+  .lab-chapters { border-right: none; border-bottom: 1px solid var(--card-border); }
+  .chap-head { padding: 8px 12px 2px; }
+  .chap-list {
+    flex-direction: row;
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding: 5px 8px 8px;
+    gap: 4px;
+    scrollbar-width: none;
+  }
+  .chap-list::-webkit-scrollbar { display: none; }
+  .chap-list .chap-btn { flex: none; padding: 6px 10px; font-size: 12.5px; white-space: nowrap; }
+  .chap-list .chap-btn .chap-n { width: auto; margin-right: 4px; }
+  .chap-list .chap-btn .chap-sub { display: none; }
+
+  .lab-detail { border-left: none; border-top: 1px solid var(--card-border); }
+  .detail-head { padding: 10px 12px 8px; }
+  .detail-no { font-size: 18px; }
+  .detail-title { font-size: 14.5px; }
+  .detail-body { padding: 10px 12px 14px; }
+  .lc-lesson { font-size: 12.5px; }
+
+  .neuro-board { top: 8px; right: 8px; width: 186px; border-radius: 14px; }
+  .nb-head { padding: 9px 12px 8px; }
+  .nb-body { padding: 10px 12px 12px; gap: 7px; }
+  .neuro-board.expanded { width: min(94%, 320px); }
+  .stage-focus-btn { left: 8px; bottom: 8px; }
+  .stage-foot { display: none; }
+  .tour-card { width: min(84%, 300px); }
+}
+
+/* 场值悬浮读数（悬停体素柱时的行/列/灰度提示） */
+.field-tip {
+  position: absolute;
+  z-index: 30;
+  pointer-events: none;
+  padding: 4px 9px;
+  border-radius: 8px;
+  border: 1px solid var(--card-border);
+  background: color-mix(in srgb, var(--card) 92%, transparent);
+  color: var(--text);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  box-shadow: var(--shadow);
+}
