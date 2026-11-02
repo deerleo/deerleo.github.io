@@ -8,6 +8,10 @@ podcast: /assets/audio/2026-11-01-cursor-claudecode-supply-chain.mp3
 
 ![Cursor 官网「The AI Code Editor」落地页：这次后门事件的事发地，正是这条官方分发渠道](/assets/images/2026-11-01-cursor-claudecode-supply-chain/hero-cursor-site.jpg)
 
+<video controls preload="metadata" style="display:block;max-width:100%;width:720px;margin:0 auto;" poster="/assets/videos/2026-11-01-cursor-claudecode-supply-chain-cover.jpg" src="/assets/videos/2026-11-01-cursor-claudecode-supply-chain.mp4"></video>
+
+*视频版：真人开场收尾加动画拆解，两分半讲完这次供应链后门。*
+
 老话说，买刀要去铁匠铺，别在地摊上捡。
 
 图省事在线上市场装扩展的人，想法也差不多：官方渠道、官方账号、官方名字，总归干净。10 月 29 日上午，这个想法被打了个响亮的耳光——Cursor 的 VS Code 扩展市场里，那个名叫 `Anthropic.claude-code` 的正版扩展，被塞进了后门。
