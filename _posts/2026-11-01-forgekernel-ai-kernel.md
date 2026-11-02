@@ -8,6 +8,10 @@ tags: [面壁智能, DeepSeek, GPU算子, RSI, 国产芯片]
 
 10 月 30 日早上，一场直播收尾。主角不是人，是一个叫 ForgeKernel 的 AI 智能体。
 
+<video controls preload="metadata" style="display:block;max-width:100%;width:720px;margin:0 auto;" poster="/assets/videos/2026-11-01-forgekernel-ai-kernel-cover.jpg" src="/assets/videos/2026-11-01-forgekernel-ai-kernel.mp4"></video>
+
+*视频版：两分钟讲完这场 22 小时直播的来龙去脉*
+
 它在英伟达 B200 上连跑 22.5 小时，任务只有一个：不参考 DeepSeek 的源码，从零写出 FlashMLA Prefill 算子——那是 DeepSeek 开源的注意力核心算子，出自业内公认 Infra 最强的团队之手，算是人类手写算子的巅峰。
 
 结果：472 微秒，对上 FlashMLA 的 518 微秒，快 9.8%。全程 42 轮迭代，留下 32 个版本，用掉 1 张 B200 和 22 个 GPU 小时。人类为这个算子写的代码，是 0 行。
