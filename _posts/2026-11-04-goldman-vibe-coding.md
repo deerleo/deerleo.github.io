@@ -8,6 +8,10 @@ status: published
 
 ![纽约证券交易所交易大厅，交易员在工作台前（资料图）](/assets/images/2026-11-04-goldman-vibe-coding/nyse_floor.jpg)
 
+<video controls preload="metadata" style="display:block;max-width:100%;width:720px;margin:0 auto;" poster="/assets/videos/2026-11-04-goldman-vibe-coding-cover.jpg" src="/assets/videos/2026-11-04-goldman-vibe-coding.mp4"></video>
+
+*视频版：两分钟讲完华尔街 AI 编程从狂欢到收权的反转*
+
 一家管着上万亿美元资产的公司，今年夏天还在教自己的员工用 AI 写代码，入冬就把工具收走了。
 
 **说好的「人人都该试试」，怎么就变成「工程师专用」了**
