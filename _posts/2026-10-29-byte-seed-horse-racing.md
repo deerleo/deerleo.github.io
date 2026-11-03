@@ -8,6 +8,10 @@ podcast: /assets/audio/2026-10-29-byte-seed-horse-racing.mp3
 
 ![GPU 数据中心机房实景（资料图，xAI Colossus 集群，摄于 2024 年 10 月）](/assets/images/byte-seed-horse-racing/datacenter.jpg)
 
+<video data-vsrc="/assets/videos/2026-10-29-byte-seed-horse-racing-v.mp4" data-vposter="/assets/videos/2026-10-29-byte-seed-horse-racing-v-cover.jpg" controls preload="metadata" style="display:block;max-width:100%;width:720px;margin:0 auto;" poster="/assets/videos/2026-10-29-byte-seed-horse-racing-cover.jpg" src="/assets/videos/2026-10-29-byte-seed-horse-racing.mp4"></video>
+
+*懒得读字的话，视频版在这，两分半讲完。*
+
 老话说，家底越厚，越怕人偷。
 
 字节跳动大概是全中国买卡最狠的公司。几万张 GPU 堆在机房里，账面上是十亿百亿的资本开支。但 X 平台上最近围绕 Seed 团队的一轮爆料，画的却是另一幅图景：抢到卡的团队把算力捂在手里，闲置也不共享；团队之间信息不透明，甚至互相藏匿代码和数据。
