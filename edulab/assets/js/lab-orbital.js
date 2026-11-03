@@ -429,6 +429,90 @@ function makeShadowTexture() {
   return tex;
 }
 
+// 滚花法线贴图（直纹滚花：黄铜瓶盖 / 调节圈的防滑纹密度）
+function makeKnurlNormalTexture(cols = 48) {
+  const S = 256;
+  const cv = document.createElement('canvas');
+  cv.width = cv.height = S;
+  const ctx = cv.getContext('2d');
+  ctx.fillStyle = 'rgb(128,128,255)';
+  ctx.fillRect(0, 0, S, S);
+  for (let i = 0; i < cols; i++) {
+    const x = (i / cols) * S;
+    const g = ctx.createLinearGradient(x - 2, 0, x + 2, 0);
+    g.addColorStop(0, 'rgb(92,92,255)');
+    g.addColorStop(0.5, 'rgb(128,128,255)');
+    g.addColorStop(1, 'rgb(176,176,255)');
+    ctx.fillStyle = g;
+    ctx.fillRect(x - 2, 0, 4, S);
+  }
+  const tex = new THREE.CanvasTexture(cv);
+  tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+  return tex;
+}
+function matKnurl(color, metal = 0.4, cols = 64) {
+  const m = matStd(color, { roughness: 0.38, metalness: metal });
+  m.normalMap = makeKnurlNormalTexture(cols);
+  m.normalScale = new THREE.Vector2(1.3, 1.3);
+  return m;
+}
+
+// 弯月面高光贴图（液面斜置亮条）
+function makeGleamTexture() {
+  const cv = document.createElement('canvas');
+  cv.width = 128; cv.height = 64;
+  const ctx = cv.getContext('2d');
+  const g = ctx.createRadialGradient(40, 32, 2, 40, 32, 46);
+  g.addColorStop(0, 'rgba(255,255,250,0.85)');
+  g.addColorStop(0.5, 'rgba(255,255,250,0.25)');
+  g.addColorStop(1, 'rgba(255,255,250,0)');
+  ctx.save();
+  ctx.translate(64, 32);
+  ctx.scale(1.35, 0.42);
+  ctx.translate(-64, -32);
+  ctx.fillStyle = g;
+  ctx.fillRect(0, 0, 128, 64);
+  return new THREE.CanvasTexture(cv);
+}
+
+// 书页侧面条纹贴图（细横线 + 轻微波动，书芯页缘）
+function makePageTexture() {
+  const S = 128;
+  const cv = document.createElement('canvas');
+  cv.width = cv.height = S;
+  const ctx = cv.getContext('2d');
+  ctx.fillStyle = '#ece4cf';
+  ctx.fillRect(0, 0, S, S);
+  ctx.strokeStyle = 'rgba(122,106,80,0.5)';
+  ctx.lineWidth = 1;
+  for (let y = 4; y < S; y += 4) {
+    ctx.beginPath();
+    ctx.moveTo(0, y + Math.sin(y * 0.7) * 0.8);
+    ctx.lineTo(S, y + Math.cos(y * 0.5) * 0.6);
+    ctx.stroke();
+  }
+  const tex = new THREE.CanvasTexture(cv);
+  tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+  tex.repeat.set(1.6, 1);
+  return tex;
+}
+
+// 圆角矩形轮廓（挤出书壳 / 平板用）
+function roundedRectShape(w, d, r) {
+  const s = new THREE.Shape();
+  const x = -w / 2, y = -d / 2;
+  s.moveTo(x + r, y);
+  s.lineTo(x + w - r, y);
+  s.absarc(x + w - r, y + r, r, -Math.PI / 2, 0, false);
+  s.lineTo(x + w, y + d - r);
+  s.absarc(x + w - r, y + d - r, r, 0, Math.PI / 2, false);
+  s.lineTo(x + r, y + d);
+  s.absarc(x + r, y + d - r, r, Math.PI / 2, Math.PI, false);
+  s.lineTo(x, y + r);
+  s.absarc(x + r, y + r, r, Math.PI, Math.PI * 1.5, false);
+  return s;
+}
+
 // 展示转台刻度盘：暗色石面 + 同心刻度环 + 角度标注 + 径向标尺
 function makeDialTexture() {
   const S = 1024;
@@ -520,11 +604,16 @@ function buildEnv() {
   floor.position.z = FLOOR_Y - 0.17;
   g.add(floor);
 
-  // 展示转台：底盘 + 刻度盘面 + 黄铜圈 + 铭牌
+  // 展示转台：底盘（车削放样：底缘外扩 → 束腰 → 台肩 → 顶面内收唇口）+ 刻度盘面 + 黄铜圈 + 铭牌
   const podium = new THREE.Group();
-  const base = new THREE.Mesh(new THREE.CylinderGeometry(8.35, 8.95, 0.92, 72), matStd(0x141b22, { roughness: 0.44, metalness: 0.35 }));
+  const baseProf = [
+    [8.96, 0.02], [8.9, 0.0], [8.66, 0.05], [8.52, 0.3], [8.43, 0.58], [8.41, 0.8], [8.36, 0.92], [8.28, 0.99],
+  ].map(([r, y]) => new THREE.Vector2(r, y));
+  const baseCurve = new THREE.CatmullRomCurve3(baseProf.map((p) => new THREE.Vector3(p.x, p.y, 0)), false, 'catmullrom', 0.5);
+  const basePts = baseCurve.getPoints(30).map((p) => new THREE.Vector2(Math.max(0.05, p.x), Math.max(0, p.y)));
+  const base = new THREE.Mesh(new THREE.LatheGeometry(basePts, 72), matStd(0x141b22, { roughness: 0.44, metalness: 0.35 }));
   base.rotation.x = Math.PI / 2;
-  base.position.z = FLOOR_Y + 0.46;
+  base.position.z = FLOOR_Y;
   podium.add(base);
   const dialTex = makeDialTexture();
   const dial = new THREE.Mesh(new THREE.CylinderGeometry(8.2, 8.2, 0.2, 72), matStd(0x1a232b, { roughness: 0.72, metalness: 0.05 }));
@@ -556,27 +645,44 @@ function buildEnv() {
   podSh.position.set(0, 0, FLOOR_Y + 0.015);
   g.add(podSh);
 
-  // 道具：玻璃试剂瓶（瓶身 + 内液 + 黄铜盖 + 弧面标签）
+  // 道具：玻璃试剂瓶（LatheGeometry 放样瓶身 + 双层内液 + 液面高光片 + 弯月面亮条 + 滚花黄铜盖 + 弧面标签）
   const bottle = (x, z, name, sub, liquid, rotY) => {
     const bg = new THREE.Group();
-    const R = 0.42, H = 1.3;
-    const body = new THREE.Mesh(new THREE.CylinderGeometry(R, R * 1.06, H, 22), matCoat(0xdfeef2, { roughness: 0.1, transmission: 0.85, thickness: 0.5, ior: 1.5, opacity: 0.4, side: THREE.DoubleSide }));
-    body.position.y = H / 2;
+    // 瓶身旋转轮廓：底部内凹圆角 → 鼓腹 → 收肩 → 颈口外翻
+    const prof = [
+      [0.0, 0.07], [0.24, 0.055], [0.36, 0.1], [0.43, 0.32], [0.45, 0.6], [0.41, 0.9], [0.25, 1.1], [0.16, 1.2], [0.16, 1.33], [0.2, 1.39],
+    ].map(([r, y]) => new THREE.Vector2(r, y));
+    const body = new THREE.Mesh(new THREE.LatheGeometry(prof, 26), matCoat(0xdfeef2, { roughness: 0.1, transmission: 0.85, thickness: 0.5, ior: 1.5, opacity: 0.4, side: THREE.DoubleSide }));
     bg.add(body);
-    const neck = new THREE.Mesh(new THREE.CylinderGeometry(0.16, 0.23, 0.24, 16), body.material);
-    neck.position.y = H + 0.12;
-    bg.add(neck);
-    const cap = new THREE.Mesh(new THREE.CylinderGeometry(0.2, 0.2, 0.16, 16), matStd(PAL.brass, { metalness: 0.72, roughness: 0.34 }));
-    cap.position.y = H + 0.32;
+    // 内液：缓升段 + 主体双层圆柱 + 液面圆片（低于瓶肩、低 env 反射防漂白）
+    const liqMat = matStd(liquid, { roughness: 0.26, emissive: liquid, emissiveIntensity: 0.2 });
+    const liqLow = new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.23, 0.12, 20), liqMat);
+    liqLow.position.y = 0.16;
+    bg.add(liqLow);
+    const liqMain = new THREE.Mesh(new THREE.CylinderGeometry(0.36, 0.3, 0.42, 20), liqMat);
+    liqMain.position.y = 0.43;
+    bg.add(liqMain);
+    const surf = new THREE.Mesh(new THREE.CircleGeometry(0.36, 22), matCoat(liquid, { roughness: 0.14, clearcoat: 0.35, emissive: liquid, emissiveIntensity: 0.34, envMapIntensity: 0.55 }));
+    surf.rotation.x = -Math.PI / 2;
+    surf.position.y = 0.645;
+    bg.add(surf);
+    const gleam = new THREE.Mesh(new THREE.PlaneGeometry(0.34, 0.16), new THREE.MeshBasicMaterial({ map: makeGleamTexture(), transparent: true, depthWrite: false }));
+    gleam.rotation.x = -Math.PI / 2;
+    gleam.position.set(-0.06, 0.652, 0.12);
+    bg.add(gleam);
+    // 瓶盖：滚花黄铜 + 球冠顶
+    const cap = new THREE.Mesh(new THREE.CylinderGeometry(0.21, 0.21, 0.17, 18), matKnurl(PAL.brass, 0.72, 34));
+    cap.position.y = 1.46;
     bg.add(cap);
-    const liq = new THREE.Mesh(new THREE.CylinderGeometry(R * 0.84, R * 0.88, H * 0.52, 18), matStd(liquid, { roughness: 0.28, emissive: liquid, emissiveIntensity: 0.16 }));
-    liq.position.y = H * 0.3;
-    bg.add(liq);
+    const capTop = new THREE.Mesh(new THREE.SphereGeometry(0.21, 18, 8, 0, TAU, 0, Math.PI / 2), matStd(PAL.brass, { metalness: 0.72, roughness: 0.3 }));
+    capTop.position.y = 1.545;
+    bg.add(capTop);
+    // 弧面标签（贴合鼓腹曲率，开口朝相机侧）
     const label = new THREE.Mesh(
-      new THREE.CylinderGeometry(R + 0.015, R + 0.02, H * 0.44, 24, 1, true, Math.PI - 0.6, 1.2),
+      new THREE.CylinderGeometry(0.465, 0.47, 0.5, 24, 1, true, -0.6, 1.2),
       new THREE.MeshStandardMaterial({ map: makeLabelTexture([name, sub], { w: 288, h: 168, accent: '#20565e' }), roughness: 0.85 })
     );
-    label.position.y = H * 0.58;
+    label.position.y = 0.62;
     bg.add(label);
     bg.rotation.x = Math.PI / 2;        // 瓶身高度轴 y → 竖直 z
     const spinG = new THREE.Group();
@@ -590,23 +696,40 @@ function buildEnv() {
   bSh.position.set(11.6, -3.2, FLOOR_Y + 0.012);
   g.add(bSh);
 
-  // 道具：2p 轨道实体小模型（两瓣红蓝泪滴 + 黄铜杆 + 木座）
+  // 道具：2p 轨道实体小模型（LatheGeometry 放样泪滴双瓣 + 车削木座 + 黄铜杆弯钩抱箍 + 钢节点球）
   const mini = new THREE.Group();
-  const mBase = new THREE.Mesh(new THREE.CylinderGeometry(0.62, 0.7, 0.14, 28), new THREE.MeshStandardMaterial({ map: makeWoodTexture({ base: '#54391f', dark: '#3a2612', light: '#6b4c2c', streaks: 34, bands: 3, seed: 17 }), roughness: 0.55 }));
-  mBase.position.y = 0.07;
+  const mBaseProf = [
+    [0.03, 0.0], [0.52, 0.0], [0.64, 0.05], [0.7, 0.12], [0.7, 0.16], [0.6, 0.2], [0.36, 0.24], [0.03, 0.26],
+  ].map(([r, y]) => new THREE.Vector2(r, y));
+  const mBase = new THREE.Mesh(new THREE.LatheGeometry(mBaseProf, 28), new THREE.MeshStandardMaterial({ map: makeWoodTexture({ base: '#54391f', dark: '#3a2612', light: '#6b4c2c', streaks: 34, bands: 3, seed: 17 }), roughness: 0.55 }));
   mini.add(mBase);
-  const rod = new THREE.Mesh(new THREE.CylinderGeometry(0.032, 0.032, 0.94, 10), matStd(PAL.brass, { metalness: 0.8, roughness: 0.3 }));
-  rod.position.y = 0.6;
+  const rod = new THREE.Mesh(new THREE.CylinderGeometry(0.032, 0.032, 0.5, 10), matStd(PAL.brass, { metalness: 0.8, roughness: 0.3 }));
+  rod.position.y = 0.5;
   mini.add(rod);
-  const lobeMat = (hex) => matCoat(hex, { roughness: 0.3, metalness: 0.04, clearcoat: 1, clearcoatRoughness: 0.2 });
-  const lobeGeo = new THREE.SphereGeometry(0.3, 22, 16);
+  // 弯钩抱箍：黄铜细管沿 CatmullRom 弧线绕住节点球（像教具夹持件）
+  const hookCurve = new THREE.CatmullRomCurve3([
+    new THREE.Vector3(0, 0.72, 0),
+    new THREE.Vector3(0.0, 0.78, 0.02),
+    new THREE.Vector3(0.05, 0.83, 0.06),
+    new THREE.Vector3(0.12, 0.8, 0.05),
+  ], false, 'catmullrom', 0.5);
+  const hook = new THREE.Mesh(new THREE.TubeGeometry(hookCurve, 18, 0.02, 8), matStd(PAL.brass, { metalness: 0.8, roughness: 0.3 }));
+  mini.add(hook);
+  // 泪滴瓣：LatheGeometry 旋转轮廓（下端收尖接节点球 → 中段鼓 → 上端圆滑收口），上下两瓣镜像
+  const lobeProf = [];
+  for (let i = 0; i <= 20; i++) {
+    const t = i / 20;
+    const r = 0.3 * Math.sin(Math.PI * Math.pow(t, 0.82));
+    lobeProf.push(new THREE.Vector2(Math.max(0.004, r), t * 0.74));
+  }
+  const lobeMat = (hex) => matCoat(hex, { roughness: 0.28, metalness: 0.04, clearcoat: 1, clearcoatRoughness: 0.18 });
+  const lobeGeo = new THREE.LatheGeometry(lobeProf, 24);
+  const lobeGeoB = new THREE.LatheGeometry(lobeProf.map((p) => new THREE.Vector2(p.x, -p.y)).reverse(), 24);
   const lobeA = new THREE.Mesh(lobeGeo, lobeMat(ORB.pos));
-  lobeA.scale.set(0.72, 1.5, 0.72);
-  lobeA.position.set(0, 1.32, 0);
+  lobeA.position.y = 0.78;
   mini.add(lobeA);
-  const lobeB = new THREE.Mesh(lobeGeo, lobeMat(ORB.neg));
-  lobeB.scale.set(0.72, 1.5, 0.72);
-  lobeB.position.set(0, 0.18, 0);
+  const lobeB = new THREE.Mesh(lobeGeoB, lobeMat(ORB.neg));
+  lobeB.position.y = 0.76;
   mini.add(lobeB);
   const knot = new THREE.Mesh(new THREE.SphereGeometry(0.085, 12, 10), matStd(PAL.steel, { metalness: 0.6, roughness: 0.4 }));
   knot.position.y = 0.76;
@@ -623,17 +746,79 @@ function buildEnv() {
   mSh.position.set(13.1, 1.9, FLOOR_Y + 0.012);
   g.add(mSh);
 
-  // 道具：书堆 ×2（硬皮书脊 + 标签纹理）
+  // 道具：玻尔原子桌面模型（车削木座 + 黄铜立柱 + 三层倾斜轨道环 + 辐条铬钢电子球 + 磨砂发光核）
+  // ——呼应径向章「1s 的 D(r) 峰值恰在 r = a₀（玻尔半径）」的教学点
+  const bohr = new THREE.Group();
+  const bBaseProf = [
+    [0.03, 0.0], [0.58, 0.0], [0.72, 0.05], [0.8, 0.14], [0.8, 0.2], [0.68, 0.26], [0.4, 0.3], [0.12, 0.32],
+  ].map(([r, y]) => new THREE.Vector2(r, y));
+  const bBase = new THREE.Mesh(new THREE.LatheGeometry(bBaseProf, 28), new THREE.MeshStandardMaterial({ map: makeWoodTexture({ base: '#4e3520', dark: '#36240f', light: '#66492a', streaks: 30, bands: 3, seed: 41 }), roughness: 0.55 }));
+  bohr.add(bBase);
+  const column = new THREE.Mesh(new THREE.CylinderGeometry(0.045, 0.058, 0.86, 12), matStd(PAL.brass, { metalness: 0.8, roughness: 0.32 }));
+  column.position.y = 0.75;
+  bohr.add(column);
+  const stem = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.03, 0.18, 10), matStd(PAL.brass, { metalness: 0.8, roughness: 0.32 }));
+  stem.position.y = 1.24;
+  bohr.add(stem);
+  const nucleus = new THREE.Mesh(new THREE.SphereGeometry(0.17, 18, 14), matGlow(0xffd9a0, 0.9, { roughness: 0.5 }));
+  nucleus.position.y = 1.42;
+  bohr.add(nucleus);
+  const armature = new THREE.Group();
+  armature.position.y = 1.42;
+  bohr.add(armature);
+  // 三层轨道环：半径递增、各自倾角交错；每环一根辐条 + 一颗铬钢电子球
+  [[0.42, 0.5, 0.15], [0.64, -0.34, -0.55], [0.86, 0.2, 0.5]].forEach(([rr, ax, az]) => {
+    const rg = new THREE.Group();
+    const torus = new THREE.Mesh(new THREE.TorusGeometry(rr, 0.02, 8, 64), matStd(PAL.brass, { metalness: 0.82, roughness: 0.28 }));
+    rg.add(torus);
+    const spoke = new THREE.Mesh(new THREE.CylinderGeometry(0.015, 0.015, rr, 8), matStd(PAL.steel, { metalness: 0.7, roughness: 0.35 }));
+    spoke.rotation.z = Math.PI / 2;
+    spoke.position.x = rr / 2;
+    rg.add(spoke);
+    const eBall = new THREE.Mesh(new THREE.SphereGeometry(0.058, 14, 10), matStd(0xe6e9ee, { roughness: 0.18, metalness: 1 }));
+    eBall.position.x = rr;
+    rg.add(eBall);
+    rg.rotation.set(ax, 0, az);
+    armature.add(rg);
+  });
+  const bohrWrap = new THREE.Group();
+  bohrWrap.add(bohr);
+  bohrWrap.rotation.x = Math.PI / 2;    // 模型立轴 y → 竖直 z
+  const bohrSpin = new THREE.Group();
+  bohrSpin.add(bohrWrap);
+  bohrSpin.rotation.z = 0.38;
+  bohrSpin.position.set(-11.2, 3.6, FLOOR_Y);
+  g.add(bohrSpin);
+  const bohrSh = makeContactShadow(2.3, 2.3);
+  bohrSh.position.set(-11.2, 3.6, FLOOR_Y + 0.012);
+  g.add(bohrSh);
+
+  // 道具：书堆 ×2（圆角挤出硬皮壳 + 书芯页缘条纹 + 书脊标签纹理）
+  const pageTex = makePageTexture();
   const book = (x, z, w, h, d, col, lines, rotY) => {
     const bg = new THREE.Group();
-    const body = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), matCoat(col, { roughness: 0.5, clearcoat: 0.5, clearcoatRoughness: 0.3 }));
-    bg.add(body);
+    // 硬皮封面壳：圆角矩形挤出 + 倒角（居中：geo 平移 -h/2，同 Box 语义）
+    const coverGeo = new THREE.ExtrudeGeometry(roundedRectShape(w, d, 0.07), {
+      depth: h, bevelEnabled: true, bevelThickness: 0.014, bevelSize: 0.014, bevelSegments: 2, curveSegments: 8,
+    });
+    coverGeo.rotateX(-Math.PI / 2);
+    coverGeo.translate(0, -h / 2, 0);
+    const cover = new THREE.Mesh(coverGeo, matCoat(col, { roughness: 0.5, clearcoat: 0.5, clearcoatRoughness: 0.3 }));
+    bg.add(cover);
+    // 书芯：略小的圆角板贴页缘条纹（向书口侧微凸出）
+    const pageGeo = new THREE.ExtrudeGeometry(roundedRectShape(w * 0.9, d * 0.94, 0.05), { depth: h * 0.74, bevelEnabled: false, curveSegments: 8 });
+    pageGeo.rotateX(-Math.PI / 2);
+    pageGeo.translate(w * 0.035, -h * 0.37, 0);
+    const pageMat = matStd(0xf1ead6, { roughness: 0.85 });
+    pageMat.map = pageTex;
+    const pages = new THREE.Mesh(pageGeo, pageMat);
+    bg.add(pages);
     const spine = new THREE.Mesh(
       new THREE.PlaneGeometry(d * 0.82, h * 0.66),
       new THREE.MeshStandardMaterial({ map: makeLabelTexture(lines, { w: 240, h: 100, accent: '#e8d9b0', paper: '#25344a' }), roughness: 0.7 })
     );
     spine.rotation.y = -Math.PI / 2;
-    spine.position.set(-w / 2 - 0.005, 0, 0);
+    spine.position.set(-w / 2 - 0.008, 0, 0);
     bg.add(spine);
     bg.rotation.x = Math.PI / 2;        // 书高 y → 竖直 z（平躺）
     const wrap = new THREE.Group();
@@ -642,8 +827,8 @@ function buildEnv() {
     wrap.position.set(x, z, FLOOR_Y + h / 2);
     return wrap;
   };
-  g.add(book(-12.4, -1.6, 2.3, 0.42, 1.6, 0x25344a, ['量子力学', 'QUANTUM'], 0.24));
-  g.add(book(-12.2, -1.5, 2.1, 0.4, 1.5, 0x513a24, ['物质结构', 'STRUCTURE'], -0.18));
+  g.add(book(-12.4, -1.6, 2.3, 0.42, 1.6, 0x25344a, ['量子力学', 'QUANTUM'], Math.PI + 0.24));
+  g.add(book(-12.2, -1.5, 2.1, 0.4, 1.5, 0x513a24, ['物质结构', 'STRUCTURE'], Math.PI - 0.18));
   const bkSh = makeContactShadow(3.2, 2.2);
   bkSh.position.set(-12.3, -1.5, FLOOR_Y + 0.012);
   g.add(bkSh);
@@ -1535,7 +1720,17 @@ function selectElement(z, animate = true) {
   st.cfg.acc = 0;
   elBtns.forEach((b, i) => b.classList.toggle('on', i + 1 === z));
   confCard.querySelector('#orbConfElem').textContent = z + ' 号 · ' + CN36[z - 1] + ' ' + EL36[z - 1] + '（' + z + ' 个电子）';
-  confCard.querySelector('#orbSpecialTag').classList.toggle('hide', !(z === 24 || z === 29));
+  const tagEl = confCard.querySelector('#orbSpecialTag');
+  if (z === 24 || z === 29) {
+    // 原版特例块 1:1：3d 半充满（d⁵）或全充满（d¹⁰）时能量更低，从 4s 借来一个电子；括号里给出「按构造原理本应是」的排布
+    const real = z === 24 ? '3d⁵4s¹' : '3d¹⁰4s¹';
+    const rule = z === 24 ? '3d⁴4s²' : '3d⁹4s²';
+    tagEl.textContent = '特例：' + real + '，半满 / 全满更稳定（按构造原理本应是 ' + rule + '，从 4s 借来一个电子）';
+    tagEl.title = '3d 半充满（d⁵）或全充满（d¹⁰）时能量更低，于是从 4s 借来一个电子。';
+    tagEl.classList.remove('hide');
+  } else {
+    tagEl.classList.add('hide');
+  }
   confCard.querySelector('#orbConfFull').textContent = configFull(z);
   confCard.querySelector('#orbConfShort').textContent = configShort(z);
   drawConfBoxes();
@@ -2209,6 +2404,7 @@ const SECTIONS = [
         label: '↺ 重置',
         onClick: () => { st.edu.playing = false; paintPlayBtn(); st.edu.count = 0; drawEdu(); currentHud.set('fill', '0 / 36'); },
       });
+      syncChips();
     },
   },
   {
@@ -2251,6 +2447,7 @@ const SECTIONS = [
       ctl.el.appendChild(row);
       buildAxes(1);
       applyAxes();
+      syncChips();
     },
   },
   {

@@ -183,6 +183,7 @@ body.lab.orbital {
   font-size: 13px;
 }
 .orb-card.hide { display: none; }
+.orb-tag.hide { display: none; }
 .orb-card h3 { margin: 0 0 8px; font-size: 14.5px; }
 .orb-card h3 .orb-sub {
   font-weight: 500;
@@ -227,8 +228,12 @@ body.lab.orbital {
   color: #e59b3c;
   border: 1px solid #e59b3c;
   border-radius: 6px;
-  padding: 0 6px;
+  padding: 2px 8px;
   margin-left: 6px;
+  line-height: 1.55;
+  white-space: normal;
+  max-width: 100%;
+  vertical-align: middle;
 }
 .orb-principles { margin-top: 8px; font-size: 11.5px; line-height: 1.7; color: var(--text-dim); }
 .orb-principles b { color: var(--text); }
