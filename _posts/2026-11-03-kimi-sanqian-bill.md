@@ -8,6 +8,10 @@ status: draft
 
 ![Kimi 智能助手官方宣传物料（资料图）](/assets/images/2026-11-03-kimi-sanqian/01-kimi-app.jpg)
 
+<video controls preload="metadata" style="display:block;max-width:100%;width:720px;margin:0 auto;" poster="/assets/videos/2026-11-03-kimi-sanqian-bill-cover.jpg" src="/assets/videos/2026-11-03-kimi-sanqian-bill.mp4"></video>
+
+*视频版：两分钟讲清 Kimi 的强项为什么正是你的账单*
+
 10 月 26 日凌晨 4 点，Kimi 把一封道歉信置顶在评论区。这是它半年内第三次道歉。
 
 道歉信里有句话写得挺诚恳：「问题出在我们，我们也本应更早修复。」补的方案也不含糊：所有订阅会员，月度额度一次性恢复 25%。
