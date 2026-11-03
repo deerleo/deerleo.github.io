@@ -26,7 +26,7 @@
  *   - 图像就是数字：手写板书写 → 16×16=256 像素灰度体素场；分辨率 7/16/24 采样
  *     对比（低分辨率重采样后再识别）；预处理演示（框笔迹→缩放→重心居中四步动画）；
  *     随机样本 / 清空；有笔迹像素计数。
- *   - 一个神经元：体素场高度=试样本像素、颜色=权重（蓝正橙负）；顶部神经元球 +
+ *   - 一个神经元：体素场高度=试样本像素、颜色=权重（青正橙负）；顶部神经元球 +
  *     贡献光束；画笔直接在方块上画权重（正/负/擦除，再点画笔回旋转视角）；
  *     竖线探测器预设 / 清空权重 / 恢复原样；试一个 1 / 试一个 0；
  *     激活函数四选（阶跃 / Sigmoid / ReLU / tanh）；Σwx、偏置 b、输出 a 读数；
@@ -1438,8 +1438,8 @@ function buildNeuronScene(g) {
   NEU.brushRing = ring;
   g.add(ring);
 
-  const capL = label('权重画在方块上 · 蓝正橙负', '#e8c9b0', 0.0036);
-  capL.position.set(FIELD_X, 1.06, 1.42);
+  const capL = label('青绿＝正权重 · 橙＝负权重', '#e8c9b0', 0.0036);
+  capL.position.set(FIELD_X, 1.74, 1.3);
   g.add(capL);
   equipLabels.push(capL);
   resetNeuronWeights();
@@ -1759,19 +1759,18 @@ function showHiddenWeight(j) {
     NET.weightSprite.position.set(NET.hidPos[j].x + NET.HID_X, NET.hidPos[j].y + 0.34, 0.1);
     NET.weightSprite.visible = true;
   }
-  const hc = document.getElementById('hiddenWeight');
-  if (hc) {
-    const cv = hc.querySelector('canvas');
+  const cv = document.getElementById('hiddenWeight');
+  if (cv) {
     const ctx = cv.getContext('2d');
     ctx.clearRect(0, 0, cv.width, cv.height);
     const tex = weightMapTexture(net.W1.subarray(j * RES * RES, (j + 1) * RES * RES), cv.width);
     ctx.drawImage(tex.image, 0, 0);
     tex.dispose();
-    hc.closest('.data-block').style.display = '';
+    cv.closest('.data-block').style.display = '';
     const cap = document.getElementById('hiddenWeightCap');
     if (cap) cap.textContent = `隐藏层 · 第 ${j + 1} 个神经元的权重图`;
     const note = document.getElementById('hiddenWeightNote');
-    if (note) note.textContent = '蓝格的位置有笔画它会更兴奋，橙格的位置会抑制它——整张图就是它在找的笔画形状。';
+    if (note) note.textContent = '青色格对应加分笔画，橙色格对应扣分笔画——拼出来的这张图，就是它最想看到的样子。';
   }
   const gal = document.querySelectorAll('.wgallery canvas');
   gal.forEach((cv, i) => cv.classList.toggle('picked', i === j));
@@ -1927,7 +1926,7 @@ function buildMistakeScene(g) {
   MIST.arrow = arrowHead;
   g.add(arrowHead);
   const capL = label('旋转 · 平移 · 噪点 考垮它', '#f0c0a8', 0.0042);
-  capL.position.set(FIELD_X, 1.86, 0);
+  capL.position.set(FIELD_X - 0.55, 1.95, 0);
   g.add(capL);
   equipLabels.push(capL);
 }
@@ -2407,7 +2406,7 @@ app.dom.addEventListener('pointerup', (e) => {
   if (hitH) {
     showHiddenWeight(hitH.instanceId);
     if (classifyEls && classifyEls.hiddenBlock) classifyEls.hiddenBlock.style.display = '';
-    toast(`第 ${hitH.instanceId + 1} 个神经元的 256 个权重——这就是它在找的笔画。`);
+    toast(`第 ${hitH.instanceId + 1} 个神经元的 256 个权重——它盯的就是这种轮廓。`);
     taskHooks.onGallery?.();
     return;
   }
@@ -2614,11 +2613,11 @@ function drawCmpChart(cv, mlp, conv) {
 let preprocess = { on: false, t: 0, vec: null };
 function startPreprocess() {
   if (!state.canvasVec.some((v) => v > 0.2)) {
-    toast('先在手写板上写一个数字，再看预处理。', 'warn');
+    toast('画板上先来一笔，再谈预处理。', 'warn');
     return;
   }
   preprocess = { on: true, t: 0, vec: state.canvasVec.slice() };
-  toast('预处理：框出笔迹 → 缩放到 13×13 → 按重心放正中。');
+  toast('预处理流水线：圈出笔迹 → 缩到 13×13 → 按重心摆正。');
 }
 function tickPreprocess(dt) {
   if (!preprocess.on) return;
@@ -2695,11 +2694,11 @@ function tickPreprocess(dt) {
 /* ================= 章节定义 ================= */
 
 const CAM_DEFAULTS = {
-  pixels: [[0.5, 2.1, 4.2], [FIELD_X, 0.72, 0]],
+  pixels: [[-1.55, 2.55, 3.55], [FIELD_X, 0.42, 0]],
   neuron: [[1.7, 2.7, 6.3], [FIELD_X, 1.32, 0]],
-  network: [[0.3, 2.6, 9.7], [-0.65, 1.55, 0]],
-  train: [[0.3, 2.6, 9.7], [-0.65, 1.55, 0]],
-  conv: [[-0.15, 3.15, 9.8], [-0.25, 0.8, 0]],
+  network: [[0.95, 2.9, 11.6], [0.1, 1.72, 0]],
+  train: [[0.95, 2.9, 11.6], [0.1, 1.72, 0]],
+  conv: [[0.0, 2.95, 8.9], [-0.05, 0.8, 0]],
   mistake: [[0.55, 2.5, 4.8], [FIELD_X, 0.82, 0]],
 };
 function camTo(id) {
@@ -2711,9 +2710,9 @@ function camTo(id) {
 let pxPanel = null;
 const secPixels = {
   id: 'pixels', title: '图像就是数字',
-  html: `<p>计算机眼里的手写数字不是「形状」，而是一张<b>灰度值表格</b>。画板内容会被缩成 <b>16 × 16 = 256 个小格子</b>，每格一个 0~1 的数：0 是黑，1 是白。中间的体素场<b>越高就越亮</b>。</p>
-<p>所以在计算机眼里，你写的字只是 <b>256 个数</b>——后面所有的「识别」，都是对这 256 个数做加减乘除。</p>
-<p>动笔之前还有一步<b>预处理</b>：先框出笔迹，等比缩小，再按「重心」放到正中间——写得大小、位置不同也不要紧。点下方按钮看这四步动画。</p>
+  html: `<p>对计算机来说，你写的数字没有「形状」可言，只有一张<b>灰度表格</b>：画板笔迹会被压缩成 <b>16 × 16 = 256 个格子</b>，每格记一个 0 到 1 的数——0 是纯黑、1 是纯白，数越大格子立得越高、颜色越亮。</p>
+<p>换句话说，一张图进了网络就是 <b>256 个数</b>。后面讲的「识别」，翻来覆去都是在给这 256 个数做算术。</p>
+<p>真正喂给网络之前还有道<b>预处理</b>工序：把笔迹圈出来、等比压小，再按笔画「重心」摆到画面正中——写大一点、写偏一点也不碍事。点下面按钮看这四步怎么走。</p>
 <div class="fnote">样本说明：本页训练样本由程序按点阵字体加随机抖动生成，不依赖外部数据集。</div>`,
   enter() {
     useScene('pixels', (g) => { g.userData.built = true; });
@@ -2738,7 +2737,7 @@ function buildPixelsPanel() {
   const note = document.createElement('div');
   note.className = 'db-note';
   note.id = 'preprocessCap';
-  note.textContent = '点左侧「看一遍预处理」开始四步动画';
+  note.textContent = '点控件里的「看一遍预处理」按钮，四步动画马上开始';
   pre.el.appendChild(note);
   pre.el.style.display = 'none';
   lcData.appendChild(pre.el);
@@ -2804,9 +2803,9 @@ function pixelsCtl() {
 let neuronPanel = null;
 const secNeuron = {
   id: 'neuron', title: '一个神经元',
-  html: `<p>一个<b>神经元</b>只做一件事：把 256 个像素各乘上一个<b>权重</b>再全部加起来，加上<b>偏置</b> b 得到 z；再经过<b>激活函数</b>变成输出 a。<span class="hl">a = f(Σw·x + b)</span></p>
-<p>看体素场：<b>高度是试样本的像素</b>，<b>颜色是权重</b>——青绿是正权重（这里有笔画就加分），橙是负权重（有笔画就扣分）。亮束从像素连向神经元，越亮贡献越大。</p>
-<p>选中「画笔」后直接在场上的方块上<b>拖动画权重</b>（再点一次画笔回到旋转视角）。试着设计一个只认「1」的神经元：中间画一条青绿竖线，两侧补橙，再用「试一个 1」「试一个 0」检验。</p>`,
+  html: `<p><b>神经元</b>的活儿只有一件：给每个像素配一个<b>权重</b>，相乘后统统加起来，补上<b>偏置</b> b 得到 z，最后过一道<b>激活函数</b>输出 a。<span class="hl">a = f(Σw·x + b)</span></p>
+<p>对照场上的方块看：<b>高度是这次试样本的像素</b>，<b>颜色是权重</b>——青绿代表正权重（笔画落在这里是加分项），橙代表负权重（笔画落在这里反而扣分）。射向神经元的光束越亮，说明那个像素的话语权越大。</p>
+<p>点「画笔」之后，可以直接在方块上<b>拖出权重</b>（再点一次画笔退出）。挑战：设计一个只认「1」的神经元——中间涂一条青绿竖道，两旁补橙压住干扰，拿「试一个 1」「试一个 0」验货。</p>`,
   enter() {
     useScene('neuron', buildNeuronScene);
     camTo('neuron');
@@ -2917,9 +2916,9 @@ function neuronCtl() {
 /* —— 第 3 章 多层网络 —— */
 const secNetwork = {
   id: 'network', title: '多层网络',
-  html: `<p>把许多神经元<b>分层</b>串起来：输入层（256 个像素）→ 隐藏层（48 个神经元）→ 输出层（10 个数字各自的把握）。输出经 softmax 变成概率，最高的就是答案。</p>
-<p>信号从左往右逐层流过去。连线只画贡献最大的那些：<b>青绿是支持</b>，<b>橙是反对</b>。</p>
-<p><b>点隐藏层的任意一个方块</b>，它头顶会浮出它的 256 个权重拼成的图——那就是它在找的笔画形状。这些权重不是人设计的，是下一章训练时它自己学出来的。</p>`,
+  html: `<p>单个神经元太弱，就把它们<b>编队</b>：输入层收 256 个像素，隐藏层 48 个神经元各自汇总全图，输出层 10 个神经元各管一个数字。输出过 softmax 归一成概率，最大的那个就是答案。</p>
+<p>信号自左向右逐层推进。连线只保留贡献最大的几条：<b>青绿表示支持</b>，<b>橙表示反对</b>。</p>
+<p><b>点隐藏层的任何一个方块</b>，它头顶会展开一张由 256 个权重拼成的小图——那就是它最敏感的笔画轮廓。没人手工画过这些权重，它们全是下一章训练里自己长出来的。</p>`,
   enter() {
     useScene('network', buildNetworkScene);
     camTo('network');
@@ -2984,7 +2983,7 @@ function networkCtl() {
   UIREF.active = ctl.button({
     label: '看最活跃的神经元',
     onClick: () => {
-      if (!state.canvasVec.some((v) => v > 0.2)) { toast('先在手写板上写个数字。', 'warn'); return; }
+      if (!state.canvasVec.some((v) => v > 0.2)) { toast('画板还空着，先写个数字吧。', 'warn'); return; }
       const { h } = net.forward(state.canvasVec);
       let bj = 0;
       h.forEach((v, j) => { if (Math.abs(v) > Math.abs(h[bj])) bj = j; });
@@ -3007,9 +3006,9 @@ function networkCtl() {
 let trainPanel = null;
 const secTrain = {
   id: 'train', title: '现场训练',
-  html: `<p>这一次，把网络的权重<b>全部重置为随机数</b>：它什么也不会。点「开始训练」，它一张张地看 <b>3000 个带答案的手写样本</b>：先猜，再用<b>损失</b>衡量猜得多错，把每个权重朝「让损失变小」的方向挪一小步——这就是<b>梯度下降</b>。</p>
-<p>看第一层的 <b>48 张权重图</b>：一开始是雪花噪点，训练中慢慢长出笔画的形状。右边的曲线里，损失在下降，准确率在爬升。</p>
-<p><b>学习率</b>决定每步挪多远：太小学得慢，太大会在谷底两边来回跳，甚至越学越糟——试试把学习率拉满，看它发散（权重会自动退回上一次正常的状态）。训练暂停后，用手写板考考它。</p>
+  html: `<p>这回把网络的权重<b>全部打乱重开</b>：此刻它两眼一抹黑。点「开始训练」，程序会把 <b>3000 张带答案的手写样本</b>一张张喂进去：先让它猜，猜完用<b>损失</b>量一量错得有多离谱，再让每个权重朝压低损失的方向挪一小格——这套循环就是<b>梯度下降</b>。</p>
+<p>盯住第一层的 <b>48 张权重图</b>：起初全是雪花噪点，喂着喂着笔画轮廓就浮现出来。右侧曲线里，损失往下走、准确率往上爬。</p>
+<p><b>学习率</b>管的是每步挪多大：调太小磨蹭，调太大就在谷底两侧来回打摆、越学越差——把它拉满试试，看损失起飞（别慌，权重会自动回滚到最近一次正常快照）。练到满意就暂停，写个字考考它。</p>
 <div class="fnote">数据说明：训练样本由程序生成（每类 300 张 · 共 3000 张）；测试集是抖动更强的 120 张难例。</div>`,
   enter() {
     useScene('train', buildNetworkScene);
@@ -3049,7 +3048,7 @@ function buildTrainPanel() {
     cv.title = `第 ${j + 1} 个神经元`;
     cv.addEventListener('click', () => {
       showHiddenWeight(j);
-      toast(`第 ${j + 1} 个神经元的权重图——它在找这样的笔画。`);
+      toast(`第 ${j + 1} 个神经元的权重图——它瞄准的就是这种笔画。`);
       taskHooks.onGallery?.();
     });
     gal.appendChild(cv);
@@ -3060,14 +3059,14 @@ function buildTrainPanel() {
   refreshWeightGallery(gal);
   const note = document.createElement('div');
   note.className = 'db-note';
-  note.textContent = '训练中每轮刷新：噪点慢慢长出笔画。';
+  note.textContent = '每轮训练后刷新，看噪点如何一步步长成形。';
   gBlk.el.appendChild(note);
 }
 function refreshTrainHud() {
   if (!trainPanel) return;
   trainPanel.hud.set('epoch', String(state.epoch));
   trainPanel.hud.set('seen', String(state.seen));
-  trainPanel.hud.set('rate', state.speed + ' 张/帧');
+  trainPanel.hud.set('rate', state.speed + ' 张/帧' + (state.pulsesPerSec ? ` · ${state.pulsesPerSec} 张/秒` : ''));
   trainPanel.hud.set('params', String(net.paramCount));
   drawTrainChart(trainPanel.chart.cv);
 }
@@ -3102,7 +3101,7 @@ function tickTrain(dt) {
         } else {
           state.plateau++;
           if (last > state.bestLoss * 2.2 + 0.35 && net.restore()) {
-            toast(`发散了！学习率太大，损失越来越大——权重已退回上一次正常的状态。把学习率调小再继续。`, 'warn');
+            toast(`学习率爆表，损失一路起飞了！已把权重回滚到最近一次正常快照。调小学习率再战。`, 'warn');
             taskHooks.onDiverge?.();
             state.plateau = 0;
           }
@@ -3110,11 +3109,11 @@ function tickTrain(dt) {
       }
       /* 自动停止三条件 */
       if (state.epoch >= 30 && state.training) {
-        stopTraining(`已经训练了 ${state.epoch} 轮，自动停止。在手写板上写个数字考考它。`);
+        stopTraining(`练满 ${state.epoch} 轮，先到这。现在去手写板写个字，验收一下成果。`);
       } else if (state.plateau >= 6 && state.training) {
-        stopTraining('准确率已经不再提高，自动停止。在手写板上写个数字考考它。');
+        stopTraining('准确率卡住不动了，自动收工。去手写板写个字，看看它现在的水平。');
       } else if (state.accTrainHist.length && state.accTrainHist[state.accTrainHist.length - 1] >= 0.97 && state.training) {
-        stopTraining(`训练准确率达到 ${Math.round(state.accTrainHist[state.accTrainHist.length - 1] * 100)}%，自动停止。在手写板上写个数字考考它。`);
+        stopTraining(`训练准确率冲到 ${Math.round(state.accTrainHist[state.accTrainHist.length - 1] * 100)}%，达标收工。去手写板写个字让它露一手。`);
       }
       if (trainPanel?.hud) {
         trainPanel.hud.set('tr', Math.round(tr * 100) + '%');
@@ -3147,6 +3146,7 @@ function tickTrain(dt) {
   if (state._ppsT > 1) {
     state.pulsesPerSec = Math.round(state._ppsN / state._ppsT);
     state._ppsT = 0; state._ppsN = 0;
+    if (trainPanel?.hud) trainPanel.hud.set('rate', `${state.speed} 张/帧 · ${state.pulsesPerSec} 张/秒`);
   }
 }
 function stopTraining(msg) {
@@ -3219,9 +3219,9 @@ function trainCtl() {
 let convPanel = null;
 const secConv = {
   id: 'conv', title: '卷积网络',
-  html: `<p>普通网络把 256 个像素<b>摊平</b>，数字挪一下位置就不认识了。<b>卷积</b>换个思路：用一个 <b>5 × 5 的小窗口（卷积核）</b>在图上逐格滑动，每到一处都问「这里有没有我要找的笔画」，结果排成一张<b>特征图</b>。</p>
-<p>第一层有 <b>6 个卷积核</b>，找竖边、横边、斜线这样的简单笔画；<b>池化</b>把每 2 × 2 取最大值，图变小但特征保留；第二层 <b>12 个组合核</b>（每个 6 片）把简单笔画组合成拐角、圆弧。</p>
-<p>看中间的扫描动画，再<b>点右栏任意一张特征图</b>看它的卷积核。全图共享同一组核，参数量骤减，数字写在哪儿都能被检测到。</p>`,
+  html: `<p>普通网络把 256 个像素<b>拉直</b>了看，数字一挪窝它就抓瞎。<b>卷积</b>的思路不同：拿一个 <b>5 × 5 的小窗（卷积核）</b>在图上一格一格平移，每停一处就问一句「这块有没有我认的笔画」，把答案铺开就是一张<b>特征图</b>。</p>
+<p>第一层放了 <b>6 个卷积核</b>，分管竖边、横边、斜线这些基础笔画；<b>池化</b>按 2 × 2 只留最强响应，图缩成一半、笔画信息还在；第二层 <b>12 个组合核</b>（每个 6 片）负责把基础笔画拼成拐角、圆弧。</p>
+<p>中栏的扫描窗正在干活；<b>点右栏任何一张特征图</b>，能翻出它背后的卷积核。全套核全图共用，参数量比普通网络少一大截，笔写在纸面哪个角落都逃不掉。</p>`,
   enter() {
     useScene('conv', buildConvScene);
     camTo('conv');
@@ -3309,7 +3309,7 @@ function buildConvPanel() {
   p6.el.appendChild(poolGrid);
   const poolNote = document.createElement('div');
   poolNote.className = 'db-note';
-  poolNote.textContent = '图缩小一半，但「这附近有没有这种笔画」保留了下来——这也是它对平移更宽容的原因。';
+  poolNote.textContent = '尺寸砍半，「这一带有没有目标笔画」照样记得——它对平移宽容的底气就来自这里。';
   p6.el.appendChild(poolNote);
   lcData.appendChild(p6.el);
   /* 卷积 2（12 张组合核输出，可点看 6 片） */
@@ -3328,7 +3328,7 @@ function buildConvPanel() {
   f12.el.appendChild(grid12);
   const l2note = document.createElement('div');
   l2note.className = 'db-note';
-  l2note.textContent = '第二层每个核有 6 片，分别作用在池化后的 6 张图上再相加——它找的是拐角、圆弧这类组合笔画。';
+  l2note.textContent = '第二层的每个核由 6 片组成，各自扫一张池化图再求和——拐角、圆弧这类组合笔画就是它们的目标。';
   f12.el.appendChild(l2note);
   lcData.appendChild(f12.el);
   convPanel.l2note = l2note;
@@ -3434,7 +3434,7 @@ function showKernelView(i, isL2, l2Idx = 0) {
   };
   if (!isL2) {
     drawK(K5[i].k, 5, W / 2 - 66, 8, 132, K5[i].name);
-    if (note) note.textContent = '这个 5×5 窗口在整张图上滑动：笔画和它的青绿部分越吻合，特征图上对应的格子就越亮。窗口里的数字就是权重。';
+    if (note) note.textContent = '5×5 的小窗逐格平移：笔画与青绿区域对得越齐，响应图上那一格就越亮。窗里的数字就是这枚核的权重。';
   } else {
     const K = K2SET[l2Idx];
     K.slices.forEach((sl, s) => {
@@ -3485,9 +3485,9 @@ function convCtl() {
 let mistakePanel = null;
 const secMistake = {
   id: 'mistake', title: 'AI 也会犯错',
-  html: `<p>训练好的网络只认识「它见过的样子」。把数字<b>旋转</b>、<b>挪到角落</b>、撒<b>噪点</b>——人眼轻松识别，它的把握却剧烈摇摆甚至认错。多层网络对位置尤其敏感；下面那组<b>卷积思路</b>的对照（池化特征模板匹配）稳得多，但也不是不会错。</p>
-<p>点「看它认错的数字」，翻翻<b>更难测试集</b>里它真的认错的例子——有些连人也要犹豫。再在手写板上画一个笑脸或字母：它只认识 0 到 9，没有「我不知道」这个选项，照样会自信地报出一个数字。</p>
-<p>所以 AI 的判断要看<b>训练数据</b>是否全面，重要的事情还需要人来把关。</p>`,
+  html: `<p>网络认的其实是「训练里见过的样子」。把数字<b>转个角度</b>、<b>推到边上</b>、撒一把<b>噪点</b>——人看一眼就懂，它的把握却会剧烈晃动甚至翻车。位置一变，多层网络最吃不消；下方那路<b>卷积思路</b>对照（池化特征模板匹配）抗造得多，可照样有翻车的时候。</p>
+<p>点「看它认错的数字」，翻翻<b>加难测试集</b>里它栽过的跟头——有几张连人都要眯眼猜。再在画板上画个笑脸或字母逗逗它：它的词表里只有 0 到 9，压根不会说「不会」，多半照样一本正经地报个数出来。</p>
+<p>所以 AI 靠不靠谱，先看<b>训练数据</b>铺得够不够广；要紧的事，最后还得由人来掌舵。</p>`,
   enter() {
     useScene('mistake', buildMistakeScene);
     camTo('mistake');
@@ -3583,7 +3583,7 @@ function renderError() {
   const ctx = cv.getContext('2d');
   ctx.clearRect(0, 0, 96, 96);
   ctx.drawImage(vecToCanvas(e.vec, 96), 0, 0);
-  txt.innerHTML = `第 ${idx + 1} / ${errs.length} 个错例：正确答案是 <b>${e.truth}</b>，它认成了 <b class="wrong">${e.pred}</b>（把握 ${Math.round(e.conf * 100)}%）。`;
+  txt.innerHTML = `难例 ${idx + 1}/${errs.length}：真身是 <b>${e.truth}</b>，它偏说成 <b class="wrong">${e.pred}</b>（把握 ${Math.round(e.conf * 100)}%）。`;
   no.textContent = `${idx + 1}/${errs.length}`;
 }
 function mistakeCtl() {
@@ -3616,10 +3616,20 @@ function mistakeCtl() {
       taskHooks.onCorner?.();
     },
   });
-  ctl.slider({
+  UIREF.noiseSlider = ctl.slider({
     label: '噪点', min: 0, max: 0.6, step: 0.02, value: state.robust.noise,
     fmt: (v) => Math.round(v * 100) + '%',
     onInput: (v) => { state.robust.noise = v; updateRobust(); },
+  });
+  ctl.sep();
+  ctl.button({
+    label: '恢复原样',
+    onClick: () => {
+      state.robust.rot = 0; state.robust.shift = 0; state.robust.noise = 0;
+      UIREF.rotSlider?.set(0); UIREF.shiftSlider?.set(0); UIREF.noiseSlider?.set(0);
+      updateRobust();
+      toast('旋转、平移、噪点已全部归零。');
+    },
   });
   ctl.sep();
   UIREF.newSample = ctl.button({ label: '换一个样本', onClick: () => { robustUseBoard(false); updateRobust(); } });
@@ -3635,36 +3645,36 @@ function mistakeCtl() {
 const SECTIONS = [secPixels, secNeuron, secNetwork, secTrain, secConv, secMistake];
 const TASKS = {
   pixels: [
-    ['write', '在<span class="tk-link" data-act="sample">手写板</span>上写一个数字'],
-    ['pre', '看一遍<span class="tk-link" data-act="pre">预处理</span>的过程'],
-    ['lowres', '把<span class="tk-link" data-act="lowres">分辨率降到 7×7</span>，看还认不认得出'],
+    ['write', '去<span class="tk-link" data-act="sample">手写板</span>随手写个数字'],
+    ['pre', '看一遍<span class="tk-link" data-act="pre">预处理</span>是怎么走的'],
+    ['lowres', '分辨率砍到 <span class="tk-link" data-act="lowres">7×7</span>，看它还认不认得'],
   ],
   neuron: [
-    ['paint', '<span class="tk-link" data-act="brushhint">用画笔</span>在方块上画权重'],
+    ['paint', '<span class="tk-link" data-act="brushhint">用画笔</span>在方块上涂出权重'],
     ['t1', '试一个 <span class="tk-link" data-act="t1">1</span>'],
     ['t0', '试一个 <span class="tk-link" data-act="t0">0</span>'],
-    ['goal', '让它被「1」点亮，同时不被「0」点亮'],
+    ['goal', '「1」能让它亮、「0」又压不灭它'],
   ],
   network: [
     ['pulse', '写一个数字，看<span class="tk-link" data-act="pulse">信号传播</span>'],
-    ['weight', '<span class="tk-link" data-act="pick">点一个隐藏层神经元</span>，看它在找什么'],
-    ['active', '看<span class="tk-link" data-act="active">最活跃的神经元</span>'],
+    ['weight', '<span class="tk-link" data-act="pick">点一个隐藏层神经元</span>，看它的敏感形状'],
+    ['active', '看<span class="tk-link" data-act="active">最活跃的神经元</span>是哪一个'],
   ],
   train: [
     ['reset', '<span class="tk-link" data-act="resetw">重置为随机权重</span>'],
     ['start', '开始训练，让测试准确率超过 <span class="tk-link" data-act="watch">90%</span>'],
-    ['lr', '<span class="tk-link" data-act="lrmax">试试学习率太大会怎样</span>'],
+    ['lr', '<span class="tk-link" data-act="lrmax">故意调大学习率</span>，看会出什么事'],
   ],
   conv: [
-    ['scan', '看一遍<span class="tk-link" data-act="scan">扫描动画</span>'],
-    ['maps', '写一个数字，看哪些特征图亮了'],
-    ['kernel', '点一张特征图，看它的<span class="tk-link" data-act="kernel">卷积核</span>'],
+    ['scan', '把<span class="tk-link" data-act="scan">扫描动画</span>完整看一遍'],
+    ['maps', '写个数字，看哪几张特征图被点亮'],
+    ['kernel', '<span class="tk-link" data-act="kernel">点一张特征图</span>，翻出背后的卷积核'],
   ],
   mistake: [
-    ['rotate', '把数字<span class="tk-link" data-act="rot">旋转到认错</span>'],
-    ['corner', '把数字<span class="tk-link" data-act="corner">挪到角落</span>'],
-    ['errors', '看它<span class="tk-link" data-act="errors">认错的数字</span>'],
-    ['smiley', '画一个<span class="tk-link" data-act="smiley">笑脸</span>考考它'],
+    ['rotate', '把数字<span class="tk-link" data-act="rot">转歪</span>到它认错为止'],
+    ['corner', '把数字<span class="tk-link" data-act="corner">推到角落</span>，对比两路网络'],
+    ['errors', '翻翻它<span class="tk-link" data-act="errors">认错的数字</span>都有谁'],
+    ['smiley', '画个<span class="tk-link" data-act="smiley">笑脸</span>去考它一考'],
   ],
 };
 const CTL_BUILDERS = {
@@ -3898,11 +3908,17 @@ const boardFoldBtn = document.getElementById('boardFoldBtn');
 const boardBadge = document.getElementById('boardBadge');
 const boardExpandBtn = document.getElementById('boardExpand');
 let boardFolded = false;
-try { boardFolded = localStorage.getItem('neuro.foldBoard') === '1'; } catch (e) { /* 忽略 */ }
+try {
+  const savedBoard = localStorage.getItem('neuro.foldBoard');
+  boardFolded = savedBoard !== null ? savedBoard === '1' : window.innerWidth <= 1100; /* 小屏首访清爽态：浮窗默认折 */
+} catch (e) {
+  boardFolded = window.innerWidth <= 1100; /* localStorage 不可用时按视口给默认 */
+}
 function applyBoardFold() {
   boardPanel.classList.toggle('folded', boardFolded);
   boardFoldBtn.setAttribute('aria-expanded', String(!boardFolded));
 }
+applyBoardFold();
 boardFoldBtn.addEventListener('click', () => {
   boardFolded = true;
   try { localStorage.setItem('neuro.foldBoard', '1'); } catch (e) { /* 忽略 */ }
@@ -4008,17 +4024,17 @@ function runTour() {
     },
     {
       target: '.lab-stage3d', cap: '第 2 站 / 共 4 站', h: '中间是 3D 神经展台',
-      p: '输入场、神经元、网络机架都在这里。拖动旋转、滚轮缩放；左上角有重做、视角和课堂大屏。',
+      p: '输入场、神经元、网络机架都摆在这里。拖动转视角、滚轮缩放；左上角一排是重做、视角与课堂大屏。',
       pos: { left: '50%', top: '80px', transform: 'translateX(-50%)' },
     },
     {
       target: '.neuro-board', cap: '第 3 站 / 共 4 站', h: '在这块手写板上写字',
-      p: '按住鼠标或手指写 0 到 9，网络会一边看一边认。写错点「清空」，也可以点「随机样本」。',
+      p: '手指按住就能写，0 到 9 都行，网络盯着画板实时给答案。画砸了点「清空」重来，「随机样本」换个程序生成的笔迹。',
       pos: { right: '284px', top: '190px' },
     },
     {
       target: '.lab-detail', cap: '第 4 站 / 共 4 站', h: '讲解、控件与读数在右边',
-      p: '每章都有小任务，完成一项自动打勾；蓝色文字是快捷操作，点一下就能看到效果。数据读数也在这里。',
+      p: '每章配一份小任务清单，做到了会自动打勾；蓝色字是捷径，一点直达。读数面板也在这边。',
       pos: { right: '368px', top: '120px' },
     },
   ];

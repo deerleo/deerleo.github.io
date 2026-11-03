@@ -10,7 +10,7 @@ layout: null
   {% include theme-init.html %}
   <link rel="stylesheet" href="{{ '/assets/css/theme.css' | relative_url }}?v=20261027">
   <script src="{{ '/assets/js/theme.js' | relative_url }}" defer></script>
-  <meta name="description" content="18 本行业 AI 实务书：面向职教、基教、财务、传媒、医疗、机关、检验检测、宠物、银发、茶饮连锁等行业从业者的操作手册。从真实政企培训项目中长出来，照着做就能用。">
+  <meta name="description" content="68 本行业 AI 实务书：面向职教、基教、财务、传媒、医疗、机关、检验检测、宠物、银发、茶饮连锁等行业从业者的操作手册。从真实政企培训项目中长出来，照着做就能用。">
   <meta name="robots" content="index,follow">
   <title>行业 AI 书系 · 迷鹿 MiLu</title>
   <style>
@@ -48,6 +48,16 @@ layout: null
     .book-card h2{font-size:22px}
     .book-card p{font-size:13.5px;color:var(--muted)}
     @media (max-width:680px){.book-card{grid-template-columns:72px 1fr;gap:14px;padding:16px}.book-thumb{width:72px}.book-card h2{font-size:18px}}
+
+    .booklist{display:grid;gap:14px;grid-template-columns:1fr}
+    .book-card{grid-template-columns:108px 1fr;gap:24px;padding:20px;align-items:start}
+    .book-thumb{width:108px;aspect-ratio:1457/2048;border-radius:4px;overflow:hidden;background:none;box-shadow:0 10px 22px rgba(0,0,0,.34);padding:0;display:block}
+    .book-thumb::before{display:none}
+    .book-thumb img{width:100%;height:100%;object-fit:cover;display:block}
+    .book-body{justify-content:center;gap:7px}
+    .book-card h2{font-size:22px}
+    .book-card p{font-size:13.5px;color:var(--muted)}
+    @media (max-width:680px){.book-card{grid-template-columns:72px 1fr;gap:14px;padding:16px}.book-thumb{width:72px}.book-card h2{font-size:18px}}
   </style>
   <link rel="stylesheet" href="{{ '/assets/css/subpage-shell.css?v=20261027' | relative_url }}">
 </head>
@@ -57,23 +67,23 @@ layout: null
     <header class="hero">
       <p class="eyebrow">Books · 行业 AI 书系</p>
       <h1>写给千行百业的<br><em>AI 实务书。</em></h1>
-      <p>18 本书，18 个行业：职业教育、基础教育、财务、传媒、基层医疗、党政机关、检验检测、家居家装、人力资源、语言服务、电竞、潮玩、宠物、睡眠健康、银发经济、汽车后市场、健康体检、茶饮连锁。全部从真实的政企培训项目里长出来——不讲概念，讲你明天上班就能照着做的操作。每本配导读、动手练习与思考题，可作自学手册，也可作单位培训教材。</p>
-      <div class="stats"><span>18 本 · 215 章</span><span>作者：摩豆智能 卢章</span><span>陆续出版 · 出版接洽中</span></div>
+      <p>68 本书，覆盖 60 多个行业：教育、财务、传媒、医疗、党政机关、农业农村、制造、能源、金融、法律、文旅、体育、宠物、殡葬、潮玩、电竞、餐饮、茶饮……从办公室到田间地头，从车间到门店。全部从真实的政企培训项目里长出来——不讲概念，讲你明天上班就能照着做的操作。每本配导读、动手练习与思考题，可作自学手册，也可作单位培训教材。</p>
+      <div class="stats"><span>68 本 · 822 章</span><span>作者：摩豆智能 卢章</span><span>陆续出版 · 出版接洽中</span></div>
     </header>
 
-        <section class="booklist" aria-label="书籍列表">
+            <section class="booklist" aria-label="书籍列表">
       <a class="book-card" href="{{ '/books/ai-teaching-primary/' | relative_url }}">
-        <span class="book-thumb"><img src="/assets/images/books/cover-ai-teaching-primary.jpg" alt="《AI怎么教-中小学教师人工智能教学指南》封面" loading="lazy"></span>
+        <span class="book-thumb"><img src="/assets/images/books/cover-ai-teaching-primary.jpg" alt="《AI 怎么教：中小学教师人工智能教学指南》封面" loading="lazy"></span>
         <div class="book-body">
           <div class="book-top"><span>01 · 基础教育</span><span class="level">教师实务</span></div>
           <h2>AI 怎么教</h2>
           <p>中小学教师人工智能教学指南</p>
-          <div class="book-foot"><span class="book-meta">12 章 · 摩豆智能 卢章 著</span><span class="go">看这本书 ↗</span></div>
+          <div class="book-foot"><span class="book-meta">13 章 · 摩豆智能 卢章 著</span><span class="go">看这本书 ↗</span></div>
         </div>
       </a>
 
       <a class="book-card" href="{{ '/books/ai-finance-practice/' | relative_url }}">
-        <span class="book-thumb"><img src="/assets/images/books/cover-ai-finance-practice.jpg" alt="《AI财务实战-大模型时代财务人的做账报税与分析手册》封面" loading="lazy"></span>
+        <span class="book-thumb"><img src="/assets/images/books/cover-ai-finance-practice.jpg" alt="《AI 财务实战：大模型时代财务人的做账、报税与分析手册》封面" loading="lazy"></span>
         <div class="book-body">
           <div class="book-top"><span>02 · 财务会计</span><span class="level">岗位实务</span></div>
           <h2>AI 财务实战</h2>
@@ -83,17 +93,17 @@ layout: null
       </a>
 
       <a class="book-card" href="{{ '/books/ai-grassroots-health/' | relative_url }}">
-        <span class="book-thumb"><img src="/assets/images/books/cover-ai-grassroots-health.jpg" alt="《基层医疗卫生人员的AI实务》封面" loading="lazy"></span>
+        <span class="book-thumb"><img src="/assets/images/books/cover-ai-grassroots-health.jpg" alt="《基层医疗卫生人员的 AI 实务》封面" loading="lazy"></span>
         <div class="book-body">
           <div class="book-top"><span>03 · 基层医疗</span><span class="level">岗位实务</span></div>
           <h2>基层医疗卫生人员的 AI 实务</h2>
-          <p></p>
+          <p>基层医疗卫生人员的 AI 实务</p>
           <div class="book-foot"><span class="book-meta">12 章 · 摩豆智能 卢章 著</span><span class="go">看这本书 ↗</span></div>
         </div>
       </a>
 
       <a class="book-card" href="{{ '/books/ai-newsroom/' | relative_url }}">
-        <span class="book-thumb"><img src="/assets/images/books/cover-ai-newsroom.jpg" alt="《AI采编实务-新闻传媒出版的AIGC工作流》封面" loading="lazy"></span>
+        <span class="book-thumb"><img src="/assets/images/books/cover-ai-newsroom.jpg" alt="《AI 采编实务：新闻传媒出版的 AIGC 工作流》封面" loading="lazy"></span>
         <div class="book-body">
           <div class="book-top"><span>04 · 新闻传媒</span><span class="level">采编实务</span></div>
           <h2>AI 采编实务</h2>
@@ -103,12 +113,12 @@ layout: null
       </a>
 
       <a class="book-card" href="{{ '/books/ai-vocational-teaching/' | relative_url }}">
-        <span class="book-thumb"><img src="/assets/images/books/cover-ai-vocational-teaching.jpg" alt="《职业院校教师的AI课-从备课实训到科研的全场景实战》封面" loading="lazy"></span>
+        <span class="book-thumb"><img src="/assets/images/books/cover-ai-vocational-teaching.jpg" alt="《职业院校教师的 AI 课：从备课、实训到科研的全场景实战》封面" loading="lazy"></span>
         <div class="book-body">
           <div class="book-top"><span>05 · 职业教育</span><span class="level">教师实务</span></div>
           <h2>职业院校教师的 AI 课</h2>
           <p>从备课、实训到科研的全场景实战</p>
-          <div class="book-foot"><span class="book-meta">12 章 · 摩豆智能 卢章 著</span><span class="go">看这本书 ↗</span></div>
+          <div class="book-foot"><span class="book-meta">14 章 · 摩豆智能 卢章 著</span><span class="go">看这本书 ↗</span></div>
         </div>
       </a>
 
@@ -238,6 +248,506 @@ layout: null
           <div class="book-top"><span>18 · 茶饮咖啡</span><span class="level">连锁经营</span></div>
           <h2>AI 门店经营</h2>
           <p>茶饮咖啡连锁的智能化转型手册</p>
+          <div class="book-foot"><span class="book-meta">12 章 · 摩豆智能 卢章 著</span><span class="go">看这本书 ↗</span></div>
+        </div>
+      </a>
+
+      <a class="book-card" href="{{ '/books/ai-county-rural/' | relative_url }}">
+        <span class="book-thumb"><img src="/assets/images/books/cover-ai-county-rural.jpg" alt="《县域 AI 实务：乡村干部与新农人上手手册》封面" loading="lazy"></span>
+        <div class="book-body">
+          <div class="book-top"><span>19 · 行业实务</span><span class="level">岗位实务</span></div>
+          <h2>县域 AI 实务</h2>
+          <p>乡村干部与新农人上手手册</p>
+          <div class="book-foot"><span class="book-meta">12 章 · 摩豆智能 卢章 著</span><span class="go">看这本书 ↗</span></div>
+        </div>
+      </a>
+
+      <a class="book-card" href="{{ '/books/ai-cadre-training/' | relative_url }}">
+        <span class="book-thumb"><img src="/assets/images/books/cover-ai-cadre-training.jpg" alt="《干部 AI 素养：读得懂、用得上、守得住》封面" loading="lazy"></span>
+        <div class="book-body">
+          <div class="book-top"><span>20 · 行业实务</span><span class="level">岗位实务</span></div>
+          <h2>干部 AI 素养</h2>
+          <p>读得懂、用得上、守得住</p>
+          <div class="book-foot"><span class="book-meta">12 章 · 摩豆智能 卢章 著</span><span class="go">看这本书 ↗</span></div>
+        </div>
+      </a>
+
+      <a class="book-card" href="{{ '/books/ai-elderly-care/' | relative_url }}">
+        <span class="book-thumb"><img src="/assets/images/books/cover-ai-elderly-care.jpg" alt="《AI 养老实务：机构运营与照护提效》封面" loading="lazy"></span>
+        <div class="book-body">
+          <div class="book-top"><span>21 · 行业实务</span><span class="level">岗位实务</span></div>
+          <h2>AI 养老实务</h2>
+          <p>机构运营与照护提效</p>
+          <div class="book-foot"><span class="book-meta">12 章 · 摩豆智能 卢章 著</span><span class="go">看这本书 ↗</span></div>
+        </div>
+      </a>
+
+      <a class="book-card" href="{{ '/books/ai-agriculture/' | relative_url }}">
+        <span class="book-thumb"><img src="/assets/images/books/cover-ai-agriculture.jpg" alt="《AI 进田头：农技员和新农人的智能工具书》封面" loading="lazy"></span>
+        <div class="book-body">
+          <div class="book-top"><span>22 · 行业实务</span><span class="level">岗位实务</span></div>
+          <h2>AI 进田头</h2>
+          <p>农技员和新农人的智能工具书</p>
+          <div class="book-foot"><span class="book-meta">12 章 · 摩豆智能 卢章 著</span><span class="go">看这本书 ↗</span></div>
+        </div>
+      </a>
+
+      <a class="book-card" href="{{ '/books/ai-factory/' | relative_url }}">
+        <span class="book-thumb"><img src="/assets/images/books/cover-ai-factory.jpg" alt="《AI 进车间：制造业工程师的智能工具箱》封面" loading="lazy"></span>
+        <div class="book-body">
+          <div class="book-top"><span>23 · 行业实务</span><span class="level">岗位实务</span></div>
+          <h2>AI 进车间</h2>
+          <p>制造业工程师的智能工具箱</p>
+          <div class="book-foot"><span class="book-meta">12 章 · 摩豆智能 卢章 著</span><span class="go">看这本书 ↗</span></div>
+        </div>
+      </a>
+
+      <a class="book-card" href="{{ '/books/ai-government-hall/' | relative_url }}">
+        <span class="book-thumb"><img src="/assets/images/books/cover-ai-government-hall.jpg" alt="《政务大厅 AI 实务：窗口与服务智能化》封面" loading="lazy"></span>
+        <div class="book-body">
+          <div class="book-top"><span>24 · 行业实务</span><span class="level">岗位实务</span></div>
+          <h2>政务大厅 AI 实务</h2>
+          <p>窗口与服务智能化</p>
+          <div class="book-foot"><span class="book-meta">12 章 · 摩豆智能 卢章 著</span><span class="go">看这本书 ↗</span></div>
+        </div>
+      </a>
+
+      <a class="book-card" href="{{ '/books/ai-construction-cost/' | relative_url }}">
+        <span class="book-thumb"><img src="/assets/images/books/cover-ai-construction-cost.jpg" alt="《AI 造价与工程管理实务》封面" loading="lazy"></span>
+        <div class="book-body">
+          <div class="book-top"><span>25 · 行业实务</span><span class="level">岗位实务</span></div>
+          <h2>AI 造价与工程管理实务</h2>
+          <p>AI 造价与工程管理实务</p>
+          <div class="book-foot"><span class="book-meta">12 章 · 摩豆智能 卢章 著</span><span class="go">看这本书 ↗</span></div>
+        </div>
+      </a>
+
+      <a class="book-card" href="{{ '/books/ai-property/' | relative_url }}">
+        <span class="book-thumb"><img src="/assets/images/books/cover-ai-property.jpg" alt="《AI 物业实务：从案场到社区运营》封面" loading="lazy"></span>
+        <div class="book-body">
+          <div class="book-top"><span>26 · 行业实务</span><span class="level">岗位实务</span></div>
+          <h2>AI 物业实务</h2>
+          <p>从案场到社区运营</p>
+          <div class="book-foot"><span class="book-meta">12 章 · 摩豆智能 卢章 著</span><span class="go">看这本书 ↗</span></div>
+        </div>
+      </a>
+
+      <a class="book-card" href="{{ '/books/ai-culture-tourism/' | relative_url }}">
+        <span class="book-thumb"><img src="/assets/images/books/cover-ai-culture-tourism.jpg" alt="《AI 文旅实务：从景区到工作室的新工具》封面" loading="lazy"></span>
+        <div class="book-body">
+          <div class="book-top"><span>27 · 行业实务</span><span class="level">岗位实务</span></div>
+          <h2>AI 文旅实务</h2>
+          <p>从景区到工作室的新工具</p>
+          <div class="book-foot"><span class="book-meta">12 章 · 摩豆智能 卢章 著</span><span class="go">看这本书 ↗</span></div>
+        </div>
+      </a>
+
+      <a class="book-card" href="{{ '/books/ai-law/' | relative_url }}">
+        <span class="book-thumb"><img src="/assets/images/books/cover-ai-law.jpg" alt="《AI 法律实务：律师与法务的智能工作法》封面" loading="lazy"></span>
+        <div class="book-body">
+          <div class="book-top"><span>28 · 行业实务</span><span class="level">岗位实务</span></div>
+          <h2>AI 法律实务</h2>
+          <p>律师与法务的智能工作法</p>
+          <div class="book-foot"><span class="book-meta">12 章 · 摩豆智能 卢章 著</span><span class="go">看这本书 ↗</span></div>
+        </div>
+      </a>
+
+      <a class="book-card" href="{{ '/books/ai-esg-carbon/' | relative_url }}">
+        <span class="book-thumb"><img src="/assets/images/books/cover-ai-esg-carbon.jpg" alt="《AI+双碳：碳核算、碳报告与 ESG 的一线 AI 工作流》封面" loading="lazy"></span>
+        <div class="book-body">
+          <div class="book-top"><span>29 · 行业实务</span><span class="level">岗位实务</span></div>
+          <h2>AI+双碳</h2>
+          <p>碳核算、碳报告与 ESG 的一线 AI 工作流</p>
+          <div class="book-foot"><span class="book-meta">12 章 · 摩豆智能 卢章 著</span><span class="go">看这本书 ↗</span></div>
+        </div>
+      </a>
+
+      <a class="book-card" href="{{ '/books/ai-safety-production/' | relative_url }}">
+        <span class="book-thumb"><img src="/assets/images/books/cover-ai-safety-production.jpg" alt="《AI+安全生产：从隐患识别到执法检查的大模型实操》封面" loading="lazy"></span>
+        <div class="book-body">
+          <div class="book-top"><span>30 · 行业实务</span><span class="level">岗位实务</span></div>
+          <h2>AI+安全生产</h2>
+          <p>从隐患识别到执法检查的大模型实操</p>
+          <div class="book-foot"><span class="book-meta">12 章 · 摩豆智能 卢章 著</span><span class="go">看这本书 ↗</span></div>
+        </div>
+      </a>
+
+      <a class="book-card" href="{{ '/books/ai-firefighting/' | relative_url }}">
+        <span class="book-thumb"><img src="/assets/images/books/cover-ai-firefighting.jpg" alt="《AI+消防实操：从防火巡查到智慧消防的一线工作流》封面" loading="lazy"></span>
+        <div class="book-body">
+          <div class="book-top"><span>31 · 行业实务</span><span class="level">岗位实务</span></div>
+          <h2>AI+消防实操</h2>
+          <p>从防火巡查到智慧消防的一线工作流</p>
+          <div class="book-foot"><span class="book-meta">13 章 · 摩豆智能 卢章 著</span><span class="go">看这本书 ↗</span></div>
+        </div>
+      </a>
+
+      <a class="book-card" href="{{ '/books/ai-surveying/' | relative_url }}">
+        <span class="book-thumb"><img src="/assets/images/books/cover-ai-surveying.jpg" alt="《AI+测绘地理信息实操：从遥感解译到实景三维的智能生产工作流》封面" loading="lazy"></span>
+        <div class="book-body">
+          <div class="book-top"><span>32 · 行业实务</span><span class="level">岗位实务</span></div>
+          <h2>AI+测绘地理信息实操</h2>
+          <p>从遥感解译到实景三维的智能生产工作流</p>
+          <div class="book-foot"><span class="book-meta">11 章 · 摩豆智能 卢章 著</span><span class="go">看这本书 ↗</span></div>
+        </div>
+      </a>
+
+      <a class="book-card" href="{{ '/books/ai-patent/' | relative_url }}">
+        <span class="book-thumb"><img src="/assets/images/books/cover-ai-patent.jpg" alt="《AI+专利实务：专利代理师与 IP 人的大模型工作流》封面" loading="lazy"></span>
+        <div class="book-body">
+          <div class="book-top"><span>33 · 行业实务</span><span class="level">岗位实务</span></div>
+          <h2>AI+专利实务</h2>
+          <p>专利代理师与 IP 人的大模型工作流</p>
+          <div class="book-foot"><span class="book-meta">13 章 · 摩豆智能 卢章 著</span><span class="go">看这本书 ↗</span></div>
+        </div>
+      </a>
+
+      <a class="book-card" href="{{ '/books/ai-consulting/' | relative_url }}">
+        <span class="book-thumb"><img src="/assets/images/books/cover-ai-consulting.jpg" alt="《AI 工作流：市场研究与咨询交付实战》封面" loading="lazy"></span>
+        <div class="book-body">
+          <div class="book-top"><span>34 · 行业实务</span><span class="level">岗位实务</span></div>
+          <h2>AI 工作流</h2>
+          <p>市场研究与咨询交付实战</p>
+          <div class="book-foot"><span class="book-meta">12 章 · 摩豆智能 卢章 著</span><span class="go">看这本书 ↗</span></div>
+        </div>
+      </a>
+
+      <a class="book-card" href="{{ '/books/ai-water-environment/' | relative_url }}">
+        <span class="book-thumb"><img src="/assets/images/books/cover-ai-water-environment.jpg" alt="《AI+水务环保运营：从智能监测到安全生产的实操手册》封面" loading="lazy"></span>
+        <div class="book-body">
+          <div class="book-top"><span>35 · 行业实务</span><span class="level">岗位实务</span></div>
+          <h2>AI+水务环保运营</h2>
+          <p>从智能监测到安全生产的实操手册</p>
+          <div class="book-foot"><span class="book-meta">12 章 · 摩豆智能 卢章 著</span><span class="go">看这本书 ↗</span></div>
+        </div>
+      </a>
+
+      <a class="book-card" href="{{ '/books/ai-film-production/' | relative_url }}">
+        <span class="book-thumb"><img src="/assets/images/books/cover-ai-film-production.jpg" alt="《AI+影视：从剧本到成片的大模型工作流》封面" loading="lazy"></span>
+        <div class="book-body">
+          <div class="book-top"><span>36 · 行业实务</span><span class="level">岗位实务</span></div>
+          <h2>AI+影视</h2>
+          <p>从剧本到成片的大模型工作流</p>
+          <div class="book-foot"><span class="book-meta">12 章 · 摩豆智能 卢章 著</span><span class="go">看这本书 ↗</span></div>
+        </div>
+      </a>
+
+      <a class="book-card" href="{{ '/books/ai-museum-archive/' | relative_url }}">
+        <span class="book-thumb"><img src="/assets/images/books/cover-ai-museum-archive.jpg" alt="《AI+文博：博物馆与档案馆的智能工作流》封面" loading="lazy"></span>
+        <div class="book-body">
+          <div class="book-top"><span>37 · 行业实务</span><span class="level">岗位实务</span></div>
+          <h2>AI+文博</h2>
+          <p>博物馆与档案馆的智能工作流</p>
+          <div class="book-foot"><span class="book-meta">12 章 · 摩豆智能 卢章 著</span><span class="go">看这本书 ↗</span></div>
+        </div>
+      </a>
+
+      <a class="book-card" href="{{ '/books/ai-theatre/' | relative_url }}">
+        <span class="book-thumb"><img src="/assets/images/books/cover-ai-theatre.jpg" alt="《AI+演艺：院团与剧院的智能化运营实操》封面" loading="lazy"></span>
+        <div class="book-body">
+          <div class="book-top"><span>38 · 行业实务</span><span class="level">岗位实务</span></div>
+          <h2>AI+演艺</h2>
+          <p>院团与剧院的智能化运营实操</p>
+          <div class="book-foot"><span class="book-meta">12 章 · 摩豆智能 卢章 著</span><span class="go">看这本书 ↗</span></div>
+        </div>
+      </a>
+
+      <a class="book-card" href="{{ '/books/ai-sports/' | relative_url }}">
+        <span class="book-thumb"><img src="/assets/images/books/cover-ai-sports.jpg" alt="《AI+体育：从智慧场馆到全民健身一线的智能实操》封面" loading="lazy"></span>
+        <div class="book-body">
+          <div class="book-top"><span>39 · 行业实务</span><span class="level">岗位实务</span></div>
+          <h2>AI+体育</h2>
+          <p>从智慧场馆到全民健身一线的智能实操</p>
+          <div class="book-foot"><span class="book-meta">12 章 · 摩豆智能 卢章 著</span><span class="go">看这本书 ↗</span></div>
+        </div>
+      </a>
+
+      <a class="book-card" href="{{ '/books/ai-webfiction/' | relative_url }}">
+        <span class="book-thumb"><img src="/assets/images/books/cover-ai-webfiction.jpg" alt="《网文 OPC 实战：从小说连载到 AI 漫剧的一人公司经营手册》封面" loading="lazy"></span>
+        <div class="book-body">
+          <div class="book-top"><span>40 · 行业实务</span><span class="level">岗位实务</span></div>
+          <h2>网文 OPC 实战</h2>
+          <p>从小说连载到 AI 漫剧的一人公司经营手册</p>
+          <div class="book-foot"><span class="book-meta">12 章 · 摩豆智能 卢章 著</span><span class="go">看这本书 ↗</span></div>
+        </div>
+      </a>
+
+      <a class="book-card" href="{{ '/books/ai-advertising/' | relative_url }}">
+        <span class="book-thumb"><img src="/assets/images/books/cover-ai-advertising.jpg" alt="《AI 广告合规与投放实操：从生成式广告到智能投放的从业者手册》封面" loading="lazy"></span>
+        <div class="book-body">
+          <div class="book-top"><span>41 · 行业实务</span><span class="level">岗位实务</span></div>
+          <h2>AI 广告合规与投放实操</h2>
+          <p>从生成式广告到智能投放的从业者手册</p>
+          <div class="book-foot"><span class="book-meta">13 章 · 摩豆智能 卢章 著</span><span class="go">看这本书 ↗</span></div>
+        </div>
+      </a>
+
+      <a class="book-card" href="{{ '/books/ai-exhibition/' | relative_url }}">
+        <span class="book-thumb"><img src="/assets/images/books/cover-ai-exhibition.jpg" alt="《AI 会展：从招商邀约到智慧场馆的大模型实操》封面" loading="lazy"></span>
+        <div class="book-body">
+          <div class="book-top"><span>42 · 行业实务</span><span class="level">岗位实务</span></div>
+          <h2>AI 会展</h2>
+          <p>从招商邀约到智慧场馆的大模型实操</p>
+          <div class="book-foot"><span class="book-meta">12 章 · 摩豆智能 卢章 著</span><span class="go">看这本书 ↗</span></div>
+        </div>
+      </a>
+
+      <a class="book-card" href="{{ '/books/ai-fitness/' | relative_url }}">
+        <span class="book-thumb"><img src="/assets/images/books/cover-ai-fitness.jpg" alt="《AI 健身教练手册：训练计划、获客与门店运营的大模型实操》封面" loading="lazy"></span>
+        <div class="book-body">
+          <div class="book-top"><span>43 · 行业实务</span><span class="level">岗位实务</span></div>
+          <h2>AI 健身教练手册</h2>
+          <p>训练计划、获客与门店运营的大模型实操</p>
+          <div class="book-foot"><span class="book-meta">12 章 · 摩豆智能 卢章 著</span><span class="go">看这本书 ↗</span></div>
+        </div>
+      </a>
+
+      <a class="book-card" href="{{ '/books/ai-study-travel/' | relative_url }}">
+        <span class="book-thumb"><img src="/assets/images/books/cover-ai-study-travel.jpg" alt="《AI+研学:研学机构的智能课程设计与运营实操》封面" loading="lazy"></span>
+        <div class="book-body">
+          <div class="book-top"><span>44 · 行业实务</span><span class="level">岗位实务</span></div>
+          <h2>AI+研学</h2>
+          <p>研学机构的智能课程设计与运营实操</p>
+          <div class="book-foot"><span class="book-meta">12 章 · 摩豆智能 卢章 著</span><span class="go">看这本书 ↗</span></div>
+        </div>
+      </a>
+
+      <a class="book-card" href="{{ '/books/ai-exam-training/' | relative_url }}">
+        <span class="book-thumb"><img src="/assets/images/books/cover-ai-exam-training.jpg" alt="《AI+考试培训：智能命题、题库与教研降本实操》封面" loading="lazy"></span>
+        <div class="book-body">
+          <div class="book-top"><span>45 · 行业实务</span><span class="level">岗位实务</span></div>
+          <h2>AI+考试培训</h2>
+          <p>智能命题、题库与教研降本实操</p>
+          <div class="book-foot"><span class="book-meta">13 章 · 摩豆智能 卢章 著</span><span class="go">看这本书 ↗</span></div>
+        </div>
+      </a>
+
+      <a class="book-card" href="{{ '/books/ai-education-quality/' | relative_url }}">
+        <span class="book-thumb"><img src="/assets/images/books/cover-ai-education-quality.jpg" alt="《AI 时代的素质教育机构：合规进校、教研与获客实操》封面" loading="lazy"></span>
+        <div class="book-body">
+          <div class="book-top"><span>46 · 行业实务</span><span class="level">岗位实务</span></div>
+          <h2>AI 时代的素质教育机构</h2>
+          <p>合规进校、教研与获客实操</p>
+          <div class="book-foot"><span class="book-meta">12 章 · 摩豆智能 卢章 著</span><span class="go">看这本书 ↗</span></div>
+        </div>
+      </a>
+
+      <a class="book-card" href="{{ '/books/ai-optometry/' | relative_url }}">
+        <span class="book-thumb"><img src="/assets/images/books/cover-ai-optometry.jpg" alt="《AI 视光门店经营手册：从智能验配到会员增长》封面" loading="lazy"></span>
+        <div class="book-body">
+          <div class="book-top"><span>47 · 行业实务</span><span class="level">岗位实务</span></div>
+          <h2>AI 视光门店经营手册</h2>
+          <p>从智能验配到会员增长</p>
+          <div class="book-foot"><span class="book-meta">12 章 · 摩豆智能 卢章 著</span><span class="go">看这本书 ↗</span></div>
+        </div>
+      </a>
+
+      <a class="book-card" href="{{ '/books/ai-maternal/' | relative_url }}">
+        <span class="book-thumb"><img src="/assets/images/books/cover-ai-maternal.jpg" alt="《AI 母婴服务经营手册：月子中心、母婴店与托育机构的智能运营》封面" loading="lazy"></span>
+        <div class="book-body">
+          <div class="book-top"><span>48 · 行业实务</span><span class="level">岗位实务</span></div>
+          <h2>AI 母婴服务经营手册</h2>
+          <p>月子中心、母婴店与托育机构的智能运营</p>
+          <div class="book-foot"><span class="book-meta">12 章 · 摩豆智能 卢章 著</span><span class="go">看这本书 ↗</span></div>
+        </div>
+      </a>
+
+      <a class="book-card" href="{{ '/books/ai-funeral/' | relative_url }}">
+        <span class="book-thumb"><img src="/assets/images/books/cover-ai-funeral.jpg" alt="《AI+殡葬服务实务：从纪念视频到智慧监管的一线手册》封面" loading="lazy"></span>
+        <div class="book-body">
+          <div class="book-top"><span>49 · 行业实务</span><span class="level">岗位实务</span></div>
+          <h2>AI+殡葬服务实务</h2>
+          <p>从纪念视频到智慧监管的一线手册</p>
+          <div class="book-foot"><span class="book-meta">12 章 · 摩豆智能 卢章 著</span><span class="go">看这本书 ↗</span></div>
+        </div>
+      </a>
+
+      <a class="book-card" href="{{ '/books/ai-restaurant-hotel/' | relative_url }}">
+        <span class="book-thumb"><img src="/assets/images/books/cover-ai-restaurant-hotel.jpg" alt="《AI+餐饮：从智慧门店到大模型经营实操》封面" loading="lazy"></span>
+        <div class="book-body">
+          <div class="book-top"><span>50 · 行业实务</span><span class="level">岗位实务</span></div>
+          <h2>AI+餐饮</h2>
+          <p>从智慧门店到大模型经营实操</p>
+          <div class="book-foot"><span class="book-meta">12 章 · 摩豆智能 卢章 著</span><span class="go">看这本书 ↗</span></div>
+        </div>
+      </a>
+
+      <a class="book-card" href="{{ '/books/ai-housekeeping/' | relative_url }}">
+        <span class="book-thumb"><img src="/assets/images/books/cover-ai-housekeeping.jpg" alt="《AI+家政：家政企业与培训学校的智能化实操手册》封面" loading="lazy"></span>
+        <div class="book-body">
+          <div class="book-top"><span>51 · 行业实务</span><span class="level">岗位实务</span></div>
+          <h2>AI+家政</h2>
+          <p>家政企业与培训学校的智能化实操手册</p>
+          <div class="book-foot"><span class="book-meta">12 章 · 摩豆智能 卢章 著</span><span class="go">看这本书 ↗</span></div>
+        </div>
+      </a>
+
+      <a class="book-card" href="{{ '/books/ai-beauty/' | relative_url }}">
+        <span class="book-thumb"><img src="/assets/images/books/cover-ai-beauty.jpg" alt="《AI+美业：美容美发门店的智能获客与经营管理实操》封面" loading="lazy"></span>
+        <div class="book-body">
+          <div class="book-top"><span>52 · 行业实务</span><span class="level">岗位实务</span></div>
+          <h2>AI+美业</h2>
+          <p>美容美发美业门店的智能获客与经营管理实操</p>
+          <div class="book-foot"><span class="book-meta">12 章 · 摩豆智能 卢章 著</span><span class="go">看这本书 ↗</span></div>
+        </div>
+      </a>
+
+      <a class="book-card" href="{{ '/books/ai-wedding-photo/' | relative_url }}">
+        <span class="book-thumb"><img src="/assets/images/books/cover-ai-wedding-photo.jpg" alt="《AI 婚庆影楼：从方案出图到获客的全流程实操》封面" loading="lazy"></span>
+        <div class="book-body">
+          <div class="book-top"><span>53 · 行业实务</span><span class="level">岗位实务</span></div>
+          <h2>AI 婚庆影楼</h2>
+          <p>从方案出图到获客的全流程实操</p>
+          <div class="book-foot"><span class="book-meta">12 章 · 摩豆智能 卢章 著</span><span class="go">看这本书 ↗</span></div>
+        </div>
+      </a>
+
+      <a class="book-card" href="{{ '/books/ai-retail/' | relative_url }}">
+        <span class="book-thumb"><img src="/assets/images/books/cover-ai-retail.jpg" alt="《AI 开店：零售门店的智能经营实操手册》封面" loading="lazy"></span>
+        <div class="book-body">
+          <div class="book-top"><span>54 · 行业实务</span><span class="level">岗位实务</span></div>
+          <h2>AI 开店</h2>
+          <p>零售门店的智能经营实操手册</p>
+          <div class="book-foot"><span class="book-meta">12 章 · 摩豆智能 卢章 著</span><span class="go">看这本书 ↗</span></div>
+        </div>
+      </a>
+
+      <a class="book-card" href="{{ '/books/ai-consumer-medical/' | relative_url }}">
+        <span class="book-thumb"><img src="/assets/images/books/cover-ai-consumer-medical.jpg" alt="《合规获客：医美口腔机构的 AI 增长与风控手册》封面" loading="lazy"></span>
+        <div class="book-body">
+          <div class="book-top"><span>55 · 行业实务</span><span class="level">岗位实务</span></div>
+          <h2>合规获客</h2>
+          <p>医美口腔机构的 AI 增长与风控手册</p>
+          <div class="book-foot"><span class="book-meta">12 章 · 摩豆智能 卢章 著</span><span class="go">看这本书 ↗</span></div>
+        </div>
+      </a>
+
+      <a class="book-card" href="{{ '/books/ai-mental-health/' | relative_url }}">
+        <span class="book-thumb"><img src="/assets/images/books/cover-ai-mental-health.jpg" alt="《AI 时代的心理咨询实务：从智能筛查到人机协同的从业者手册》封面" loading="lazy"></span>
+        <div class="book-body">
+          <div class="book-top"><span>56 · 行业实务</span><span class="level">岗位实务</span></div>
+          <h2>AI 时代的心理咨询实务</h2>
+          <p>从智能筛查到人机协同的从业者手册</p>
+          <div class="book-foot"><span class="book-meta">12 章 · 摩豆智能 卢章 著</span><span class="go">看这本书 ↗</span></div>
+        </div>
+      </a>
+
+      <a class="book-card" href="{{ '/books/ai-tcm/' | relative_url }}">
+        <span class="book-thumb"><img src="/assets/images/books/cover-ai-tcm.jpg" alt="《AI+中医：大模型时代的中医药临床与管理实操》封面" loading="lazy"></span>
+        <div class="book-body">
+          <div class="book-top"><span>57 · 行业实务</span><span class="level">岗位实务</span></div>
+          <h2>AI+中医</h2>
+          <p>大模型时代的中医药临床与管理实操</p>
+          <div class="book-foot"><span class="book-meta">12 章 · 摩豆智能 卢章 著</span><span class="go">看这本书 ↗</span></div>
+        </div>
+      </a>
+
+      <a class="book-card" href="{{ '/books/ai-camping/' | relative_url }}">
+        <span class="book-thumb"><img src="/assets/images/books/cover-ai-camping.jpg" alt="《智慧营地：露营与户外经济的一线 AI 运营手册》封面" loading="lazy"></span>
+        <div class="book-body">
+          <div class="book-top"><span>58 · 行业实务</span><span class="level">岗位实务</span></div>
+          <h2>智慧营地</h2>
+          <p>露营与户外经济的一线 AI 运营手册</p>
+          <div class="book-foot"><span class="book-meta">12 章 · 摩豆智能 卢章 著</span><span class="go">看这本书 ↗</span></div>
+        </div>
+      </a>
+
+      <a class="book-card" href="{{ '/books/ai-script-entertainment/' | relative_url }}">
+        <span class="book-thumb"><img src="/assets/images/books/cover-ai-script-entertainment.jpg" alt="《AI 时代的剧本娱乐门店：内容自审、获客与降本实操》封面" loading="lazy"></span>
+        <div class="book-body">
+          <div class="book-top"><span>59 · 行业实务</span><span class="level">岗位实务</span></div>
+          <h2>AI 时代的剧本娱乐门店</h2>
+          <p>内容自审、获客与降本实操</p>
+          <div class="book-foot"><span class="book-meta">12 章 · 摩豆智能 卢章 著</span><span class="go">看这本书 ↗</span></div>
+        </div>
+      </a>
+
+      <a class="book-card" href="{{ '/books/ai-social-work/' | relative_url }}">
+        <span class="book-thumb"><img src="/assets/images/books/cover-ai-social-work.jpg" alt="《AI 社工：大模型时代的社区治理一线实操》封面" loading="lazy"></span>
+        <div class="book-body">
+          <div class="book-top"><span>60 · 行业实务</span><span class="level">岗位实务</span></div>
+          <h2>AI 社工</h2>
+          <p>大模型时代的社区治理一线实操</p>
+          <div class="book-foot"><span class="book-meta">12 章 · 摩豆智能 卢章 著</span><span class="go">看这本书 ↗</span></div>
+        </div>
+      </a>
+
+      <a class="book-card" href="{{ '/books/ai-security-service/' | relative_url }}">
+        <span class="book-thumb"><img src="/assets/images/books/cover-ai-security-service.jpg" alt="《人机协同安保：从保安员到机器人操作员的转型手册》封面" loading="lazy"></span>
+        <div class="book-body">
+          <div class="book-top"><span>61 · 行业实务</span><span class="level">岗位实务</span></div>
+          <h2>人机协同安保</h2>
+          <p>从保安员到机器人操作员的转型手册</p>
+          <div class="book-foot"><span class="book-meta">12 章 · 摩豆智能 卢章 著</span><span class="go">看这本书 ↗</span></div>
+        </div>
+      </a>
+
+      <a class="book-card" href="{{ '/books/ai-secondhand/' | relative_url }}">
+        <span class="book-thumb"><img src="/assets/images/books/cover-ai-secondhand.jpg" alt="《AI 二手生意：从智能估价到循环门店的实操手册》封面" loading="lazy"></span>
+        <div class="book-body">
+          <div class="book-top"><span>62 · 行业实务</span><span class="level">岗位实务</span></div>
+          <h2>AI 二手生意</h2>
+          <p>从智能估价到循环门店的实操手册</p>
+          <div class="book-foot"><span class="book-meta">12 章 · 摩豆智能 卢章 著</span><span class="go">看这本书 ↗</span></div>
+        </div>
+      </a>
+
+      <a class="book-card" href="{{ '/books/ai-auction/' | relative_url }}">
+        <span class="book-thumb"><img src="/assets/images/books/cover-ai-auction.jpg" alt="《AI 拍卖实务：从智能鉴定到直播拍卖的从业者手册》封面" loading="lazy"></span>
+        <div class="book-body">
+          <div class="book-top"><span>63 · 行业实务</span><span class="level">岗位实务</span></div>
+          <h2>AI 拍卖实务</h2>
+          <p>从智能鉴定到直播拍卖的从业者手册</p>
+          <div class="book-foot"><span class="book-meta">12 章 · 摩豆智能 卢章 著</span><span class="go">看这本书 ↗</span></div>
+        </div>
+      </a>
+
+      <a class="book-card" href="{{ '/books/ai-fashion-textile/' | relative_url }}">
+        <span class="book-thumb"><img src="/assets/images/books/cover-ai-fashion-textile.jpg" alt="《AI 服装生意：从 AI 模特到柔性快反的产业带实操》封面" loading="lazy"></span>
+        <div class="book-body">
+          <div class="book-top"><span>64 · 行业实务</span><span class="level">岗位实务</span></div>
+          <h2>AI 服装生意</h2>
+          <p>从 AI 模特到柔性快反的产业带实操</p>
+          <div class="book-foot"><span class="book-meta">12 章 · 摩豆智能 卢章 著</span><span class="go">看这本书 ↗</span></div>
+        </div>
+      </a>
+
+      <a class="book-card" href="{{ '/books/ai-logistics/' | relative_url }}">
+        <span class="book-thumb"><img src="/assets/images/books/cover-ai-logistics.jpg" alt="《物流 AI 实务：仓配运一体提效》封面" loading="lazy"></span>
+        <div class="book-body">
+          <div class="book-top"><span>65 · 行业实务</span><span class="level">岗位实务</span></div>
+          <h2>物流 AI 实务</h2>
+          <p>仓配运一体提效</p>
+          <div class="book-foot"><span class="book-meta">12 章 · 摩豆智能 卢章 著</span><span class="go">看这本书 ↗</span></div>
+        </div>
+      </a>
+
+      <a class="book-card" href="{{ '/books/ai-ecommerce/' | relative_url }}">
+        <span class="book-thumb"><img src="/assets/images/books/cover-ai-ecommerce.jpg" alt="《AI 电商运营：内容、直播与客服提效》封面" loading="lazy"></span>
+        <div class="book-body">
+          <div class="book-top"><span>66 · 行业实务</span><span class="level">岗位实务</span></div>
+          <h2>AI 电商运营</h2>
+          <p>内容、直播与客服提效</p>
+          <div class="book-foot"><span class="book-meta">13 章 · 摩豆智能 卢章 著</span><span class="go">看这本书 ↗</span></div>
+        </div>
+      </a>
+
+      <a class="book-card" href="{{ '/books/ai-energy-power/' | relative_url }}">
+        <span class="book-thumb"><img src="/assets/images/books/cover-ai-energy-power.jpg" alt="《能源电力 AI 实务：从场站到办公室》封面" loading="lazy"></span>
+        <div class="book-body">
+          <div class="book-top"><span>67 · 行业实务</span><span class="level">岗位实务</span></div>
+          <h2>能源电力 AI 实务</h2>
+          <p>从场站到办公室</p>
+          <div class="book-foot"><span class="book-meta">12 章 · 摩豆智能 卢章 著</span><span class="go">看这本书 ↗</span></div>
+        </div>
+      </a>
+
+      <a class="book-card" href="{{ '/books/ai-banking/' | relative_url }}">
+        <span class="book-thumb"><img src="/assets/images/books/cover-ai-banking.jpg" alt="《AI 银行实务：网点与总部的智能工作法》封面" loading="lazy"></span>
+        <div class="book-body">
+          <div class="book-top"><span>68 · 行业实务</span><span class="level">岗位实务</span></div>
+          <h2>AI 银行实务</h2>
+          <p>网点与总部的智能工作法</p>
           <div class="book-foot"><span class="book-meta">12 章 · 摩豆智能 卢章 著</span><span class="go">看这本书 ↗</span></div>
         </div>
       </a>
