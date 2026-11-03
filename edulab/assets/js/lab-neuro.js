@@ -514,10 +514,12 @@ function renderDigit(digit, rng, SZ = 96) {
   c.save();
   c.translate(SZ / 2, SZ / 2);
   if (rng) {
-    c.rotate((rng() - 0.5) * 0.36);                 // ±10°
-    const s = 0.85 + rng() * 0.35;
+    /* 抖动贴近难例测试集（±14° 旋转 + 明显平移缩放 + 墨点粗细随机）——
+       训练分布不远离测试分布，且最优点不再平坦：大学习率才会真的振荡/起飞 */
+    c.rotate((rng() - 0.5) * 0.49);                 // ±14°
+    const s = 0.8 + rng() * 0.4;
     c.scale(s, s);
-    c.translate((rng() - 0.5) * 14, (rng() - 0.5) * 14);
+    c.translate((rng() - 0.5) * 20, (rng() - 0.5) * 20);
   }
   const cell = SZ / 8.6;
   c.fillStyle = '#fff';
@@ -619,12 +621,14 @@ class MLP {
     this.W1 = g(this.nHid, this.nIn); this.b1 = new Float32Array(this.nHid);
     this.W2 = g(this.nOut, this.nHid); this.b2 = new Float32Array(this.nOut);
   }
-  snapshot() {
+  snapshot(loss) {
     this._snap = {
       W1: this.W1.slice(), b1: this.b1.slice(),
       W2: this.W2.slice(), b2: this.b2.slice(),
     };
+    if (loss !== undefined) this._snapLoss = loss;
   }
+  snapLoss() { return this._snap ? this._snapLoss : null; }
   restore() {
     if (!this._snap) return false;
     this.W1.set(this._snap.W1); this.b1.set(this._snap.b1);
@@ -2697,7 +2701,8 @@ const CAM_DEFAULTS = {
   pixels: [[-1.55, 2.55, 3.55], [FIELD_X, 0.42, 0]],
   neuron: [[1.7, 2.7, 6.3], [FIELD_X, 1.32, 0]],
   network: [[0.95, 2.9, 11.6], [0.1, 1.72, 0]],
-  train: [[0.95, 2.9, 11.6], [0.1, 1.72, 0]],
+  /* 现场训练：推近机架看 48 张权重画廊长出笔画，右前方带上训练终端曲线 */
+  train: [[3.05, 2.25, 7.05], [0.35, 1.48, 0]],
   conv: [[0.0, 2.95, 8.9], [-0.05, 0.8, 0]],
   mistake: [[0.55, 2.5, 4.8], [FIELD_X, 0.82, 0]],
 };
@@ -2768,7 +2773,8 @@ function drawPixelPanel() {
   pxPanel.hud.set('dim', '256 维（固定）');
 }
 function tickPixels(dt) {
-  drawPixelPanel();
+  /* 像素面板事件驱动重绘（书写 boardHook / 换分辨率 / 开关数值），不做逐帧
+     getImageData 读回——逐帧读回会拖住主线程且触发 GPU ReadPixels stall */
   tickPreprocess(dt);
 }
 function pixelsCtl() {
@@ -3094,14 +3100,30 @@ function tickTrain(dt) {
       refreshWeightGallery(trainPanel?.gallery);
       if (state.lossHist.length) {
         const last = state.lossHist[state.lossHist.length - 1];
-        if (last < state.bestLoss - 0.005) {
+        /* 学习率保护（「步子太大」的两档）：
+           ① 真爆炸：epoch 均值 > 3.2——十类交叉熵健康下降永不超 ≈2.4，超过即
+              「自信地错」；
+           ② 谷底蹦跳：连续未改进（plateau≥1）+ 近窗方差 > 0.35 + 当前损失比
+              最优差一倍以上——原版教学句「在谷底两边来回跳」的可观测形态。
+           两档都回滚最近快照。健康下降每轮必改进（plateau=0），永不误触发 */
+        /* 绝对爆炸优先判（首个 epoch 从 inf 基线必走「改进」分支，若只在
+           else 里查 3.2，epoch 均值 9.86 的真爆炸会被当改进收进快照） */
+        const boom = last > 3.2;
+        if (!boom && last < state.bestLoss - 0.005) {
           state.bestLoss = last;
           state.plateau = 0;
-          net.snapshot();
+          net.snapshot(last);
         } else {
           state.plateau++;
-          if (last > state.bestLoss * 2.2 + 0.35 && net.restore()) {
-            toast(`学习率爆表，损失一路起飞了！已把权重回滚到最近一次正常快照。调小学习率再战。`, 'warn');
+          const recent = state.lossHist.slice(-10);
+          const mean = recent.reduce((a, b) => a + b, 0) / Math.max(recent.length, 1);
+          const sd = Math.sqrt(recent.reduce((a, b) => a + (b - mean) * (b - mean), 0) / Math.max(recent.length, 1));
+          const bounce = state.plateau >= 1 && sd > 0.35 && last > state.bestLoss * 2 + 0.3;
+          if ((boom || bounce) && net.restore()) {
+            toast(boom
+              ? `学习率爆表，损失一路起飞了！已把权重回滚到最近一次快照。调小学习率再战。`
+              : `步子太大，损失在谷底两边来回蹦——已回滚到最稳的那一版快照。调小学习率再战。`, 'warn');
+            state.bestLoss = net.snapLoss() ?? last;
             taskHooks.onDiverge?.();
             state.plateau = 0;
           }
@@ -3112,8 +3134,10 @@ function tickTrain(dt) {
         stopTraining(`练满 ${state.epoch} 轮，先到这。现在去手写板写个字，验收一下成果。`);
       } else if (state.plateau >= 6 && state.training) {
         stopTraining('准确率卡住不动了，自动收工。去手写板写个字，看看它现在的水平。');
-      } else if (state.accTrainHist.length && state.accTrainHist[state.accTrainHist.length - 1] >= 0.97 && state.training) {
-        stopTraining(`训练准确率冲到 ${Math.round(state.accTrainHist[state.accTrainHist.length - 1] * 100)}%，达标收工。去手写板写个字让它露一手。`);
+      } else if (state.epoch >= 4 && state.accTestHist.length && state.accTestHist[state.accTestHist.length - 1] >= 0.9 && state.training) {
+        /* 达标停机锚定测试准确率（≥90% 且至少 4 轮）——训练集太易时训练准确率
+           一轮就满分，若只看它会在用户刚看到损失下降时就把训练掐断 */
+        stopTraining(`测试准确率冲到 ${Math.round(state.accTestHist[state.accTestHist.length - 1] * 100)}%，达标收工。去手写板写个字让它露一手。`);
       }
       if (trainPanel?.hud) {
         trainPanel.hud.set('tr', Math.round(tr * 100) + '%');
@@ -3201,7 +3225,7 @@ function trainCtl() {
       state.lr = 3;
       UIREF.lrSlider.set(3);
       if (!state.training) { state.training = true; const btn = document.getElementById('trainToggleBtn'); if (btn) btn.textContent = '⏸ 暂停训练'; }
-      toast('学习率已拉满——看损失曲线会不会发散。');
+      toast('学习率已拉满——看损失曲线还稳不稳。');
       taskHooks.onLrMax?.();
     },
   });
@@ -3795,11 +3819,18 @@ function selectChapter(i) {
   chapterTick = null;
   classifyEls = null;
   pxPanel = null; neuronPanel = null; trainPanel = null; convPanel = null; mistakePanel = null;
-  sec.enter();
-  CTL_BUILDERS[sec.id]();
-  accSecs.controls.classList.toggle('acc-empty', !controlsEl.children.length);
-  accSecs.data.classList.toggle('acc-empty', !lcData.children.length);
-  detailBody.scrollTop = 0;
+  /* 高亮/标题/任务清单已同步翻转（反馈 <100ms）；重的 3D 场景构建与控件装配
+     延到「高亮帧画完之后」的那一帧再执行——双 rAF：第一帧先让浏览器把高亮
+     画出去，第二帧才做重建，切章全程 UI 不冻结 */
+  const me = chapterIdx;
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    if (chapterIdx !== me) return;   // 连续切章时旧的构建作废
+    sec.enter();
+    CTL_BUILDERS[sec.id]();
+    accSecs.controls.classList.toggle('acc-empty', !controlsEl.children.length);
+    accSecs.data.classList.toggle('acc-empty', !lcData.children.length);
+    detailBody.scrollTop = 0;
+  }));
 }
 function gotoChapter(i) { selectChapter((i + SECTIONS.length) % SECTIONS.length); }
 
@@ -4125,7 +4156,7 @@ function pretrain() {
       const te = net.accuracy(DATASET.Xt, DATASET.Yt);
       state.accTestHist.push(te);
       state.accTrainHist.push(net.accuracy(DATASET.X.slice(0, 300), DATASET.Y.slice(0, 300)));
-      net.snapshot();
+      net.snapshot(state.lossHist[state.lossHist.length - 1] ?? Infinity);
       state.bestLoss = state.lossHist[state.lossHist.length - 1] || Infinity;
       if (terminal) terminal.set('EPOCH ' + state.epoch, Math.round(te * 100) + '%');
       buildConnections();
