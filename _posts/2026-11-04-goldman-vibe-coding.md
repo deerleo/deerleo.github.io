@@ -4,6 +4,7 @@ description: "7月高盛CIO公开鼓吹全员vibe coding，10月内部指引把A
 tags: [AI编程, vibe coding, 高盛, 华尔街, Agent]
 series: "哟哟鹿鸣"
 status: published
+podcast: /assets/audio/2026-11-04-goldman-vibe-coding.mp3
 ---
 
 ![纽约证券交易所交易大厅，交易员在工作台前（资料图）](/assets/images/2026-11-04-goldman-vibe-coding/nyse_floor.jpg)
