@@ -8,7 +8,7 @@ status: draft
 
 ![Kimi 智能助手官方宣传物料（资料图）](/assets/images/2026-11-03-kimi-sanqian/01-kimi-app.jpg)
 
-<video controls preload="metadata" style="display:block;max-width:100%;width:720px;margin:0 auto;" poster="/assets/videos/2026-11-03-kimi-sanqian-bill-cover.jpg" src="/assets/videos/2026-11-03-kimi-sanqian-bill.mp4"></video>
+<video data-vsrc="/assets/videos/2026-11-03-kimi-sanqian-bill-v.mp4" data-vposter="/assets/videos/2026-11-03-kimi-sanqian-bill-v-cover.jpg" controls preload="metadata" style="display:block;max-width:100%;width:720px;margin:0 auto;" poster="/assets/videos/2026-11-03-kimi-sanqian-bill-cover.jpg" src="/assets/videos/2026-11-03-kimi-sanqian-bill.mp4"></video>
 
 *视频版：两分钟讲清 Kimi 的强项为什么正是你的账单*
 

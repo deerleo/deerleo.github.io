@@ -8,7 +8,7 @@ tags: [面壁智能, DeepSeek, GPU算子, RSI, 国产芯片]
 
 10 月 30 日早上，一场直播收尾。主角不是人，是一个叫 ForgeKernel 的 AI 智能体。
 
-<video controls preload="metadata" style="display:block;max-width:100%;width:720px;margin:0 auto;" poster="/assets/videos/2026-11-01-forgekernel-ai-kernel-cover.jpg" src="/assets/videos/2026-11-01-forgekernel-ai-kernel.mp4"></video>
+<video data-vsrc="/assets/videos/2026-11-01-forgekernel-ai-kernel-v.mp4" data-vposter="/assets/videos/2026-11-01-forgekernel-ai-kernel-v-cover.jpg" controls preload="metadata" style="display:block;max-width:100%;width:720px;margin:0 auto;" poster="/assets/videos/2026-11-01-forgekernel-ai-kernel-cover.jpg" src="/assets/videos/2026-11-01-forgekernel-ai-kernel.mp4"></video>
 
 *视频版：两分钟讲完这场 22 小时直播的来龙去脉*
 
