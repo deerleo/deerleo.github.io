@@ -1,0 +1,693 @@
+/* EduLab · thermo 热力学布局（真·三栏：左章节大纲 / 中 3D 工作站舞台 / 右详解+控件+读数）
+   依赖 edu.css 的主题变量与 lab.css 的通用控件（ctl/quiz/chap 视觉）。
+   本文件只管 thermo 页面骨架与舞台覆盖卡，不动共享布局。 */
+
+html, body { height: 100%; }
+
+body.lab.thermo {
+  display: block;
+  overflow: hidden;
+}
+
+/* ---------- 三栏骨架（顶栏细条 + 左章节 / 中舞台 / 右详解） ---------- */
+
+.thm-shell {
+  display: grid;
+  grid-template-columns: 246px minmax(0, 1fr) 352px;
+  grid-template-rows: auto minmax(0, 1fr);
+  grid-template-areas:
+    "top      top   top"
+    "chapters stage detail";
+  height: 100dvh;
+}
+
+/* ---------- 顶栏细条 ---------- */
+
+.thm-toprow {
+  grid-area: top;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 9px 16px;
+  border-bottom: 1px solid var(--card-border);
+  background: color-mix(in srgb, var(--card) 60%, transparent);
+}
+.thm-toprow .edu-logo { flex: none; }
+.thm-toprow .lab-title {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  min-width: 0;
+  color: var(--text);
+}
+.thm-toprow .lab-title b { font-size: 16px; white-space: nowrap; }
+.thm-toprow .lab-title span {
+  font-size: 12.5px;
+  color: var(--text-faint);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.thm-toprow .spacer { flex: 1; }
+.thm-toprow .edu-header-btn { white-space: nowrap; }
+
+/* ---------- 左栏：章节大纲 ---------- */
+
+.lab-chapters {
+  grid-area: chapters;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  background: var(--bg-soft);
+  border-right: 1px solid var(--card-border);
+}
+.chap-head {
+  flex: none;
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  padding: 13px 14px 7px;
+}
+.chap-head .chap-title {
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  color: var(--text-faint);
+}
+.chap-count {
+  font-size: 11.5px;
+  color: var(--text-faint);
+  font-variant-numeric: tabular-nums;
+}
+.chap-list {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 2px 8px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.chap-list .chap-btn.on {
+  color: var(--accent);
+  background: var(--accent-soft);
+  border-color: color-mix(in srgb, var(--accent) 35%, transparent);
+  font-weight: 600;
+}
+.chap-list .chap-btn.on .chap-n { color: var(--accent); }
+
+/* 编组分隔行（认识·基础 / 气体三定律 / 能量·热机 / 方向·自由） */
+.chap-group {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px 4px;
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  color: var(--text-faint);
+  user-select: none;
+}
+.chap-group::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--card-border);
+}
+
+/* ---------- 中栏：3D 工作站舞台 ---------- */
+
+.lab-stage3d {
+  grid-area: stage;
+  position: relative;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  background: var(--bg);
+}
+.thm-stage {
+  position: absolute;
+  inset: 0;
+}
+.thm-stage > canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; outline: none; }
+.thm-stage .lab-loader { position: absolute; }
+
+/* 专注模式按钮（中栏左下角） */
+.stage-focus-btn {
+  position: absolute;
+  left: 14px;
+  bottom: 14px;
+  z-index: 24;
+  appearance: none;
+  font-family: inherit;
+  font-size: 12px;
+  line-height: 1;
+  padding: 7px 13px;
+  border-radius: 999px;
+  border: 1px solid var(--card-border);
+  background: color-mix(in srgb, var(--card) 74%, transparent);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  color: var(--text-dim);
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s;
+}
+.stage-focus-btn:hover { color: var(--accent); border-color: var(--accent); }
+
+.stage-foot {
+  position: absolute;
+  right: 16px;
+  bottom: 14px;
+  z-index: 24;
+  font-size: 11.5px;
+  color: var(--text-faint);
+}
+.stage-foot a { color: var(--text-faint); text-decoration: underline; text-underline-offset: 2px; }
+
+/* ---------- 舞台覆盖卡（认识工作站导览 / 四冲程冲程卡） ---------- */
+
+.thm-card {
+  position: absolute;
+  z-index: 12;
+  background: color-mix(in srgb, var(--card) 88%, transparent);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid var(--card-border);
+  border-radius: 14px;
+  box-shadow: var(--shadow);
+  color: var(--text);
+  font-size: 13px;
+}
+.thm-card.hide { display: none; }
+.thm-card h3 { margin: 0 0 8px; font-size: 14.5px; }
+.thm-card .cap { font-size: 11.5px; line-height: 1.6; color: var(--text-dim); margin-top: 6px; }
+
+/* 认识工作站：导览点清单（逐个认识部件） */
+.thm-tour {
+  left: 14px;
+  top: 12px;
+  width: min(300px, calc(100% - 28px));
+  padding: 10px 12px 9px;
+}
+.thm-tour .tour-row {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  padding: 4px 6px;
+  border-radius: 8px;
+  font-size: 12.5px;
+  line-height: 1.55;
+  color: var(--text-dim);
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+.thm-tour .tour-row:hover { color: var(--text); background: var(--chip-bg); }
+.thm-tour .tour-row.on {
+  color: var(--accent);
+  background: var(--accent-soft);
+  border-color: color-mix(in srgb, var(--accent) 32%, transparent);
+  font-weight: 600;
+}
+.thm-tour .tour-row .no { flex: none; font-variant-numeric: tabular-nums; font-size: 11px; }
+.thm-tour .tour-note {
+  margin-top: 7px;
+  padding: 7px 10px;
+  border-radius: 9px;
+  border: 1px solid color-mix(in srgb, var(--accent) 30%, transparent);
+  background: var(--accent-soft);
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--text);
+  min-height: 34px;
+}
+.thm-tour .tour-next {
+  margin-top: 8px;
+  width: 100%;
+}
+
+/* 四冲程汽油机：冲程说明卡（四步卡片，当前冲程高亮） */
+.thm-strokes {
+  left: 14px;
+  top: 12px;
+  width: min(322px, calc(100% - 28px));
+  padding: 10px 12px 9px;
+}
+.thm-strokes .stroke-row {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  padding: 4px 6px;
+  border-radius: 8px;
+  font-size: 12.5px;
+  line-height: 1.55;
+  color: var(--text-dim);
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+.thm-strokes .stroke-row:hover { color: var(--text); background: var(--chip-bg); }
+.thm-strokes .stroke-row.on {
+  color: var(--accent);
+  background: var(--accent-soft);
+  border-color: color-mix(in srgb, var(--accent) 32%, transparent);
+  font-weight: 600;
+}
+.thm-strokes .stroke-row .no { flex: none; font-variant-numeric: tabular-nums; font-size: 11px; }
+.thm-strokes .stroke-note {
+  margin-top: 7px;
+  padding: 7px 10px;
+  border-radius: 9px;
+  border: 1px solid color-mix(in srgb, var(--accent) 30%, transparent);
+  background: var(--accent-soft);
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--text);
+  min-height: 34px;
+}
+.thm-strokes .stroke-extra {
+  margin-top: 6px;
+  font-size: 11.5px;
+  line-height: 1.6;
+  color: var(--text-faint);
+}
+.thm-strokes .stroke-extra b { color: var(--text-dim); }
+
+/* 选择实验（做功 / 第二定律的双实验选择）排在控件区，无独立卡 */
+
+/* ---------- 栏折叠（左右独立 28px 竖条）与专注模式（双栏同折） ---------- */
+
+.thm-shell { transition: grid-template-columns 0.3s ease; }
+.thm-shell.fold-l { grid-template-columns: 28px minmax(0, 1fr) 352px; }
+.thm-shell.fold-r { grid-template-columns: 246px minmax(0, 1fr) 28px; }
+.thm-shell.fold-l.fold-r { grid-template-columns: 28px minmax(0, 1fr) 28px; }
+
+/* ---------- 课堂模式：舞台放大，右栏（讲解文字 + 读数）浮于舞台 ---------- */
+
+.thm-shell.classroom { grid-template-columns: 28px minmax(0, 1fr) 28px; }
+/* 工具钮移到舞台左上，避让右侧浮层（退出课堂按钮必须可点） */
+.thm-shell.classroom .stage-tools { right: auto; left: 40px; }
+.thm-shell.classroom .lab-detail {
+  position: fixed;
+  right: 12px;
+  top: 52px;
+  bottom: 12px;
+  width: min(348px, calc(100vw - 300px));
+  z-index: 40;
+  border-radius: 16px;
+  border: 1px solid var(--card-border);
+  box-shadow: 0 18px 46px rgba(10, 8, 6, 0.42);
+  background: color-mix(in srgb, var(--card) 92%, transparent);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+.thm-shell.classroom .detail-head,
+.thm-shell.classroom .detail-body { opacity: 1; pointer-events: auto; }
+.thm-shell.classroom .detail-head {
+  border-radius: 16px 16px 0 0;
+}
+.thm-shell.classroom .detail-body::-webkit-scrollbar-thumb { background: var(--card-border); }
+
+.chap-head, .chap-list { min-width: 246px; }
+.detail-head, .detail-body { min-width: 352px; }
+.chap-head, .chap-list, .detail-head, .detail-body { transition: opacity 0.16s ease; }
+.thm-shell.fold-l .chap-head,
+.thm-shell.fold-l .chap-list { opacity: 0; pointer-events: none; }
+.thm-shell.fold-r .detail-head,
+.thm-shell.fold-r .detail-body { opacity: 0; pointer-events: none; }
+
+.fold-btn {
+  flex: none;
+  appearance: none;
+  font-family: inherit;
+  width: 22px;
+  height: 22px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  line-height: 1;
+  border-radius: 7px;
+  border: 1px solid var(--card-border);
+  background: var(--chip-bg);
+  color: var(--text-faint);
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s, background 0.15s;
+}
+.fold-btn:hover {
+  color: var(--accent);
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+.detail-head .fold-btn { margin-left: auto; align-self: center; }
+
+.fold-rail {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 0 12px;
+  background: var(--bg-soft);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.2s ease, visibility 0s linear 0.2s;
+}
+.thm-shell.fold-l .lab-chapters .fold-rail,
+.thm-shell.fold-r .lab-detail .fold-rail {
+  opacity: 1;
+  visibility: visible;
+  transition: opacity 0.2s ease 0.1s;
+}
+.rail-no {
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--accent);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.04em;
+}
+.rail-title {
+  writing-mode: vertical-rl;
+  max-height: 210px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 12px;
+  color: var(--text-faint);
+  letter-spacing: 0.14em;
+}
+
+/* ---------- 右栏：知识点详解 + 控件 + 读数 ---------- */
+
+.lab-detail {
+  grid-area: detail;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  background: var(--bg-soft);
+  border-left: 1px solid var(--card-border);
+}
+.detail-head {
+  flex: none;
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  padding: 14px 16px 11px;
+  border-bottom: 1px solid var(--card-border);
+}
+.detail-no {
+  flex: none;
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--accent);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.02em;
+}
+.detail-title {
+  margin: 0;
+  font-size: 16px;
+  color: var(--text);
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.detail-body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 14px 16px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.thm-lesson { font-size: 13.5px; line-height: 1.7; color: var(--text-dim); }
+.thm-lesson p { margin: 0 0 8px; }
+.thm-lesson p:last-child { margin-bottom: 0; }
+.thm-lesson b { color: var(--text); }
+.thm-lesson .hl { color: var(--accent); font-weight: 600; }
+.thm-lesson .thm-note {
+  margin-top: 10px;
+  padding: 8px 12px;
+  border: 1px solid color-mix(in srgb, var(--accent) 32%, transparent);
+  border-radius: 10px;
+  background: var(--accent-soft);
+  color: var(--text);
+  font-size: 12.5px;
+}
+
+.thm-controls { display: flex; flex-flow: row wrap; gap: 8px 10px; align-items: center; }
+.thm-controls .ctl, .thm-controls .ctl-toggle { flex: 1 1 100%; }
+.thm-controls .ctl input[type="range"] { flex: 1; width: auto; }
+.thm-controls .lc-btnrow { display: flex; gap: 8px; flex: 1 1 100%; flex-wrap: wrap; }
+.thm-controls .lc-btnrow .ctl-btn { flex: 1 1 auto; }
+.thm-controls .ctl-sep { flex: 1 1 100%; width: auto; height: 1px; background: var(--card-border); }
+.thm-controls:empty { display: none; }
+
+.thm-data .hud-card {
+  background: var(--chip-bg);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  border: 1px solid var(--card-border);
+  box-shadow: none;
+  min-width: 0;
+  width: 100%;
+}
+.thm-data .hud-card:empty { display: none; }
+
+/* ---------- 右栏三块手风琴 ---------- */
+
+.acc {
+  flex: none;
+  border: 1px solid var(--card-border);
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--card) 42%, transparent);
+  overflow: hidden;
+}
+.acc.acc-empty { display: none; }
+.acc-head {
+  appearance: none;
+  font-family: inherit;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 9px 12px;
+  border: none;
+  background: transparent;
+  color: var(--text-faint);
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-align: left;
+  cursor: pointer;
+  transition: color 0.15s;
+}
+.acc-head:hover { color: var(--accent); }
+.acc-arrow {
+  margin-left: auto;
+  font-style: normal;
+  font-size: 10px;
+  line-height: 1;
+  transition: transform 0.25s ease;
+}
+.acc.closed .acc-arrow { transform: rotate(-90deg); }
+.acc-fold-wrap {
+  display: grid;
+  grid-template-rows: 1fr;
+  transition: grid-template-rows 0.25s ease;
+}
+.acc.closed .acc-fold-wrap { grid-template-rows: 0fr; }
+.acc-fold-body { min-height: 0; overflow: hidden; }
+.acc-fold-inner { padding: 2px 12px 12px; }
+
+/* ---------- 舞台工具排（视角 / 标签 / 声音 / 课堂 / 画质 / 重做 / 全屏，右上角） ---------- */
+
+.stage-tools {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 30;
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  max-width: calc(100% - 24px);
+  pointer-events: none;   /* 容器不吃点击，台面拖拽可穿过工具排空隙 */
+}
+.stage-tools .stage-tool-btn { pointer-events: auto; }
+.stage-tool-btn {
+  appearance: none;
+  font-family: inherit;
+  font-size: 12px;
+  line-height: 1;
+  padding: 7px 13px;
+  border-radius: 999px;
+  border: 1px solid var(--card-border);
+  background: color-mix(in srgb, var(--card) 74%, transparent);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  color: var(--text-dim);
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s;
+}
+.stage-tool-btn:hover { color: var(--accent); border-color: var(--accent); }
+.stage-tool-btn.active {
+  color: var(--accent);
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+
+/* ---------- 提示条 ---------- */
+
+.thm-toast {
+  position: absolute;
+  top: 14px;
+  left: 50%;
+  transform: translate(-50%, -8px);
+  z-index: 26;
+  max-width: min(420px, calc(100% - 28px));
+  padding: 9px 16px;
+  border-radius: 12px;
+  font-size: 13.5px;
+  line-height: 1.55;
+  background: color-mix(in srgb, var(--card) 92%, transparent);
+  border: 1px solid var(--card-border);
+  box-shadow: var(--shadow);
+  color: var(--text);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .25s, transform .25s;
+}
+.thm-toast.show { opacity: 1; transform: translate(-50%, 0); }
+
+/* ---------- 上一/下一章（栏头 ‹ 01/12 ›） ---------- */
+
+.chap-pn {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 1px;
+}
+.pn-btn {
+  appearance: none;
+  font-family: inherit;
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  line-height: 1;
+  border-radius: 6px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--text-faint);
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s, background 0.15s;
+}
+.pn-btn:hover {
+  color: var(--accent);
+  border-color: var(--card-border);
+  background: var(--card);
+}
+
+/* ---------- 中窄屏（1101–1360px）：侧栏收窄一档 ---------- */
+
+@media (max-width: 1360px) and (min-width: 1101px) {
+  .thm-shell { grid-template-columns: 224px minmax(0, 1fr) 330px; }
+  .thm-shell.fold-r { grid-template-columns: 224px minmax(0, 1fr) 28px; }
+  .chap-head, .chap-list { min-width: 224px; }
+  .detail-head, .detail-body { min-width: 330px; }
+  .thm-tour, .thm-strokes { width: min(280px, calc(100% - 24px)); }
+}
+
+/* ---------- 窄屏（≤1100px）：首访清爽态由 JS 配合 ---------- */
+
+@media (max-width: 1100px) {
+  .thm-toprow { padding: 8px 12px; gap: 8px; }
+  .thm-toprow .lab-title span { display: none; }
+  .thm-toprow .lab-title b { font-size: 15px; }
+  .thm-toprow a.edu-header-btn[href='../'] { display: none; }
+
+  .detail-body { padding: 10px 12px 14px; gap: 10px; }
+  .acc-head { padding: 8px 10px; }
+  .acc-fold-inner { padding: 2px 10px 10px; }
+
+  .thm-tour, .thm-strokes { left: 10px; top: 10px; width: min(280px, calc(100% - 20px)); }
+  .stage-tools { gap: 5px; }
+  .stage-tool-btn { padding: 6px 10px; font-size: 11px; }
+}
+
+/* ---------- 移动端（≤860px）：纵向堆叠 ---------- */
+
+@media (max-width: 860px) {
+  .thm-shell {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto auto minmax(230px, 42dvh) minmax(0, 1fr);
+    grid-template-areas:
+      "top"
+      "chapters"
+      "stage"
+      "detail";
+  }
+
+  .thm-shell { transition: none; }
+  .thm-shell.fold-l,
+  .thm-shell.fold-r,
+  .thm-shell.fold-l.fold-r { grid-template-columns: minmax(0, 1fr); }
+  .fold-btn, .fold-rail { display: none; }
+  .thm-shell.fold-l .chap-head,
+  .thm-shell.fold-l .chap-list,
+  .thm-shell.fold-r .detail-head,
+  .thm-shell.fold-r .detail-body { opacity: 1; pointer-events: auto; }
+
+  .thm-toprow { padding: 8px 10px; gap: 8px; }
+  .thm-toprow .lab-title span { display: none; }
+  .thm-toprow .lab-title b { font-size: 14.5px; }
+  .thm-toprow a.edu-header-btn[href='../'] { display: none; }
+
+  .lab-chapters { border-right: none; border-bottom: 1px solid var(--card-border); }
+  .chap-head { padding: 8px 12px 2px; }
+  .chap-list {
+    flex-direction: row;
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding: 5px 8px 8px;
+    gap: 4px;
+    scrollbar-width: none;
+  }
+  .chap-list::-webkit-scrollbar { display: none; }
+  .chap-list .chap-btn { flex: none; padding: 6px 10px; font-size: 12.5px; white-space: nowrap; }
+  .chap-list .chap-btn .chap-n { width: auto; margin-right: 4px; }
+  .chap-group { flex: none; padding: 0 2px; }
+  .chap-group::after { display: none; }
+
+  .lab-detail { border-left: none; border-top: 1px solid var(--card-border); }
+  .detail-head { padding: 10px 12px 8px; }
+  .detail-no { font-size: 18px; }
+  .detail-title { font-size: 14.5px; }
+  .detail-body { padding: 10px 12px 14px; }
+  .thm-lesson { font-size: 12.5px; }
+
+  .stage-focus-btn { left: 8px; bottom: 8px; }
+  .stage-foot { display: none; }
+  .thm-tour, .thm-strokes { width: calc(100% - 16px); left: 8px; top: 8px; padding: 8px 10px 8px; }
+
+  .stage-tools { top: 8px; right: 8px; gap: 4px; }
+  .stage-tool-btn { padding: 5px 7px; font-size: 10.5px; letter-spacing: -0.01em; }
+  /* 课堂模式依赖三栏并排（右栏浮层），纵向堆叠下无意义 */
+  #classroomBtn { display: none; }
+  /* 堆叠布局下课堂态的固定浮层永不生效 */
+  .thm-shell.classroom .lab-detail { position: static; width: auto; box-shadow: none; border-radius: 0; backdrop-filter: none; -webkit-backdrop-filter: none; }
+  .thm-shell.classroom { grid-template-columns: minmax(0, 1fr); }
+}
