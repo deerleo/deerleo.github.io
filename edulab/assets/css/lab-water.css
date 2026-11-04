@@ -1,0 +1,746 @@
+/* EduLab · 水循环三维沙盘布局（真·三栏：左课程大纲 / 中沙盘舞台 / 右知识点详解）
+   依赖 edu.css 的主题变量与 lab.css 的通用控件（ctl/quiz/hud-card 视觉）。
+   本文件只管 water 页面骨架、数据图窗与地下水剖面窗折叠，不动共享布局。 */
+
+html, body { height: 100%; }
+
+body.lab.water {
+  display: block;
+  overflow: hidden;
+}
+
+/* ---------- 三栏骨架（顶栏细条 + 左大纲 / 中舞台 / 右详解） ---------- */
+
+.water-shell {
+  display: grid;
+  grid-template-columns: 246px minmax(0, 1fr) 352px;
+  grid-template-rows: auto minmax(0, 1fr);
+  grid-template-areas:
+    "top      top   top"
+    "chapters stage detail";
+  height: 100dvh;
+}
+
+/* ---------- 顶栏细条 ---------- */
+
+.water-toprow {
+  grid-area: top;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 9px 16px;
+  border-bottom: 1px solid var(--card-border);
+  background: color-mix(in srgb, var(--card) 60%, transparent);
+}
+.water-toprow .edu-logo { flex: none; }
+.water-toprow .lab-title {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  min-width: 0;
+  color: var(--text);
+}
+.water-toprow .lab-title b { font-size: 16px; white-space: nowrap; }
+.water-toprow .lab-title span {
+  font-size: 12.5px;
+  color: var(--text-faint);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.water-toprow .spacer { flex: 1; }
+.water-toprow .edu-header-btn { white-space: nowrap; }
+.water-toprow .edu-header-btn.active {
+  color: var(--accent);
+  border-color: color-mix(in srgb, var(--accent) 45%, transparent);
+}
+
+/* ---------- 左栏：课程大纲 ---------- */
+
+.lab-chapters {
+  grid-area: chapters;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  background: var(--bg-soft);
+  border-right: 1px solid var(--card-border);
+}
+.chap-head {
+  flex: none;
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  padding: 13px 14px 7px;
+}
+.chap-head .chap-title {
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  color: var(--text-faint);
+}
+.chap-list {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 2px 8px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.chap-list .chap-btn.on {
+  color: var(--accent);
+  background: var(--accent-soft);
+  border-color: color-mix(in srgb, var(--accent) 35%, transparent);
+  font-weight: 600;
+}
+.chap-list .chap-btn.on .chap-n { color: var(--accent); }
+
+/* ---------- 中栏：水循环沙盘舞台 ---------- */
+
+.lab-stage3d {
+  grid-area: stage;
+  position: relative;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  background: var(--bg);
+}
+.water-stage {
+  position: absolute;
+  inset: 0;
+}
+.water-stage canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; outline: none; }
+.water-stage .lab-loader { position: absolute; }
+.water-stage .quiz-panel { z-index: 30; }
+
+/* 专注模式按钮（中栏左下角） */
+.stage-focus-btn {
+  position: absolute;
+  left: 14px;
+  bottom: 14px;
+  z-index: 24;
+  appearance: none;
+  font-family: inherit;
+  font-size: 12px;
+  line-height: 1;
+  padding: 7px 13px;
+  border-radius: 999px;
+  border: 1px solid var(--card-border);
+  background: color-mix(in srgb, var(--card) 74%, transparent);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  color: var(--text-dim);
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s;
+}
+.stage-focus-btn:hover { color: var(--accent); border-color: var(--accent); }
+
+.stage-foot {
+  position: absolute;
+  right: 16px;
+  bottom: 14px;
+  z-index: 24;
+  font-size: 11.5px;
+  color: var(--text-faint);
+}
+.stage-foot a { color: var(--text-faint); text-decoration: underline; text-underline-offset: 2px; }
+
+/* 舞台工具（视角重置 / 全屏 / 时间条） */
+.stage-tools {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  z-index: 31;
+  display: flex;
+  gap: 8px;
+}
+.stage-tool-btn {
+  appearance: none;
+  font-family: inherit;
+  font-size: 12px;
+  line-height: 1;
+  padding: 7px 13px;
+  border-radius: 999px;
+  border: 1px solid var(--card-border);
+  background: color-mix(in srgb, var(--card) 74%, transparent);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  color: var(--text-dim);
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s;
+}
+.stage-tool-btn:hover { color: var(--accent); border-color: var(--accent); }
+.stage-tool-btn.on {
+  color: var(--accent);
+  border-color: color-mix(in srgb, var(--accent) 45%, transparent);
+}
+
+/* 时间条（模拟天数推进 · 播放暂停 · 流速） */
+.timebar {
+  position: absolute;
+  left: 50%;
+  bottom: 14px;
+  transform: translateX(-50%);
+  z-index: 24;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--card-border);
+  background: color-mix(in srgb, var(--card) 78%, transparent);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  font-size: 12px;
+  color: var(--text-dim);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.timebar b { color: var(--text); }
+.timebar .tb-btn {
+  appearance: none;
+  font-family: inherit;
+  font-size: 12px;
+  line-height: 1;
+  padding: 4px 9px;
+  border-radius: 999px;
+  border: 1px solid var(--card-border);
+  background: transparent;
+  color: var(--text-dim);
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s;
+}
+.timebar .tb-btn:hover { color: var(--accent); border-color: var(--accent); }
+
+/* ---------- 数据图窗（浮于舞台右上，头部可折叠为 40px 圆徽标） ---------- */
+
+.water-chart {
+  position: absolute;
+  top: 56px;
+  right: 14px;
+  z-index: 22;
+  width: min(330px, calc(100% - 28px));
+  border-radius: 14px;
+  overflow: hidden;
+  border: 1px solid var(--card-border);
+  box-shadow: var(--shadow);
+  background: var(--card);
+}
+.water-chart[data-win='stores'] { top: 56px; }
+.water-chart[data-win='hydro'] { top: 56px; }
+.water-chart[data-win='balance'] { top: 56px; }
+.water-chart[data-win='section'] { top: 56px; }
+.water-chart .wcv-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 10px 7px 12px;
+  font-size: 12.5px;
+  color: var(--text-dim);
+  background: var(--chip-bg);
+}
+.water-chart .wcv-head b { color: var(--text); white-space: nowrap; }
+.water-chart .wcv-head .wc-info {
+  margin-left: auto;
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-dim);
+  text-align: right;
+}
+.water-chart canvas { position: static; inset: auto; display: block; width: 100%; }
+
+/* 水体库列表行（stores 窗内） */
+.store-rows { padding: 2px 8px 8px; }
+.store-row {
+  appearance: none;
+  font-family: inherit;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 6px 9px;
+  border: 1px solid transparent;
+  border-radius: 9px;
+  background: transparent;
+  color: var(--text-dim);
+  font-size: 12px;
+  line-height: 1.4;
+  text-align: left;
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s, background 0.15s;
+}
+.store-row:hover { color: var(--text); background: var(--chip-bg); }
+.store-row.on {
+  color: var(--accent);
+  border-color: color-mix(in srgb, var(--accent) 40%, transparent);
+  background: var(--accent-soft);
+  font-weight: 600;
+}
+.store-row .sw-dot {
+  flex: none;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+}
+.store-row .sw-name { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.store-row .sw-share { font-variant-numeric: tabular-nums; font-size: 11px; color: var(--text-faint); }
+.store-row.on .sw-share { color: var(--accent); }
+
+.water-chart.folded { overflow: visible; border: none; box-shadow: none; background: transparent; }
+.water-chart.folded .wcv-head,
+.water-chart.folded canvas,
+.water-chart.folded .store-rows { display: none; }
+.water-badge {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 3px solid color-mix(in srgb, var(--card-border) 80%, var(--text-dim));
+  background:
+    radial-gradient(circle at 34% 30%, color-mix(in srgb, var(--accent) 26%, var(--card)) 0%, var(--card) 62%);
+  color: var(--text-dim);
+  font-size: 11px;
+  font-weight: 700;
+  font-family: inherit;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: var(--shadow);
+  transition: color 0.15s, border-color 0.15s, transform 0.2s ease;
+  animation: water-badge-in 0.25s ease;
+}
+.water-badge:hover {
+  color: var(--accent);
+  border-color: var(--accent);
+  transform: scale(1.08);
+}
+.water-chart.folded .water-badge { display: inline-flex; }
+@keyframes water-badge-in {
+  from { transform: scale(0.4); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+/* ---------- 提示浮条 ---------- */
+
+.water-toast {
+  position: absolute;
+  top: 14px;
+  left: 50%;
+  transform: translate(-50%, -8px);
+  z-index: 26;
+  max-width: min(460px, calc(100% - 28px));
+  padding: 9px 16px;
+  border-radius: 12px;
+  font-size: 13.5px;
+  line-height: 1.55;
+  background: color-mix(in srgb, var(--card) 92%, transparent);
+  border: 1px solid var(--card-border);
+  box-shadow: var(--shadow);
+  color: var(--text);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s, transform 0.25s;
+}
+.water-toast.show { opacity: 1; transform: translate(-50%, 0); }
+.water-toast.ok { border-color: color-mix(in srgb, #3fa96f 55%, transparent); }
+.water-toast.warn { border-color: color-mix(in srgb, #d98a4f 60%, transparent); }
+
+/* 图例（共享 lab.css 视觉；中栏布局下避让时间条与小窗） */
+.water-stage .legend { bottom: 56px; left: 14px; }
+
+/* ---------- 栏折叠（左右独立 28px 竖条）与专注模式（双栏同折） ---------- */
+
+.water-shell { transition: grid-template-columns 0.3s ease; }
+.water-shell.no-anim { transition: none; }
+.water-shell.fold-l { grid-template-columns: 28px minmax(0, 1fr) 352px; }
+.water-shell.fold-r { grid-template-columns: 246px minmax(0, 1fr) 28px; }
+.water-shell.fold-l.fold-r { grid-template-columns: 28px minmax(0, 1fr) 28px; }
+
+.chap-head, .chap-list { min-width: 246px; }
+.detail-head, .detail-body { min-width: 352px; }
+.chap-head, .chap-list, .detail-head, .detail-body { transition: opacity 0.16s ease; }
+.water-shell.fold-l .chap-head,
+.water-shell.fold-l .chap-list { opacity: 0; pointer-events: none; }
+.water-shell.fold-r .detail-head,
+.water-shell.fold-r .detail-body { opacity: 0; pointer-events: none; }
+
+.fold-btn {
+  flex: none;
+  appearance: none;
+  font-family: inherit;
+  width: 22px;
+  height: 22px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  line-height: 1;
+  border-radius: 7px;
+  border: 1px solid var(--card-border);
+  background: var(--chip-bg);
+  color: var(--text-faint);
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s, background 0.15s;
+}
+.fold-btn:hover {
+  color: var(--accent);
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+.water-chart .fold-btn { width: 20px; height: 20px; font-size: 12px; }
+.detail-head .fold-btn { margin-left: auto; align-self: center; }
+.wcv-head .fold-btn { margin-left: 2px; }
+
+.fold-rail {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 0 12px;
+  background: var(--bg-soft);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.2s ease, visibility 0s linear 0.2s;
+}
+.water-shell.fold-l .lab-chapters .fold-rail,
+.water-shell.fold-r .lab-detail .fold-rail {
+  opacity: 1;
+  visibility: visible;
+  transition: opacity 0.2s ease 0.1s;
+}
+.rail-no {
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--accent);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.04em;
+}
+.rail-title {
+  writing-mode: vertical-rl;
+  max-height: 210px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 12px;
+  color: var(--text-faint);
+  letter-spacing: 0.14em;
+}
+
+/* ---------- 课堂模式：舞台放大，右栏讲解浮于舞台 ---------- */
+
+.water-shell.classroom { grid-template-columns: 28px minmax(0, 1fr) 28px; }
+.water-shell.classroom .stage-tools { left: 40px; }
+.water-shell.classroom .lab-detail {
+  position: fixed;
+  right: 12px;
+  top: 52px;
+  bottom: 12px;
+  width: min(348px, calc(100vw - 300px));
+  z-index: 40;
+  border-radius: 16px;
+  border: 1px solid var(--card-border);
+  box-shadow: 0 18px 46px rgba(6, 12, 10, 0.42);
+  background: color-mix(in srgb, var(--card) 92%, transparent);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+.water-shell.classroom .detail-head,
+.water-shell.classroom .detail-body { opacity: 1; pointer-events: auto; }
+.water-shell.classroom .detail-head { border-radius: 16px 16px 0 0; }
+.water-shell.classroom .detail-body::-webkit-scrollbar-thumb { background: var(--card-border); }
+
+/* ---------- 右栏：知识点详解 + 控件 + 读数 ---------- */
+
+.lab-detail {
+  grid-area: detail;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  background: var(--bg-soft);
+  border-left: 1px solid var(--card-border);
+}
+.detail-head {
+  flex: none;
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  padding: 14px 16px 11px;
+  border-bottom: 1px solid var(--card-border);
+}
+.detail-no {
+  flex: none;
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--accent);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.02em;
+}
+.detail-title {
+  margin: 0;
+  font-size: 16px;
+  color: var(--text);
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.detail-body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 14px 16px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* 知识点正文 */
+.lc-lesson { font-size: 13.5px; line-height: 1.7; color: var(--text-dim); }
+.lc-lesson p { margin: 0 0 8px; }
+.lc-lesson p:last-child { margin-bottom: 0; }
+.lc-lesson b { color: var(--text); }
+.lc-lesson .hl { color: var(--accent); font-weight: 600; }
+
+/* 本章任务（行动指令 chip，完成打勾） */
+.lc-tasks { display: flex; flex-direction: column; gap: 6px; }
+.task-chip {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 7px 10px;
+  border-radius: 10px;
+  border: 1px solid var(--card-border);
+  background: var(--chip-bg);
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--text-dim);
+  cursor: default;
+  transition: color 0.25s, border-color 0.25s;
+}
+.task-chip .tk-box {
+  flex: none;
+  width: 16px;
+  height: 16px;
+  margin-top: 1px;
+  border-radius: 5px;
+  border: 1.5px solid var(--text-faint);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  color: transparent;
+  transition: background 0.25s, border-color 0.25s, color 0.25s;
+}
+.task-chip.done { color: var(--text); border-color: color-mix(in srgb, #3fa96f 45%, transparent); }
+.task-chip.done .tk-box {
+  background: #3fa96f;
+  border-color: #3fa96f;
+  color: #fff;
+}
+
+/* 本章控件（复用 lab.css 的 ctl 组件，纵向排列） */
+.lc-controls { display: flex; flex-flow: row wrap; gap: 8px 10px; align-items: center; }
+.lc-controls .ctl, .lc-controls .ctl-toggle { flex: 1 1 100%; }
+.lc-controls .ctl input[type="range"] { flex: 1; width: auto; }
+.lc-controls .ctl-sep { flex: 1 1 100%; width: auto; height: 1px; background: var(--card-border); }
+.lc-controls .ctl-btn { flex: 0 0 auto; }
+.lc-controls:empty { display: none; }
+
+/* 分组标签（自由探索的参数分组） */
+.ctl-group {
+  flex: 1 1 100%;
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  color: var(--accent);
+  opacity: 0.85;
+  margin-top: 2px;
+}
+
+/* 数据坞（读数卡收纳进栏内） */
+.lc-data .hud-card {
+  background: var(--chip-bg);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  border: 1px solid var(--card-border);
+  box-shadow: none;
+  min-width: 0;
+  width: 100%;
+}
+.lc-data .hud-card:empty { display: none; }
+
+/* ---------- 右栏三块手风琴（详解 / 控件 / 读数） ---------- */
+
+.acc {
+  flex: none;
+  border: 1px solid var(--card-border);
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--card) 42%, transparent);
+  overflow: hidden;
+}
+.acc.acc-empty { display: none; }
+.acc-head {
+  appearance: none;
+  font-family: inherit;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 9px 12px;
+  border: none;
+  background: transparent;
+  color: var(--text-faint);
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-align: left;
+  cursor: pointer;
+  transition: color 0.15s;
+}
+.acc-head:hover { color: var(--accent); }
+.acc-arrow {
+  margin-left: auto;
+  font-style: normal;
+  font-size: 10px;
+  line-height: 1;
+  transition: transform 0.25s ease;
+}
+.acc.closed .acc-arrow { transform: rotate(-90deg); }
+.acc-fold-wrap {
+  display: grid;
+  grid-template-rows: 1fr;
+  transition: grid-template-rows 0.25s ease;
+}
+.acc.closed .acc-fold-wrap { grid-template-rows: 0fr; }
+.acc-fold-body { min-height: 0; overflow: hidden; }
+.acc-fold-inner { padding: 2px 12px 12px; }
+
+/* ---------- 栏头 ‹ 01/11 ›（上一章 / 下一章） ---------- */
+.chap-pn {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 1px;
+}
+.chap-pn .chap-count { margin-left: 0; }
+.pn-btn {
+  appearance: none;
+  font-family: inherit;
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  line-height: 1;
+  border-radius: 6px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--text-faint);
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s, background 0.15s;
+}
+.pn-btn:hover {
+  color: var(--accent);
+  border-color: var(--card-border);
+  background: var(--card);
+}
+
+/* ---------- 窄屏（≤1100px）：顶栏收窄 + 首访清爽态 ---------- */
+
+@media (max-width: 1100px) {
+  .water-toprow { padding: 8px 12px; gap: 8px; }
+  .water-toprow .lab-title span { display: none; }
+  .water-toprow .lab-title b { font-size: 15px; }
+  .water-toprow a.edu-header-btn[href='../'] { display: none; }
+
+  .water-chart { width: min(280px, calc(100% - 24px)); }
+
+  .detail-body { padding: 10px 12px 14px; gap: 10px; }
+  .acc-head { padding: 8px 10px; }
+  .acc-fold-inner { padding: 2px 10px 10px; }
+}
+
+/* ---------- 移动端（≤860px）：纵向堆叠 ---------- */
+
+@media (max-width: 860px) {
+  .water-shell {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto auto minmax(230px, 42dvh) minmax(0, 1fr);
+    grid-template-areas:
+      "top"
+      "chapters"
+      "stage"
+      "detail";
+  }
+
+  .water-shell { transition: none; }
+  .water-shell.fold-l,
+  .water-shell.fold-r,
+  .water-shell.fold-l.fold-r,
+  .water-shell.focus-mode,
+  .water-shell.classroom { grid-template-columns: minmax(0, 1fr); }
+  .fold-btn, .fold-rail { display: none; }
+  .water-shell.fold-l .chap-head,
+  .water-shell.fold-l .chap-list,
+  .water-shell.fold-r .detail-head,
+  .water-shell.fold-r .detail-body { opacity: 1; pointer-events: auto; }
+  #classroomBtn { display: none; }
+  .water-shell.classroom .lab-detail { position: static; width: auto; box-shadow: none; border-radius: 0; backdrop-filter: none; -webkit-backdrop-filter: none; }
+
+  .water-toprow { padding: 8px 10px; gap: 8px; }
+  .water-toprow .lab-title span { display: none; }
+  .water-toprow .lab-title b { font-size: 14.5px; }
+  .water-toprow a.edu-header-btn[href='../'] { display: none; }
+
+  .lab-chapters { border-right: none; border-bottom: 1px solid var(--card-border); }
+  .chap-head { padding: 8px 12px 2px; }
+  .chap-list {
+    flex-direction: row;
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding: 5px 8px 8px;
+    gap: 4px;
+    scrollbar-width: none;
+  }
+  .chap-list::-webkit-scrollbar { display: none; }
+  .chap-list .chap-btn { flex: none; padding: 6px 10px; font-size: 12.5px; white-space: nowrap; }
+  .chap-list .chap-btn .chap-n { width: auto; margin-right: 4px; }
+
+  .lab-detail { border-left: none; border-top: 1px solid var(--card-border); }
+  .detail-head { padding: 10px 12px 8px; }
+  .detail-no { font-size: 18px; }
+  .detail-title { font-size: 14.5px; }
+  .detail-body { padding: 10px 12px 14px; }
+  .lc-lesson { font-size: 12.5px; }
+  .acc-head { padding: 8px 10px; }
+  .acc-fold-inner { padding: 2px 10px 10px; }
+
+  .water-chart { top: 44px; right: 8px; width: 236px; }
+  .timebar { bottom: 8px; gap: 6px; padding: 5px 9px; font-size: 11px; }
+  .timebar .tb-btn { padding: 3px 7px; font-size: 11px; }
+  .stage-tools { top: 8px; left: 8px; gap: 4px; }
+  .stage-tool-btn { padding: 5px 8px; font-size: 10.5px; letter-spacing: -0.01em; }
+  .stage-focus-btn { left: 8px; bottom: 52px; }
+  .stage-foot { display: none; }
+  .water-toast { top: 8px; font-size: 12.5px; padding: 7px 12px; max-width: calc(100% - 16px); }
+  .water-stage .legend { bottom: 48px; }
+
+  .water-stage .quiz-panel {
+    align-items: flex-start;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .water-stage .quiz-card { margin: auto 0; }
+}
