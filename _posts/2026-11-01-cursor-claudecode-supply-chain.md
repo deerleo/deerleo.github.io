@@ -8,7 +8,7 @@ podcast: /assets/audio/2026-11-01-cursor-claudecode-supply-chain.mp3
 
 ![Cursor 官网「The AI Code Editor」落地页：这次后门事件的事发地，正是这条官方分发渠道](/assets/images/2026-11-01-cursor-claudecode-supply-chain/hero-cursor-site.jpg)
 
-<video controls preload="metadata" style="display:block;max-width:100%;width:720px;margin:0 auto;" poster="/assets/videos/2026-11-01-cursor-claudecode-supply-chain-cover.jpg" src="/assets/videos/2026-11-01-cursor-claudecode-supply-chain.mp4"></video>
+<video data-vsrc="/assets/videos/2026-11-01-cursor-claudecode-supply-chain-v.mp4" data-vposter="/assets/videos/2026-11-01-cursor-claudecode-supply-chain-v-cover.jpg" controls preload="metadata" style="display:block;max-width:100%;width:720px;margin:0 auto;" poster="/assets/videos/2026-11-01-cursor-claudecode-supply-chain-cover.jpg" src="/assets/videos/2026-11-01-cursor-claudecode-supply-chain.mp4"></video>
 
 *视频版：真人开场收尾加动画拆解，两分半讲完这次供应链后门。*
 
