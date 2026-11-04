@@ -1,0 +1,120 @@
+---
+layout: null
+permalink: /books/preview/index.html
+---
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>在线试读 · 行业 AI 书系</title>
+<style>
+  :root{
+    --forest:#173b2c; --deep:#10271d; --lime:#c3ed59; --ivory:#f1f2ec;
+    --ink:#1a2921; --gray:#52645a; --line:#c6d2c8;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{background:#eef0ea;color:var(--ink);font-family:PingFang SC,Hiragino Sans GB,Heiti SC,sans-serif;display:flex;flex-direction:column}
+  header{background:var(--forest);color:#fff;padding:10px 16px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;position:sticky;top:0;z-index:10;box-shadow:0 2px 10px rgba(16,39,29,.25)}
+  header .bt{font-weight:700;font-size:16px;max-width:46vw;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  header .meta{font-size:12.5px;opacity:.82}
+  header .sp{flex:1}
+  header a,header button{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.28);color:#fff;border-radius:8px;padding:7px 13px;font-size:13.5px;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:5px}
+  header a:hover,header button:hover{background:rgba(255,255,255,.22)}
+  #bar{height:4px;background:rgba(255,255,255,.15);position:sticky;top:0;z-index:11}
+  #bar>div{height:100%;width:0;background:var(--lime);transition:width .12s}
+  #viewer{flex:1;overflow:auto;scroll-behavior:smooth;padding:14px 0 60px}
+  .pagebox{width:min(92vw,760px);margin:0 auto 14px;background:#fff;box-shadow:0 3px 14px rgba(16,39,29,.18);border-radius:3px;overflow:hidden}
+  .pagebox canvas{display:block;width:100%}
+  #hint{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:#eef0ea;z-index:5;font-size:14px;color:var(--gray)}
+  .note{background:var(--ivory);border-top:1px solid var(--line);padding:14px 18px;font-size:13px;color:var(--gray);text-align:center;position:fixed;bottom:0;width:100%}
+  .note b{color:var(--forest)}
+  .no-print{position:fixed;inset:0;z-index:99;display:none;background:repeating-linear-gradient(45deg,rgba(23,59,44,.06) 0 12px,transparent 12px 24px)}
+  @media print{ body{display:none} .no-print{display:block} }
+</style>
+</head>
+<body>
+<div class="no-print"><p style="margin:40vh auto;text-align:center;font-size:20px;color:#173b2c;font-weight:700">本试读内容不支持打印或导出，请通过 milulab.com/books 在线阅读</p></div>
+<header>
+  <span class="bt" id="bt">加载中…</span>
+  <span class="meta" id="meta"></span>
+  <span class="sp"></span>
+  <button id="zoomOut" title="缩小">－</button>
+  <button id="zoomIn" title="放大">＋</button>
+  <a id="back" href="/books/">← 返回书系</a>
+</header>
+<div id="bar"><div></div></div>
+<div id="hint">正在加载试读文件…</div>
+<main id="viewer"></main>
+<p class="note">本书系在线<b>试读</b>：内容受版权保护，已禁用下载、打印与文本复制。出版合作与完整版本请联系 <b>dearsuley@gmail.com</b></p>
+
+<script type="module">
+const params=new URLSearchParams(location.search);
+const slug=params.get('b')||'';
+const title=params.get('t')||'行业 AI 书系';
+const API='https://milulab.com';
+document.getElementById('bt').textContent=title+' · 试读';
+document.title=title+' · 在线试读';
+
+/* 禁下载：拦截右键/快捷键/拖拽（诚实的客户端约束；服务端无直链是主要屏障） */
+document.addEventListener('contextmenu',e=>e.preventDefault());
+document.addEventListener('keydown',e=>{
+  if((e.ctrlKey||e.metaKey)&&['s','p','u'].includes(e.key.toLowerCase())){e.preventDefault();}
+});
+document.addEventListener('dragstart',e=>e.preventDefault());
+
+try{
+  const pdfjs=await import('/assets/pdfjs/pdf.min.mjs');
+  pdfjs.GlobalWorkerOptions.workerSrc='/assets/pdfjs/pdf.worker.min.mjs';
+  /* fetch→blob 读取，避免 viewer 直接拿到可另存的 URL */
+  const resp=await fetch(`/books/${encodeURIComponent(slug)}/sample.pdf`,{credentials:'omit'});
+  if(!resp.ok) throw new Error('HTTP '+resp.status);
+  const buf=await resp.arrayBuffer();
+  const doc=await pdfjs.getDocument({data:buf,cMapUrl:'/assets/pdfjs/cmaps/',cMapPacked:true}).promise;
+  document.getElementById('meta').textContent=`试读 ${doc.numPages} 页 · 共 ${doc.numPages} 页`;
+  document.getElementById('hint').remove();
+  const viewer=document.getElementById('viewer');
+  const bar=document.querySelector('#bar>div');
+  let scale=1.0;
+  const rendered=new Set();
+  async function renderPage(n){
+    if(rendered.has(n))return; rendered.add(n);
+    const page=await doc.getPage(n);
+    const vp0=page.getViewport({scale:1});
+    const target=Math.min(760,Math.max(300,viewer.clientWidth*0.92));
+    const vp=page.getViewport({scale:(target/vp0.width)*scale});
+    const box=document.createElement('div');box.className='pagebox';box.dataset.p=n;
+    const cv=document.createElement('canvas');
+    box.appendChild(cv);viewer.appendChild(box);
+    cv.width=vp.width;cv.height=vp.height;
+    await page.render({canvasContext:cv.getContext('2d'),viewport:vp}).promise;
+    box.addEventListener('contextmenu',e=>e.preventDefault());
+  }
+  /* 懒渲染：首屏 4 页 + IntersectionObserver 补页 */
+  const first=Math.min(4,doc.numPages);
+  for(let i=1;i<=first;i++) await renderPage(i);
+  const io=new IntersectionObserver(es=>{
+    const barTop=document.getElementById('bar');
+    es.forEach(en=>{
+      if(!en.isIntersecting)return;
+      const n=+en.target.dataset.p;
+      bar.style.width=(n/doc.numPages*100)+'%';
+      [n+1,n+2].forEach(p=>{if(p<=doc.numPages)renderPage(p)});
+    });
+  },{root:viewer,rootMargin:'600px'});
+  const mo=new MutationObserver(()=>viewer.querySelectorAll('.pagebox').forEach(b=>io.observe(b)));
+  mo.observe(viewer,{childList:true});
+  document.getElementById('zoomIn').onclick=async()=>{scale=Math.min(1.6,scale+0.15);await rerenderAll()};
+  document.getElementById('zoomOut').onclick=async()=>{scale=Math.max(0.6,scale-0.15);await rerenderAll()};
+  async function rerenderAll(){
+    rendered.clear();viewer.innerHTML='';
+    const first=Math.min(4,doc.numPages);
+    for(let i=1;i<=first;i++)await renderPage(i);
+  }
+}catch(err){
+  document.getElementById('hint').textContent='加载失败：'+err.message+'（请确认链接含 ?b=书slug 参数）';
+}
+</script>
+</body>
+</html>
