@@ -1,939 +1,1845 @@
-/* EduLab · 勾股定理实验室（pythagoras）
- * 章节：拼图挑战 / 出入相补 / 欧几里得的证明 / 更多证法 / 倒水 / 勾股数 / 随堂检测
- * 实现：2D canvas 几何作图 + 多边形裁剪（倒水）+ 拼图拖拽（出入相补/弦图）。
+/* EduLab · 勾股定理实验室（pythagoras）— Micro 级 3D 深改
+ * 章节：拼图挑战(Perigal 割补) / 出入相补(刘徽·赵爽) / 欧几里得的证明 / 更多证法(毕达哥拉斯重排·加菲尔德梯形)
+ *      / 倒水实验 / 勾股数 / 随堂检测
+ * 实现：three.js 3D 几何工作台（木质台面 + 带厚度烤漆/木纹拼板 + 圆角描边管 + 精灵标注 + 接触阴影）。
+ *      Perigal 拼图 = b² 过中心两条垂直线切 4 块 + a²，拖拽/单击旋转 90°/位置方向双判定吸附；
+ *      出入相补 = L 形拼板挖两三角槽、板块绕枢轴 ±90° 旋转补形；欧几里得 = 剪切→旋转→剪切三段面积守恒变换；
+ *      倒水 = 整板绕中心竖轴旋转、逐槽水位裁剪（面积守恒读数）；勾股数 = 散点墙 InstancedMesh + 点选直角三角形。
+ * 原版功能块 1:1：6 个教学块 + 图上标注 + 上一节(←)/下一节(→)/纸面·Studio 风格(T)/重置视角(R)/全屏(F)。
  */
 import {
-  createSections, createControlsPanel, makeHUD,
+  THREE, clamp, createApp, createControlsPanel, makeHUD, makeLoader,
+  makeTextSprite, setSpriteText,
 } from './edu-core.js';
+import {
+  attachVFX, makeStudioEnvironment, makeBackdropTexture, PAL,
+  matGlow, matStd, matCoat, makeWoodTexture,
+} from './edu-vfx.js';
 
-/* ---------------- 画布脚手架 ---------------- */
+/* ---------------- 舞台与工艺接入 ---------------- */
 
 const stage = document.getElementById('stage');
-const canvas = document.createElement('canvas');
-canvas.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;touch-action:none;cursor:grab;';
-stage.appendChild(canvas);
-const ctx = canvas.getContext('2d');
-const DPR = Math.min(window.devicePixelRatio || 1, 2);
-function resize() {
-  canvas.width = Math.max(1, stage.clientWidth * DPR);
-  canvas.height = Math.max(1, stage.clientHeight * DPR);
-}
-new ResizeObserver(resize).observe(stage);
-resize();
-
-const palette = {};
-function refreshPalette() {
-  const cs = getComputedStyle(document.documentElement);
-  palette.bg = cs.getPropertyValue('--bg').trim() || '#f5f6f8';
-  palette.text = cs.getPropertyValue('--text').trim() || '#2a3441';
-  palette.dim = cs.getPropertyValue('--text-dim').trim() || '#66717e';
-  palette.faint = cs.getPropertyValue('--text-faint').trim() || '#98a2ad';
-  palette.accent = cs.getPropertyValue('--accent').trim() || '#e8674a';
-  palette.dark = document.documentElement.getAttribute('data-theme') === 'dark';
-  palette.grid = palette.dark ? 'rgba(255,255,255,0.07)' : 'rgba(20,32,44,0.08)';
-}
-refreshPalette();
-window.addEventListener('edulabtheme', refreshPalette);
-
-const C = { blue: '#4a90d9', green: '#3fa96f', purple: '#9b6fd9', gold: '#d9a13f', teal: '#2fb3a5', red: '#d9534f', water: '#4aa3e8', waterDeep: '#2f7fc4' };
-const ACCENTS = ['rgba(232,103,74,0.30)', 'rgba(74,144,217,0.30)', 'rgba(63,169,111,0.30)', 'rgba(155,111,217,0.30)'];
-
-/* ---------------- 世界坐标板（每章自定中心与比例） ---------------- */
-
-const view = { cx: 0, cy: 0, scale: 60, yUp: true };
-function setBoard(cx, cy, scale) { view.cx = cx; view.cy = cy; view.scale = scale; }
-function W2S(x, y) {
-  const vw = canvas.width / DPR, vh = canvas.height / DPR;
-  return [vw / 2 + (x - view.cx) * view.scale, vh / 2 - (y - view.cy) * view.scale];
-}
-function S2W(sx, sy) {
-  const vw = canvas.width / DPR, vh = canvas.height / DPR;
-  return [(sx - vw / 2) / view.scale + view.cx, -(sy - vh / 2) / view.scale + view.cy];
-}
-
-function clearCanvas() {
-  ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
-  ctx.fillStyle = palette.bg;
-  ctx.fillRect(0, 0, canvas.width / DPR, canvas.height / DPR);
-}
-function grid() {
-  const vw = canvas.width / DPR, vh = canvas.height / DPR;
-  const step = view.scale > 90 ? 0.5 : view.scale > 45 ? 1 : 2;
-  const [wx0, wy1] = S2W(0, 0), [wx1, wy0] = S2W(vw, vh);
-  ctx.strokeStyle = palette.grid;
-  ctx.lineWidth = 1;
-  ctx.beginPath();
-  for (let x = Math.floor(wx0); x <= wx1; x += step) { const [sx] = W2S(x, 0); ctx.moveTo(sx, 0); ctx.lineTo(sx, vh); }
-  for (let y = Math.floor(wy0); y <= wy1; y += step) { const [, sy] = W2S(0, y); ctx.moveTo(0, sy); ctx.lineTo(vw, sy); }
-  ctx.stroke();
-}
-function poly(pts, fill, opts = {}) {
-  ctx.save();
-  ctx.beginPath();
-  pts.forEach(([x, y], i) => {
-    const [sx, sy] = W2S(x, y);
-    i ? ctx.lineTo(sx, sy) : ctx.moveTo(sx, sy);
-  });
-  ctx.closePath();
-  if (fill) { ctx.fillStyle = fill; ctx.fill(); }
-  if (opts.stroke !== false) {
-    ctx.strokeStyle = opts.color || palette.dim;
-    ctx.lineWidth = opts.width || 2;
-    ctx.setLineDash(opts.dash || []);
-    ctx.stroke();
-    ctx.setLineDash([]);
-  }
-  ctx.restore();
-}
-function seg(x1, y1, x2, y2, color, opts = {}) {
-  const [ax, ay] = W2S(x1, y1), [bx, by] = W2S(x2, y2);
-  ctx.save();
-  ctx.strokeStyle = color;
-  ctx.lineWidth = opts.width || 1.8;
-  ctx.setLineDash(opts.dash || []);
-  ctx.beginPath(); ctx.moveTo(ax, ay); ctx.lineTo(bx, by); ctx.stroke();
-  ctx.restore();
-}
-function dot(x, y, color, r = 4) {
-  const [sx, sy] = W2S(x, y);
-  ctx.fillStyle = color;
-  ctx.beginPath(); ctx.arc(sx, sy, r, 0, Math.PI * 2); ctx.fill();
-}
-function label(text, x, y, color, opts = {}) {
-  const [sx, sy] = W2S(x, y);
-  ctx.font = (opts.bold ? '600 ' : '') + (opts.size || 13) + 'px -apple-system, "PingFang SC", sans-serif';
-  ctx.textAlign = opts.align || 'center';
-  ctx.textBaseline = opts.baseline || 'middle';
-  ctx.lineWidth = 3.5;
-  ctx.strokeStyle = opts.halo || palette.bg;
-  ctx.strokeText(text, sx + (opts.dx || 0), sy + (opts.dy || 0));
-  ctx.fillStyle = color;
-  ctx.fillText(text, sx + (opts.dx || 0), sy + (opts.dy || 0));
-}
-function centroid(pts) {
-  let x = 0, y = 0;
-  pts.forEach(([px, py]) => { x += px; y += py; });
-  return [x / pts.length, y / pts.length];
-}
-function movePoly(pts, dx, dy) { return pts.map(([x, y]) => [x + dx, y + dy]); }
-
-/* ---------------- 平移 / 缩放 ---------------- */
-
-const pointers = new Map();
-let pinchD0 = 0, pinchS0 = 1;
-canvas.addEventListener('pointerdown', (e) => {
-  canvas.setPointerCapture(e.pointerId);
-  pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
-  if (pointers.size === 2) {
-    const [a, b] = [...pointers.values()];
-    pinchD0 = Math.hypot(a.x - b.x, a.y - b.y); pinchS0 = view.scale;
-  }
+const loader = makeLoader(stage, '正在铺设几何工作台…');
+const app = createApp({
+  container: stage,
+  fov: 42, near: 0.1, far: 400,
+  cameraPos: [0, 10.5, 12.5], target: [1.2, 0, -0.6],
+  minDistance: 2.5, maxDistance: 80,
+  keepBackground: true,
 });
-canvas.addEventListener('pointermove', (e) => {
-  if (!pointers.has(e.pointerId)) return;
-  const p = pointers.get(e.pointerId);
-  const dx = e.clientX - p.x, dy = e.clientY - p.y;
-  p.x = e.clientX; p.y = e.clientY;
-  if (pointers.size === 2) {
-    const [a, b] = [...pointers.values()];
-    const d = Math.hypot(a.x - b.x, a.y - b.y);
-    if (pinchD0 > 0) view.scale = Math.min(200, Math.max(16, pinchS0 * d / pinchD0));
-    return;
-  }
-  if (chapterDrag && chapterDrag(e, dx, dy)) return;
-  view.cx -= dx / view.scale;
-  view.cy += dy / view.scale;
-});
-let chapterPointerUp = null;
-function endPointer(e) {
-  pointers.delete(e.pointerId);
-  if (pointers.size < 2) pinchD0 = 0;
-  if (chapterPointerUp) chapterPointerUp(e);
-}
-canvas.addEventListener('pointerup', endPointer);
-canvas.addEventListener('pointercancel', endPointer);
-canvas.addEventListener('wheel', (e) => {
-  e.preventDefault();
-  view.scale = Math.min(200, Math.max(16, view.scale * Math.exp(-e.deltaY * 0.0016)));
-}, { passive: false });
+const { scene, camera, controls } = app;
+const vfx = attachVFX(app, 'illus', { bg: 'studio-warm' });
+scene.environment = makeStudioEnvironment(app.renderer);
 
-/* ---------------- 章节框架 ---------------- */
+scene.add(new THREE.HemisphereLight(0xe8dcc8, 0x2c241a, 0.72));
+const keyLight = new THREE.DirectionalLight(0xfff0d8, 1.2);
+keyLight.position.set(-8, 15, 9);
+scene.add(keyLight);
+const fillLight = new THREE.DirectionalLight(0xcfe0f2, 0.42);
+fillLight.position.set(10, 6, -9);
+scene.add(fillLight);
 
-const ctl = createControlsPanel(document.getElementById('controls'));
-let chapterDrag = null;
-let chapterTick = null;
-let activeCleanup = null;
-chapterPointerUp = null;
-const hud = makeHUD(stage, [['v1', '读数'], ['v2', ''], ['v3', '']]);
-hud.show(false);
+const V3 = (x, y, z) => new THREE.Vector3(x, y, z);
 
-/* ================= 工具：三角形布局生成 ================= */
+/* ================= 纸面 / Studio 双风格（原版 T 键 1:1） ================= */
 
-// 直角三角形：直角顶点 (0,0)，短腿 a 沿 +x，长腿 b 沿 +y
-function triPts(a, b) { return [[0, 0], [a, 0], [0, b]]; }
-
-/** 4 个全等三角形 + 小方块的「弦图拼图」目标位（外方边长 c，原点在左下，y 向上） */
-function puzzleTargets(a, b) {
-  const c = Math.hypot(a, b);
-  const t1 = [[0, 0], [b, 0], [b, a]].map(([x, y]) => [x, c - y]);      // 翻到 y-up
-  const t2 = [[c, 0], [c, b], [c - a, b]].map(([x, y]) => [x, c - y]);
-  const t3 = [[c, c], [c - b, c], [c - b, c - a]].map(([x, y]) => [x, c - y]);
-  const t4 = [[0, c], [0, c - b], [a, c - b]].map(([x, y]) => [x, c - y]);
-  const s = b - a, u = [-a / c, b / c], v = [b / c, a / c];
-  const cen = [c / 2, c / 2];
-  const sq = [
-    [cen[0] + s / 2 * u[0] + s / 2 * v[0], cen[1] + s / 2 * u[1] + s / 2 * v[1]],
-    [cen[0] - s / 2 * u[0] + s / 2 * v[0], cen[1] - s / 2 * u[1] + s / 2 * v[1]],
-    [cen[0] - s / 2 * u[0] - s / 2 * v[0], cen[1] - s / 2 * u[1] - s / 2 * v[1]],
-    [cen[0] + s / 2 * u[0] - s / 2 * v[0], cen[1] + s / 2 * u[1] - s / 2 * v[1]],
-  ];
-  return [t1, t2, t3, t4, sq];
-}
-
-/* ================= 章节 1：拼图挑战 ================= */
-
-const pz = { a: 3, b: 4, pieces: [], locked: 0, dragIdx: -1, animIdx: -1, animT: 0, done: false };
-
-function puzzleScatter() {
-  const [t1, t2, t3, t4, sq] = puzzleTargets(pz.a, pz.b);
-  const c = Math.hypot(pz.a, pz.b);
-  const offs = [[c + 2.2, 0.4], [c + 2.2, c + 1.2], [-2.8, c + 1.2], [-2.8, 0.4], [c + 2.2, c / 2]];
-  const src = [t1, t2, t3, t4, sq];
-  pz.pieces = src.map((pts, i) => ({
-    target: pts,
-    pos: movePoly(pts, offs[i][0], offs[i][1] - centroid(pts)[1]),
-    locked: false,
-    color: ACCENTS[i],
-  }));
-  pz.locked = 0; pz.done = false; pz.animIdx = -1;
-  const ext = c + 5;
-  setBoard(ext / 2 - 0.8, c / 2, Math.min(52, 560 / ext));
-}
-function puzzleDrop() {
-  if (pz.dragIdx >= 0) {
-    puzzleSnapCheck();
-    pz.dragIdx = -1;
-    canvas.style.cursor = 'grab';
-  }
-}
-
-function puzzleSnapCheck() {
-  pz.pieces.forEach((p, i) => {
-    if (p.locked) return;
-    const [pcx, pcy] = centroid(p.pos), [tcx, tcy] = centroid(p.target);
-    const tol = Math.max(0.55, Math.hypot(pz.a, pz.b) * 0.09);
-    if (Math.hypot(pcx - tcx, pcy - tcy) < tol) {
-      p.locked = true;
-      p.pos = p.target.map(([x, y]) => [x, y]);
-      pz.locked++;
-      if (pz.locked === 5) pz.done = true;
-    }
-  });
-}
-
-const secPuzzle = {
-  id: 'puzzle', title: '拼图挑战',
-  html: `<p>目标是中间的 <b>斜边正方形 c²</b>：把右边的碎片——<b>4 个全等直角三角形</b>和 1 个小正方形（边长 b−a）——<b>拖</b>进大正方形里拼满它。</p>
-<p>拼满的一刻你会发现：4 个三角形的面积 = 4 × ½ab，小正方形面积 = (b−a)²，正好铺满 c²：</p>
-<p><span class="hl">c² = 4·½ab + (b−a)² = 2ab + a² − 2ab + b² = a² + b²</span></p>
-<p>这就是<b>赵爽弦图</b>的拼法（东汉·《周髀算经》注）。拖到目标附近会自动吸附；点「自动演示」看机器人拼一遍；切换不同勾股数再试。</p>`,
-  enter() {
-    Object.assign(pz, { a: 3, b: 4, locked: 0, dragIdx: -1, done: false });
-    puzzleScatter();
-    chapterPointerUp = puzzleDrop;
-    chapterDrag = (e, dx, dy) => {
-      const rect = canvas.getBoundingClientRect();
-      const [wx, wy] = S2W(e.clientX - rect.left, e.clientY - rect.top);
-      if (pz.dragIdx >= 0) {
-        const p = pz.pieces[pz.dragIdx];
-        if (!p.locked) p.pos = movePoly(p.pos, dx / view.scale, -dy / view.scale);
-        return true;
-      }
-      // 起手：拾取未锁定的碎片（拾取当次也应用位移，避免丢首帧 delta）
-      for (let i = pz.pieces.length - 1; i >= 0; i--) {
-        const p = pz.pieces[i];
-        if (p.locked) continue;
-        if (pointInPoly(wx, wy, p.pos)) {
-          pz.dragIdx = i;
-          canvas.style.cursor = 'grabbing';
-          p.pos = movePoly(p.pos, dx / view.scale, -dy / view.scale);
-          return true;
-        }
-      }
-      return false;
-    };
-    hud.show(true);
-    ctl.clear();
-    ctl.seg({
-      options: [{ label: '3,4,5', value: '3,4' }, { label: '6,8,10', value: '6,8' }, { label: '5,12,13', value: '5,12' }],
-      value: '3,4',
-      onChange: (v) => { const [a, b] = v.split(',').map(Number); pz.a = a; pz.b = b; puzzleScatter(); },
-    });
-    ctl.sep();
-    const demoBtn = ctl.button({
-      label: '▶ 自动演示',
-      onClick() {
-        if (pz.animIdx === -1) { pz.animIdx = 0; pz.animT = 0; demoBtn.textContent = '⏸ 演示中'; }
-        else { pz.animIdx = -1; demoBtn.textContent = '▶ 自动演示'; }
-      },
-    });
-    ctl.button({
-      label: '↺ 打乱重来',
-      onClick() { puzzleScatter(); demoBtn.textContent = '▶ 自动演示'; },
-    });
-    chapterTick = (dt) => {
-      if (pz.animIdx >= 0) {
-        pz.animT += dt / 0.7;
-        const i = pz.animIdx;
-        const p = pz.pieces[i];
-        if (p && !p.locked) {
-          const k = Math.min(1, pz.animT);
-          const e = 1 - Math.pow(1 - k, 3);
-          const from = centroid(p.pos), to = centroid(p.target);
-          const cur = [from[0] + (to[0] - from[0]) * e - (k < 1 ? 0 : 0), from[1] + (to[1] - from[1]) * e];
-          const shift = [cur[0] - centroid(p.pos)[0], cur[1] - centroid(p.pos)[1]];
-          p.pos = movePoly(p.pos, shift[0], shift[1]);
-          if (k >= 1) { puzzleSnapCheck(); pz.animIdx++; pz.animT = 0; }
-        } else { pz.animIdx++; pz.animT = 0; }
-        if (pz.animIdx >= 5) { pz.animIdx = -1; demoBtn.textContent = '▶ 自动演示'; }
-      }
-      drawPuzzle();
-    };
-    drawPuzzle();
+const STYLES = {
+  studio: {
+    label: 'Studio 风格',
+    bg: () => makeBackdropTexture({ inner: '#33454e', outer: '#101a1e', glow: '#5a7478', glowStrength: 0.42 }),
+    edge: 0xe8e2d2, edgeEmissive: 0.34,          // 拼板描边管（暖白亮线）
+    dashed: 0xb8c4c8,                             // 虚线辅助线
+    hintFill: 0xe8a13f,                           // 提示槽位填充
+    water: 0x55a7f2,                              // 倒水水面
+    axis: 0x9fb8c0, point: 0xf2a055,
   },
-  leave() { canvas.style.cursor = 'grab'; },
-};
-
-function pointInPoly(x, y, pts) {
-  let inside = false;
-  for (let i = 0, j = pts.length - 1; i < pts.length; j = i++) {
-    const [xi, yi] = pts[i], [xj, yj] = pts[j];
-    if ((yi > y) !== (yj > y) && x < ((xj - xi) * (y - yi)) / (yj - yi) + xi) inside = !inside;
-  }
-  return inside;
-}
-
-function drawPuzzle() {
-  const c = Math.hypot(pz.a, pz.b);
-  clearCanvas();
-  grid();
-  const outline = [[0, 0], [c, 0], [c, c], [0, c]];
-  poly(outline, null, { color: palette.text, width: 2.4 });
-  label(`c²（${pz.a * pz.a + pz.b * pz.b}）`, c / 2, c + 0.5, palette.dim, { size: 12.5 });
-  pz.pieces.forEach((p, i) => {
-    poly(p.pos, p.locked ? p.color : palette.dark ? 'rgba(255,255,255,0.10)' : 'rgba(20,32,44,0.10)',
-      { color: p.locked ? palette.dim : palette.text, width: p.locked ? 1.2 : 1.8, dash: p.locked ? [] : [5, 4] });
-    if (!p.locked) {
-      const [cx, cy] = centroid(p.pos);
-      label(['甲', '乙', '丙', '丁', '戊'][i], cx, cy, palette.dim, { size: 13, bold: true });
-    }
-  });
-  if (pz.done) {
-    label(`✓ 拼满！c² = 4×½×${pz.a}×${pz.b} + (${pz.b - pz.a})² = ${pz.a}² + ${pz.b}² = ${c * c}`,
-      c / 2, -1.2, C.green, { size: 15, bold: true });
-  }
-  hud.set('v1', `已拼 ${pz.locked} / 5 块`);
-  hud.set('v2', `a=${pz.a}  b=${pz.b}  c=${c}`);
-  hud.set('v3', pz.done ? 'a² + b² = c² ✓' : '拖动碎片进大正方形');
-}
-
-/* ================= 章节 2：出入相补 ================= */
-
-const cb = { a: 3, b: 4, t: 0, step: 0, moving: false };
-
-function chuBuConfigs(a, b) {
-  const S = a + b;
-  // 配置 A：四三角形（顶点序：直角点 → a 端 → b 端）
-  const A = [
-    [[0, 0], [0, a], [b, 0]],
-    [[S, 0], [S, a], [b, 0]],
-    [[S, S], [a, S], [S, a]],
-    [[0, S], [b, S], [0, a]],
-  ];
-  // 配置 B：两条矩形各沿对角线切成两个三角形
-  const B = [
-    [[S, a], [S, S], [b, a]],          // ← T1 去右上矩形
-    [[b, 0], [b, a], [0, 0]],          // ← T2
-    [[0, a], [0, 0], [b, a]],          // ← T3
-    [[b, S], [b, a], [S, S]],          // ← T4
-  ];
-  const cSq = [[b, 0], [S, b], [a, S], [0, b]];
-  return { A, B, cSq, S };
-}
-
-const secChubu = {
-  id: 'chubu', title: '出入相补',
-  html: `<p>刘徽的<b>出入相补原理</b>（公元 263 年，《九章算术》注）：图形经过割补拼接，<b>总面积不变</b>。</p>
-<p>大正方形边长 (a+b)，面积 (a+b)²。<b>配置一</b>：4 个直角三角形摆在四角，剩下的空隙是一个斜放的正方形——面积恰好 c²。<b>配置二</b>：同样的 4 个三角形重新排列，空隙变成两个方方正正的正方形——a² 和 b²。</p>
-<p>三角形没多没少，空隙面积当然相等：<span class="hl">c² = a² + b²</span>。点「移动一块」逐步把三角形从配置一搬到配置二，亲自完成这次"出入相补"。</p>`,
-  enter() {
-    Object.assign(cb, { a: 3, b: 4, t: 0, step: 0, moving: false });
-    setBoard((3 + 4) / 2, (3 + 4) / 2, 40);
-    chapterDrag = null;
-    hud.show(true);
-    ctl.clear();
-    ctl.seg({
-      options: [{ label: '3,4,5', value: '3,4' }, { label: '5,12,13', value: '5,12' }, { label: '8,15,17', value: '8,15' }],
-      value: '3,4',
-      onChange: (v) => { const [a, b] = v.split(',').map(Number); cb.a = a; cb.b = b; cb.step = 0; cb.t = 0; setBoard((a + b) / 2, (a + b) / 2, 300 / (a + b) / 1.15); },
-    });
-    ctl.sep();
-    ctl.button({
-      label: '移动一块 →',
-      onClick() { if (cb.step < 4) { cb.step++; cb.t = 0; cb.moving = true; } },
-    });
-    ctl.button({
-      label: '← 退回一块',
-      onClick() { if (cb.step > 0) { cb.step--; cb.t = 0; cb.moving = true; } },
-    });
-    ctl.toggle({ label: '辅助线', value: true, onChange: (v) => { cb.guides = v; } });
-    cb.guides = true;
-    chapterTick = (dt) => {
-      if (cb.moving) {
-        cb.t += dt / 0.6;
-        if (cb.t >= 1) { cb.t = 1; cb.moving = false; }
-      }
-      drawChubu();
-    };
-    drawChubu();
+  paper: {
+    label: '纸面风格',
+    bg: () => makeBackdropTexture({ inner: '#f2eee0', outer: '#b5ad98', glow: '#fffdf4', glowStrength: 0.5 }),
+    edge: 0x4a3f30, edgeEmissive: 0.06,           // 纸面档：墨线描边
+    dashed: 0x6a5f4c,
+    hintFill: 0xbd7d1e,
+    water: 0x3d7fce,
+    axis: 0x6a6458, point: 0xc25a28,
   },
 };
+let styleName = 'studio';
+try { if (localStorage.getItem('pythagoras.style') === 'paper') styleName = 'paper'; } catch (e) { /* 忽略 */ }
+const styleRefs = { edgeMats: [], dashedMats: [], hintMats: [], waterMats: [], axisMats: [], pointMats: [], slabSideMats: [] };
+let bgTex = null;
 
-function drawChubu() {
-  const { a, b, step, t } = cb;
-  const { A, B, cSq, S } = chuBuConfigs(a, b);
-  clearCanvas();
-  grid();
-  poly([[0, 0], [S, 0], [S, S], [0, S]], null, { color: palette.text, width: 2.4 });
-  const e = cb.moving ? 1 - Math.pow(1 - Math.min(1, t), 3) : 1;
-  // 空隙高亮：step 完成数决定显示 c² 还是 a²/b²
-  const [tcx, tcy] = centroid(cSq);
-  if (cb.guides) {
-    if (step === 0 && !cb.moving) {
-      poly(cSq, 'rgba(63,169,111,0.14)', { color: C.green, width: 2, dash: [6, 4] });
-      label(`剩余 = c² = ${a * a + b * b}`, tcx, tcy, C.green, { size: 14, bold: true });
-    } else if (step === 4 && !cb.moving) {
-      poly([[0, 0], [b, 0], [b, b], [0, b]], 'rgba(74,144,217,0.12)', { color: C.blue, width: 2, dash: [6, 4] });
-      poly([[b, 0], [S, 0], [S, a], [b, a]], 'rgba(155,111,217,0.12)', { color: C.purple, width: 2, dash: [6, 4] });
-      label(`b² = ${b * b}`, b / 2, b / 2, C.blue, { size: 14, bold: true });
-      label(`a² = ${a * a}`, b + a / 2, a / 2, C.purple, { size: 14, bold: true });
-      label(`剩余 = a² + b² = ${a * a + b * b}`, S / 2, -1, palette.text, { size: 14, bold: true });
-    }
+/** 深改重建路径专用：dispose 材质并同步从 styleRefs 登记表摘除（防换肤循环遍历到已释放材质 + 无界增长） */
+function disposeMat(m) {
+  if (!m) return;
+  for (const arr of Object.values(styleRefs)) {
+    const i = arr.indexOf(m);
+    if (i >= 0) arr.splice(i, 1);
   }
-  A.forEach((tri, i) => {
-    // 前 step 块已到位（插值向 B[i]），其余在 A 位
-    const dst = i < step ? B[i] : A[i];
-    const src = i < step ? A[i] : A[i];
-    const moving = i === step && cb.moving;
-    const from = moving ? A[i] : src;
-    const to = moving ? B[i] : dst;
-    const pts = from.map(([x, y], k) => [x + (to[k][0] - x) * (moving ? e : 1), y + (to[k][1] - y) * (moving ? e : 1)]);
-    poly(pts, ACCENTS[i], { color: palette.dim, width: 1.6 });
-  });
-  // 面积恒等式
-  const eq = step < 4 && !cb.moving && step === 0
-    ? `(a+b)² = c² + 4×½ab`
-    : step === 4 && !cb.moving ? `(a+b)² = a² + b² + 4×½ab` : '三角形搬运中…';
-  label(eq, S / 2, S + 1.1, palette.dim, { size: 13 });
-  if (step === 4 && !cb.moving) label('两个空隙一样大 → c² = a² + b²', S / 2, -1, C.green, { size: 15, bold: true });
-  hud.set('v1', `已搬 ${step} / 4 块`);
-  hud.set('v2', `(a+b)² = ${S * S}`);
-  hud.set('v3', `a²+b² = ${a * a + b * b} = c²`);
+  m.dispose();
 }
 
-/* ================= 章节 3：欧几里得的证明 ================= */
-
-const eu = { a: 3, b: 4, step: 0, t: 1, playing: false };
-
-function euclidLayout(a, b) {
-  // 直角三角形 A(0,0) B(b,0) C(0,a)；三侧正方形向外
-  return { A: [0, 0], B: [b, 0], C: [0, a] };
+function applyStyle(name) {
+  styleName = name;
+  const st = STYLES[name];
+  if (bgTex) bgTex.dispose();
+  bgTex = st.bg();
+  bgTex.mapping = THREE.EquirectangularReflectionMapping;
+  scene.background = bgTex;
+  for (const m of styleRefs.edgeMats) { m.color.set(st.edge); m.emissive.set(st.edge); m.emissiveIntensity = st.edgeEmissive; }
+  for (const m of styleRefs.dashedMats) m.color.set(st.dashed);
+  for (const m of styleRefs.hintMats) m.color.set(st.hintFill);
+  for (const m of styleRefs.waterMats) { m.color.set(st.water); m.emissive.set(st.water); }
+  for (const m of styleRefs.axisMats) m.color.set(st.axis);
+  for (const m of styleRefs.pointMats) m.color.set(st.point);
+  try { localStorage.setItem('pythagoras.style', name); } catch (e) { /* 忽略 */ }
 }
 
-const secEuclid = {
-  id: 'euclid', title: '欧几里得的证明',
-  html: `<p>《几何原本》命题 I.47（约公元前 300 年）：直角三角形斜边上的正方形 = 两直角边上的正方形之和。</p>
-<p>关键一步是<b>剪切变换（出入相补的极端形式）</b>：b² 正方形先剪切变成同底等高的平行四边形（面积不变），再剪切一次落到斜边上的矩形里——面积仍不变。这个矩形恰好是 c² 正方形被「BC 的延长线」分出的一半。</p>
-<p>六步演示：① 全图 → ② 连辅助线 → ③ 剪切 b² → ④ 落到斜边 → ⑤ 剪切 a² → ⑥ 合并结论。每一步面积都严格守恒。</p>`,
-  enter() {
-    Object.assign(eu, { a: 3, b: 4, step: 0, t: 1, playing: false });
-    setBoard(2.1, 1.6, Math.min(760 / (4 + 3 * 4), 560 / (3 + 4 + 2.5)));
-    chapterDrag = null;
-    hud.show(true);
-    ctl.clear();
-    ctl.seg({
-      options: [{ label: '3,4,5', value: '3,4' }, { label: '5,12,13', value: '5,12' }],
-      value: '3,4',
-      onChange: (v) => { const [a, b] = v.split(',').map(Number); eu.a = a; eu.b = b; eu.step = 0; eu.t = 1; eu.playing = false; setBoard(b * 0.62 - a * 0.38, (a - b) * 0.42, Math.min(760 / (a + 2 * b + 3), 560 / (a + b + 2))); },
-    });
-    ctl.sep();
-    const playBtn = ctl.button({
-      label: '▶ 自动播放',
-      onClick() { eu.playing = !eu.playing; playBtn.classList.toggle('active', eu.playing); },
-    });
-    ctl.button({ label: '下一步 →', onClick() { eu.step = Math.min(6, eu.step + 1); eu.t = 0; } });
-    ctl.button({ label: '← 上一步', onClick() { eu.step = Math.max(0, eu.step - 1); eu.t = 1; } });
-    chapterTick = (dt) => {
-      if (eu.playing) {
-        eu.t += dt / 1.1;
-        if (eu.t >= 1) { eu.t = 0; eu.step++; if (eu.step > 6) { eu.step = 0; eu.t = 1; eu.playing = false; playBtn.classList.remove('active'); } }
-      } else if (eu.t < 1) eu.t = Math.min(1, eu.t + dt / 0.5);
-      drawEuclid();
-    };
-    drawEuclid();
-  },
-};
-
-function drawEuclid() {
-  const { a, b, step, t } = eu;
-  const c = Math.hypot(a, b);
-  const A = [0, 0], B = [b, 0], Cc = [0, a];
-  // c² 正方形（斜边外侧）：顶点 B, C, C+(a,b), B+(a,b)
-  const Cq = [[B[0], B[1]], [Cc[0], Cc[1]], [a, a + b], [a + b, b]];
-  clearCanvas();
-  grid();
-  const e = 1 - Math.pow(1 - Math.min(1, t), 3);
-  const showAll = step === 0;
-  // 三角形
-  poly([A, B, Cc], 'rgba(232,103,74,0.25)', { color: palette.accent, width: 2 });
-  label('直角三角形', b * 0.28, a * 0.42, palette.accent, { size: 11.5, bold: true });
-  // c² 恒在（step≥0）
-  poly(Cq, showAll || step >= 1 ? 'rgba(63,169,111,0.16)' : null, { color: C.green, width: 2 });
-  label(`c² = ${c * c}`, (a + b) / 2 + a * 0.18, (a + b) / 2 + b * 0.18, C.green, { size: 13, bold: true });
-  // 辅助线（step≥1）：BC 延长线 & 顶点连线
-  if (step >= 1) {
-    // 过 C 平行于 AB 的线 与 过 B 平行于 AC 的线（剪切参考线）
-    seg(-a * 1.1, a, (a + b) * 1.15, a, palette.faint, { dash: [5, 4], width: 1.2 });
-    seg(b, -b * 1.1, b, (a + b) * 0.9, palette.faint, { dash: [5, 4], width: 1.2 });
-    // D = BC 延长线与过 B 竖线交点（用于标记矩形分界）
-    seg(Cc[0], Cc[1], a + b, b, palette.accent, { width: 2 }); // BC 延长（把 c² 切成两块矩形）
+/* 图上标注开关（原版 toggles:["labels"] 1:1） */
+let labelsOn = true;
+try { labelsOn = localStorage.getItem('pythagoras.labels') !== '0'; } catch (e) { /* 忽略 */ }
+function applyLabels() {
+  for (const g of Object.values(scenes)) {
+    for (const s of g.userData.labelSprites || []) s.visible = labelsOn && s.userData.labelBase;
   }
-  // b² → 剪切成平行四边形（step 2 动画；step≥3 淡出表示已搬走）
-  if (step < 4) {
-    const k = step === 2 ? e : step >= 3 ? 1 : 0;
-    const para = [[0, 0], [b, 0], [b + k * b, -b], [k * b, -b]];
-    poly(para, step >= 3 ? 'rgba(74,144,217,0.07)' : 'rgba(74,144,217,0.16)', { color: C.blue, width: 2 });
-    label('b²', b * 0.5 + k * b * 0.5, -b * 0.5, C.blue, { size: 13, bold: true });
-    if (step === 2 && k > 0.05) label('剪切①：同底等高，面积不变', b + k * b + 0.4, -b * 0.5, palette.dim, { size: 11, align: 'left' });
-  }
-  // a² → 剪切成平行四边形（step 4 动画；step≥5 淡出）
-  if (step < 6) {
-    const k = step === 4 ? e : step >= 5 ? 1 : 0;
-    const para = [[-a, 0], [0, 0], [0, a], [-a + k * a, a]];
-    poly(para, step >= 5 ? 'rgba(155,111,217,0.07)' : 'rgba(155,111,217,0.16)', { color: C.purple, width: 2 });
-    label('a²', -a * 0.5 + k * a * 0.5, a * 0.5, C.purple, { size: 13, bold: true });
-    if (step === 4 && k > 0.05) label('剪切②', -a + k * a - 0.4, a * 1.15, palette.dim, { size: 11, align: 'right' });
-  }
-  // step≥5：c² 内两块落位矩形高亮（BC 延长线切开的下半块 = b² 的落位）
-  if (step >= 5) {
-    poly([B, [a + b, b], [a, a + b], Cc], 'rgba(74,144,217,0.10)', { color: C.blue, width: 1.6, dash: [5, 4] });
-    label('下半块 ← b² 的面积', (a + b) / 2 + 0.75, b / 2 + a * 0.28, C.blue, { size: 11.5, bold: true });
-    label('上半块 ← a² 的面积', a / 2 - 0.2, (a + b) / 2 + a * 0.45, C.purple, { size: 11.5, bold: true });
-  }
-  if (step >= 6) {
-    label(`→ c² = a² + b² = ${a * a} + ${b * b} = ${a * a + b * b}`, (a + b) / 2, a + b + 0.5, C.green, { size: 15, bold: true });
-  }
-  // 顶点标签
-  label('A', -0.32, -0.3, palette.dim, { size: 12 });
-  label('B', b + 0.3, -0.3, palette.dim, { size: 12 });
-  label('C', -0.3, a + 0.28, palette.dim, { size: 12 });
-  hud.set('v1', `第 ${step} / 6 步：${['全图', '辅助线', '剪切 b²', '向斜边搬', '剪切 a²', '落位', '结论'][step]}`);
-  hud.set('v2', `剪切变换：同底等高 → 面积不变`);
-  hud.set('v3', `c² = a² + b² = ${a * a + b * b}`);
+  try { localStorage.setItem('pythagoras.labels', labelsOn ? '1' : '0'); } catch (e) { /* 忽略 */ }
 }
 
-/* ================= 章节 4：更多证法 ================= */
+/* ================= 2D 多边形数学库（世界坐标板：数学 x 右 / y 上，渲染映射 z = −y） ================= */
 
-const mp = { which: 'xiantu', step: 0 };
-
-const secMore = {
-  id: 'more', title: '更多证法',
-  html: `<p>勾股定理有 400 多种证明，这里选三个最有味道的：</p>
-<p><b>赵爽弦图</b>：大正方形 (a+b)² 挖去 4 个三角形：c² = (a+b)² − 4·½ab = a² + 2ab + b² − 2ab = a² + b²。用代数恒等式 kills 几何。</p>
-<p><b>加菲尔德梯形</b>（1876，美国第 20 任总统）：直角梯形面积 ½(a+b)(a+b) = 两个三角形 ½ab + ½ab + ½c²，展开即得。据说是国会杂志上的"副业成果"。</p>
-<p><b>面积减法</b>：(a+b)² 里放 4 个三角形的两种摆法：一种剩 c²，一种剩 a²+b²——与「出入相补」章节同源，但用减法一眼看穿。</p>`,
-  enter() {
-    mp.which = 'xiantu';
-    mp.step = 0;
-    setBoard(3.5, 3.3, 46);
-    chapterDrag = null;
-    hud.show(false);
-    ctl.clear();
-    ctl.seg({
-      options: [{ label: '弦图', value: 'xiantu' }, { label: '总统梯形', value: 'trapezoid' }, { label: '面积减法', value: 'subtract' }],
-      value: 'xiantu',
-      onChange: (v) => { mp.which = v; },
-    });
-    ctl.sep();
-    ctl.button({ label: '下一步 →', onClick() { mp.step = Math.min(3, mp.step + 1); } });
-    ctl.button({ label: '← 重来', onClick() { mp.step = 0; } });
-    chapterTick = () => drawMore();
-    drawMore();
-  },
-};
-
-function drawMore() {
-  const a = 3, b = 4, S = a + b;
-  clearCanvas();
-  grid();
-  if (mp.which === 'xiantu') {
-    poly([[0, 0], [S, 0], [S, S], [0, S]], null, { color: palette.text, width: 2.2 });
-    const tris = [
-      [[0, 0], [b, 0], [0, a]], [[S, 0], [S, a], [b, 0]],
-      [[S, S], [a, S], [S, a]], [[0, S], [b, S], [0, a]],
-    ];
-    tris.forEach((t, i) => poly(t, ACCENTS[i], { color: palette.dim, width: 1.5 }));
-    const cSq = [[b, 0], [S, b], [a, S], [0, b]];
-    if (mp.step >= 1) poly(cSq, 'rgba(63,169,111,0.15)', { color: C.green, width: 2, dash: [6, 4] });
-    if (mp.step >= 1) label(`c²`, (a + b) / 2, (a + b) / 2, C.green, { size: 16, bold: true });
-    if (mp.step >= 2) label(`(a+b)² − 4×½ab = c²`, S / 2, S + 1, palette.text, { size: 13.5, bold: true });
-    if (mp.step >= 3) label(`= a² + 2ab + b² − 2ab = a² + b²`, S / 2, S + 0.35, C.green, { size: 13.5, bold: true });
-    label('大正方形边长 a+b', S / 2, -0.7, palette.dim, { size: 12 });
-  } else if (mp.which === 'trapezoid') {
-    // 加菲尔德梯形：底边 (a+b) 上放两个全等直角三角形，中间夹出等腰三角形（两腰 = c）
-    // 外轮廓 (0,0),(a+b,0),(a+b,a),(0,b)，总面积 ½(a+b)²
-    const quad = [[0, 0], [a + b, 0], [a + b, a], [0, b]];
-    poly(quad, 'rgba(217,161,63,0.08)', { color: palette.text, width: 2.2 });
-    poly([[0, 0], [a, 0], [0, b]], 'rgba(232,103,74,0.30)', { color: palette.dim, width: 1.5 });
-    poly([[a, 0], [a + b, 0], [a + b, a]], 'rgba(74,144,217,0.30)', { color: palette.dim, width: 1.5 });
-    poly([[0, b], [a, 0], [a + b, a]], 'rgba(63,169,111,0.30)', { color: palette.dim, width: 1.5 });
-    if (mp.step >= 1) seg(a, 0, a, a + 0.45, C.gold, { width: 1.4, dash: [4, 3] });
-    label('½ab', a * 0.42, b * 0.30, palette.dim, { size: 12 });
-    label('½ab', a + b * 0.42, a * 0.42, palette.dim, { size: 12 });
-    label(`½c²`, a * 0.82, b * 0.62, C.green, { size: 13, bold: true });
-    label(`c`, a * 0.32, b * 0.72, C.green, { size: 11.5, bold: true });
-    label(`c`, a + b * 0.55, a * 0.78, C.green, { size: 11.5, bold: true });
-    if (mp.step >= 1) label(`总面积 = ½(a+b)²`, (a + b) / 2, -0.8, palette.text, { size: 13.5, bold: true });
-    if (mp.step >= 2) label(`= ½ab + ½ab + ½c²`, (a + b) / 2, -1.6, palette.text, { size: 13 });
-    if (mp.step >= 3) label(`展开：a² + 2ab + b² = 2ab + c² → c² = a² + b²`, (a + b) / 2, a + 0.9, C.green, { size: 13, bold: true });
-  } else {
-    poly([[0, 0], [S, 0], [S, S], [0, S]], null, { color: palette.text, width: 2.2 });
-    const t1 = [[0, 0], [b, 0], [0, a]], t2 = [[b, 0], [S, 0], [S, a]];
-    const t3 = [[0, a], [0, S], [b, S]], t4 = [[b, S], [S, a], [S, S]];
-    [t1, t2, t3, t4].forEach((t, i) => poly(t, ACCENTS[i], { color: palette.dim, width: 1.5 }));
-    if (mp.step >= 1) {
-      poly([[0, a], [b, 0], [S, a], [b, S]], 'rgba(63,169,111,0.15)', { color: C.green, width: 2, dash: [6, 4] });
-      label('这种放法剩下：斜的正方形 c²', S / 2, S + 1, palette.dim, { size: 12.5 });
-    }
-    if (mp.step >= 2) {
-      const alt = [t1, [[b, 0], [b, a], [0, 0]], [[0, a], [0, 0], [b, a]], [[b, a], [S, a], [S, S]], [[b, a], [b, S], [S, a]]];
-      alt.slice(1).forEach((t, i) => poly(t, ACCENTS[(i + 1) % 4], { color: palette.dim, width: 1.2 }));
-      poly([[b, 0], [S, 0], [S, a], [b, a]], 'rgba(155,111,217,0.15)', { color: C.purple, width: 2 });
-      label('换一种放法剩下：a² + b²', S / 2, S + 1, C.purple, { size: 12.5, bold: true });
-    }
-    if (mp.step >= 3) label('同样的三角形，同样的剩余面积 → c² = a² + b²', S / 2, -1, C.green, { size: 13.5, bold: true });
-  }
-}
-
-/* ================= 章节 5：倒水 ================= */
-
-const wt = { a: 3, b: 4, theta: 0, playing: false, lockWater: false };
-
-function clipBelow(pts, w) {
-  // 保留 y <= w 的部分（Sutherland–Hodgman）
-  const out = [];
+const P2C = (pt) => V3(pt[0], 0, -pt[1]);                    // 2D 数学点 → 3D 平面点（y 高度后补）
+const polyCentroid = (pts) => {
+  let at = 0, cx = 0, cy = 0;
   for (let i = 0; i < pts.length; i++) {
-    const p = pts[i], q = pts[(i + 1) % pts.length];
-    const pin = p[1] <= w, qin = q[1] <= w;
-    if (pin) out.push(p);
-    if (pin !== qin) {
-      const t = (w - p[1]) / (q[1] - p[1]);
-      out.push([p[0] + (q[0] - p[0]) * t, w]);
-    }
+    const [x1, y1] = pts[i], [x2, y2] = pts[(i + 1) % pts.length];
+    const cr = x1 * y2 - x2 * y1;
+    at += cr; cx += (x1 + x2) * cr; cy += (y1 + y2) * cr;
   }
-  return out;
-}
-function polyArea(pts) {
+  if (Math.abs(at) < 1e-12) {
+    let sx = 0, sy = 0; pts.forEach(([x, y]) => { sx += x; sy += y; });
+    return [sx / pts.length, sy / pts.length];
+  }
+  return [cx / (3 * at), cy / (3 * at)];
+};
+const polyArea = (pts) => {
   let s = 0;
   for (let i = 0; i < pts.length; i++) {
     const [x1, y1] = pts[i], [x2, y2] = pts[(i + 1) % pts.length];
     s += x1 * y2 - x2 * y1;
   }
   return Math.abs(s) / 2;
+};
+const polyShift = (pts, d) => pts.map(([x, y]) => [x + d[0], y + d[1]]);
+const polyRotAbout = (pts, piv, ang) => pts.map(([x, y]) => {
+  const dx = x - piv[0], dy = y - piv[1], c = Math.cos(ang), s = Math.sin(ang);
+  return [piv[0] + dx * c - dy * s, piv[1] + dx * s + dy * c];
+});
+/** 半平面裁剪：保留 { p : (p−base)·dir ≥ 0 } 侧（Sutherland–Hodgman） */
+function polyClipHalf(pts, base, dir) {
+  const side = (p) => (p[0] - base[0]) * dir[0] + (p[1] - base[1]) * dir[1];
+  const out = [];
+  for (let i = 0; i < pts.length; i++) {
+    const p = pts[i], q = pts[(i + 1) % pts.length];
+    const sp = side(p), sq = side(q);
+    if (sp >= -1e-12) out.push(p);
+    if ((sp > 1e-12 && sq < -1e-12) || (sp < -1e-12 && sq > 1e-12)) {
+      const k = sp / (sp - sq);
+      out.push([p[0] + (q[0] - p[0]) * k, p[1] + (q[1] - p[1]) * k]);
+    }
+  }
+  return out;
+}
+/** 水位裁剪：保留 y ≤ level 的部分 */
+const polyClipBelow = (pts, lv) => polyClipHalf(pts, [0, lv], [0, -1]);
+const pointInPoly = (x, y, pts) => {
+  let inside = false;
+  for (let i = 0, j = pts.length - 1; i < pts.length; j = i++) {
+    const [xi, yi] = pts[i], [xj, yj] = pts[j];
+    if ((yi > y) !== (yj > y) && x < ((xj - xi) * (y - yi)) / (yj - yi) + xi) inside = !inside;
+  }
+  return inside;
+};
+/** 多边形近似相等：顶点数一致且可一一配对（容差 tol） */
+function polyMatch(a, b, tol = 1e-4) {
+  if (a.length !== b.length) return false;
+  const used = new Set();
+  for (const p of a) {
+    let hit = -1;
+    for (let i = 0; i < b.length; i++) {
+      if (used.has(i)) continue;
+      if (Math.hypot(p[0] - b[i][0], p[1] - b[i][1]) < tol) { hit = i; break; }
+    }
+    if (hit < 0) return false;
+    used.add(hit);
+  }
+  return true;
+}
+/** 水位二分求解：在 poly 内找水平线，使线下面积 = target（返回 {level, poly}） */
+function solveWaterLevel(pts, target) {
+  const total = polyArea(pts);
+  if (target <= 1e-9) return { level: Infinity, poly: [] };
+  if (target >= total - 1e-9) return { level: -Infinity, poly: pts };
+  const ys = pts.map((p) => p[1]);
+  let lo = Math.min(...ys), hi = Math.max(...ys);
+  for (let i = 0; i < 46; i++) {
+    const mid = (lo + hi) / 2;
+    if (polyArea(polyClipBelow(pts, mid)) < target) lo = mid; else hi = mid;
+  }
+  const level = (lo + hi) / 2;
+  return { level, poly: polyClipBelow(pts, level) };
+}
+const smoothV = (t) => { const k = clamp(t, 0, 1); return k * k * (3 - 2 * k); };
+/** 多边形形态插值（原版 jt 语义：旋转 + 平移联合插值，形态过渡自然） */
+function polyMorph(a, b, k) {
+  const ca = polyCentroid(a), cb = polyCentroid(b);
+  const angA = Math.atan2(a[1][1] - a[0][1], a[1][0] - a[0][0]);
+  const angB = Math.atan2(b[1][1] - b[0][1], b[1][0] - b[0][0]);
+  let dAng = angB - angA;
+  for (; dAng > Math.PI; dAng -= 2 * Math.PI);
+  for (; dAng < -Math.PI; dAng += 2 * Math.PI);
+  const mid = [ca[0] + (cb[0] - ca[0]) * k, ca[1] + (cb[1] - ca[1]) * k];
+  return polyShift(polyRotAbout(a, ca, dAng * k), [mid[0] - ca[0], mid[1] - ca[1]]);
 }
 
-/** 船体三个正方形（未旋转）：b² 在 x 轴下方，a² 在 y 轴左侧，c² 在斜边外侧 */
-function vesselSquares(a, b) {
+/* ================= 工艺基建（板件 / 描边管 / 标注 / 阴影） ================= */
+
+const THK = 0.17;            // 拼板统一厚度
+const LIFT = 0.1;            // 作业垫板顶面高度（所有拼板的落面基准）
+const canvasTex = (w, h, draw) => {
+  const cv = document.createElement('canvas');
+  cv.width = w; cv.height = h;
+  draw(cv.getContext('2d'), w, h);
+  const tex = new THREE.CanvasTexture(cv);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  tex.anisotropy = 8;
+  return tex;
+};
+
+/* 场景色板（PAL 取族的延展：几何实验用暖木/烤漆族） */
+const C = {
+  lacquerA: 0xc96a48,   // 烤漆·赤陶（三角形/朱实）
+  lacquerB: 0x4a7fa8,   // 烤漆·青蓝
+  lacquerC: 0x58a06c,   // 烤漆·苔绿
+  lacquerD: 0x9a72c8,   // 烤漆·藤紫
+  lacquerE: 0xd9a13f,   // 烤漆·琥珀（黄实/提示）
+  board: 0xdac9a8,      // 拼板底台（枫木浅）
+  boardDeep: 0x8a6a44,  // 台缘深木
+  table: 0x6e4f30,      // 工作台面（胡桃）
+  tri: 0xe8674a,        // 主三角形描边填充（站点 accent）
+  ghost: 0x8fa3ad,
+};
+
+/* 木质材质（桌面 / 拼板底台：程序化木纹，双变体 seed） */
+const woodTexTable = makeWoodTexture({ base: '#6e4f30', dark: '#4a3018', light: '#8f6c42', streaks: 110, bands: 8, seed: 41 });
+woodTexTable.repeat.set(2.6, 1.7);
+const woodTexDeck = makeWoodTexture({ base: '#b99a6d', dark: '#8f704a', light: '#d4b990', streaks: 70, bands: 5, seed: 87 });
+woodTexDeck.repeat.set(1.6, 1.2);
+function tableMat() {
+  const m = new THREE.MeshStandardMaterial({ roughness: 0.58, metalness: 0.05 });
+  m.map = woodTexTable;
+  return m;
+}
+function deckMat() {
+  const m = new THREE.MeshStandardMaterial({ roughness: 0.66, metalness: 0.03 });
+  m.map = woodTexDeck;
+  return m;
+}
+
+/* 烤漆拼板材质（clearcoat 漆面 + 淡 emissive 提亮，风格换肤不动色相） */
+function lacMat(color, o = {}) {
+  return matCoat(color, { clearcoat: 0.9, clearcoatRoughness: 0.24, roughness: o.rough ?? 0.4, metalness: 0.06, emissive: color, emissiveIntensity: o.glow ?? 0.1 });
+}
+
+/* 2D 多边形 → 带厚度倒角板件几何（Shape 沿数学坐标建，rotateX(-π/2) 平放：z = −y 自动成立） */
+function slabGeometry(pts, thick = THK) {
+  const shape = new THREE.Shape(pts.map(([x, y]) => new THREE.Vector2(x, y)));
+  const geo = new THREE.ExtrudeGeometry(shape, {
+    depth: thick, bevelEnabled: true, bevelThickness: 0.022, bevelSize: 0.022, bevelSegments: 2,
+  });
+  geo.rotateX(-Math.PI / 2);
+  return geo;
+}
+function slab(pts, o = {}) {
+  const mesh = new THREE.Mesh(slabGeometry(pts, o.thick), o.mat || deckMat());
+  return mesh;
+}
+
+/* 圆角描边管：多边形顶点圆角化后 CatmullRomCurve3 放样（拼板轮廓的工艺描边） */
+function tubeBorder(pts, o = {}) {
+  const y = o.y ?? THK + 0.012;
+  const r = o.r ?? 0.028;
+  const rr = Math.min(0.14, o.round ?? 0.1);
+  const flat = [];
+  const n = pts.length;
+  for (let i = 0; i < n; i++) {
+    const p0 = pts[(i + n - 1) % n], p1 = pts[i], p2 = pts[(i + 1) % n];
+    const v0 = [p0[0] - p1[0], p0[1] - p1[1]], v2 = [p2[0] - p1[0], p2[1] - p1[1]];
+    const l0 = Math.hypot(...v0) || 1, l2 = Math.hypot(...v2) || 1;
+    const t0 = [v0[0] / l0, v0[1] / l0], t2 = [v2[0] / l2, v2[1] / l2];
+    const cut0 = [p1[0] - t0[0] * rr, p1[1] - t0[1] * rr];
+    const cut2 = [p1[0] + t2[0] * rr, p1[1] + t2[1] * rr];
+    const steps = 5;
+    for (let k = 0; k <= steps; k++) {
+      const s = k / steps;
+      const ax = cut0[0] + (p1[0] - cut0[0]) * s, ay = cut0[1] + (p1[1] - cut0[1]) * s;
+      const bx = p1[0] + (cut2[0] - p1[0]) * s, by = p1[1] + (cut2[1] - p1[1]) * s;
+      flat.push([ax + (bx - ax) * s, ay + (by - ay) * s]);
+    }
+  }
+  const curve = new THREE.CatmullRomCurve3(flat.map(([x, yy]) => V3(x, y, -yy)), true, 'catmullrom', 0.32);
+  const mat = o.mat || edgeMat();
+  return new THREE.Mesh(new THREE.TubeGeometry(curve, Math.min(flat.length * 2, 240), r, 8, true), mat);
+}
+
+function edgeMat() {
+  const m = matGlow(STYLES[styleName].edge, STYLES[styleName].edgeEmissive, { roughness: 0.5 });
+  styleRefs.edgeMats.push(m);
+  return m;
+}
+function dashedMat(opacity = 0.85) {
+  const m = new THREE.LineDashedMaterial({ color: STYLES[styleName].dashed, dashSize: 0.26, gapSize: 0.18, transparent: true, opacity });
+  styleRefs.dashedMats.push(m);
+  return m;
+}
+function flatLineMat(opacity = 0.9) {
+  const m = new THREE.LineBasicMaterial({ color: STYLES[styleName].dashed, transparent: opacity < 1, opacity });
+  styleRefs.dashedMats.push(m);
+  return m;
+}
+/* 虚线多边形轮廓（平面 y 处 LineLoop） */
+function dashLoop(pts, o = {}) {
+  const y = o.y ?? 0.03;
+  const geo = new THREE.BufferGeometry().setFromPoints(pts.map(([x, yy]) => V3(x, y, -yy)));
+  const loop = new THREE.LineLoop(geo, o.mat || dashedMat(o.opacity));
+  loop.computeLineDistances();
+  return loop;
+}
+/* 实线折线（开折线） */
+function flatPolyline(pts, o = {}) {
+  const y = o.y ?? 0.03;
+  const geo = new THREE.BufferGeometry().setFromPoints(pts.map(([x, yy]) => V3(x, y, -yy)));
+  const ln = new THREE.Line(geo, o.mat || flatLineMat(o.opacity));
+  if (o.dashed) ln.computeLineDistances();
+  return ln;
+}
+
+/* 精灵标注（深色芯片底，纸面/Studio 双风格可读） */
+function lbl(text, color = '#ffffff', scale = 0.0075) {
+  const s = makeTextSprite(text, { fontSize: 30, color, scale, bg: 'rgba(14,17,22,0.66)' });
+  s.userData.text = text;
+  return s;
+}
+function setLbl(sprite, text, color = '#ffffff', scale) {
+  setSpriteText(sprite, text, { fontSize: 30, color, scale: scale ?? sprite.userData.__scale ?? 0.0075, bg: 'rgba(14,17,22,0.66)' });
+  sprite.userData.text = text;
+}
+function regLabel(g, sprite, opts = {}) {
+  sprite.userData.labelBase = opts.base ?? true;
+  (opts.parent || g).add(sprite);
+  if (!g.userData.labelSprites) g.userData.labelSprites = [];
+  if (!g.userData.labelSprites.includes(sprite)) g.userData.labelSprites.push(sprite);
+  sprite.visible = labelsOn && sprite.userData.labelBase;
+  return sprite;
+}
+/** 清理归属某子组的标注（子组重建时调用，防精灵泄漏） */
+function pruneLabels(g, ownerGroup) {
+  if (!g.userData.labelSprites) return;
+  const dead = g.userData.labelSprites.filter((s) => s.userData.owning === ownerGroup);
+  g.userData.labelSprites = g.userData.labelSprites.filter((s) => s.userData.owning !== ownerGroup);
+  for (const s of dead) {
+    (s.parent || g).remove(s);
+    s.material.map?.dispose();
+    s.material.dispose();
+  }
+}
+
+/* 接触阴影贴片（主体/道具落桌的"重量感"来源） */
+function shadowPatch(w, d, opacity = 0.4) {
+  const tex = canvasTex(256, 256, (ctx) => {
+    const g = ctx.createRadialGradient(128, 128, 10, 128, 128, 126);
+    g.addColorStop(0, `rgba(8,6,4,${opacity})`);
+    g.addColorStop(0.62, `rgba(8,6,4,${opacity * 0.55})`);
+    g.addColorStop(1, 'rgba(8,6,4,0)');
+    ctx.fillStyle = g;
+    ctx.fillRect(0, 0, 256, 256);
+  });
+  const m = new THREE.Mesh(
+    new THREE.PlaneGeometry(w, d),
+    new THREE.MeshBasicMaterial({ map: tex, transparent: true, depthWrite: false }),
+  );
+  m.rotation.x = -Math.PI / 2;
+  m.renderOrder = 1;
+  return m;
+}
+
+/* ================= 共享台面（工作台叙事层：全程可见） ================= */
+
+function buildBench() {
+  const g = new THREE.Group();
+  /* 桌面大板 */
+  const top = new THREE.Mesh(new THREE.BoxGeometry(30, 0.5, 20), tableMat());
+  top.position.y = -0.25;
+  g.add(top);
+  /* 台缘（深木包边，前缘倒圆） */
+  const rim = new THREE.Mesh(new THREE.BoxGeometry(30.6, 0.24, 20.6), matStd(C.boardDeep, { roughness: 0.55 }));
+  rim.position.y = -0.62;
+  g.add(rim);
+  /* 拼板作业区：浅枫木垫板（每章拼板都落在这块区域内） */
+  const deck = new THREE.Mesh(new THREE.BoxGeometry(19, 0.1, 13.4), deckMat());
+  deck.position.set(1.4, 0.05, -0.4);
+  g.add(deck);
+  const deckEdge = tubeBorderRect(19, 13.4, 1.4, -0.4);
+  g.add(deckEdge);
+  /* 台面接触阴影 */
+  const sh = shadowPatch(24, 17, 0.34);
+  sh.position.set(1.4, 0.115, -0.4);
+  g.add(sh);
+  /* 场景叙事道具：木直尺 + 三角板 + 铅笔（桌面右上角，不抢戏） */
+  g.add(makeRuler());
+  g.add(makeSetSquare());
+  g.add(makePencil());
+  return g;
+}
+/* 垫板矩形描边（圆角管） */
+function tubeBorderRect(w, d, cx, cz) {
+  const y = 0.16, r = 0.03;
+  const x0 = cx - w / 2, x1 = cx + w / 2, z0 = cz - d / 2, z1 = cz + d / 2;
+  const corners = [[x0, z0], [x1, z0], [x1, z1], [x0, z1]];
+  const flat = [];
+  /* 圆角矩形周界采样（角部用二次贝塞尔近似） */
+  corners.forEach(([x, z], i) => {
+    const px = corners[(i + 3) % 4], nx = corners[(i + 1) % 4];
+    const din = [Math.sign(x - px[0]) || 0, Math.sign(z - px[1]) || 0];
+    const dout = [Math.sign(nx[0] - x) || 0, Math.sign(nx[1] - z) || 0];
+    const rr = 0.34;
+    const a = [x - din[0] * rr, z - din[1] * rr];
+    const b = [x + dout[0] * rr, z + dout[1] * rr];
+    for (let k = 0; k <= 5; k++) {
+      const s = k / 5;
+      const mx = a[0] + (x - a[0]) * s, mz = a[1] + (z - a[1]) * s;
+      const ex = x + (b[0] - x) * s, ez = z + (b[1] - z) * s;
+      flat.push(V3(mx + (ex - mx) * s, y, mz + (ez - mz) * s));
+    }
+  });
+  const curve = new THREE.CatmullRomCurve3(flat, true, 'catmullrom', 0.3);
+  return new THREE.Mesh(new THREE.TubeGeometry(curve, 160, r, 8, true), matStd(C.boardDeep, { roughness: 0.5, metalness: 0.1 }));
+}
+/* 道具：木质直尺（带刻度 CanvasTexture） */
+function makeRuler() {
+  const g = new THREE.Group();
+  const tex = canvasTex(512, 64, (ctx, w, h) => {
+    ctx.fillStyle = '#c8a56a';
+    ctx.fillRect(0, 0, w, h);
+    for (let i = 0; i < 300; i++) {
+      ctx.fillStyle = `rgba(90,60,30,${0.03 + Math.random() * 0.05})`;
+      ctx.fillRect(Math.random() * w, Math.random() * h, 3, 2);
+    }
+    ctx.strokeStyle = '#5a3a18';
+    ctx.lineWidth = 3;
+    for (let i = 1; i <= 20; i++) {
+      const x = (i / 21) * w;
+      const long = i % 5 === 0;
+      ctx.beginPath();
+      ctx.moveTo(x, h * 0.16);
+      ctx.lineTo(x, long ? h * 0.62 : h * 0.4);
+      ctx.stroke();
+      if (long) {
+        ctx.fillStyle = '#5a3a18';
+        ctx.font = '600 16px sans-serif';
+        ctx.fillText(String(i / 5), x + 3, h * 0.9);
+      }
+    }
+    ctx.strokeStyle = '#7a5222';
+    ctx.lineWidth = 5;
+    ctx.strokeRect(2, 2, w - 4, h - 4);
+  });
+  const body = new THREE.Mesh(new THREE.BoxGeometry(4.4, 0.09, 0.62), new THREE.MeshStandardMaterial({ map: tex, roughness: 0.6 }));
+  body.position.set(10.2, 0.15, 4.9);
+  body.rotation.y = -0.22;
+  g.add(body);
+  const sh = shadowPatch(4.6, 1.1, 0.32);
+  sh.position.set(10.2, 0.115, 4.95);
+  sh.rotation.z = 0.22;
+  g.add(sh);
+  return g;
+}
+/* 道具：45° 三角板（烤漆测绘仪风格） */
+function makeSetSquare() {
+  const g = new THREE.Group();
+  const pts2d = [[0, 0], [2.1, 0], [0, 2.1]];
+  const shape = new THREE.Shape(pts2d.map(([x, y]) => new THREE.Vector2(x, y)));
+  const hole = new THREE.Path();
+  const i0 = 0.52, i1 = 1.34;
+  hole.moveTo(i0, i0 * 0.28);
+  hole.lineTo(i1, i0 * 0.28);
+  hole.lineTo(i0, i1);
+  hole.closePath();
+  shape.holes.push(hole);
+  const geo = new THREE.ExtrudeGeometry(shape, { depth: 0.09, bevelEnabled: true, bevelThickness: 0.014, bevelSize: 0.014, bevelSegments: 1 });
+  geo.rotateX(-Math.PI / 2);
+  const mesh = new THREE.Mesh(geo, lacMat(0xd9a13f, { glow: 0.07 }));
+  mesh.position.set(11.9, 0.12, 4.2);
+  mesh.rotation.y = 0.5;
+  g.add(mesh);
+  const sh = shadowPatch(2.6, 2.6, 0.3);
+  sh.position.set(11.9, 0.115, 4.2);
+  g.add(sh);
+  return g;
+}
+/* 道具：铅笔（六棱柱 + 笔尖锥 + 笔芯 + 金属箍 + 橡皮头） */
+function makePencil() {
+  const g = new THREE.Group();
+  const hex = new THREE.CylinderGeometry(0.075, 0.075, 2.6, 6);
+  const body = new THREE.Mesh(hex, lacMat(0xc96a48, { glow: 0.06, rough: 0.5 }));
+  body.rotation.z = Math.PI / 2;
+  body.rotation.y = -0.4;
+  const grp = new THREE.Group();
+  grp.add(body);
+  const tip = new THREE.Mesh(new THREE.ConeGeometry(0.075, 0.3, 10), matStd(0xd9c9a8, { roughness: 0.8 }));
+  tip.rotation.z = -Math.PI / 2;
+  tip.position.x = -1.45;
+  grp.add(tip);
+  const lead = new THREE.Mesh(new THREE.ConeGeometry(0.024, 0.1, 8), matStd(0x22201c, { roughness: 0.4 }));
+  lead.rotation.z = -Math.PI / 2;
+  lead.position.x = -1.62;
+  grp.add(lead);
+  const band = new THREE.Mesh(new THREE.CylinderGeometry(0.078, 0.078, 0.14, 12), matStd(PAL.brass, { roughness: 0.3, metalness: 0.85 }));
+  band.rotation.z = Math.PI / 2;
+  band.position.x = 1.32;
+  grp.add(band);
+  const eraser = new THREE.Mesh(new THREE.CylinderGeometry(0.072, 0.072, 0.16, 10), matStd(0xd88a8a, { roughness: 0.9 }));
+  eraser.rotation.z = Math.PI / 2;
+  eraser.position.x = 1.47;
+  grp.add(eraser);
+  grp.position.set(8.6, 0.18, 5.4);
+  grp.rotation.y = 0.16;
+  g.add(grp);
+  const sh = shadowPatch(3.0, 0.7, 0.28);
+  sh.position.set(8.6, 0.115, 5.45);
+  g.add(sh);
+  return g;
+}
+
+/* ---------------- 右栏读数 HUD / 控件 / 章节框架 ---------------- */
+
+const hudWrap = document.getElementById('lcData');
+let hud = null;
+function setHUD(rows) {
+  if (hud) hud.el.remove();
+  hud = makeHUD(hudWrap, rows);
+  rows.forEach(([k]) => hud.set(k, '–'));
+}
+function hset(key, text) { if (hud) hud.set(key, text); }
+
+const ctl = createControlsPanel(document.getElementById('controls'));
+let activeSectionCleanup = null;
+const scenes = {};
+let activeScene = null;
+
+function useScene(key, build) {
+  if (activeScene && activeScene !== scenes[key]) activeScene.visible = false;
+  if (!scenes[key]) {
+    const g = new THREE.Group();
+    g.visible = false;
+    scene.add(g);
+    scenes[key] = g;
+  }
+  const g = scenes[key];
+  if (!g.userData.built) { build(g); g.userData.built = true; }
+  g.visible = true;
+  activeScene = g;
+  return g;
+}
+
+/* 播放状态机（演示/暂停 · 到末尾再按反向回放 → 还原/转回去，原版同语义） */
+function playState(top, speed) {
+  return {
+    t: 0, dir: 0, top,
+    toggle() { this.dir = this.dir ? 0 : (this.t >= top - 1e-9 ? -1 : 1); },
+    step(dt) {
+      if (!this.dir) return false;
+      this.t = clamp(this.t + this.dir * dt * speed, 0, top);
+      if (this.t === 0 || this.t >= top - 1e-9) this.dir = 0;
+      return true;
+    },
+  };
+}
+/* 播放按钮文案：dir?暂停 : (到头?回退标签:前进标签) */
+function playBtnLabel(btn, ps, fwd, back) {
+  btn.textContent = ps.dir ? '⏸ 暂停' : (ps.t >= ps.top - 1e-9 ? back : fwd);
+}
+const fmt1 = (v) => v.toFixed(2);
+
+/* ================= 几何核心：三角形 + 三侧正方形布局（全章共用） ================= */
+
+/** 直角三角形：直角顶点 (0,0)，长腿 b 沿 +x，短腿 a 沿 +y；三侧外接正方形 */
+function triBoard(a, b) {
   const c = Math.hypot(a, b);
-  const sqB = [[0, 0], [b, 0], [b, -b], [0, -b]];
-  const sqA = [[0, 0], [-a, 0], [-a, a], [0, a]];
-  const sqC = [[b, 0], [0, a], [a, a + b], [a + b, b]];
-  return [sqB, sqA, sqC];
-}
-function rotPts(pts, th) {
-  const cos = Math.cos(th), sin = Math.sin(th);
-  return pts.map(([x, y]) => [x * cos - y * sin, x * sin + y * cos]);
+  const tri = [[0, 0], [b, 0], [0, a]];
+  const aSq = [[0, 0], [0, a], [-a, a], [-a, 0]];                       // 短腿左侧
+  const bSq = [[0, 0], [0, -b], [b, -b], [b, 0]];                       // 长腿下侧
+  const u = [b, 0], w = [0, a];
+  const nrm = [a / c, b / c];                                           // 斜边外法线
+  const cSq = [u, [u[0] + nrm[0] * c, u[1] + nrm[1] * c], [w[0] + nrm[0] * c, w[1] + nrm[1] * c], w];
+  return { a, b, c, tri, aSq, bSq, cSq, nrm };
 }
 
-const secWater = {
-  id: 'water', title: '倒水',
-  html: `<p>做一个「勾股水槽」：直角三角形三条边外侧各焊一个正方形浅槽（深度相同），<b>a² 和 b² 两槽灌满水</b>。</p>
-<p>整体旋转水槽：水在重力下保持水平面，但水槽在转——于是水从 a²、b² 流出，沿着斜边槽汇聚。转到<b>斜边槽 c² 正好朝下</b>时：水量一点没变（a² + b²），而 c² 槽的深度恰好是 c——</p>
-<p><span class="hl">a² + b² 的水，不多不少正好灌满 c²。</span></p>
-<p>拖动「旋转角」慢慢转，或点「自动旋转」；蓝色就是水（始终等于 a²+b² 面积，读数可见）。</p>`,
-  enter() {
-    Object.assign(wt, { a: 3, b: 4, theta: 0, playing: false });
-    setBoard(2.5, 1.5, 42);
-    chapterDrag = null;
-    hud.show(true);
-    ctl.clear();
-    ctl.seg({
-      options: [{ label: '3,4,5', value: '3,4' }, { label: '5,12,13', value: '5,12' }, { label: '6,8,10', value: '6,8' }],
-      value: '3,4',
-      onChange: (v) => { const [a, b] = v.split(',').map(Number); wt.a = a; wt.b = b; wt.theta = 0; wt.playing = false; setBoard(b * 0.55, 0, 300 / (a + b + Math.hypot(a, b))); },
-    });
-    ctl.sep();
-    ctl.slider({
-      label: '旋转', min: 0, max: 1, step: 0.005, value: 0, fmt: (v) => Math.round(v * endTheta(wt.a, wt.b) / Math.PI * 180) + '°',
-      onInput: (v) => { wt.theta = v * endTheta(wt.a, wt.b); wt.playing = false; },
-    });
-    const playBtn = ctl.button({
-      label: '▶ 自动旋转',
-      onClick() { wt.playing = !wt.playing; playBtn.classList.toggle('active', wt.playing); },
-    });
-    ctl.button({ label: '↺ 归零', onClick() { wt.theta = 0; wt.playing = false; playBtn.classList.remove('active'); } });
-    chapterTick = (dt) => {
-      if (wt.playing) {
-        wt.theta += dt * endTheta(wt.a, wt.b) / 7;
-        if (wt.theta >= endTheta(wt.a, wt.b)) { wt.theta = endTheta(wt.a, wt.b); wt.playing = false; playBtn.classList.remove('active'); }
-        // 同步滑杆
-        const input = ctl.el.querySelector('input[type=range]');
-        if (input) {
-          input.value = wt.theta / endTheta(wt.a, wt.b);
-          input.dispatchEvent(new Event('input', { bubbles: false }));
+/* ================= 章节 1：拼图挑战（Perigal 割补，1873） =================
+ * b² 过中心两条互相垂直的线（方向 = 斜边方向 / 法线方向）切成 4 块，与 a² 共 5 块
+ * 拼进斜边正方形 c²（a² 居中、4 块据角）。交互：拖拽 / 单击旋转 90° / 双判定吸附 / 自动演示。 */
+
+const pz = {
+  shape: '3:4', hint: false, demo: null, done: false,
+  pieces: [], geo: null, drag: null, hoverIdx: -1,
+};
+const PZ_SHAPES = [['3:4', '3 : 4'], ['2:3', '2 : 3'], ['1:2', '1 : 2'], ['5:12', '5 : 12']];
+const PZ_COLORS = [C.lacquerB, C.lacquerC, C.lacquerD, C.lacquerA, C.lacquerE];
+
+/** Perigal 割补几何：pieces(5) + slots(5)（slot = c² 内目标位） */
+function perigalLayout(a, b) {
+  const base = triBoard(a, b);
+  const { c } = base;
+  const cen = [b / 2, -b / 2];                       // b² 中心
+  const nH = [-b / c, a / c];                        // 斜边方向单位向量
+  const nN = [a / c, b / c];                         // 斜边法线单位向量
+  const corners = {
+    '+h+n': base.bSq ? [b, 0] : null,               // c² 四角（键名按原版方位语义）
+  };
+  const P = [b, 0], Q = [0, a];
+  const cornerMap = {
+    '1,1': P, '-1,1': Q,
+    '1,-1': [P[0] + nN[0] * c, P[1] + nN[1] * c],
+    '-1,-1': [Q[0] + nN[0] * c, Q[1] + nN[1] * c],
+  };
+  const items = [];
+  for (const su of [1, -1]) {
+    for (const sq of [1, -1]) {
+      const cut = polyClipHalf(polyClipHalf(base.bSq, cen, [su * nH[0], su * nH[1]]), cen, [sq * nN[0], sq * nN[1]]);
+      const anchor = cornerMap[`${su},${sq}`];
+      items.push({
+        poly: cut,
+        home: polyCentroid(cut),
+        slot: polyShift(cut, [anchor[0] - cen[0], anchor[1] - cen[1]]),
+      });
+    }
+  }
+  const cSqCen = polyCentroid(base.cSq);
+  const aCen = polyCentroid(base.aSq);
+  items.push({
+    poly: base.aSq,
+    home: aCen,
+    slot: polyShift(base.aSq, [cSqCen[0] - aCen[0], cSqCen[1] - aCen[1]]),
+  });
+  return { ...base, cen, items };
+}
+
+function pzReset() {
+  const [ha, hb] = pz.shape.split(':').map(Number);
+  const k = 4 / Math.hypot(ha, hb);                  // 斜边恒 4（原版归一化口径）
+  pz.geo = perigalLayout(ha * k, hb * k);
+  pz.pieces = pz.geo.items.map((it, i) => ({
+    local: polyShift(it.poly, [-it.home[0], -it.home[1]]),
+    pos: [...it.home],
+    rot: 0, shown: 0,
+    slot: -1, home: -1,
+    color: PZ_COLORS[i],
+  }));
+  pz.done = false;
+  pz.demo = null;
+  if (scenes.puzzle && scenes.puzzle.userData.built) pzRebuildMeshes();
+}
+
+/* 形状切换后重建拼图板件网格（场景缓存复用，旧几何 dispose） */
+function pzRebuildMeshes() {
+  const g = scenes.puzzle;
+  for (const m of PZ.pieceMeshes) {
+    if (m.userData.shadow) { g.remove(m.userData.shadow); m.userData.shadow.material.map.dispose(); m.userData.shadow.material.dispose(); }
+    m.userData.rim?.geometry.dispose();
+    disposeMat(m.material);
+    m.geometry.dispose();
+    g.remove(m);
+  }
+  PZ.pieceMeshes.length = 0;
+  for (const obj of [PZ.cOutline, PZ.cSqEdge]) {
+    obj.geometry.dispose();
+    disposeMat(obj.material);
+    g.remove(obj);
+  }
+  PZ.cOutline = dashLoop(pz.geo.cSq, { y: LIFT + 0.04, opacity: 0.9 });
+  PZ.cSqEdge = tubeBorder(pz.geo.cSq, { y: LIFT + 0.02, r: 0.026, mat: matStd(C.boardDeep, { roughness: 0.5 }) });
+  PZ.cSqEdge.visible = false;
+  g.add(PZ.cOutline, PZ.cSqEdge);
+  PZ.triMesh.geometry.dispose();
+  PZ.triMesh.geometry = slabGeometry(pz.geo.tri);
+  if (PZ.triRim) { PZ.triRim.geometry.dispose(); disposeMat(PZ.triRim.material); g.remove(PZ.triRim); }
+  PZ.triRim = tubeBorder(pz.geo.tri, { y: LIFT + THK + 0.01, r: 0.03, mat: edgeMat() });
+  g.add(PZ.triRim);
+  pz.pieces.forEach((pc, i) => pzAddPieceMesh(pc, i, g));
+  pzSync();
+}
+
+function pzPolyAt(pc, rot = pc.shown) {
+  return polyShift(polyRotAbout(pc.local, [0, 0], (rot * Math.PI) / 2), pc.pos);
+}
+
+/* ---- 3D 呈现 ---- */
+
+const PZ = {};
+
+function buildPuzzle(g) {
+  /* 目标槽位：c² 凹槽轮廓（虚线）+ 完成描边 + 提示填充组 */
+  PZ.cOutline = dashLoop(pz.geo.cSq, { y: LIFT + 0.04, opacity: 0.9 });
+  g.add(PZ.cOutline);
+  PZ.cSqEdge = tubeBorder(pz.geo.cSq, { y: LIFT + 0.02, r: 0.026, mat: matStd(C.boardDeep, { roughness: 0.5 }) });
+  PZ.cSqEdge.visible = false;
+  g.add(PZ.cSqEdge);
+  PZ.hintGroup = new THREE.Group();
+  g.add(PZ.hintGroup);
+
+  /* 三角形主体板（board 底色 + 亮线描边 + 直角标记） */
+  PZ.triMesh = slab(pz.geo.tri, { mat: matStd(C.board, { roughness: 0.7 }) });
+  PZ.triMesh.position.y = LIFT;
+  g.add(PZ.triMesh);
+  PZ.triRim = tubeBorder(pz.geo.tri, { y: LIFT + THK + 0.01, r: 0.03, mat: edgeMat() });
+  g.add(PZ.triRim);
+  PZ.rightMark = flatPolyline([[0.42, 0], [0.42, 0.42], [0, 0.42]], { y: LIFT + THK + 0.02, mat: flatLineMat(0.75) });
+  g.add(PZ.rightMark);
+
+  /* 碎片：5 块烤漆板 */
+  PZ.pieceMeshes = [];
+  pz.pieces.forEach((pc, i) => pzAddPieceMesh(pc, i, g));
+
+  /* 交互提示（原版"点碎片中间的 ↺ 按钮"的 3D 等价语义：单击即旋转） */
+  PZ.rotHint = lbl('↺ 单击碎片可旋转', '#ffd9a8', 0.0058);
+  PZ.rotHint.position.set(-3.2, 0.9, 5.6);
+  regLabel(g, PZ.rotHint);
+
+  /* 常驻标注：a / b / c 边长 + 完成结论 */
+  PZ.lblA = lbl('a', '#ffd9a8', 0.0068);
+  PZ.lblB = lbl('b', '#ffd9a8', 0.0068);
+  PZ.lblC = lbl('c', '#a8e0b8', 0.0068);
+  PZ.lblDone = lbl('拼满了：a² + b² = c²', '#a8e0b8', 0.009);
+  regLabel(g, PZ.lblA); regLabel(g, PZ.lblB); regLabel(g, PZ.lblC); regLabel(g, PZ.lblDone);
+  PZ.lblDone.visible = false;
+
+  /* 归属铭牌 */
+  const credit = lbl('Perigal 拼图 · 亨利·佩里加尔，1873', '#c8d4dc', 0.0052);
+  credit.position.set(1.4, 2.6, 6.3);
+  regLabel(g, credit);
+
+  pzSync(true);
+}
+
+function pzAddPieceMesh(pc, i, g) {
+  const mat = lacMat(pc.color, { glow: 0.1 });
+  const mesh = slab(pc.local, { mat });
+  mesh.userData.idx = i;
+  const rim = tubeBorder(pc.local, { y: THK + 0.012, r: 0.02, mat: matStd(0xffffff, { roughness: 0.4, metalness: 0.2, transparent: true, opacity: 0.25 }) });
+  mesh.userData.rim = rim;
+  mesh.add(rim);
+  const bb = new THREE.Box3().setFromBufferAttribute(mesh.geometry.attributes.position);
+  const shadow = shadowPatch(bb.max.x - bb.min.x + 0.5, bb.max.z - bb.min.z + 0.5, 0.36);
+  g.add(shadow);
+  mesh.userData.shadow = shadow;
+  g.add(mesh);
+  PZ.pieceMeshes.push(mesh);
+  return mesh;
+}
+
+function pzSync() {
+  const { geo } = pz;
+  /* 碎片位姿 + 投影跟随 */
+  pz.pieces.forEach((pc, i) => {
+    const mesh = PZ.pieceMeshes[i];
+    if (!mesh) return;
+    const lifted = pz.drag && pz.drag.idx === i && pc.slot < 0;
+    mesh.position.set(pc.pos[0], LIFT + (pc.slot >= 0 ? 0.015 : lifted ? 0.34 : 0.02), -pc.pos[1]);
+    mesh.rotation.y = pc.shown * Math.PI / 2;
+    mesh.material.emissiveIntensity = pc.slot >= 0 ? 0.24 : (pz.hoverIdx === i ? 0.32 : 0.1);
+    const p3 = P2C(pc.pos);
+    mesh.userData.shadow.position.set(p3.x, LIFT + 0.012, p3.z + 0.03);
+    mesh.userData.shadow.visible = pc.slot < 0;
+  });
+  /* 完成态 */
+  if (pz.done) {
+    PZ.cSqEdge.visible = true;
+    PZ.lblDone.visible = true;
+    const cCen = polyCentroid(geo.cSq);
+    PZ.lblDone.position.set(cCen[0], 0.9, -cCen[1] + 0.3);
+  } else {
+    PZ.cSqEdge.visible = false;
+    PZ.lblDone.visible = false;
+  }
+  /* 边长标注（抬高到板面上方，避免侧视时被板体遮挡成小点） */
+  const { a, b, tri, nrm } = geo;
+  PZ.lblA.position.set(-a / 2 - 0.36, 0.72, -(a / 2));
+  PZ.lblB.position.set(b / 2, 0.72, b + 0.36);
+  const midH = [(tri[1][0] + tri[2][0]) / 2 + nrm[0] * 0.42, (tri[1][1] + tri[2][1]) / 2 + nrm[1] * 0.42];
+  PZ.lblC.position.set(midH[0], 0.72, -midH[1]);
+}
+
+function pzRefreshHint() {
+  while (PZ.hintGroup.children.length) {
+    const ch = PZ.hintGroup.children.pop();
+    if (ch.geometry) ch.geometry.dispose();
+    ch.material?.dispose?.();
+  }
+  PZ.cOutline.visible = true;
+  if (!pz.hint || pz.done) return;
+  const taken = new Set(pz.pieces.filter((p) => p.slot >= 0).map((p) => p.slot));
+  pz.geo.items.forEach((it, i) => {
+    if (taken.has(i)) return;
+    const fill = slab(it.slot, { thick: 0.03, mat: new THREE.MeshBasicMaterial({ color: STYLES[styleName].hintFill, transparent: true, opacity: 0.3 }) });
+    PZ.hintGroup.add(fill);
+  });
+}
+
+function pzSnapCheck(pc) {
+  const takenSlots = new Set(pz.pieces.filter((p) => p !== pc && p.slot >= 0).map((p) => p.slot));
+  const cur = pzPolyAt(pc, pc.rot);
+  const curCen = polyCentroid(cur);
+  for (let s = 0; s < pz.geo.items.length; s++) {
+    if (takenSlots.has(s)) continue;
+    const sp = pz.geo.items[s].slot;
+    const sc = polyCentroid(sp);
+    if (Math.hypot(curCen[0] - sc[0], curCen[1] - sc[1]) > 0.6) continue;
+    if (!polyMatch(cur, sp, 0.05)) continue;
+    pc.slot = s;
+    pc.pos = [...polyCentroid(sp)];
+    pc.shown = pc.rot;
+    return true;
+  }
+  const takenHomes = new Set(pz.pieces.filter((p) => p !== pc && p.home >= 0).map((p) => p.home));
+  for (let s = 0; s < pz.geo.items.length; s++) {
+    if (takenHomes.has(s)) continue;
+    const hp = pz.geo.items[s].poly;
+    const hc = polyCentroid(hp);
+    if (Math.hypot(curCen[0] - hc[0], curCen[1] - hc[1]) > 0.6) continue;
+    if (!polyMatch(cur, hp, 0.05)) continue;
+    pc.home = s;
+    pc.pos = [...polyCentroid(hp)];
+    pc.shown = pc.rot;
+    return true;
+  }
+  return false;
+}
+
+function pzCheckDone() {
+  if (pz.done || pz.pieces.some((p) => p.slot < 0)) return;
+  pz.done = true;
+  pz.demo = null;
+  pzSync();
+}
+
+/** 自动演示计划：对每块穷举 (旋转 × 槽位) 找精确匹配（原版同构） */
+function pzDemoPlan() {
+  const used = new Set();
+  return pz.pieces.map((pc) => {
+    for (let r = 0; r < 4; r++) {
+      for (let s = 0; s < pz.geo.items.length; s++) {
+        if (used.has(s)) continue;
+        const cand = polyShift(polyRotAbout(pc.local, [0, 0], (r * Math.PI) / 2), polyCentroid(pz.geo.items[s].slot));
+        if (polyMatch(cand, pz.geo.items[s].slot, 0.01)) {
+          used.add(s);
+          return { slot: s, rot: r, from: [...pc.pos], fromRot: pc.shown };
         }
       }
-      drawWater();
-    };
-    drawWater();
-  },
-};
-
-function endTheta(a, b) {
-  const c = Math.hypot(a, b);
-  const phi = Math.atan2(b, a);           // c² 外法线初始方向角
-  return -(Math.PI / 2 + phi);            // 旋转到外法线朝下
-}
-
-function drawWater() {
-  const { a, b, theta } = wt;
-  const c = Math.hypot(a, b);
-  const squares = vesselSquares(a, b).map((s) => rotPts(s, theta));
-  clearCanvas();
-  grid();
-  // 水面高度二分：水量 = a²+b²
-  const target = a * a + b * b;
-  let lo = -30, hi = 30;
-  for (let i = 0; i < 42; i++) {
-    const mid = (lo + hi) / 2;
-    const area = squares.reduce((s, sq) => s + polyArea(clipBelow(sq, mid)), 0);
-    if (area < target) lo = mid; else hi = mid;
-  }
-  const w = (lo + hi) / 2;
-  squares.forEach((sq, i) => {
-    const col = ['rgba(74,144,217,0.10)', 'rgba(155,111,217,0.10)', 'rgba(63,169,111,0.12)'][i];
-    poly(sq, col, { color: palette.dim, width: 2 });
-    const wpoly = clipBelow(sq, w);
-    if (wpoly.length >= 3) poly(wpoly, i === 2 ? 'rgba(74,163,232,0.55)' : 'rgba(74,163,232,0.5)', { stroke: false });
-    const [cx, cy] = centroid(sq);
-    label(['b²', 'a²', 'c²'][i], cx, cy, [C.blue, C.purple, C.green][i], { size: 14, bold: true });
-  });
-  // 水面线
-  const [wx0] = S2W(-50, w), [wx1] = S2W(50, w);
-  const [, swy] = W2S(0, w);
-  ctx.save();
-  ctx.strokeStyle = C.water;
-  ctx.lineWidth = 1.6;
-  ctx.setLineDash([6, 4]);
-  ctx.beginPath(); ctx.moveTo(0, swy); ctx.lineTo(canvas.width / DPR, swy); ctx.stroke();
-  ctx.restore();
-  // 三角形描边
-  const tri = rotPts([[0, 0], [b, 0], [0, a]], theta);
-  poly(tri, null, { color: palette.accent, width: 1.8 });
-  const deg = Math.round(theta / Math.PI * 180);
-  label(`旋转 ${deg}°`, 0, -(b + 1.4), palette.dim, { size: 13 });
-  if (Math.abs(theta - endTheta(a, b)) < 0.01) {
-    label(`✓ c² 槽恰好被灌满：水深 = c`, 2, a + b + 1.2, C.green, { size: 14, bold: true });
-  }
-  hud.set('v1', `水量 = a²+b² = ${target}`);
-  hud.set('v2', `水面下面积 = ${target.toFixed(1)}（守恒 ✓）`);
-  hud.set('v3', `c² = ${Math.round(c * c)}`);
-}
-
-/* ================= 章节 6：勾股数 ================= */
-
-const tp = { maxC: 60, primitiveOnly: false, pick: 0, triples: [] };
-
-function genTriples(maxC, primitiveOnly) {
-  const out = [];
-  for (let m = 2; m * m + 1 <= maxC * maxC; m++) {
-    for (let n = 1; n < m; n++) {
-      const a = m * m - n * n, bb = 2 * m * n, c = m * m + n * n;
-      if (c > maxC) continue;
-      if (primitiveOnly && gcd(m, n) !== 1) continue;
-      if ((m - n) % 2 === 0 && primitiveOnly) continue;
-      const k = Math.max(1, Math.floor(maxC / c));
-      for (let t = 1; t <= k; t++) {
-        const A = a * t, B = bb * t, Cc = c * t;
-        if (Cc <= maxC) out.push({ a: Math.min(A, B), b: Math.max(A, B), c: Cc, m, n, prim: t === 1 && gcd(m, n) === 1 && (m - n) % 2 === 1 });
-      }
     }
-  }
-  // 去重
-  const seen = new Set();
-  return out.filter((t) => {
-    const key = `${t.a},${t.b}`;
-    if (seen.has(key)) return false;
-    seen.add(key);
-    return true;
-  }).sort((x, y) => x.c - y.c || x.a - y.a);
+    return null;
+  });
 }
+
+function pzStartDemo() {
+  pzReset();
+  pz.demo = { t: 0, plan: pzDemoPlan() };
+}
+
+function pzRotate(pc) {
+  pc.rot = (pc.rot + 1) % 4;
+  pc.slot = -1;
+  pc.home = -1;
+}
+
+function updPuzzle(dt) {
+  /* 旋转角动画：shown 向 rot 连续逼近（可跨圈） */
+  for (const pc of pz.pieces) {
+    let d = pc.rot - pc.shown;
+    for (; d < -2; d += 4);
+    for (; d >= 2; d -= 4);
+    pc.shown = Math.abs(d) < 0.02 ? pc.rot : pc.shown + d * Math.min(1, dt * 9);
+  }
+  /* 自动演示 */
+  if (pz.demo) {
+    pz.demo.t = Math.min(pz.pieces.length, pz.demo.t + dt * 0.9);
+    pz.pieces.forEach((pc, i) => {
+      const plan = pz.demo.plan[i];
+      if (!plan) return;
+      const k = smoothV(clamp(pz.demo.t - i, 0, 1));
+      const slotCen = polyCentroid(pz.geo.items[plan.slot].slot);
+      pc.pos = [plan.from[0] + (slotCen[0] - plan.from[0]) * k, plan.from[1] + (slotCen[1] - plan.from[1]) * k];
+      let dr = plan.rot - plan.fromRot;
+      for (; dr > 2; dr -= 4);
+      for (; dr < -2; dr += 4);
+      pc.shown = plan.fromRot + dr * k;
+      pc.rot = plan.rot;
+      if (k >= 1) { pc.slot = plan.slot; }
+    });
+    if (pz.demo.t >= pz.pieces.length) { pz.demo = null; pzCheckDone(); }
+  }
+  /* 提示填充脉冲 */
+  if (PZ.hintGroup.children.length) {
+    const pulse = 0.22 + Math.sin(performance.now() * 0.004) * 0.1;
+    PZ.hintGroup.children.forEach((m) => { m.material.opacity = pulse; });
+  }
+  pzSync();
+}
+
+function puzzleHUD() {
+  const { a, b, c } = pz.geo;
+  const placed = pz.pieces.filter((p) => p.slot >= 0).length;
+  hset('abc', `a = ${fmt1(a)},  b = ${fmt1(b)},  c = ${fmt1(c)}`);
+  hset('asqbsq', `${fmt1(a * a)} + ${fmt1(b * b)} = ${fmt1(a * a + b * b)}`);
+  hset('csq', `c² = ${fmt1(c * c)}`);
+  hset('placed', pz.done ? '5 / 5 ✓' : `${placed} / 5`);
+  hset('state', pz.done ? '拼满了！a² + b² = c²' : pz.demo ? '自动演示中…' : '拖动碎片进 c² · 单击旋转 90°');
+}
+
+function buildPuzzleScene(g) {
+  pzReset();
+  buildPuzzle(g);
+  pzRefreshHint();
+}
+
+function puzzleCtl() {
+  ctl.clear();
+  const subh = document.createElement('div');
+  subh.className = 'sub-h';
+  subh.textContent = 'a : b';
+  subh.style.cssText = 'flex:1 1 100%;font-size:11px;color:var(--text-faint);letter-spacing:.08em';
+  ctl.el.appendChild(subh);
+  ctl.seg({
+    options: PZ_SHAPES.map(([v, l]) => ({ label: l, value: v })),
+    value: pz.shape,
+    onChange: (v) => {
+      pz.shape = v;
+      pz.hint = false;
+      pzStartDemoReset();
+    },
+  });
+  ctl.sep();
+  const hintBtn = ctl.button({ label: '提示', onClick() { pz.hint = !pz.hint; hintBtn.classList.toggle('active', pz.hint); pzRefreshHint(); } });
+  ctl.button({ label: '↺ 重来', onClick() { pzStartDemoReset(); } });
+  ctl.button({ label: '▶ 自动演示', onClick() { pzStartDemo(); } });
+  setHUD([['abc', '边长'], ['asqbsq', 'a² + b²'], ['csq', 'c²'], ['placed', '已放好'], ['state', '状态']]);
+  puzzleHUD();
+}
+function pzStartDemoReset() {
+  pzReset();
+  pzRefreshHint();
+  puzzleHUD();
+}
+
+/* ================= 章节 2：出入相补（刘徽）+ 赵爽弦图 ================= */
+
+const ob = { mode: 'chair', a: 2, b: 3.2 };
+const obPs = playState(1, 0.45);
+const OB = {};
+
+/** 出入相补 chair 几何：L 形拼板（b²+a² 并排）挖两个三角形槽 */
+function outinShape(a, b) {
+  const L = [[0, 0], [a + b, 0], [a + b, a], [b, a], [b, b], [0, b]];
+  const t1 = { poly: [[0, 0], [a, 0], [0, b]], pivot: [0, b], dir: +1 };        // 绕 (0,b) 逆时针 90°
+  const t2 = { poly: [[a, 0], [a + b, 0], [a + b, a]], pivot: [a + b, a], dir: -1 }; // 绕 (a+b,a) 顺时针 90°
+  const square = [[a, 0], [a + b, a], [b, a + b], [0, b]];
+  return { L, t1, t2, square };
+}
+
+function buildOutin(g) {
+  OB.chairG = new THREE.Group();
+  OB.zhaoG = new THREE.Group();
+  g.add(OB.chairG, OB.zhaoG);
+  /* 归属铭牌（随模式切换文案） */
+  OB.credit = lbl('', '#c8d4dc', 0.0052);
+  OB.credit.position.set(3.2, 2.6, 5.6);
+  regLabel(g, OB.credit);
+  buildChair(g);
+  buildZhao(g);
+  updOutin();
+}
+
+function buildChair(g) {
+  const { a, b } = ob;
+  const { L, t1, t2, square } = outinShape(a, b);
+  /* body：L 形板挖两个三角形槽（Shape + holes） */
+  const shape = new THREE.Shape(L.map(([x, y]) => new THREE.Vector2(x, y)));
+  for (const t of [t1, t2]) {
+    const hole = new THREE.Path();
+    t.poly.forEach(([x, y], i) => (i ? hole.lineTo(x, y) : hole.moveTo(x, y)));
+    hole.closePath();
+    shape.holes.push(hole);
+  }
+  const geo = new THREE.ExtrudeGeometry(shape, { depth: THK, bevelEnabled: true, bevelThickness: 0.02, bevelSize: 0.02, bevelSegments: 1 });
+  geo.rotateX(-Math.PI / 2);
+  OB.body = new THREE.Mesh(geo, matStd(C.board, { roughness: 0.68 }));
+  OB.body.position.y = LIFT;
+  OB.chairG.add(OB.body);
+  /* 目标斜方块：虚线框 + 完成描边 */
+  OB.sqDash = dashLoop(square, { y: LIFT + 0.03, opacity: 0.85 });
+  OB.sqEdge = tubeBorder(square, { y: LIFT + 0.02, r: 0.03, mat: edgeMat() });
+  OB.sqEdge.visible = false;
+  OB.chairG.add(OB.sqDash, OB.sqEdge);
+  /* 两块三角形板（几何 local 到枢轴，绕枢轴旋转） */
+  OB.movers = [t1, t2].map((t, i) => {
+    const local = polyShift(t.poly, [-t.pivot[0], -t.pivot[1]]);
+    const mesh = slab(local, { mat: lacMat(i === 0 ? C.lacquerA : C.lacquerC, { glow: 0.12 }) });
+    mesh.position.set(t.pivot[0], LIFT + 0.02, -t.pivot[1]);
+    OB.chairG.add(mesh);
+    /* 枢轴销钉（黄铜小圆柱，旋转轴的机械暗示） */
+    const pin = new THREE.Mesh(new THREE.CylinderGeometry(0.055, 0.055, 0.3, 14), matStd(PAL.brass, { roughness: 0.3, metalness: 0.85 }));
+    pin.position.set(t.pivot[0], LIFT + THK / 2, -t.pivot[1]);
+    OB.chairG.add(pin);
+    const lblT = lbl(i === 0 ? '出·剪下' : '入·补上', '#ffd9a8', 0.005);
+    const cen = polyCentroid(t.poly);
+    lblT.position.set(cen[0], 0.62, -cen[1]);
+    lblT.userData.owning = OB.chairG;
+    regLabel(g, lblT, { parent: OB.chairG });
+    return { mesh, t, lblT };
+  });
+  const cSqCen = polyCentroid(square);
+  OB.chairLbl = lbl('c²', '#a8e0b8', 0.008);
+  OB.chairLbl.position.set(cSqCen[0], 0.55, -cSqCen[1]);
+  regLabel(g, OB.chairLbl);
+  /* L 外描边 */
+  OB.chairG.add(tubeBorder(L, { y: LIFT + THK + 0.01, r: 0.026, mat: edgeMat() }));
+}
+
+function buildZhao(g) {
+  const { a, b } = ob;
+  const S = a + b;
+  const outer = [[a, 0], [S, a], [b, S], [0, b]];                 // 斜置 c² 外方（弦图外框）
+  const inner = [[a, a], [b, a], [b, b], [a, b]];                 // 黄实 (b−a)²
+  OB.zhOuterRim = tubeBorder(outer, { y: LIFT + THK + 0.01, r: 0.032, mat: edgeMat() });
+  OB.zhaoG.add(OB.zhOuterRim);
+  /* 朱实 ×4：外方边 + 黄实角 */
+  const zhuTris = [
+    [outer[0], outer[1], inner[0]],
+    [outer[1], outer[2], inner[1]],
+    [outer[2], outer[3], inner[2]],
+    [outer[3], outer[0], inner[3]],
+  ];
+  OB.zhZhu = zhuTris.map((p, i) => {
+    const mesh = slab(p, { mat: lacMat(C.lacquerA, { glow: 0.12 }) });
+    mesh.position.y = LIFT + 0.012;
+    OB.zhaoG.add(mesh);
+    return mesh;
+  });
+  OB.zhHuang = slab(inner, { mat: lacMat(C.lacquerE, { glow: 0.14 }) });
+  OB.zhHuang.position.y = LIFT + 0.02;
+  OB.zhaoG.add(OB.zhHuang);
+  OB.zhaoG.add(tubeBorder(inner, { y: LIFT + THK + 0.012, r: 0.02, mat: matStd(0xffffff, { roughness: 0.4, transparent: true, opacity: 0.3 }) }));
+  /* 标注：朱实 / 黄实 / c */
+  OB.zhLblZhu = lbl('朱实', '#ffb9a0', 0.0062);
+  OB.zhLblHuang = lbl('黄实', '#ffe2a0', 0.0062);
+  OB.zhLblC = lbl('c', '#a8e0b8', 0.007);
+  regLabel(g, OB.zhLblZhu); regLabel(g, OB.zhLblHuang); regLabel(g, OB.zhLblC);
+}
+
+function updOutin() {
+  const { a, b } = ob;
+  const chair = ob.mode === 'chair';
+  OB.chairG.visible = chair;
+  OB.zhaoG.visible = !chair;
+  setLbl(OB.credit, chair ? '出入相补 · 刘徽《九章算术注》' : '赵爽弦图 · 三国·赵爽《周髀算经注》', '#c8d4dc');
+  /* 双模式标注互斥（板块随组隐藏，文字精灵挂在场景根，须显式随模式切换） */
+  OB.chairLbl.visible = chair && labelsOn;
+  OB.zhLblZhu.visible = OB.zhLblHuang.visible = OB.zhLblC.visible = !chair && labelsOn;
+  if (chair) {
+    const k = smoothV(obPs.t);
+    for (const mv of OB.movers) {
+      mv.mesh.rotation.y = mv.t.dir * k * Math.PI / 2;
+      mv.lblT.visible = labelsOn;
+    }
+    OB.sqEdge.visible = k >= 0.999;
+  } else {
+    for (const mv of OB.movers) mv.lblT.visible = false;
+    const S = a + b;
+    const outer = [[a, 0], [S, a], [b, S], [0, b]];
+    const inner = [[a, a], [b, a], [b, b], [a, b]];
+    /* 朱实/黄实板件随 a/b 变化重建（低频操作，整组替换） */
+    const zhuTris = [
+      [outer[0], outer[1], inner[0]],
+      [outer[1], outer[2], inner[1]],
+      [outer[2], outer[3], inner[2]],
+      [outer[3], outer[0], inner[3]],
+    ];
+    OB.zhZhu.forEach((m, i) => { m.geometry.dispose(); m.geometry = slabGeometry(zhuTris[i]); });
+    OB.zhHuang.geometry.dispose();
+    OB.zhHuang.geometry = slabGeometry(inner);
+    const cMid = [(outer[0][0] + outer[1][0]) / 2, (outer[0][1] + outer[1][1]) / 2];
+    OB.zhLblC.position.set(cMid[0] + 0.3, 0.78, -cMid[1] - 0.3);
+    const triCen = polyCentroid([outer[2], outer[3], inner[2]]);
+    OB.zhLblZhu.position.set(triCen[0], 0.78, -triCen[1]);
+    OB.zhLblHuang.position.set((a + b) / 2, 0.78, -(a + b) / 2);
+  }
+}
+
+function outinRebuild() {
+  /* a/b 变化：chair 侧整组重建（几何随尺寸变），zhao 侧仅换几何 */
+  const g = scenes.outin;
+  pruneLabels(g, OB.chairG);
+  OB.movers = [];
+  while (OB.chairG.children.length) {
+    const ch = OB.chairG.children.pop();
+    if (ch.geometry) ch.geometry.dispose();
+    disposeMat(ch.material);
+  }
+  buildChair(g);
+  updOutin();
+}
+
+function outinHUD() {
+  const { a, b } = ob;
+  const c = Math.hypot(a, b);
+  if (ob.mode === 'chair') {
+    hset('sum', `${fmt1(a * a + b * b)}`);
+    hset('csq', `${fmt1(c * c)}`);
+    hset('extra', obPs.t >= 0.999 ? '拼成 c²：面积没有增减 ✓' : `移动进度 ${Math.round(smoothV(obPs.t) * 100)}%`);
+  } else {
+    hset('sum', `c² = ${fmt1(c * c)}`);
+    hset('csq', `4 × ab/2 = ${fmt1(2 * a * b)}`);
+    hset('extra', `(b − a)² = ${fmt1((b - a) * (b - a))}`);
+  }
+}
+
+function outinCtl() {
+  ctl.clear();
+  ctl.seg({
+    options: [{ label: '出入相补', value: 'chair' }, { label: '赵爽弦图', value: 'zhao' }],
+    value: ob.mode,
+    onChange: (v) => { ob.mode = v; obPs.t = 0; obPs.dir = 0; outinCtl(); updOutin(); outinHUD(); },
+  });
+  ctl.sep();
+  ctl.slider({ label: 'a', min: 0.8, max: 3, step: 0.05, value: ob.a, fmt: fmt1, onInput: (v) => { setAB(v, null); } });
+  ctl.slider({ label: 'b', min: 1.2, max: 4, step: 0.05, value: ob.b, fmt: fmt1, onInput: (v) => { setAB(null, v); } });
+  if (ob.mode === 'chair') {
+    OB.tSlider = ctl.slider({ label: '移动', min: 0, max: 1, step: 0.01, value: obPs.t, fmt: (v) => `${Math.round(v * 100)}%`, onInput: (v) => { obPs.t = v; obPs.dir = 0; updOutin(); outinHUD(); } });
+    const playBtn = ctl.button({ label: '▶ 出入相补', onClick() { obPs.toggle(); playBtnLabel(playBtn, obPs, '▶ 出入相补', '↺ 还原'); } });
+    playBtn.dataset.play = '1';
+  }
+  setHUD([['sum', ob.mode === 'chair' ? 'a² + b²' : 'c²'], ['csq', ob.mode === 'chair' ? 'c²' : '4 × ab/2'], ['extra', ob.mode === 'chair' ? '进度' : '(b−a)²']]);
+  outinHUD();
+}
+function setAB(av, bv) {
+  if (av !== null) {
+    ob.a = av;
+    if (ob.a > ob.b - 0.2) { ob.b = ob.a + 0.2; }
+  } else {
+    ob.b = bv;
+    if (ob.b - 0.2 < ob.a) { ob.a = ob.b - 0.2; }
+  }
+  outinRebuild();
+  outinSyncSliders();
+  outinHUD();
+}
+/* 只刷数值显示，不派发 input（防递归重建） */
+function outinSyncSliders() {
+  const wraps = ctl.el.querySelectorAll('.ctl');
+  for (const [w, v] of [[wraps[0], ob.a], [wraps[1], ob.b]]) {
+    if (!w) continue;
+    const inp = w.querySelector('input[type=range]');
+    const val = w.querySelector('.ctl-val');
+    if (inp) inp.value = v;
+    if (val) val.textContent = fmt1(v);
+  }
+}
+
+/* ================= 章节 3：欧几里得的证明（I.47，剪切→旋转→剪切） ================= */
+
+const EU_A = 3, EU_B = 4;
+const euPs = playState(3, 0.35);
+const EU = {};
+
+/** 斜边放平的框架序列：square on AC → 剪切平行四边形 → 绕 A 转 −90° → 剪切成 AH 矩形 */
+function euclidFrames(a, b) {
+  const c = Math.hypot(a, b);
+  const A = [0, 0], B = [c, 0];
+  const Cp = [a * a / c, a * b / c];                     // 直角顶点 C（腿 a 侧）
+  const H = [Cp[0], 0];                                  // 垂足
+  const e = [Cp[0] - A[0], Cp[1] - A[1]];                // A→C 向量
+  const n = [-e[1], e[0]];                               // AC 外法线
+  const f0 = [A, Cp, [Cp[0] + n[0], Cp[1] + n[1]], [A[0] + n[0], A[1] + n[1]]];  // a² 方（AC 边上）
+  const f1 = [A, B, [Cp[0] + n[0] + B[0] - Cp[0], Cp[1] + n[1]], [A[0] + n[0], A[1] + n[1]]]; // 剪切：底边 AB
+  const f2 = polyRotAbout(f1, A, -Math.PI / 2);          // 绕 A 旋转 −90°（到斜边下方）
+  const f3 = [A, [0, -c], [H[0], -c], H];                // 终态：垂足侧矩形（面积 a²）
+  return { c, A, B, C: Cp, H, frames: [f0, f1, f2, f3], cSq: [A, B, [c, -c], [0, -c]] };
+}
+
+function buildEuclid(g) {
+  const fr = euclidFrames(EU_A, EU_B);
+  EU.fr = fr;
+  /* c² 方框（斜边下方，虚线 + 台缘描边） */
+  EU.cDash = dashLoop(fr.cSq, { y: LIFT + 0.03, opacity: 0.8 });
+  g.add(EU.cDash);
+  /* 主三角形板 */
+  EU.tri = slab([fr.A, fr.B, fr.C], { mat: matStd(C.board, { roughness: 0.68 }) });
+  EU.tri.position.y = LIFT;
+  g.add(EU.tri);
+  g.add(tubeBorder([fr.A, fr.B, fr.C], { y: LIFT + THK + 0.01, r: 0.03, mat: edgeMat() }));
+  /* 直角标记（在 C 处，沿 CA/CB 方向） */
+  const u1 = [(fr.A[0] - fr.C[0]) / EU_A, (fr.A[1] - fr.C[1]) / EU_A];
+  const u2 = [(fr.B[0] - fr.C[0]) / EU_B, (fr.B[1] - fr.C[1]) / EU_B];
+  const mk = 0.4;
+  const rp = [
+    [fr.C[0] + u1[0] * mk, fr.C[1] + u1[1] * mk],
+    [fr.C[0] + (u1[0] + u2[0]) * mk, fr.C[1] + (u1[1] + u2[1]) * mk],
+    [fr.C[0] + u2[0] * mk, fr.C[1] + u2[1] * mk],
+  ];
+  g.add(flatPolyline(rp, { y: LIFT + THK + 0.02, mat: flatLineMat(0.75) }));
+  /* 垂线 C→(H_x, −c)（虚线） */
+  EU.altLine = flatPolyline([fr.C, [fr.H[0], -fr.c]], { y: LIFT + 0.04, mat: dashedMat(0.7), dashed: true });
+  g.add(EU.altLine);
+  /* 原位虚线框（两块方板的初始位置） */
+  const frB = euclidFrames(EU_B, EU_A);                  // 另一块（腿 b 侧）
+  EU.frB = frB;
+  EU.originDashA = dashLoop(fr.frames[0], { y: LIFT + 0.03, opacity: 0.55 });
+  const mirB = frB.frames[0].map(([x, y]) => [frB.c - x, y]);   // 镜像到 B 侧上方
+  EU.originDashB = dashLoop(mirB, { y: LIFT + 0.03, opacity: 0.55 });
+  g.add(EU.originDashA, EU.originDashB);
+  /* 两块动画板：a²（左）与 b²（右，镜像框架） */
+  EU.pieceA = slab(fr.frames[0], { mat: lacMat(C.lacquerB, { glow: 0.12 }) });
+  EU.pieceA.position.y = LIFT + 0.012;
+  EU.pieceB = slab(frB.frames[0], { mat: lacMat(C.lacquerD, { glow: 0.12 }) });
+  EU.pieceB.position.y = LIFT + 0.012;
+  g.add(EU.pieceA, EU.pieceB);
+  /* 标注 A/B/C/H + 矩形落位标签 */
+  EU.lbls = {};
+  for (const [key, text, color] of [['A', 'A', '#ffd9a8'], ['B', 'B', '#ffd9a8'], ['C', 'C', '#ffd9a8'], ['H', 'H', '#ffd9a8'],
+    ['rectA', '← a² 落位', '#cdb8f0'], ['rectB', 'b² 落位 →', '#b9c8f0'], ['c2', 'c²', '#a8e0b8']]) {
+    const s = lbl(text, color, key === 'c2' ? 0.008 : 0.0056);
+    EU.lbls[key] = s;
+    regLabel(g, s);
+  }
+  updEuclid();
+}
+
+/** 框架插值（原版 G 语义：0→1 顶点插值剪切；1→2 绕 A 旋转；2→3 顶点插值剪切） */
+function frameAt(frames, t) {
+  const stage = Math.min(2, Math.floor(t + 1e-9));
+  const k = Math.min(1, t - stage);
+  if (stage === 1) return polyRotAbout(frames[1], frames[1][0], -Math.PI / 2 * k);
+  const f0 = frames[stage], f1 = frames[stage + 1];
+  return f0.map((p, i) => [p[0] + (f1[i][0] - p[0]) * k, p[1] + (f1[i][1] - p[1]) * k]);
+}
+
+function updEuclid() {
+  const fr = EU.fr, frB = EU.frB;
+  const t = euPs.t;
+  const pa = frameAt(fr.frames, t);
+  /* b² 板：框架镜像（x → c − x）后同相插值 */
+  const pb = frameAt(frB.frames, t).map(([x, y]) => [fr.c - x, y]);
+  EU.pieceA.geometry.dispose();
+  EU.pieceA.geometry = slabGeometry(pa);
+  EU.pieceB.geometry.dispose();
+  EU.pieceB.geometry = slabGeometry(pb);
+  /* 标注位置 */
+  const { A, B, C, H, c } = fr;
+  EU.lbls.A.position.set(A[0] - 0.3, 0.3, -A[1] - 0.2);
+  EU.lbls.B.position.set(B[0] + 0.3, 0.3, -B[1] - 0.2);
+  EU.lbls.C.position.set(C[0] - 0.15, 0.3, -C[1] - 0.35);
+  EU.lbls.H.position.set(H[0], 0.3, 0.42);
+  EU.lbls.c2.position.set(c / 2, 0.3, -(-c / 2) - c - 0.4);
+  const done = t >= 2.999;
+  EU.lbls.rectA.visible = done && labelsOn;
+  EU.lbls.rectB.visible = done && labelsOn;
+  EU.lbls.rectA.position.set(H[0] / 2, 0.32, -c / 2 - 0.1);
+  EU.lbls.rectB.position.set((H[0] + c) / 2 + 0.2, 0.32, -c / 2 - 0.1);
+}
+
+function euclidHUD() {
+  const { c } = EU.fr;
+  const stepIdx = euPs.t <= 0 ? -1 : euPs.t >= 3 ? 3 : Math.floor(euPs.t + 1e-9);
+  const names = ['初始：a² 在 AC 边上，b² 在 BC 边上', '剪切① 同底等高 → 平行四边形', '旋转 90° → 斜边下侧', '剪切② → 垂足矩形（面积不变）'];
+  hset('step', stepIdx < 0 ? '待演示' : stepIdx >= 3 ? '落位完成 ✓' : `${stepIdx + 1} / 3 · ${names[stepIdx]}`);
+  hset('areaA', `${fmt1(EU_A * EU_A)}（守恒 ✓）`);
+  hset('areaB', `${fmt1(EU_B * EU_B)}（守恒 ✓）`);
+  hset('sum', `a² + b² = ${fmt1(EU_A * EU_A)} + ${fmt1(EU_B * EU_B)} = ${fmt1(c * c)} = c²`);
+}
+
+function euclidCtl() {
+  ctl.clear();
+  EU.tSlider = ctl.slider({ label: '变换', min: 0, max: 3, step: 0.01, value: euPs.t, fmt: (v) => `${v.toFixed(2)} / 3`, onInput: (v) => { euPs.t = v; euPs.dir = 0; updEuclid(); euclidHUD(); } });
+  ctl.sep();
+  const playBtn = ctl.button({ label: '▶ 演示', onClick() { euPs.toggle(); playBtnLabel(playBtn, euPs, '▶ 演示', '↺ 还原'); } });
+  playBtn.dataset.play = '1';
+  setHUD([['step', '步骤'], ['areaA', 'a² 板面积'], ['areaB', 'b² 板面积'], ['sum', '结论']]);
+  euclidHUD();
+}
+
+/* ================= 章节 4：更多证法（毕达哥拉斯重排 / 加菲尔德梯形） ================= */
+
+const MO_A = 1.8, MO_B = 3;
+const mo = { mode: 'pyth' };
+const moPs = playState(1, 0.45);
+const MO = {};
+
+/** (a+b)² 内 4 个三角形两种位形 + 中央 c² / a²+b² 空隙 */
+function rearrangeLayout(a, b) {
+  const S = a + b;
+  const X = [
+    [[0, 0], [a, 0], [0, b]],
+    [[S, 0], [S, a], [a, 0]],
+    [[S, S], [b, S], [S, a]],
+    [[0, S], [0, b], [b, S]],
+  ];
+  const Y = [
+    [[S, 0], [S, a], [a, 0]],
+    [[a, a], [a, 0], [S, a]],
+    [[0, a], [a, a], [0, S]],
+    [[a, S], [0, S], [a, a]],
+  ];
+  const cSq = [[a, 0], [S, a], [b, S], [0, b]];
+  const aSq = [[0, 0], [a, 0], [a, a], [0, a]];
+  const bSq = [[a, a], [S, a], [S, S], [a, S]];
+  return { S, X, Y, cSq, aSq, bSq };
+}
+
+function buildMore(g) {
+  MO.pythG = new THREE.Group();
+  MO.garfG = new THREE.Group();
+  g.add(MO.pythG, MO.garfG);
+  MO.credit = lbl('', '#c8d4dc', 0.0052);
+  MO.credit.position.set(2.4, 2.5, 5.8);
+  regLabel(g, MO.credit);
+  /* ---- pyth：大方板 + 4 块可重排三角形 ---- */
+  const { S } = rearrangeLayout(MO_A, MO_B);
+  MO.bigSlab = slab([[0, 0], [S, 0], [S, S], [0, S]], { mat: matStd(C.board, { roughness: 0.7 }) });
+  MO.bigSlab.position.y = LIFT;
+  MO.pythG.add(MO.bigSlab);
+  MO.pythG.add(tubeBorder([[0, 0], [S, 0], [S, S], [0, S]], { y: LIFT + THK + 0.01, r: 0.03, mat: edgeMat() }));
+  MO.tris = [];
+  for (let i = 0; i < 4; i++) {
+    const mesh = slab(rearrangeLayout(MO_A, MO_B).X[i], { mat: lacMat([C.lacquerA, C.lacquerB, C.lacquerD, C.lacquerC][i], { glow: 0.12 }) });
+    mesh.position.y = LIFT + 0.012 + i * 0.004;
+    MO.pythG.add(mesh);
+    MO.tris.push(mesh);
+  }
+  MO.cDash = dashLoop(rearrangeLayout(MO_A, MO_B).cSq, { y: LIFT + 0.03, opacity: 0.85 });
+  MO.abDashA = dashLoop(rearrangeLayout(MO_A, MO_B).aSq, { y: LIFT + 0.03, opacity: 0 });
+  MO.abDashB = dashLoop(rearrangeLayout(MO_A, MO_B).bSq, { y: LIFT + 0.03, opacity: 0 });
+  MO.pythG.add(MO.cDash, MO.abDashA, MO.abDashB);
+  MO.lblC2 = lbl('c²', '#a8e0b8', 0.009);
+  MO.lblA2 = lbl('a²', '#ffd9a8', 0.007);
+  MO.lblB2 = lbl('b²', '#ffd9a8', 0.007);
+  regLabel(g, MO.lblC2); regLabel(g, MO.lblA2); regLabel(g, MO.lblB2);
+  /* ---- garfield：梯形虚线框 + 三块落下板 ---- */
+  const ga = MO_A, gb = MO_B;
+  const trap = [[0, 0], [ga + gb, 0], [ga + gb, gb], [0, ga]];
+  MO.trapDash = dashLoop(trap, { y: LIFT + 0.03, opacity: 0.8 });
+  MO.garfG.add(MO.trapDash);
+  const T1 = [[0, 0], [gb, 0], [0, ga]];
+  const T2 = [[gb, 0], [ga + gb, 0], [ga + gb, gb]];
+  const T3 = [[0, ga], [gb, 0], [ga + gb, gb]];
+  MO.garfTris = [T1, T2, T3].map((p, i) => {
+    const mesh = slab(p, { mat: lacMat([C.lacquerA, C.lacquerB, C.lacquerE][i], { glow: 0.12 }) });
+    mesh.position.y = LIFT + 0.012;
+    MO.garfG.add(mesh);
+    const cen = polyCentroid(p);
+    const lb = lbl(i === 2 ? 'c²/2' : 'ab/2', i === 2 ? '#ffe2a0' : '#ffd9a8', 0.0058);
+    lb.position.set(cen[0], 0.34, -cen[1]);
+    regLabel(g, lb);
+    return { mesh, cen, lb, home: p };
+  });
+  MO.garfLbls = {};
+  for (const [key, text] of [['a1', 'a'], ['b1', 'b'], ['a2', 'a'], ['b2', 'b'], ['c1', 'c'], ['c2', 'c']]) {
+    const s = lbl(text, key.startsWith('c') ? '#a8e0b8' : '#ffd9a8', 0.006);
+    MO.garfLbls[key] = s;
+    regLabel(g, s);
+  }
+  updMore();
+}
+
+function updMore() {
+  const pyth = mo.mode === 'pyth';
+  MO.pythG.visible = pyth;
+  MO.garfG.visible = !pyth;
+  setLbl(MO.credit, pyth ? '毕达哥拉斯重排 · 公元前 5 世纪学派' : '加菲尔德梯形 · 美国第 20 任总统，1876', '#c8d4dc');
+  const la = rearrangeLayout(MO_A, MO_B);
+  if (pyth) {
+    const f = smoothV(moPs.t);
+    la.X.forEach((x0, i) => {
+      const cur = polyMorph(x0, la.Y[i], f);
+      MO.tris[i].geometry.dispose();
+      MO.tris[i].geometry = slabGeometry(cur);
+    });
+    MO.cDash.material.opacity = 0.85 * Math.max(0, 1 - 2 * f);
+    MO.abDashA.material.opacity = 0.85 * Math.max(0, 2 * f - 1);
+    MO.abDashB.material.opacity = 0.85 * Math.max(0, 2 * f - 1);
+    const cCen = polyCentroid(la.cSq), aCen = polyCentroid(la.aSq), bCen = polyCentroid(la.bSq);
+    MO.lblC2.visible = labelsOn && f < 0.35;
+    MO.lblA2.visible = MO.lblB2.visible = labelsOn && f > 0.65;
+    MO.lblC2.position.set(cCen[0], 0.4, -cCen[1]);
+    MO.lblA2.position.set(aCen[0], 0.4, -aCen[1]);
+    MO.lblB2.position.set(bCen[0], 0.4, -bCen[1]);
+    /* 梯形侧标注互斥隐藏（精灵挂场景根，不随 garfG 隐藏） */
+    for (const gt of MO.garfTris) gt.lb.visible = false;
+    for (const s of Object.values(MO.garfLbls)) s.visible = false;
+  } else {
+    MO.lblC2.visible = MO.lblA2.visible = MO.lblB2.visible = false;
+    const ga = MO_A, gb = MO_B;
+    const f = smoothV(moPs.t);
+    MO.garfTris.forEach((gt, i) => {
+      const k = clamp(f * 3 - i, 0, 1);
+      const e = k * k * (3 - 2 * k);
+      gt.mesh.scale.setScalar(Math.max(0.001, e));
+      gt.mesh.position.y = LIFT + 0.012 + (1 - e) * 1.6;
+      gt.lb.visible = labelsOn && k > 0.92;
+    });
+    for (const s of Object.values(MO.garfLbls)) s.visible = labelsOn;
+    const lblPos = {
+      a1: [-0.35, ga / 2], b1: [gb / 2, -0.38], a2: [gb + ga / 2, -0.38], b2: [ga + gb + 0.38, gb / 2],
+      c1: [gb * 0.34, ga * 0.68], c2: [gb + gb * 0.52, ga * 0.5 + gb * 0.3],
+    };
+    for (const [key, [x, y]] of Object.entries(lblPos)) MO.garfLbls[key].position.set(x, 0.3, -y);
+  }
+}
+
+function moreHUD() {
+  const ga = MO_A, gb = MO_B;
+  if (mo.mode === 'pyth') {
+    hset('mode', '毕达哥拉斯重排');
+    hset('read', `重排进度 ${Math.round(smoothV(moPs.t) * 100)}%`);
+    hset('concl', moPs.t >= 0.999 ? '空隙 c² → a² + b² ✓' : '大正方形与三角形都没变');
+    hset('sum', `c² = a² + b² = ${fmt1(ga * ga + gb * gb)}`);
+  } else {
+    hset('mode', '加菲尔德梯形');
+    hset('read', `梯形面积 = ${fmt1((ga + gb) * (ga + gb) / 2)}`);
+    hset('concl', `三个三角形 = ${fmt1(ga * gb + (ga * ga + gb * gb) / 2)}`);
+    hset('sum', `化简得 c² = a² + b² = ${fmt1(ga * ga + gb * gb)}`);
+  }
+}
+
+function moreCtl() {
+  ctl.clear();
+  ctl.seg({
+    options: [{ label: '毕达哥拉斯重排', value: 'pyth' }, { label: '加菲尔德梯形', value: 'garfield' }],
+    value: mo.mode,
+    onChange: (v) => { mo.mode = v; moPs.t = 0; moPs.dir = 0; moreCtl(); updMore(); moreHUD(); },
+  });
+  ctl.sep();
+  MO.tSlider = ctl.slider({ label: mo.mode === 'pyth' ? '重排' : '拼合', min: 0, max: 1, step: 0.01, value: moPs.t, fmt: (v) => `${Math.round(v * 100)}%`, onInput: (v) => { moPs.t = v; moPs.dir = 0; updMore(); moreHUD(); } });
+  const playBtn = ctl.button({ label: '▶ 演示', onClick() { moPs.toggle(); playBtnLabel(playBtn, moPs, '▶ 演示', '↺ 还原'); } });
+  playBtn.dataset.play = '1';
+  setHUD([['mode', '证法'], ['read', '读数'], ['concl', '中间量'], ['sum', '结论']]);
+  moreHUD();
+}
+
+/* ================= 章节 5：倒水实验（勾股水槽） ================= */
+
+const wt = { a: 2.1, b: 2.8 };
+const wtPs = playState(1, 0.16);
+const WT = {};
+let wtWobble = 0;
+
+function waterMat() {
+  const m = matGlow(STYLES[styleName].water, 0.55, { roughness: 0.25, transparent: true, opacity: 0.62 });
+  styleRefs.waterMats.push(m);
+  return m;
+}
+
+function wtCenter(a, b) {
+  const g = triBoard(a, b);
+  const pts = [...g.aSq, ...g.bSq, ...g.cSq];
+  const xs = pts.map((p) => p[0]), ys = pts.map((p) => p[1]);
+  return [(Math.min(...xs) + Math.max(...xs)) / 2, (Math.min(...ys) + Math.max(...ys)) / 2];
+}
+
+function buildWater(g) {
+  /* 水体/标注在数学平面绕质心 cen 旋转（polyRotAbout），板组必须绕同一世界点转——
+     用 pivot 挂在 (cen.x, -cen.y)、boat 反向偏移实现（直接 boat.rotation.y 会绕原点转，
+     转角越大水体与槽错位越大，180° 时偏差 2·cen） */
+  WT.pivot = new THREE.Group();
+  WT.boat = new THREE.Group();
+  WT.pivot.add(WT.boat);
+  g.add(WT.pivot);
+  WT.waterG = new THREE.Group();
+  g.add(WT.waterG);
+  WT.waterMeshes = [0, 1, 2].map(() => new THREE.Mesh(new THREE.BufferGeometry(), waterMat()));
+  WT.waterMeshes.forEach((m) => WT.waterG.add(m));
+  WT.flow = [0, 1].map(() => flatPolyline([[0, 0], [1, 0]], { y: LIFT + 0.06, mat: dashedMat(0.75), dashed: true }));
+  WT.flow.forEach((f) => g.add(f));
+  WT.lbls = ['a²', 'b²', 'c²'].map((t, i) => {
+    const s = lbl(t, ['#9cd2ff', '#cdb8f0', '#a8e0b8'][i], 0.0085);
+    regLabel(g, s);
+    return s;
+  });
+  WT.concl = lbl('', '#a8e0b8', 0.0082);
+  regLabel(g, WT.concl);
+  wtVesselRebuild();
+}
+
+function wtVesselRebuild() {
+  const g = scenes.water;
+  pruneLabels(g, WT.boat);
+  while (WT.boat.children.length) {
+    const ch = WT.boat.children.pop();
+    if (ch.geometry) ch.geometry.dispose();
+    disposeMat(ch.material);
+  }
+  const { a, b } = wt;
+  const t = triBoard(a, b);
+  const rims = [];
+  WT.squares = [t.aSq, t.bSq, t.cSq].map((sq, i) => {
+    const mesh = slab(sq, { mat: i === 2 ? matStd(C.board, { roughness: 0.66 }) : matStd(C.board, { roughness: 0.66 }) });
+    mesh.position.y = LIFT;
+    WT.boat.add(mesh);
+    /* 槽沿：沿方形周界一圈低围条（沿心抬高到水面上方，挡住水体的"槽壁"） */
+    const rim = tubeBorder(sq, { y: LIFT + THK + 0.072, r: 0.034, mat: matStd(C.boardDeep, { roughness: 0.5 }) });
+    WT.boat.add(rim);
+    rims.push(rim);
+    return sq;
+  });
+  WT.triPoly = t.tri;
+  WT.triMesh = slab(t.tri, { mat: matStd(C.tri, { roughness: 0.55 }) });
+  WT.triMesh.position.y = LIFT + 0.01;
+  WT.triMesh.material.emissive = new THREE.Color(C.tri);
+  WT.triMesh.material.emissiveIntensity = 0.1;
+  WT.boat.add(WT.triMesh);
+  const triRim = tubeBorder(t.tri, { y: LIFT + THK + 0.05, r: 0.026, mat: edgeMat() });
+  WT.boat.add(triRim);
+  /* 枢轴对齐到旋转质心（a/b 变化后 cen 随动） */
+  const cen = wtCenter(a, b);
+  WT.pivot.position.set(cen[0], 0, -cen[1]);
+  WT.boat.position.set(-cen[0], 0, cen[1]);
+}
+
+function updWater(dt) {
+  wtWobble += dt;
+  const { a, b } = wt;
+  const cen = wtCenter(a, b);
+  const phi = Math.PI * smoothV(wtPs.t);
+  WT.pivot.rotation.y = phi;
+  const M = smoothV((wtPs.t - 0.35) / 0.5);
+  const rot = (pts) => polyRotAbout(pts, cen, phi);
+  const rSquares = WT.squares.map(rot);
+  /* 三槽水位：目标水量（a²/b² 随转出递减，c² 递增）→ 每槽独立水平面二分 */
+  const targets = [a * a * (1 - M), b * b * (1 - M), (a * a + b * b) * M];
+  const amp = wtPs.dir ? 0.045 : 0.012;
+  rSquares.forEach((sq, i) => {
+    const sol = solveWaterLevel(sq, Math.min(targets[i], polyArea(sq)));
+    const pts2 = sol.poly.map(([x, y]) => (Math.abs(y - sol.level) < 1e-6
+      ? [x, y + Math.sin(x * 4 + wtWobble * 5) * amp]
+      : [x, y]));
+    const mesh = WT.waterMeshes[i];
+    mesh.geometry.dispose();
+    if (pts2.length >= 3) {
+      const shape = new THREE.Shape(pts2.map(([x, y]) => new THREE.Vector2(x, y)));
+      const geo = new THREE.ShapeGeometry(shape);
+      geo.rotateX(-Math.PI / 2);
+      mesh.geometry = geo;
+      /* 水面须高于板顶（板 bevel 顶 = LIFT+THK+0.022），低于槽沿下缘（沿心 LIFT+THK+0.072） */
+      mesh.position.y = LIFT + THK + 0.036;
+      mesh.visible = true;
+    } else {
+      mesh.visible = false;
+    }
+    const cenS = polyCentroid(sq);
+    WT.lbls[i].position.set(cenS[0], 0.4, -cenS[1]);
+  });
+  /* 水流动线（虚线，转送中显示） */
+  const cCen = polyCentroid(rSquares[2]);
+  const flowShow = M > 0.001 && M < 0.999;
+  [rSquares[0], rSquares[1]].forEach((sq, i) => {
+    const low = sq.reduce((m, p) => (p[1] < m[1] ? p : m), sq[0]);
+    const seg = [
+      [low[0], low[1]],
+      [cCen[0] + (low[0] - cCen[0]) * 0.22, cCen[1] + (low[1] - cCen[1]) * 0.22 + 0.42],
+    ];
+    WT.flow[i].geometry.dispose();
+    WT.flow[i].geometry = new THREE.BufferGeometry().setFromPoints(seg.map(([x, y]) => V3(x, LIFT + 0.06, -y)));
+    WT.flow[i].computeLineDistances();
+    WT.flow[i].visible = flowShow && labelsOn;
+  });
+  /* 结论 */
+  const done = wtPs.t >= 0.999;
+  WT.concl.visible = done;
+  if (done) {
+    WT.concl.position.set(cCen[0], 1.15, -cCen[1]);
+    setLbl(WT.concl, 'a² + b² 的水正好灌满 c² ✓', '#a8e0b8');
+  }
+}
+
+function waterHUD() {
+  const { a, b } = wt;
+  const M = smoothV((wtPs.t - 0.35) / 0.5);
+  hset('wa', `${fmt1(a * a * (1 - M))}`);
+  hset('wb', `${fmt1(b * b * (1 - M))}`);
+  hset('wc', `${fmt1((a * a + b * b) * M)} / ${fmt1(Math.hypot(a, b) ** 2)}`);
+  hset('wstate', wtPs.t >= 0.999 ? '正好装满，不多也不少 ✓' : `转动 ${Math.round(wtPs.t * 180)}°`);
+}
+
+function waterCtl() {
+  ctl.clear();
+  ctl.slider({ label: 'a', min: 1.2, max: 3, step: 0.05, value: wt.a, fmt: fmt1, onInput: (v) => { wt.a = v; wtVesselRebuild(); updWater(0); waterHUD(); } });
+  ctl.slider({ label: 'b', min: 1.2, max: 3, step: 0.05, value: wt.b, fmt: fmt1, onInput: (v) => { wt.b = v; wtVesselRebuild(); updWater(0); waterHUD(); } });
+  ctl.sep();
+  WT.tSlider = ctl.slider({ label: '转动', min: 0, max: 1, step: 0.005, value: wtPs.t, fmt: (v) => `${Math.round(v * 180)}°`, onInput: (v) => { wtPs.t = v; wtPs.dir = 0; updWater(0); waterHUD(); } });
+  WT.playBtn = ctl.button({ label: '▶ 转动', onClick() { wtPs.toggle(); playBtnLabel(WT.playBtn, wtPs, '▶ 转动', '↺ 转回去'); } });
+  WT.playBtn.dataset.play = '1';
+  setHUD([['wa', 'a² 中的水'], ['wb', 'b² 中的水'], ['wc', 'c² 中的水'], ['wstate', '状态']]);
+  waterHUD();
+}
+
+/* ================= 章节 6：勾股数（m/n 生成 + 散点墙点选） ================= */
+
+const tp = { m: 2, n: 1, pick: null, hover: null };
+const TP = {};
+const TP_MAXC = 100;
+const TP_SCALE = 0.092;        // 图上 1 单位 → 世界距离
+const TP_ORG = [0.9, 0.35];    // 散点墙原点（世界 x, y）
+const TP_WALL_Z = -6.15;       // 墙面 z（立在作业垫板后缘）
+
 function gcd(x, y) { while (y) { [x, y] = [y, x % y]; } return x; }
 
-const secTriples = {
-  id: 'triples', title: '勾股数',
-  html: `<p>满足 <b>a² + b² = c²</b> 的正整数组叫<b>勾股数</b>：3,4,5 → 5,12,13 → 6,8,10 → 8,15,17 …</p>
-<p>它们全部由<span class="hl">a = m²−n²，b = 2mn，c = m²+n²</span> 生成（m&gt;n）——这条公式能生成全部基本勾股数（a、b、c 两两互质），乘以倍数得到其余。</p>
-<p>把每组勾股数画成 (a, b) 平面上的一个点：点阵呈现清晰的<b>双曲线族</b>轮廓（因为 a²+b²=c² 是四条双曲线弧）。拖动「c 上限」看点阵生长；勾选「只看基本勾股数」过滤倍数组；拖动「选取」逐个查看 m、n 分解。</p>`,
-  enter() {
-    Object.assign(tp, { maxC: 60, primitiveOnly: false, pick: 0 });
-    tp.triples = genTriples(tp.maxC, tp.primitiveOnly);
-    chapterDrag = null;
-    hud.show(true);
-    ctl.clear();
-    ctl.slider({ label: 'c 上限', min: 15, max: 300, step: 5, value: 60, fmt: (v) => `≤${v}`, onInput: (v) => { tp.maxC = v; tp.triples = genTriples(v, tp.primitiveOnly); tp.pick = 0; } });
-    ctl.toggle({ label: '只看基本勾股数', value: false, onChange: (v) => { tp.primitiveOnly = v; tp.triples = genTriples(tp.maxC, v); tp.pick = 0; } });
-    ctl.sep();
-    ctl.slider({ label: '选取', min: 1, max: Math.max(1, tp.triples.length), step: 1, value: 1, fmt: (v) => String(v), onInput: (v) => { tp.pick = v - 1; } });
-    ctl.toggle({ label: '显示双曲线参考', value: true, onChange: (v) => { tp.curves = v; } });
-    tp.curves = true;
-    setBoard(0, 0, 1);
-    chapterDrag = null;
-    // 该章用固定屏幕坐标散点（不用世界板），直接绘制
-    chapterTick = () => drawTriples();
-    drawTriples();
-  },
-};
+/** 当前 (m, n) 生成的勾股数（m > n ≥ 1 才有效；互质 + 一奇一偶 → 本原） */
+function tripleOf(m, n) {
+  if (!(m > n && n >= 1)) return null;
+  const x = m * m - n * n, y = 2 * m * n, c = m * m + n * n;
+  const lo = Math.min(x, y), hi = Math.max(x, y);
+  return { a: lo, b: hi, c, primitive: gcd(m, n) === 1 && (m - n) % 2 === 1 };
+}
+/** c < maxC 的全部勾股数（含倍数组，primitive = 三数互质） */
+function allTriples(maxC) {
+  const out = [];
+  for (let c = 1; c < maxC; c++) {
+    for (let r = 1; r * r <= (c * c) / 2; r++) {
+      const a = Math.round(Math.sqrt(c * c - r * r));
+      if (r * r + a * a === c * c && a >= r) out.push({ a: r, b: a, c, primitive: gcd(gcd(r, a), c) === 1 });
+    }
+  }
+  return out;
+}
+const chartToWorld = (x, y) => [TP_ORG[0] + x * TP_SCALE, TP_ORG[1] + y * TP_SCALE, TP_WALL_Z];
 
-function drawTriples() {
-  clearCanvas();
-  const vw = canvas.width / DPR, vh = canvas.height / DPR;
-  const pad = 46;
-  const maxAB = Math.max(20, tp.triples.length ? tp.triples[tp.triples.length - 1].b : 20);
-  const X = (v) => pad + (vw - pad - 16) * (v / maxAB);
-  const Y = (v) => vh - pad - (vh - pad - 30) * (v / maxAB);
-  // 网格
-  ctx.strokeStyle = palette.grid;
-  ctx.lineWidth = 1;
-  const tick = maxAB > 120 ? 40 : maxAB > 60 ? 20 : 10;
-  ctx.beginPath();
-  for (let v = 0; v <= maxAB; v += tick) {
-    ctx.moveTo(X(v), Y(0)); ctx.lineTo(X(v), Y(maxAB));
-    ctx.moveTo(X(0), Y(v)); ctx.lineTo(X(maxAB), Y(v));
+function buildTriples(g) {
+  tp.pick = null;
+  tp.hover = null;
+  /* 展示墙：木板背板 + 图框 */
+  const board = new THREE.Mesh(new THREE.BoxGeometry(10.4, 10.4, 0.16), deckMat());
+  board.position.set(TP_ORG[0] + 50 * TP_SCALE, TP_ORG[1] + 50 * TP_SCALE - 0.1, TP_WALL_Z - 0.12);
+  g.add(board);
+  const frameRim = tubeBorderRectWorld(10.2, 10.2, TP_ORG[0] + 50 * TP_SCALE, TP_ORG[1] + 50 * TP_SCALE, TP_WALL_Z - 0.03);
+  g.add(frameRim);
+  /* 轴 + 刻度 */
+  const axisMat = (() => { const m = new THREE.LineBasicMaterial({ color: STYLES[styleName].axis }); styleRefs.axisMats.push(m); return m; })();
+  const axisGeo = new THREE.BufferGeometry().setFromPoints([
+    V3(...chartToWorld(-3, 0)), V3(...chartToWorld(104, 0)),
+    V3(...chartToWorld(-3, 0)), V3(...chartToWorld(-3, 104)),
+  ]);
+  g.add(new THREE.LineSegments(axisGeo, axisMat));
+  const tickGeo = new THREE.BufferGeometry();
+  const tickPts = [];
+  for (let v = 10; v <= 100; v += 10) {
+    const [x0, y0] = chartToWorld(v, 0), [x1, y1] = chartToWorld(0, v);
+    tickPts.push(V3(x0, y0, TP_WALL_Z + 0.02), V3(x0, y0 - 0.14, TP_WALL_Z + 0.02));
+    tickPts.push(V3(x1, y1, TP_WALL_Z + 0.02), V3(x1 - 0.14, y1, TP_WALL_Z + 0.02));
   }
-  ctx.stroke();
-  // 轴
-  ctx.strokeStyle = palette.axis || palette.faint;
-  ctx.lineWidth = 1.4;
-  ctx.beginPath(); ctx.moveTo(X(0), Y(0)); ctx.lineTo(X(maxAB), Y(0)); ctx.moveTo(X(0), Y(0)); ctx.lineTo(X(0), Y(maxAB)); ctx.stroke();
-  ctx.fillStyle = palette.faint;
-  ctx.font = '11.5px sans-serif';
-  ctx.textAlign = 'center';
-  for (let v = 0; v <= maxAB; v += tick) ctx.fillText(v, X(v), Y(0) + 15);
-  ctx.textAlign = 'right';
-  for (let v = 0; v <= maxAB; v += tick) ctx.fillText(v, X(0) - 6, Y(v) + 4);
-  ctx.textAlign = 'left';
-  ctx.fillText('a', X(maxAB) + 4, Y(0) + 4);
-  ctx.fillText('b', X(0) + 8, Y(maxAB) - 6);
-  // 双曲线参考（c = 若干档）
-  if (tp.curves) {
-    ctx.save();
-    ctx.strokeStyle = 'rgba(217,161,63,0.4)';
-    ctx.setLineDash([5, 5]);
-    [25, 50, 100, 200, 300].filter((v) => v <= maxAB * 1.42).forEach((cv) => {
-      ctx.beginPath();
-      let first = true;
-      for (let av = 1; av <= Math.min(maxAB, cv - 1); av += Math.max(1, maxAB / 200)) {
-        const bv = Math.sqrt(cv * cv - av * av);
-        if (bv > maxAB) break;
-        const sx = X(av), sy = Y(bv);
-        first ? ctx.moveTo(sx, sy) : ctx.lineTo(sx, sy);
-        first = false;
+  tickGeo.setFromPoints(tickPts);
+  g.add(new THREE.LineSegments(tickGeo, axisMat));
+  TP.tickSprites = [];
+  const tickColor = () => (styleName === 'paper' ? '#4a4238' : '#b9cdd6');
+  for (let v = 10; v <= 100; v += 10) {
+    for (const [cx, cy] of [[v, 0], [0, v]]) {
+      const [wx, wy] = chartToWorld(cx === 0 ? -6 : cx, cy === 0 ? -6 : cy);
+      const s = lbl(String(v), tickColor(), 0.0042);
+      s.position.set(wx, cy === 0 ? wy - 0.1 : wy + 0.1, TP_WALL_Z + 0.02);
+      TP.tickSprites.push({ s, get: tickColor });
+      g.add(s);
+    }
+  }
+  /* c 参考弧（半径 10..100 的四分之一圆弧，圆角管放样） */
+  TP.arcs = [];
+  for (let R = 10; R <= 100; R += 10) {
+    const pts = [];
+    for (let i = 0; i <= 40; i++) {
+      const th = (i / 40) * Math.PI / 2;
+      pts.push(chartToWorld(R * Math.cos(th), R * Math.sin(th)));
+    }
+    const curve = new THREE.CatmullRomCurve3(pts.map((p) => V3(p[0], p[1], TP_WALL_Z + 0.03)));
+    const arc = new THREE.Mesh(new THREE.TubeGeometry(curve, 60, 0.016, 6, false), dashedMat(0.4));
+    g.add(arc);
+    TP.arcs.push(arc);
+  }
+  /* 散点：InstancedMesh × 2（本原大点 / 倍数小点），(a,b) 与 (b,a) 双镜像 */
+  TP.all = allTriples(TP_MAXC);
+  const prim = TP.all.filter((t) => t.primitive);
+  const mult = TP.all.filter((t) => !t.primitive);
+  const sphGeoP = new THREE.SphereGeometry(0.085, 14, 10);
+  const sphGeoM = new THREE.SphereGeometry(0.055, 12, 8);
+  const mkPts = (list, geo) => {
+    const m = matGlow(STYLES[styleName].point, 0.5, { roughness: 0.35 });
+    styleRefs.pointMats.push(m);
+    const inst = new THREE.InstancedMesh(geo, m, list.length * 2);
+    const dummy = new THREE.Object3D();
+    list.forEach((t, i) => {
+      for (const [px, py] of [[t.a, t.b], [t.b, t.a]]) {
+        const [wx, wy] = chartToWorld(px, py);
+        dummy.position.set(wx, wy, TP_WALL_Z + 0.05);
+        dummy.updateMatrix();
+        inst.setMatrixAt(i * 2 + (px === t.a ? 0 : 1), dummy.matrix);
       }
-      ctx.stroke();
     });
-    ctx.restore();
-  }
-  // 散点
-  tp.triples.forEach((t, i) => {
-    const sel = i === tp.pick;
-    ctx.fillStyle = t.prim ? 'rgba(232,103,74,0.85)' : 'rgba(74,144,217,0.6)';
-    ctx.beginPath();
-    ctx.arc(X(t.a), Y(t.b), sel ? 6 : 3, 0, Math.PI * 2);
-    ctx.fill();
-    if (sel) {
-      ctx.strokeStyle = palette.accent;
-      ctx.lineWidth = 2;
-      ctx.beginPath(); ctx.arc(X(t.a), Y(t.b), 9, 0, Math.PI * 2); ctx.stroke();
-      ctx.font = '600 12px sans-serif';
-      ctx.fillStyle = palette.text;
-      ctx.fillText(`${t.a}²+${t.b}²=${t.c}²`, X(t.a) + 12, Y(t.b) - 10);
-      ctx.font = '11.5px sans-serif';
-      ctx.fillStyle = palette.dim;
-      ctx.fillText(t.prim ? `基本（m=${t.m}, n=${t.n}）` : `倍数组（×${t.c / (t.m * t.m + t.n * t.n) || 1}）`, X(t.a) + 12, Y(t.b) + 8);
+    inst.instanceMatrix.needsUpdate = true;
+    inst.userData.list = list;
+    g.add(inst);
+    return inst;
+  };
+  TP.instPrim = mkPts(prim, sphGeoP);
+  TP.instMult = mkPts(mult, sphGeoM);
+  /* 选中环 */
+  TP.ring = new THREE.Mesh(new THREE.TorusGeometry(0.17, 0.02, 8, 28), matGlow(0xe8674a, 0.8, { roughness: 0.4 }));
+  TP.ring.visible = false;
+  TP.ring.rotation.x = 0;
+  g.add(TP.ring);
+  /* 当前 (m,n) 直角三角形（画在墙面） */
+  TP.triGroup = new THREE.Group();
+  g.add(TP.triGroup);
+  TP.hoverLbl = lbl('', '#ffffff', 0.0056);
+  regLabel(g, TP.hoverLbl);
+  TP.rayLbl = lbl('', '#ffd9a8', 0.0056);
+  regLabel(g, TP.rayLbl);
+  updTriples();
+}
+
+/** 散点墙图框（竖直面矩形描边） */
+function tubeBorderRectWorld(w, h, cx, cy, z) {
+  const corners = [[cx - w / 2, cy - h / 2], [cx + w / 2, cy - h / 2], [cx + w / 2, cy + h / 2], [cx - w / 2, cy + h / 2]];
+  const flat = [];
+  corners.forEach(([x, y], i) => {
+    const pv = corners[(i + 3) % 4], nx = corners[(i + 1) % 4];
+    const din = [Math.sign(x - pv[0]) || 0, Math.sign(y - pv[1]) || 0];
+    const dout = [Math.sign(nx[0] - x) || 0, Math.sign(nx[1] - y) || 0];
+    const rr = 0.3;
+    const a = [x - din[0] * rr, y - din[1] * rr];
+    const b = [x + dout[0] * rr, y + dout[1] * rr];
+    for (let k = 0; k <= 5; k++) {
+      const s = k / 5;
+      const mx = a[0] + (x - a[0]) * s, my = a[1] + (y - a[1]) * s;
+      const ex = x + (b[0] - x) * s, ey = y + (b[1] - y) * s;
+      flat.push(V3(mx + (ex - mx) * s, my + (ey - my) * s, z));
     }
   });
-  // 图例与统计
-  ctx.font = '12px -apple-system, "PingFang SC", sans-serif';
-  ctx.fillStyle = 'rgba(232,103,74,0.9)';
-  ctx.fillRect(vw - 150, 46, 10, 10);
-  ctx.fillStyle = palette.dim;
-  ctx.fillText('基本勾股数', vw - 136, 55);
-  ctx.fillStyle = 'rgba(74,144,217,0.7)';
-  ctx.fillRect(vw - 150, 62, 10, 10);
-  ctx.fillStyle = palette.dim;
-  ctx.fillText('倍数组（×k）', vw - 136, 71);
-  ctx.fillStyle = palette.text;
-  ctx.font = '600 13px sans-serif';
-  ctx.fillText(`c ≤ ${tp.maxC}：共 ${tp.triples.length} 组`, 16, 22);
-  hud.set('v1', `勾股数 ${tp.triples.length} 组`);
-  const t = tp.triples[tp.pick];
-  hud.set('v2', t ? `${t.a}² + ${t.b}² = ${t.c}² = ${t.c * t.c}` : '–');
-  hud.set('v3', t ? `m=${t.m}, n=${t.n}：a=m²−n², b=2mn` : '–');
+  const curve = new THREE.CatmullRomCurve3(flat, true, 'catmullrom', 0.3);
+  return new THREE.Mesh(new THREE.TubeGeometry(curve, 140, 0.035, 8, true), matStd(C.boardDeep, { roughness: 0.5 }));
+}
+
+function updTriples() {
+  /* 当前三角形板（墙面上）：整组替换，标注精灵随 pruneLabels 一并回收 */
+  while (TP.triGroup.children.length) {
+    const ch = TP.triGroup.children.pop();
+    if (ch.geometry) ch.geometry.dispose();
+    ch.material?.dispose?.();
+  }
+  pruneLabels(scenes.triples, TP.triGroup);
+  const cur = tripleOf(tp.m, tp.n);
+  if (cur) {
+    const P0 = chartToWorld(0, 0), PA = chartToWorld(cur.a, 0), PB = chartToWorld(cur.a, cur.b);
+    const tri2d = [[0, 0], [cur.a, 0], [cur.a, cur.b]];
+    const mesh = new THREE.Mesh(slabGeometry(tri2d, 0.05), matStd(C.tri, { roughness: 0.5, transparent: true, opacity: 0.32 }));
+    mesh.rotation.x = 0;
+    /* slabGeometry 是平放几何（XY→XZ），墙面需要竖直：rotateX(+π/2) 抬回 XY 面 */
+    mesh.geometry.rotateX(Math.PI / 2);
+    mesh.position.set(P0[0], P0[1], TP_WALL_Z + 0.08);
+    TP.triGroup.add(mesh);
+    /* 斜边虚线射线（延伸至 110/c 比例处） */
+    const k = 110 / cur.c;
+    const ray = flatPolyline([[0, 0], [cur.a * k, cur.b * k]], { y: 0, mat: dashedMat(0.7), dashed: true });
+    ray.geometry.rotateX(Math.PI / 2);
+    ray.position.set(P0[0], P0[1], TP_WALL_Z + 0.07);
+    TP.triGroup.add(ray);
+    /* 边长标签 */
+    for (const [txt, wx, wy] of [
+      [String(cur.a), (P0[0] + PA[0]) / 2, P0[1] - 0.3],
+      [String(cur.b), PA[0] + 0.3, (P0[1] + PB[1]) / 2],
+      [String(cur.c), (PA[0] + PB[0]) / 2 - 0.34, (PA[1] + PB[1]) / 2 + 0.1],
+    ]) {
+      const s = lbl(txt, '#ffd9a8', 0.005);
+      s.position.set(wx, wy, TP_WALL_Z + 0.1);
+      s.userData.owning = TP.triGroup;
+      regLabel(scenes.triples, s, { parent: TP.triGroup });
+    }
+  }
+  /* 选中态 */
+  if (tp.pick) {
+    const [wx, wy] = chartToWorld(tp.pick.a, tp.pick.b);
+    TP.ring.visible = true;
+    TP.ring.position.set(wx, wy, TP_WALL_Z + 0.1);
+  } else {
+    TP.ring.visible = false;
+  }
+  TP.rayLbl.visible = false;
+}
+
+function triplesHUD() {
+  const cur = tripleOf(tp.m, tp.n);
+  const primN = TP.all.filter((t) => t.primitive).length;
+  if (!cur) {
+    hset('gen', `a = m²−n² = –`);
+    hset('gen2', 'b = 2mn = –');
+    hset('gen3', 'c = m²+n² = –');
+    hset('count', `c < ${TP_MAXC}：${TP.all.length} 组，其中本原的 ${primN} 组`);
+    hset('need', '需要 m > n ≥ 1');
+    hset('pick', tp.pick ? `选中：${tp.pick.a}² + ${tp.pick.b}² = ${tp.pick.c}²${tp.pick.primitive ? '' : '（是某组本原勾股数的倍数）'}` : '点击图上的点查看');
+    return;
+  }
+  hset('gen', `a = m²−n² = ${tp.m * tp.m - tp.n * tp.n}`);
+  hset('gen2', `b = 2mn = ${2 * tp.m * tp.n}`);
+  hset('gen3', `c = m²+n² = ${tp.m * tp.m + tp.n * tp.n}`);
+  hset('count', `c < ${TP_MAXC}：${TP.all.length} 组，其中本原的 ${primN} 组`);
+  hset('need', cur.primitive ? '本原勾股数 ✓（m,n 互质且一奇一偶）' : '不是本原的（有公因数）');
+  hset('pick', tp.pick ? `选中：${tp.pick.a}² + ${tp.pick.b}² = ${tp.pick.c}²${tp.pick.primitive ? '' : '（是某组本原勾股数的倍数）'}` : '点击图上的点查看');
+}
+
+function triplesCtl() {
+  ctl.clear();
+  ctl.slider({ label: 'm', min: 2, max: 9, step: 1, value: tp.m, fmt: (v) => String(v), onInput: (v) => { tp.m = v; tp.pick = null; updTriples(); triplesHUD(); } });
+  ctl.slider({ label: 'n', min: 1, max: 8, step: 1, value: tp.n, fmt: (v) => String(v), onInput: (v) => { tp.n = v; tp.pick = null; updTriples(); triplesHUD(); } });
+  ctl.sep();
+  ctl.button({ label: '✋ 也可直接点击散点墙上的点', onClick() { } });
+  setHUD([['gen', 'a = m²−n²'], ['gen2', 'b = 2mn'], ['gen3', 'c = m²+n²'], ['count', 'c<100 统计'], ['need', '本原判定'], ['pick', '选中']]);
+  triplesHUD();
 }
 
 /* ================= 章节 7：随堂检测 ================= */
 
 const QUIZ = [
   {
-    q: '直角三角形两直角边为 6 和 8，斜边长是？',
-    opts: ['9', '10', '12', '14'],
+    q: 'Perigal 拼图里，b² 被切成了几块？连同 a² 一起拼进 c² 的碎片共有几块？',
+    opts: ['切成 2 块，共 3 块', '切成 4 块，共 5 块', '切成 3 块，共 4 块', '切成 4 块，共 4 块'],
     a: 1,
-    ex: 'c = √(6²+8²) = √100 = 10。这是 3-4-5 的 2 倍勾股数。',
+    ex: 'b² 沿过中心的两条互相垂直的线（分别平行/垂直于斜边）切成 4 块，加上 a² 共 5 块，恰好铺满 c²。',
   },
   {
-    q: '赵爽弦图中，边长为 c 的正方形里拼入了什么？',
-    opts: ['4 个全等直角三角形 + 1 个边长 (b−a) 的小正方形', '2 个直角三角形', '4 个正方形', '1 个圆和 2 个三角形'],
+    q: '赵爽弦图中，大正方形（边长 c）由什么组成？',
+    opts: ['4 个全等直角三角形（朱实）+ 1 个边长 (b−a) 的小正方形（黄实）', '2 个直角三角形 + 1 个正方形', '4 个正方形', '1 个圆和 2 个三角形'],
     a: 0,
-    ex: 'c² = 4×½ab + (b−a)² = 2ab + a² − 2ab + b² = a² + b²，这正是弦图证明的核心。',
+    ex: 'c² = 4×ab/2 + (b−a)² = 2ab + a² − 2ab + b² = a² + b²，这正是弦图证明的核心。',
   },
   {
-    q: '「出入相补」原理的含义是？',
-    opts: ['图形剪开再拼回，总面积不变', '面积可以相加但不能相减', '三角形面积是底乘高', '正方形面积最大'],
-    a: 0,
-    ex: '刘徽的出入相补：图形经过分割、移动、拼接，总面积保持不变——这是中国古代证明面积恒等式的基本工具。',
-  },
-  {
-    q: '下列哪组是「基本勾股数」（三个数两两互质）？',
-    opts: ['6, 8, 10', '9, 12, 15', '5, 12, 13', '10, 24, 26'],
-    a: 2,
-    ex: '5,12,13 两两互质。其余分别是 3-4-5 的 2 倍、3 倍、4 倍，不是基本勾股数。',
-  },
-  {
-    q: '欧几里得证明的关键技巧是？',
-    opts: ['代数展开', '剪切变换（同底等高面积不变）', '相似三角形', '反证法'],
+    q: '欧几里得证明中，b² 正方形经过了哪三次保持面积的变换落到 c² 里？',
+    opts: ['平移、旋转、翻折', '剪切、旋转 90°、再剪切', '拉伸、压缩、旋转', '两次旋转加一次平移'],
     a: 1,
-    ex: '把 b² 正方形两次剪切：先变平行四边形再变斜边上的矩形，每次剪切同底等高、面积不变，最后恰好拼进 c² 的一半。',
+    ex: '剪切（同底等高变平行四边形）→ 绕 A 旋转 90° 到斜边一侧 → 再剪切成垂足一侧的矩形。每一步面积都严格守恒。',
+  },
+  {
+    q: '加菲尔德梯形证明中，梯形面积 (a+b)²/2 等于哪三块之和？',
+    opts: ['a² + b² + c²', 'ab/2 + ab/2 + c²/2', 'ab + c²', 'a²/2 + b²/2 + ab'],
+    a: 1,
+    ex: '两个全等直角三角形各 ab/2，中间等腰直角三角形 c²/2；展开 (a+b)²/2 = ab + c²/2，化简得 a² + b² = c²。',
+  },
+  {
+    q: 'm = 5, n = 2 时生成的勾股数组是？它是不是本原勾股数？',
+    opts: ['3,4,5，是', '20,21,29，是', '21,20,29，不是', '10,24,26，是'],
+    a: 1,
+    ex: 'a = 25−4 = 21，b = 2×5×2 = 20，c = 25+4 = 29，即 (20,21,29)。m,n 互质且一奇一偶，是本原勾股数。',
   },
 ];
 
@@ -1018,54 +1924,473 @@ function showQuiz() {
   }
 
   renderQ();
-  activeCleanup = () => panel.remove();
+  activeSectionCleanup = () => panel.remove();
 }
 
-/* ---------------- 启动 ---------------- */
+/* ================= 章节定义（含机位） ================= */
 
-const SECTIONS = [secPuzzle, secChubu, secEuclid, secMore, secWater, secTriples, {
-  id: 'quiz', title: '随堂检测',
-  html: `<p>5 道题检验本章掌握情况。答完可重新开始。</p>`,
-  enter() {
-    chapterDrag = null;
-    hud.show(false);
-    ctl.clear();
-    clearCanvas();
-    grid();
-    // 背景装饰：3-4-5 直角三角形与三侧正方形线稿
-    const a = 3, b = 4, c = 5;
-    poly([[0, 0], [b, 0], [0, a]], null, { color: palette.faint, width: 1.5 });
-    poly([[b, 0], [0, a], [a, a + b], [a + b, b]], null, { color: palette.faint, width: 1.5, dash: [6, 5] });
-    poly([[0, 0], [-a, 0], [-a, a], [0, a]], null, { color: palette.faint, width: 1.5, dash: [6, 5] });
-    poly([[0, 0], [b, 0], [b, -b], [0, -b]], null, { color: palette.faint, width: 1.5, dash: [6, 5] });
-    setBoard(2.2, 1.8, 52);
-    showQuiz();
+const SECTIONS = [
+  {
+    id: 'puzzle', title: '拼图挑战',
+    cam: [1.2, 10.2, 10.8], tgt: [1.6, 0, -0.8],
+    html: `<p>直角三角形三条边上各有一个正方形。<b>勾股定理</b>说：两个小正方形的面积之和，等于斜边上的大正方形的面积，<span class="hl">a² + b² = c²</span>。</p>
+<p>别急着算，先动手：b² 已经被切成 4 块，把它们和 a² 一起<b>拖</b>进 c²，看能不能拼满。</p>
+<p>这是<b>Perigal 拼图</b>（亨利·佩里加尔，1873）。点碎片中间的 ↺（或<b>单击碎片</b>）可以把它旋转 90°；位置和方向都对时会<b>自动吸附</b>。切出的 4 块 + a² 拼满 c² 的那一刻，拼图自己就"证明"了定理。</p>`,
+    enter() {
+      Object.assign(pz, { shape: pz.shape, hint: false, done: false, drag: null, hoverIdx: -1 });
+      useScene('puzzle', buildPuzzleScene);
+      pzRefreshHint();
+      puzzleCtl();
+    },
   },
-}];
+  {
+    id: 'outin', title: '出入相补',
+    cam: [1.0, 9.6, 10.4], tgt: [2.6, 0, -2.0],
+    html: `<p>中国古代称直角三角形的两条直角边为"勾""股"，斜边为"弦"。三国时<b>赵爽</b>用"弦图"、魏晋时<b>刘徽</b>用"出入相补"证明了勾股定理。</p>
+<p><b>出入相补</b>：图形剪下的部分移到别处，面积不变。把 a² 和 b² 并排放好，从中剪下两个直角三角形（"出"），分别绕一个顶点<b>旋转 90°</b> 补到上面（"入"），正好拼成以斜边 c 为边的正方形——面积没有增减，所以 <span class="hl">a² + b² = c²</span>。</p>
+<p>切到「赵爽弦图」看另一种拼法：大正方形由 4 个朱实（三角形）和中间的黄实（小正方形）组成。</p>`,
+    enter() {
+      Object.assign(ob, { mode: ob.mode || 'chair' });
+      obPs.t = 0; obPs.dir = 0;
+      useScene('outin', buildOutin);
+      updOutin();
+      outinCtl();
+    },
+  },
+  {
+    id: 'euclid', title: '欧几里得的证明',
+    cam: [2.5, 9.8, 14.6], tgt: [2.5, 0, -1.2],
+    html: `<p>《几何原本》第一卷第 47 个命题。从直角顶点 C 作斜边的垂线，把 c² 分成两个矩形，再证明它们分别等于 a² 和 b²。</p>
+<p>动画把证明中的全等三角形换成了三个保持面积的变换：<b>剪切</b>（底边不动，对边沿自身所在直线滑动，正方形变平行四边形，同底等高面积不变）→ <b>旋转 90°</b>（绕 A 转到斜边一侧）→ <b>再剪切</b>（变成垂足 H 一侧的矩形）。两块矩形合起来正好是 c²。</p>
+<p>点「演示」看三段连续变换；每一步面积都严格守恒，读数可见。</p>`,
+    enter() {
+      euPs.t = 0; euPs.dir = 0;
+      useScene('euclid', buildEuclid);
+      updEuclid();
+      euclidCtl();
+    },
+  },
+  {
+    id: 'more', title: '更多证法',
+    cam: [2.2, 9.0, 10.4], tgt: [2.4, 0, -2.4],
+    html: `<p>勾股定理大概是证法最多的定理，有人收集了三百多种。这里再看两种：<b>毕达哥拉斯学派的"重排"</b>，和美国总统<b>加菲尔德的"梯形"</b>。</p>
+<p><b>重排</b>：边长 a+b 的大正方形里放 4 个全等的直角三角形，左边空出的是 c²；把三角形重新摆放后，空出的是 a² 和 b²。大正方形和三角形都没变，所以 c² = a² + b²。</p>
+<p><b>梯形</b>：两个直角三角形和一个等腰直角三角形拼成直角梯形，梯形面积 (a+b)²/2 = 2×ab/2 + c²/2，化简即得。1876 年发表在国会杂志上的"副业成果"。</p>`,
+    enter() {
+      moPs.t = 0; moPs.dir = 0;
+      useScene('more', buildMore);
+      updMore();
+      moreCtl();
+    },
+  },
+  {
+    id: 'water', title: '倒水',
+    cam: [0.8, 10.8, 11.4], tgt: [1.0, 0, -1.0],
+    html: `<p>把三个正方形做成一样厚的水槽，连在直角三角形的三条边上。先在 a² 和 b² 里装满水，然后<b>慢慢转动整块板</b>，水会流进 c²。</p>
+<p>猜猜看：能装满吗？会溢出吗？——三个容器一样"厚"，水的体积就和正方形的面积成正比。转到底就会发现：<span class="hl">a² + b² 的水，不多不少正好灌满 c²</span>。</p>
+<p>拖动「转动」滑杆慢慢转，或点「转动」自动旋转；蓝色就是水，读数实时显示三个槽中的水量。</p>`,
+    enter() {
+      Object.assign(wt, { a: wt.a, b: wt.b });
+      wtPs.t = 0; wtPs.dir = 0;
+      useScene('water', buildWater);
+      updWater(0);
+      waterCtl();
+    },
+  },
+  {
+    id: 'triples', title: '勾股数',
+    cam: [4.9, 5.6, 14.2], tgt: [5.1, 4.6, -6.2],
+    html: `<p>三边都是整数的直角三角形，三边长叫一组<b>勾股数</b>，如 3、4、5 和 5、12、13。</p>
+<p>任取正整数 <b>m &gt; n</b>：<span class="hl">a = m²−n²，b = 2mn，c = m²+n²</span> 一定是勾股数。拖动 m、n 试试；m、n 互质且一奇一偶时得到<b>本原勾股数</b>（三个数没有公因数）。</p>
+<p>散点墙上是 c &lt; 100 的全部勾股数：每个点 (a, b) 到原点的距离都是整数 c，同一条射线上的点是同一组勾股数的倍数。<b>直接点击图上的点</b>查看一组勾股数。</p>`,
+    enter() {
+      Object.assign(tp, { m: tp.m, n: tp.n, pick: null, hover: null });
+      useScene('triples', buildTriples);
+      updTriples();
+      triplesCtl();
+    },
+  },
+  {
+    id: 'quiz', title: '随堂检测',
+    cam: [1.6, 9.8, 12.4], tgt: [1.6, 0, -1.0],
+    html: `<p>5 道题检验本章掌握情况。答完可重新开始。</p>`,
+    enter() {
+      ctl.clear();
+      setHUD([['tip', '提示']]);
+      hset('tip', '答题后自动判分并给解析');
+      /* 背景：3-4-5 木板装置静景（水槽架全景） */
+      wtPs.t = 0; wtPs.dir = 0;
+      useScene('water', buildWater);
+      updWater(0);
+      showQuiz();
+    },
+  },
+];
 
-const sections = createSections({
-  nav: document.getElementById('sideNav'),
-  descPanel: document.getElementById('descPanel'),
-  sections: SECTIONS,
-  onSelect(i, sec) {
-    if (activeCleanup) { activeCleanup(); activeCleanup = null; }
-    chapterDrag = null;
-    chapterTick = null;
-    chapterPointerUp = null;
-    if (sec.leave) sec.leave();
-    sec.enter();
-  },
+/* ================= 三栏布局驱动（左栏章节列表 / 右栏联动 / 折叠 / 专注） ================= */
+
+const chapNav = document.getElementById('chapNav');
+const chapCount = document.getElementById('chapCount');
+const detailNo = document.getElementById('detailNo');
+const detailTitle = document.getElementById('detailTitle');
+const lessonEl = document.getElementById('lesson');
+const detailBody = document.getElementById('detailBody');
+const controlsEl = document.getElementById('controls');
+const pythShell = document.getElementById('pythShell');
+let chapterIdx = 0;
+
+const chapBtns = SECTIONS.map((s, i) => {
+  const b = document.createElement('button');
+  b.type = 'button';
+  b.className = 'chap-btn';
+  b.dataset.idx = String(i);
+  const n = document.createElement('span');
+  n.className = 'chap-n';
+  n.textContent = String(i + 1).padStart(2, '0');
+  const tt = document.createElement('span');
+  tt.className = 'chap-t';
+  tt.textContent = s.title;
+  b.append(n, tt);
+  b.addEventListener('click', () => selectChapter(i));
+  chapNav.appendChild(b);
+  return b;
 });
-window.__eduSections = sections;
-window.__pz = pz;  // 调试钩子（自动化测试用）
-window.__view = view;
-sections.select(0);
 
-let lastTs = 0;
-function appLoop(ts) {
-  requestAnimationFrame(appLoop);
-  const dt = Math.min((ts - lastTs) / 1000 || 0.016, 0.1);
-  lastTs = ts;
-  if (chapterTick) chapterTick(dt);
+function selectChapter(i) {
+  chapterIdx = clamp(i, 0, SECTIONS.length - 1);
+  const sec = SECTIONS[chapterIdx];
+  chapBtns.forEach((b, j) => {
+    const on = j === chapterIdx;
+    b.classList.toggle('on', on);
+    if (on) {
+      b.setAttribute('aria-current', 'true');
+      b.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+    } else {
+      b.removeAttribute('aria-current');
+    }
+  });
+  chapCount.textContent = `${String(chapterIdx + 1).padStart(2, '0')}/${String(SECTIONS.length).padStart(2, '0')}`;
+  detailNo.textContent = String(chapterIdx + 1).padStart(2, '0');
+  detailTitle.textContent = sec.title;
+  railNoL.textContent = String(chapterIdx + 1).padStart(2, '0');
+  railTitleR.textContent = sec.title;
+  lessonEl.innerHTML = sec.html || '';
+  if (activeSectionCleanup) { activeSectionCleanup(); activeSectionCleanup = null; }
+  sec.enter();
+  accSecs.controls.classList.toggle('acc-empty', !controlsEl.children.length);
+  detailBody.scrollTop = 0;
+  app.setCamera(sec.cam, sec.tgt);
 }
-requestAnimationFrame(appLoop);
+
+/* ---------------- 原版功能块 1:1：上一节(←)/下一节(→) · 重置视角(R) · 纸面/Studio(T) · 全屏(F) · 图上标注 ---------------- */
+
+const chapPrev = document.getElementById('chapPrev');
+const chapNext = document.getElementById('chapNext');
+const camResetBtn = document.getElementById('camResetBtn');
+const styleBtn = document.getElementById('styleBtn');
+const labelsBtn = document.getElementById('labelsBtn');
+const fullBtn = document.getElementById('fullBtn');
+
+function gotoChapter(i) { selectChapter((i + SECTIONS.length) % SECTIONS.length); }
+chapPrev.addEventListener('click', () => gotoChapter(chapterIdx - 1));
+chapNext.addEventListener('click', () => gotoChapter(chapterIdx + 1));
+
+function resetView() { app.setCamera(SECTIONS[chapterIdx].cam, SECTIONS[chapterIdx].tgt); }
+camResetBtn.addEventListener('click', resetView);
+
+function paintStyleBtn() {
+  styleBtn.textContent = styleName === 'paper' ? '纸面风格' : 'Studio 风格';
+  styleBtn.classList.toggle('on', styleName === 'paper');
+  styleBtn.setAttribute('aria-pressed', String(styleName === 'paper'));
+}
+styleBtn.addEventListener('click', () => {
+  applyStyle(styleName === 'paper' ? 'studio' : 'paper');
+  paintStyleBtn();
+});
+
+function paintLabelsBtn() {
+  labelsBtn.classList.toggle('on', labelsOn);
+  labelsBtn.setAttribute('aria-pressed', String(labelsOn));
+}
+labelsBtn.addEventListener('click', () => {
+  labelsOn = !labelsOn;
+  applyLabels();
+  paintLabelsBtn();
+});
+
+fullBtn.addEventListener('click', () => {
+  if (document.fullscreenElement) document.exitFullscreen();
+  else document.querySelector('.lab-stage3d').requestFullscreen().catch(() => { /* 用户拒绝或不支持时静默 */ });
+});
+document.addEventListener('fullscreenchange', () => {
+  fullBtn.textContent = document.fullscreenElement ? '⛶ 退出全屏' : '⛶ 全屏';
+});
+
+window.addEventListener('keydown', (e) => {
+  if (e.metaKey || e.ctrlKey || e.altKey) return;
+  const t = e.target;
+  if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.isContentEditable)) return;
+  if (e.key === 'ArrowLeft') gotoChapter(chapterIdx - 1);
+  else if (e.key === 'ArrowRight') gotoChapter(chapterIdx + 1);
+  else if (e.key === 'r' || e.key === 'R') resetView();
+  else if (e.key === 't' || e.key === 'T') styleBtn.click();
+  else if (e.key === ']') toggleAcc('data');
+});
+
+/* ---------------- 3D 交互：拼图拖拽/单击旋转 · 勾股数散点点选 ---------------- */
+
+const ray = new THREE.Raycaster();
+const ndc = new THREE.Vector2();
+const dragPlane = new THREE.Plane(V3(0, 1, 0), -(LIFT + THK));
+const planeHit = new THREE.Vector3();
+let dragCtx = null;
+
+function setNdc(e) {
+  const r = app.renderer.domElement.getBoundingClientRect();
+  ndc.set(((e.clientX - r.left) / r.width) * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1);
+}
+function worldToChart2D(p) { return [p.x, -p.z]; }
+
+const dom = app.renderer.domElement;
+dom.addEventListener('pointerdown', (e) => {
+  if (activeScene === scenes.puzzle && !pz.done && !pz.demo) {
+    setNdc(e);
+    ray.setFromCamera(ndc, camera);
+    const picks = PZ.pieceMeshes.filter((m) => pz.pieces[m.userData.idx].slot < 0);
+    const hits = ray.intersectObjects(picks, false);
+    if (hits.length) {
+      const mesh = hits[0].object;
+      const idx = mesh.userData.idx;
+      if (ray.ray.intersectPlane(dragPlane, planeHit)) {
+        const [hx, hy] = worldToChart2D(planeHit);
+        const pc = pz.pieces[idx];
+        dragCtx = { idx, off: [hx - pc.pos[0], hy - pc.pos[1]], moved: false, sx: e.clientX, sy: e.clientY };
+        pz.drag = { idx };
+        controls.enabled = false;
+        dom.setPointerCapture(e.pointerId);
+        stage.style.cursor = 'grabbing';
+      }
+      return;
+    }
+  }
+  if (activeScene === scenes.triples) {
+    setNdc(e);
+    ray.setFromCamera(ndc, camera);
+    const hits = ray.intersectObjects([TP.instPrim, TP.instMult], false);
+    if (hits.length) {
+      const inst = hits[0].object;
+      const list = inst.userData.list;
+      const t = list[Math.floor(hits[0].instanceId / 2)];
+      if (t) {
+        tp.pick = tp.pick && tp.pick.a === t.a && tp.pick.b === t.b && tp.pick.c === t.c ? null : t;
+        updTriples();
+        triplesHUD();
+        controls.enabled = false;
+        dom.setPointerCapture(e.pointerId);
+        setTimeout(() => { controls.enabled = true; }, 30);
+      }
+    }
+  }
+});
+dom.addEventListener('pointermove', (e) => {
+  if (dragCtx && dragCtx.idx !== undefined) {
+    setNdc(e);
+    ray.setFromCamera(ndc, camera);
+    if (ray.ray.intersectPlane(dragPlane, planeHit)) {
+      const [hx, hy] = worldToChart2D(planeHit);
+      const pc = pz.pieces[dragCtx.idx];
+      pc.pos = [clamp(hx - dragCtx.off[0], -8.2, 9.6), clamp(hy - dragCtx.off[1], -6.4, 6.2)];
+    }
+    if (Math.hypot(e.clientX - dragCtx.sx, e.clientY - dragCtx.sy) > 6) dragCtx.moved = true;
+    return;
+  }
+  if (activeScene === scenes.puzzle) {
+    setNdc(e);
+    ray.setFromCamera(ndc, camera);
+    const hits = ray.intersectObjects(PZ.pieceMeshes.filter((m) => pz.pieces[m.userData.idx].slot < 0), false);
+    const idx = hits.length ? hits[0].object.userData.idx : -1;
+    if (idx !== pz.hoverIdx) {
+      pz.hoverIdx = idx;
+      stage.style.cursor = idx >= 0 ? 'grab' : '';
+    }
+  } else if (activeScene === scenes.triples && TP.hoverLbl) {
+    setNdc(e);
+    ray.setFromCamera(ndc, camera);
+    const hits = ray.intersectObjects([TP.instPrim, TP.instMult], false);
+    if (hits.length) {
+      const list = hits[0].object.userData.list;
+      const t = list[Math.floor(hits[0].instanceId / 2)];
+      if (t) {
+        const [wx, wy] = chartToWorld(t.a, t.b);
+        TP.hoverLbl.position.set(wx + 0.4, wy + 0.3, TP_WALL_Z + 0.12);
+        setLbl(TP.hoverLbl, `(${t.a}, ${t.b}, ${t.c})`, '#ffffff');
+        TP.hoverLbl.visible = labelsOn;
+        stage.style.cursor = 'pointer';
+        return;
+      }
+    }
+    TP.hoverLbl.visible = false;
+    stage.style.cursor = '';
+  }
+});
+function endDrag() {
+  if (!dragCtx) return;
+  const pc = pz.pieces[dragCtx.idx];
+  if (!dragCtx.moved) { pzRotate(pc); pzSnapCheck(pc); }
+  else pzSnapCheck(pc);
+  pzCheckDone();
+  puzzleHUD();
+  dragCtx = null;
+  pz.drag = null;
+  controls.enabled = true;
+  stage.style.cursor = '';
+}
+dom.addEventListener('pointerup', endDrag);
+dom.addEventListener('pointercancel', endDrag);
+
+/* ================= 章节帧循环 ================= */
+
+app.onFrame((dt) => {
+  if (!activeScene || !activeScene.visible) return;
+  if (activeScene === scenes.puzzle) {
+    updPuzzle(dt);
+    puzzleHUD();
+  } else if (activeScene === scenes.outin) {
+    if (obPs.step(dt)) {
+      updOutin();
+      /* 滑杆只刷显示不派发 input（onInput 会把 dir 清零掐停播放，同 outinSyncSliders 口径） */
+      OB.tSlider?.set(obPs.t);
+      const pb = ctl.el.querySelector('[data-play="1"]');
+      if (pb) playBtnLabel(pb, obPs, '▶ 出入相补', '↺ 还原');
+      outinHUD();
+    }
+  } else if (activeScene === scenes.euclid) {
+    if (euPs.step(dt)) {
+      updEuclid();
+      EU.tSlider?.set(euPs.t);
+      const pb = ctl.el.querySelector('[data-play="1"]');
+      if (pb) playBtnLabel(pb, euPs, '▶ 演示', '↺ 还原');
+      euclidHUD();
+    }
+  } else if (activeScene === scenes.more) {
+    if (moPs.step(dt)) {
+      updMore();
+      MO.tSlider?.set(moPs.t);
+      const pb = ctl.el.querySelector('[data-play="1"]');
+      if (pb) playBtnLabel(pb, moPs, '▶ 演示', '↺ 还原');
+      moreHUD();
+    }
+  } else if (activeScene === scenes.water) {
+    if (wtPs.step(dt)) {
+      WT.tSlider?.set(wtPs.t);
+      const pb = ctl.el.querySelector('[data-play="1"]');
+      if (pb) playBtnLabel(pb, wtPs, '▶ 转动', '↺ 转回去');
+    }
+    updWater(dt);
+    waterHUD();
+  }
+});
+
+/* ---------------- 栏折叠（左右独立 28px 竖条）× 专注模式（双栏同折） ---------------- */
+
+const foldLBtn = document.getElementById('foldLBtn');
+const unfoldLBtn = document.getElementById('unfoldLBtn');
+const foldRBtn = document.getElementById('foldRBtn');
+const unfoldRBtn = document.getElementById('unfoldRBtn');
+const railNoL = document.getElementById('railNoL');
+const railTitleR = document.getElementById('railTitleR');
+const focusBtn = document.getElementById('focusBtn');
+
+const FOLD_KEY = { l: 'pythagoras.foldL', r: 'pythagoras.foldR' };
+let foldL = false;
+let foldR = false;
+let focusSaved = null;
+
+try {
+  foldL = localStorage.getItem(FOLD_KEY.l) === '1';
+  foldR = localStorage.getItem(FOLD_KEY.r) === '1';
+} catch (e) { /* localStorage 不可用时仅本次会话生效 */ }
+
+function applyFold() {
+  pythShell.classList.toggle('fold-l', foldL);
+  pythShell.classList.toggle('fold-r', foldR);
+  for (const [btn, folded] of [[foldLBtn, foldL], [unfoldLBtn, foldL], [foldRBtn, foldR], [unfoldRBtn, foldR]]) {
+    btn.setAttribute('aria-expanded', String(!folded));
+  }
+}
+
+function setFocus(on) {
+  if (on && focusSaved === null) {
+    focusSaved = [foldL, foldR];
+    foldL = true;
+    foldR = true;
+  } else if (!on && focusSaved !== null) {
+    [foldL, foldR] = focusSaved;
+    focusSaved = null;
+  }
+  pythShell.classList.toggle('focus-mode', on);
+  focusBtn.textContent = on ? '退出专注' : '专注模式';
+  focusBtn.setAttribute('aria-pressed', String(on));
+  applyFold();
+}
+
+function toggleFold(side) {
+  if (focusSaved !== null) setFocus(false);
+  if (side === 'l') foldL = !foldL;
+  else foldR = !foldR;
+  try {
+    localStorage.setItem(FOLD_KEY[side], (side === 'l' ? foldL : foldR) ? '1' : '0');
+  } catch (e) { /* 忽略持久化失败 */ }
+  applyFold();
+}
+
+foldLBtn.addEventListener('click', () => toggleFold('l'));
+unfoldLBtn.addEventListener('click', () => toggleFold('l'));
+foldRBtn.addEventListener('click', () => toggleFold('r'));
+unfoldRBtn.addEventListener('click', () => toggleFold('r'));
+focusBtn.addEventListener('click', () => setFocus(focusSaved === null));
+applyFold();
+
+/* ---------------- 右栏三块手风琴（详解 / 控件 / 读数），localStorage 记忆、切章不重置 ---------------- */
+
+const ACC_KEYS = { lesson: 'pythagoras.accLesson', controls: 'pythagoras.accControls', data: 'pythagoras.accData' };
+const accSecs = {
+  lesson: document.getElementById('accLesson'),
+  controls: document.getElementById('accControls'),
+  data: document.getElementById('accData'),
+};
+
+const NARROW_VIEW = window.innerWidth <= 1100;
+const accClosed = {};
+for (const name of Object.keys(accSecs)) {
+  let saved = null;
+  try { saved = localStorage.getItem(ACC_KEYS[name]); } catch (e) { /* 忽略 */ }
+  accClosed[name] = saved !== null ? saved === '1' : (name === 'data' && NARROW_VIEW);
+}
+function applyAcc(name) {
+  const sec = accSecs[name];
+  sec.classList.toggle('closed', accClosed[name]);
+  sec.querySelector('.acc-head').setAttribute('aria-expanded', String(!accClosed[name]));
+}
+function toggleAcc(name) {
+  accClosed[name] = !accClosed[name];
+  try { localStorage.setItem(ACC_KEYS[name], accClosed[name] ? '1' : '0'); } catch (e) { /* 忽略 */ }
+  applyAcc(name);
+}
+for (const name of Object.keys(accSecs)) {
+  accSecs[name].querySelector('.acc-head').addEventListener('click', () => toggleAcc(name));
+  applyAcc(name);
+}
+
+/* ============ 启动 ============ */
+
+scene.add(buildBench());
+applyStyle(styleName);
+paintStyleBtn();
+paintLabelsBtn();
+setTimeout(() => {
+  loader.hide();
+  window.__eduSections = { select: selectChapter };
+  window.__pythDebug = { app, vfx, scenes, pz, tp, PZ, TP };
+  selectChapter(0);
+}, 60);
