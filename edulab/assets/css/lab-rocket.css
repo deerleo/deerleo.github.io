@@ -1,0 +1,775 @@
+/* EduLab · rocket 神舟发射与返回布局（真·三栏：左章节大纲 / 中 3D 发射场舞台 / 右详解+控件+读数）
+   依赖 edu.css 的主题变量与 lab.css 的通用控件（ctl/quiz/chap 视觉）。
+   本文件只管 rocket 页面骨架、遥测面板浮窗与舞台覆盖卡，不动共享布局。 */
+
+html, body { height: 100%; }
+
+body.lab.rocket {
+  display: block;
+  overflow: hidden;
+}
+
+/* ---------- 三栏骨架（顶栏细条 + 左章节 / 中舞台 / 右详解） ---------- */
+
+.rkt-shell {
+  display: grid;
+  grid-template-columns: 246px minmax(0, 1fr) 352px;
+  grid-template-rows: auto minmax(0, 1fr);
+  grid-template-areas:
+    "top      top   top"
+    "chapters stage detail";
+  height: 100dvh;
+}
+
+/* ---------- 顶栏细条 ---------- */
+
+.rkt-toprow {
+  grid-area: top;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 9px 16px;
+  border-bottom: 1px solid var(--card-border);
+  background: color-mix(in srgb, var(--card) 60%, transparent);
+}
+.rkt-toprow .edu-logo { flex: none; }
+.rkt-toprow .lab-title {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  min-width: 0;
+  color: var(--text);
+}
+.rkt-toprow .lab-title b { font-size: 16px; white-space: nowrap; }
+.rkt-toprow .lab-title span {
+  font-size: 12.5px;
+  color: var(--text-faint);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.rkt-toprow .spacer { flex: 1; }
+.rkt-toprow .edu-header-btn { white-space: nowrap; }
+
+/* ---------- 左栏：章节大纲 ---------- */
+
+.lab-chapters {
+  grid-area: chapters;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  background: var(--bg-soft);
+  border-right: 1px solid var(--card-border);
+}
+.chap-head {
+  flex: none;
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  padding: 13px 14px 7px;
+}
+.chap-head .chap-title {
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  color: var(--text-faint);
+}
+.chap-count {
+  font-size: 11.5px;
+  color: var(--text-faint);
+  font-variant-numeric: tabular-nums;
+}
+.chap-list {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 2px 8px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.chap-list .chap-btn.on {
+  color: var(--accent);
+  background: var(--accent-soft);
+  border-color: color-mix(in srgb, var(--accent) 35%, transparent);
+  font-weight: 600;
+}
+.chap-list .chap-btn.on .chap-n { color: var(--accent); }
+
+/* 编组分隔行（飞行任务 / 在轨与返回 / 拓展与检测） */
+.chap-group {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px 4px;
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  color: var(--text-faint);
+  user-select: none;
+}
+.chap-group::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--card-border);
+}
+
+/* ---------- 中栏：3D 发射场舞台 ---------- */
+
+.lab-stage3d {
+  grid-area: stage;
+  position: relative;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  background: var(--bg);
+}
+.rkt-stage {
+  position: absolute;
+  inset: 0;
+}
+.rkt-stage > canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; outline: none; }
+.rkt-stage .lab-loader { position: absolute; }
+.rkt-stage .quiz-panel { z-index: 28; }
+
+/* 专注模式按钮（中栏左下角） */
+.stage-focus-btn {
+  position: absolute;
+  left: 14px;
+  bottom: 14px;
+  z-index: 24;
+  appearance: none;
+  font-family: inherit;
+  font-size: 12px;
+  line-height: 1;
+  padding: 7px 13px;
+  border-radius: 999px;
+  border: 1px solid var(--card-border);
+  background: color-mix(in srgb, var(--card) 74%, transparent);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  color: var(--text-dim);
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s;
+}
+.stage-focus-btn:hover { color: var(--accent); border-color: var(--accent); }
+
+.stage-foot {
+  position: absolute;
+  right: 16px;
+  bottom: 14px;
+  z-index: 24;
+  font-size: 11.5px;
+  color: var(--text-faint);
+}
+.stage-foot a { color: var(--text-faint); text-decoration: underline; text-underline-offset: 2px; }
+
+/* ---------- 栏折叠（左右独立 28px 竖条）与专注模式（双栏同折） ---------- */
+
+.rkt-shell { transition: grid-template-columns 0.3s ease; }
+.rkt-shell.fold-l { grid-template-columns: 28px minmax(0, 1fr) 352px; }
+.rkt-shell.fold-r { grid-template-columns: 246px minmax(0, 1fr) 28px; }
+.rkt-shell.fold-l.fold-r { grid-template-columns: 28px minmax(0, 1fr) 28px; }
+
+.chap-head, .chap-list { min-width: 246px; }
+.detail-head, .detail-body { min-width: 352px; }
+.chap-head, .chap-list, .detail-head, .detail-body { transition: opacity 0.16s ease; }
+.rkt-shell.fold-l .chap-head,
+.rkt-shell.fold-l .chap-list { opacity: 0; pointer-events: none; }
+.rkt-shell.fold-r .detail-head,
+.rkt-shell.fold-r .detail-body { opacity: 0; pointer-events: none; }
+
+.fold-btn {
+  flex: none;
+  appearance: none;
+  font-family: inherit;
+  width: 22px;
+  height: 22px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  line-height: 1;
+  border-radius: 7px;
+  border: 1px solid var(--card-border);
+  background: var(--chip-bg);
+  color: var(--text-faint);
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s, background 0.15s;
+}
+.fold-btn:hover {
+  color: var(--accent);
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+.detail-head .fold-btn { margin-left: auto; align-self: center; }
+
+.fold-rail {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 0 12px;
+  background: var(--bg-soft);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.2s ease, visibility 0s linear 0.2s;
+}
+.rkt-shell.fold-l .lab-chapters .fold-rail,
+.rkt-shell.fold-r .lab-detail .fold-rail {
+  opacity: 1;
+  visibility: visible;
+  transition: opacity 0.2s ease 0.1s;
+}
+.rail-no {
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--accent);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.04em;
+}
+.rail-title {
+  writing-mode: vertical-rl;
+  max-height: 210px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 12px;
+  color: var(--text-faint);
+  letter-spacing: 0.14em;
+}
+
+/* ---------- 右栏：知识点详解 + 控件 + 读数 ---------- */
+
+.lab-detail {
+  grid-area: detail;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  background: var(--bg-soft);
+  border-left: 1px solid var(--card-border);
+}
+.detail-head {
+  flex: none;
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  padding: 14px 16px 11px;
+  border-bottom: 1px solid var(--card-border);
+}
+.detail-no {
+  flex: none;
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--accent);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.02em;
+}
+.detail-title {
+  margin: 0;
+  font-size: 16px;
+  color: var(--text);
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.detail-body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 14px 16px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.lc-lesson { font-size: 13.5px; line-height: 1.7; color: var(--text-dim); }
+.lc-lesson p { margin: 0 0 8px; }
+.lc-lesson p:last-child { margin-bottom: 0; }
+.lc-lesson b { color: var(--text); }
+.lc-lesson .hl { color: var(--accent); font-weight: 600; }
+.lc-lesson .rkt-note {
+  margin-top: 10px;
+  padding: 8px 12px;
+  border: 1px solid color-mix(in srgb, var(--accent) 32%, transparent);
+  border-radius: 10px;
+  background: var(--accent-soft);
+  color: var(--text);
+  font-size: 12.5px;
+}
+/* 任务档案表（第 10 章） */
+.rkt-missions { display: flex; flex-direction: column; gap: 3px; margin-top: 8px; max-height: 300px; overflow-y: auto; padding-right: 4px; }
+/* 速查数据表（长征族谱 / 伞系参数，正文佐证用） */
+.rkt-table { width: 100%; border-collapse: collapse; margin-top: 6px; font-size: 11.5px; line-height: 1.5; }
+.rkt-table th, .rkt-table td { border: 1px solid var(--card-border); padding: 4px 6px; text-align: left; }
+.rkt-table th { background: var(--chip-bg); color: var(--text-faint); font-weight: 600; }
+.rkt-table td { color: var(--text-dim); }
+.rkt-table td:first-child { color: var(--text); white-space: nowrap; }
+/* 结构清单卡（第 1 章知识卡，复用 plant-parts 视觉类名 + 舞台左上定位） */
+.rkt-parts {
+  position: absolute;
+  z-index: 12;
+  left: 12px;
+  top: 12px;
+  width: min(240px, calc(100% - 24px));
+  padding: 10px 12px;
+  background: color-mix(in srgb, var(--card) 88%, transparent);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid var(--card-border);
+  border-radius: 14px;
+  box-shadow: var(--shadow);
+  color: var(--text);
+}
+.rkt-parts h3 { margin: 0 0 6px; font-size: 13px; }
+/* 有结构清单时遥测面板让位（同为左上浮层，错开出现） */
+.rkt-parts.show-telem-offset { top: 12px; left: 12px; }
+.rkt-missions .mi-row {
+  display: flex;
+  align-items: baseline;
+  gap: 7px;
+  padding: 5px 8px;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--text-dim);
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+.rkt-missions .mi-row:hover { color: var(--text); background: var(--chip-bg); }
+.rkt-missions .mi-row.on {
+  color: var(--accent);
+  background: var(--accent-soft);
+  border-color: color-mix(in srgb, var(--accent) 32%, transparent);
+}
+.rkt-missions .mi-row b { color: inherit; flex: none; font-variant-numeric: tabular-nums; }
+.rkt-missions .mi-row .mi-meta { font-size: 11px; color: var(--text-faint); }
+
+.lc-controls { display: flex; flex-flow: row wrap; gap: 8px 10px; align-items: center; }
+.lc-controls .ctl, .lc-controls .ctl-toggle { flex: 1 1 100%; }
+.lc-controls .ctl input[type="range"] { flex: 1; width: auto; }
+.lc-controls .lc-btnrow { display: flex; gap: 8px; flex: 1 1 100%; flex-wrap: wrap; }
+.lc-controls .lc-btnrow .ctl-btn { flex: 1 1 auto; }
+.lc-controls .ctl-sep { flex: 1 1 100%; width: auto; height: 1px; background: var(--card-border); }
+.lc-controls:empty { display: none; }
+
+.lc-data .hud-card {
+  background: var(--chip-bg);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  border: 1px solid var(--card-border);
+  box-shadow: none;
+  min-width: 0;
+  width: 100%;
+}
+.lc-data .hud-card:empty { display: none; }
+
+/* ---------- 右栏三块手风琴 ---------- */
+
+.acc {
+  flex: none;
+  border: 1px solid var(--card-border);
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--card) 42%, transparent);
+  overflow: hidden;
+}
+.acc.acc-empty { display: none; }
+.acc-head {
+  appearance: none;
+  font-family: inherit;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 9px 12px;
+  border: none;
+  background: transparent;
+  color: var(--text-faint);
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-align: left;
+  cursor: pointer;
+  transition: color 0.15s;
+}
+.acc-head:hover { color: var(--accent); }
+.acc-arrow {
+  margin-left: auto;
+  font-style: normal;
+  font-size: 10px;
+  line-height: 1;
+  transition: transform 0.25s ease;
+}
+.acc.closed .acc-arrow { transform: rotate(-90deg); }
+.acc-fold-wrap {
+  display: grid;
+  grid-template-rows: 1fr;
+  transition: grid-template-rows 0.25s ease;
+}
+.acc.closed .acc-fold-wrap { grid-template-rows: 0fr; }
+.acc-fold-body { min-height: 0; overflow: hidden; }
+.acc-fold-inner { padding: 2px 12px 12px; }
+
+/* ---------- 舞台工具排（视角 / 课堂 / 画质 / 重做 / 全屏，右上角） ---------- */
+
+.stage-tools {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 30;
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  max-width: calc(100% - 24px);
+}
+.stage-tool-btn {
+  appearance: none;
+  font-family: inherit;
+  font-size: 12px;
+  line-height: 1;
+  padding: 7px 13px;
+  border-radius: 999px;
+  border: 1px solid var(--card-border);
+  background: color-mix(in srgb, var(--card) 74%, transparent);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  color: var(--text-dim);
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s;
+}
+.stage-tool-btn:hover { color: var(--accent); border-color: var(--accent); }
+.stage-tool-btn.active {
+  color: var(--accent);
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+
+/* ---------- 遥测面板（浮于中栏左上；折叠为 40px 圆形「遥」徽标） ---------- */
+
+.rkt-telem {
+  position: absolute;
+  left: 12px;
+  top: 12px;
+  z-index: 26;
+  width: min(340px, calc(100% - 24px));
+  border: 1px solid var(--card-border);
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--card) 90%, transparent);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: var(--shadow);
+  color: var(--text);
+  overflow: hidden;
+}
+.rkt-telem .telem-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 10px 9px 12px;
+}
+.rkt-telem .telem-t {
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  color: var(--text-faint);
+}
+.telem-clock {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--accent);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.03em;
+}
+.telem-clock.hold { color: var(--text-faint); font-weight: 600; }
+.telem-clock.counting { animation: telemPulse 1s steps(2) infinite; }
+@keyframes telemPulse { 50% { opacity: 0.55; } }
+.rkt-telem .fold-btn { margin-left: auto; }
+.telem-body { padding: 0 10px 10px; }
+.telem-plotwrap { position: relative; }
+.telem-plot {
+  display: block;
+  width: 100%;
+  border-radius: 9px;
+  background: color-mix(in srgb, var(--bg) 62%, transparent);
+}
+.telem-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px 10px;
+  padding: 5px 2px 2px;
+  font-size: 10.5px;
+  color: var(--text-faint);
+}
+.telem-legend .lg { display: inline-flex; align-items: center; gap: 4px; }
+.telem-legend .lg i {
+  width: 10px;
+  height: 3px;
+  border-radius: 2px;
+  display: inline-block;
+}
+.telem-legend .lg.dim { opacity: 0.45; }
+.telem-events {
+  margin-top: 6px;
+  max-height: 118px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  scrollbar-width: thin;
+}
+.telem-events .ev {
+  display: flex;
+  align-items: baseline;
+  gap: 7px;
+  font-size: 11px;
+  line-height: 1.5;
+  color: var(--text-faint);
+  padding: 1.5px 4px;
+  border-radius: 6px;
+  font-variant-numeric: tabular-nums;
+  transition: color 0.2s, background 0.2s;
+}
+.telem-events .ev .ev-t { flex: none; min-width: 52px; }
+.telem-events .ev.past { color: var(--text-dim); }
+.telem-events .ev.now {
+  color: var(--accent);
+  background: var(--accent-soft);
+  font-weight: 600;
+}
+.telem-events .ev.future { opacity: 0.62; }
+.telem-events .ev.fail { color: #d0705e; }
+
+/* 折叠态：40px 圆形「遥」徽标（暗色舷窗质感 + hover accent） */
+.rkt-telem.folded {
+  width: auto;
+  border: none;
+  background: transparent;
+  box-shadow: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  display: flex;
+  align-items: flex-start;
+}
+.rkt-telem.folded .telem-head,
+.rkt-telem.folded .telem-body { display: none; }
+.telem-badge {
+  appearance: none;
+  font-family: inherit;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  padding: 0;
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  color: #cfe6f6;
+  background: radial-gradient(circle at 34% 30%, #3c5a74 0%, #1d3448 52%, #101d2b 100%);
+  border: 3px solid #0d1723;
+  box-shadow: 0 4px 14px rgba(4, 10, 16, 0.5), inset 0 0 0 2px rgba(120, 170, 205, 0.28);
+  cursor: pointer;
+  transition: transform 0.18s, color 0.15s, border-color 0.15s;
+}
+.telem-badge:hover {
+  color: var(--accent);
+  border-color: color-mix(in srgb, var(--accent) 60%, #0d1723);
+  transform: scale(1.06);
+}
+.rkt-telem.folded .telem-badge { display: inline-flex; animation: telemPop 0.25s ease; }
+@keyframes telemPop { from { transform: scale(0.6); opacity: 0; } }
+
+/* ---------- 课堂模式：舞台放大，右栏（讲解文字 + 控件 + 读数）浮于舞台 ---------- */
+
+.rkt-shell.classroom { grid-template-columns: 28px minmax(0, 1fr) 28px; }
+.rkt-shell.classroom .stage-tools { right: auto; left: 64px; }
+.rkt-shell.classroom .lab-detail {
+  position: fixed;
+  right: 12px;
+  top: 52px;
+  bottom: 12px;
+  width: min(348px, calc(100vw - 300px));
+  z-index: 40;
+  border-radius: 16px;
+  border: 1px solid var(--card-border);
+  box-shadow: 0 18px 46px rgba(6, 12, 10, 0.42);
+  background: color-mix(in srgb, var(--card) 92%, transparent);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+.rkt-shell.classroom .detail-head,
+.rkt-shell.classroom .detail-body { opacity: 1; pointer-events: auto; }
+.rkt-shell.classroom .detail-head { border-radius: 16px 16px 0 0; }
+.rkt-shell.classroom .detail-body::-webkit-scrollbar-thumb { background: var(--card-border); }
+
+/* ---------- 提示条 ---------- */
+
+.rkt-toast {
+  position: absolute;
+  top: 14px;
+  left: 50%;
+  transform: translate(-50%, -8px);
+  z-index: 32;
+  max-width: min(440px, calc(100% - 28px));
+  padding: 9px 16px;
+  border-radius: 12px;
+  font-size: 13.5px;
+  line-height: 1.55;
+  background: color-mix(in srgb, var(--card) 92%, transparent);
+  border: 1px solid var(--card-border);
+  box-shadow: var(--shadow);
+  color: var(--text);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .25s, transform .25s;
+  text-align: center;
+}
+.rkt-toast.show { opacity: 1; transform: translate(-50%, 0); }
+.rkt-toast.ok { border-color: color-mix(in srgb, #3fa96f 55%, transparent); }
+.rkt-toast.bad { border-color: color-mix(in srgb, #d9534f 60%, transparent); color: #d0705e; }
+
+/* ---------- 上一/下一章（栏头 ‹ 01/12 ›） ---------- */
+
+.chap-pn {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 1px;
+}
+.pn-btn {
+  appearance: none;
+  font-family: inherit;
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  line-height: 1;
+  border-radius: 6px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--text-faint);
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s, background 0.15s;
+}
+.pn-btn:hover {
+  color: var(--accent);
+  border-color: var(--card-border);
+  background: var(--card);
+}
+
+/* ---------- 中窄屏（1101–1360px）：侧栏收窄一档 ---------- */
+
+@media (max-width: 1360px) and (min-width: 1101px) {
+  .rkt-shell { grid-template-columns: 224px minmax(0, 1fr) 330px; }
+  .rkt-shell.fold-r { grid-template-columns: 224px minmax(0, 1fr) 28px; }
+  .chap-head, .chap-list { min-width: 224px; }
+  .detail-head, .detail-body { min-width: 330px; }
+  .rkt-telem { width: min(300px, calc(100% - 24px)); }
+}
+
+/* ---------- 窄屏（≤1100px）：首访清爽态由 JS 配合 ---------- */
+
+@media (max-width: 1100px) {
+  .rkt-toprow { padding: 8px 12px; gap: 8px; }
+  .rkt-toprow .lab-title span { display: none; }
+  .rkt-toprow .lab-title b { font-size: 15px; }
+  .rkt-toprow a.edu-header-btn[href='../'] { display: none; }
+
+  .detail-body { padding: 10px 12px 14px; gap: 10px; }
+  .acc-head { padding: 8px 10px; }
+  .acc-fold-inner { padding: 2px 10px 10px; }
+
+  .rkt-telem { left: 10px; top: 10px; width: min(280px, calc(100% - 20px)); }
+  .telem-events { max-height: 84px; }
+  .stage-tools { gap: 5px; }
+  .stage-tool-btn { padding: 6px 10px; font-size: 11px; }
+}
+
+/* ---------- 移动端（≤860px）：纵向堆叠 ---------- */
+
+@media (max-width: 860px) {
+  .rkt-shell {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto auto minmax(230px, 42dvh) minmax(0, 1fr);
+    grid-template-areas:
+      "top"
+      "chapters"
+      "stage"
+      "detail";
+  }
+
+  .rkt-shell { transition: none; }
+  .rkt-shell.fold-l,
+  .rkt-shell.fold-r,
+  .rkt-shell.fold-l.fold-r { grid-template-columns: minmax(0, 1fr); }
+  .fold-btn, .fold-rail { display: none; }
+  .rkt-shell.fold-l .chap-head,
+  .rkt-shell.fold-l .chap-list,
+  .rkt-shell.fold-r .detail-head,
+  .rkt-shell.fold-r .detail-body { opacity: 1; pointer-events: auto; }
+
+  .rkt-toprow { padding: 8px 10px; gap: 8px; }
+  .rkt-toprow .lab-title span { display: none; }
+  .rkt-toprow .lab-title b { font-size: 14.5px; }
+  .rkt-toprow a.edu-header-btn[href='../'] { display: none; }
+
+  .lab-chapters { border-right: none; border-bottom: 1px solid var(--card-border); }
+  .chap-head { padding: 8px 12px 2px; }
+  .chap-list {
+    flex-direction: row;
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding: 5px 8px 8px;
+    gap: 4px;
+    scrollbar-width: none;
+  }
+  .chap-list::-webkit-scrollbar { display: none; }
+  .chap-list .chap-btn { flex: none; padding: 6px 10px; font-size: 12.5px; white-space: nowrap; }
+  .chap-list .chap-btn .chap-n { width: auto; margin-right: 4px; }
+  .chap-group { flex: none; padding: 0 2px; }
+  .chap-group::after { display: none; }
+
+  .lab-detail { border-left: none; border-top: 1px solid var(--card-border); }
+  .detail-head { padding: 10px 12px 8px; }
+  .detail-no { font-size: 18px; }
+  .detail-title { font-size: 14.5px; }
+  .detail-body { padding: 10px 12px 14px; }
+  .lc-lesson { font-size: 12.5px; }
+  .rkt-missions { max-height: 220px; }
+
+  .stage-focus-btn { left: 8px; bottom: 8px; }
+  .stage-foot { display: none; }
+
+  .rkt-telem { left: 8px; top: 8px; width: min(250px, calc(100% - 16px)); max-height: calc(100% - 16px); overflow-y: auto; }
+  .telem-events { max-height: 64px; }
+
+  .rkt-stage .quiz-panel {
+    align-items: flex-start;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .rkt-stage .quiz-card { margin: auto 0; }
+
+  .stage-tools { top: 8px; right: 8px; gap: 4px; }
+  .stage-tool-btn { padding: 5px 7px; font-size: 10.5px; letter-spacing: -0.01em; }
+  /* 课堂模式依赖三栏并排（右栏浮层），纵向堆叠下无意义 */
+  #classroomBtn { display: none; }
+  .rkt-shell.classroom .lab-detail { position: static; width: auto; box-shadow: none; border-radius: 0; backdrop-filter: none; -webkit-backdrop-filter: none; }
+  .rkt-shell.classroom { grid-template-columns: minmax(0, 1fr); }
+}
