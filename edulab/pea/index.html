@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex,nofollow">
-<title>孟德尔豌豆杂交实验 · PeaLab — EduLab</title>
+<title>孟德尔豌豆杂交实验 · EduLab</title>
 <script type="importmap">
 {
   "imports": {
@@ -19,48 +19,134 @@
 </script>
 <link rel="stylesheet" href="../assets/css/edu.css">
 <link rel="stylesheet" href="../assets/css/lab.css?v=2">
+<link rel="stylesheet" href="../assets/css/lab-pea.css?v=2">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'%3E%3Cpath d='M19 6h10M21 6v12.5L9.8 37.2A4 4 0 0 0 13.3 43h21.4a4 4 0 0 0 3.5-5.8L27 18.5V6' stroke='%23e8674a' stroke-width='4' fill='none' stroke-linecap='round'/%3E%3C/svg%3E">
 </head>
-<body class="lab">
+<body class="lab pea">
 
-<header class="lab-topbar">
-  <a class="edu-logo" href="../" aria-label="返回实验目录">
-    <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M19 6h10M21 6v12.5L9.8 37.2A4 4 0 0 0 13.3 43h21.4a4 4 0 0 0 3.5-5.8L27 18.5V6" stroke="var(--accent)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/><path d="M15.5 30h17" stroke="var(--accent)" stroke-width="3" stroke-linecap="round"/><circle cx="21" cy="36.5" r="1.8" fill="var(--accent)"/><circle cx="27.5" cy="34.5" r="1.4" fill="var(--accent)"/></svg>
-  </a>
-  <button class="edu-header-btn side-toggle" id="sideToggle" type="button" aria-label="章节目录">☰ 章节</button>
-  <div class="lab-title"><b>孟德尔豌豆杂交实验 · PeaLab</b><span>人工异花授粉 · 分离定律 · 自由组合定律 · 假说—演绎法</span></div>
-  <span class="spacer"></span>
-  <a class="edu-header-btn" href="../">← 实验目录</a>
-  <button class="edu-header-btn" id="themeBtn" type="button" aria-label="切换主题">☾</button>
-</header>
+<div class="pea-shell" id="peaShell">
 
-<div class="lab-body">
-  <nav class="lab-side" id="sideNav" aria-label="章节目录">
-    <div class="side-label">章节 · CHAPTERS</div>
-  </nav>
-  <div class="lab-stage" id="stage">
-    <div class="lab-desc" id="descPanel">
-      <div class="desc-head">
-        <h2>章节说明</h2>
-        <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
-      </div>
-      <div class="desc-body"></div>
+  <!-- 顶栏细条：返回 + 标题 + 主题切换 -->
+  <header class="pea-toprow">
+    <a class="edu-logo" href="../" aria-label="返回实验目录">
+      <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M19 6h10M21 6v12.5L9.8 37.2A4 4 0 0 0 13.3 43h21.4a4 4 0 0 0 3.5-5.8L27 18.5V6" stroke="var(--accent)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/><path d="M15.5 30h17" stroke="var(--accent)" stroke-width="3" stroke-linecap="round"/><circle cx="21" cy="36.5" r="1.8" fill="var(--accent)"/><circle cx="27.5" cy="34.5" r="1.4" fill="var(--accent)"/></svg>
+    </a>
+    <div class="lab-title"><b>孟德尔豌豆杂交实验 · EduLab</b><span>布尔诺修道院后园豆畦 — 人工异花授粉 · 分离定律 · 自由组合 · 假说—演绎法</span></div>
+    <span class="spacer"></span>
+    <a class="edu-header-btn" href="../">← 实验目录</a>
+    <button class="edu-header-btn" id="themeBtn" type="button" aria-label="切换主题">☾</button>
+  </header>
+
+  <!-- 左栏：课程大纲（8 章列表，点击切章，当前章高亮；可折叠为 28px 竖条） -->
+  <aside class="lab-chapters" aria-label="课程大纲">
+    <div class="chap-head">
+      <button class="chap-step" id="chapPrev" type="button" aria-label="上一个课题 (,)" title="上一个课题 (,)">‹</button>
+      <span class="chap-title">课题 · CHAPTERS</span>
+      <b class="chap-count" id="chapCount">01/08</b>
+      <button class="chap-step" id="chapNext" type="button" aria-label="下一个课题 (.)" title="下一个课题 (.)">›</button>
+      <button class="fold-btn" id="foldLBtn" type="button" aria-label="收起课程大纲栏" aria-expanded="true" aria-controls="chapNav" title="收起课程大纲栏">‹</button>
     </div>
-    <div class="lab-controls" id="controls"></div>
-  </div>
-</div>
+    <nav class="chap-list" id="chapNav"></nav>
+    <div class="fold-rail">
+      <button class="fold-btn" id="unfoldLBtn" type="button" aria-label="展开课程大纲栏" aria-expanded="false" aria-controls="chapNav" title="展开课程大纲栏">›</button>
+      <span class="rail-no" id="railNoL">01</span>
+    </div>
+  </aside>
 
-<footer class="lab-footer">
-  <span>EduLab · <a href="/">milulab.com</a></span>
-</footer>
+  <!-- 中栏：3D 豆园舞台（切章时相机飞到对应部位） -->
+  <main class="lab-stage3d" aria-label="豌豆园 3D 展示">
+    <div class="lab-stage pea-stage" id="stage"></div>
+    <button class="stage-focus-btn" id="focusBtn" type="button" aria-pressed="false" title="隐藏左右两栏，专注 3D 观察">专注模式</button>
+    <button class="stage-bench-btn" id="benchBtn" type="button" title="豆园 ↔ 工作台视角切换">工作台</button>
+
+    <!-- 统计台账浮窗：记录本 + 观测/期望/卡方（可折叠为 40px 圆形徽标） -->
+    <aside class="pea-ledger" id="ledgerPanel" aria-label="记录与统计">
+      <div class="sec-h">
+        <span class="sec-t">记录 · 统计</span>
+        <span class="ledger-season" id="ledgerSeason">第 1 季</span>
+        <button class="fold-btn" id="ledgerFoldBtn" type="button" aria-label="收起记录窗" aria-expanded="true" aria-controls="ledgerBody" title="收起记录窗">−</button>
+      </div>
+      <div class="ledger-body" id="ledgerBody">
+        <div class="ledger-stats" id="ledgerStats"><p class="ledger-empty">收获一行或完成一次分拣后，这里给出观测 / 期望与卡方判定。</p></div>
+        <div class="ledger-rec-title">授粉与收获记录</div>
+        <ul class="ledger-rec" id="ledgerRec"></ul>
+        <div class="ledger-foot">
+          <button class="mini-btn" id="ledgerClear" type="button">清空记录</button>
+          <span class="ledger-hint">Esc 关闭放大</span>
+        </div>
+      </div>
+      <button class="ledger-badge" id="ledgerBadge" type="button" aria-label="展开记录窗" title="展开记录窗">记</button>
+    </aside>
+
+    <!-- 生长时间轴（豆园章可见）：播放/暂停 + 日数 + 物候期 + 拖动 + 下一季 -->
+    <div class="time-bar" id="timeBar" aria-label="生长时间轴">
+      <button class="tb-play" id="tbPlay" type="button" aria-label="播放 / 暂停生长（空格键）" title="播放 / 暂停生长（空格键）">⏸</button>
+      <span class="tb-day" id="tbDay">第 0 天</span>
+      <span class="tb-stage" id="tbStage">播种前</span>
+      <input class="tb-range" id="tbRange" type="range" min="0" max="104" step="1" value="0" aria-label="生长时间轴">
+      <button class="tb-season" id="tbSeason" type="button" title="结束本季，进入下一季">下一季 →</button>
+    </div>
+    <div class="pea-foot">EduLab · <a href="/">milulab.com</a></div>
+  </main>
+
+  <!-- 右栏：当前章节知识点详解 + 交互控件 + 数据读数（可折叠为 28px 竖条） -->
+  <aside class="lab-detail" aria-label="知识点详解">
+    <div class="detail-head">
+      <span class="detail-no" id="detailNo">01</span>
+      <h2 class="detail-title" id="detailTitle">为什么选豌豆</h2>
+      <button class="fold-btn" id="foldRBtn" type="button" aria-label="收起知识点栏" aria-expanded="true" aria-controls="detailBody" title="收起知识点栏">›</button>
+    </div>
+    <div class="detail-body" id="detailBody">
+      <!-- 右栏三块手风琴：知识点详解 / 实验控件 / 数据读数，各自独立折叠（localStorage 记忆，切章不重置） -->
+      <section class="acc" id="accLesson" data-acc="lesson">
+        <button class="acc-head" type="button" aria-expanded="true" aria-controls="lesson" title="收起知识点详解">
+          <span class="acc-title">知识点详解</span><i class="acc-arrow" aria-hidden="true">▾</i>
+        </button>
+        <div class="acc-fold-wrap">
+          <div class="acc-fold-body">
+            <div class="acc-fold-inner">
+              <div class="lc-lesson" id="lesson"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+      <section class="acc" id="accControls" data-acc="controls">
+        <button class="acc-head" type="button" aria-expanded="true" aria-controls="controls" title="收起实验控件">
+          <span class="acc-title">实验控件</span><i class="acc-arrow" aria-hidden="true">▾</i>
+        </button>
+        <div class="acc-fold-wrap">
+          <div class="acc-fold-body">
+            <div class="acc-fold-inner">
+              <div class="lc-controls" id="controls"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+      <section class="acc" id="accData" data-acc="data">
+        <button class="acc-head" type="button" aria-expanded="true" aria-controls="lcData" title="收起数据读数">
+          <span class="acc-title">数据读数</span><i class="acc-arrow" aria-hidden="true">▾</i>
+        </button>
+        <div class="acc-fold-wrap">
+          <div class="acc-fold-body">
+            <div class="acc-fold-inner">
+              <div class="lc-data" id="lcData"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+    <div class="fold-rail">
+      <button class="fold-btn" id="unfoldRBtn" type="button" aria-label="展开知识点栏" aria-expanded="false" aria-controls="detailBody" title="展开知识点栏">‹</button>
+      <span class="rail-title" id="railTitleR">为什么选豌豆</span>
+    </div>
+  </aside>
+
+</div>
 
 <script src="../assets/js/edu-theme.js"></script>
 <script type="module" src="../assets/js/lab-pea.js"></script>
 <script>
 eduBindThemeToggle(document.getElementById('themeBtn'));
-document.getElementById('sideToggle').addEventListener('click', function () {
-  document.getElementById('sideNav').classList.toggle('open');
-});
 </script>
 </body>
 </html>
