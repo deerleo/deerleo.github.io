@@ -8,7 +8,7 @@ status: published
 
 ![纽约证券交易所交易大厅，交易员在工作台前（资料图）](/assets/images/2026-11-04-goldman-vibe-coding/nyse_floor.jpg)
 
-<video controls preload="metadata" style="display:block;max-width:100%;width:720px;margin:0 auto;" poster="/assets/videos/2026-11-04-goldman-vibe-coding-cover.jpg" src="/assets/videos/2026-11-04-goldman-vibe-coding.mp4"></video>
+<video data-vsrc="/assets/videos/2026-11-04-goldman-vibe-coding-v.mp4" data-vposter="/assets/videos/2026-11-04-goldman-vibe-coding-v-cover.jpg" controls preload="metadata" style="display:block;max-width:100%;width:720px;margin:0 auto;" poster="/assets/videos/2026-11-04-goldman-vibe-coding-cover.jpg" src="/assets/videos/2026-11-04-goldman-vibe-coding.mp4"></video>
 
 *视频版：两分钟讲完华尔街 AI 编程从狂欢到收权的反转*
 
