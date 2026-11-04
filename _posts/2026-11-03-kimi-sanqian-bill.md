@@ -4,6 +4,7 @@ description: "半年三次道歉，次次都发生在新模型发布之后。跑
 tags: [Kimi, 月之暗面, 大模型订阅, Agent, 额度]
 series: "哟哟鹿鸣"
 status: draft
+podcast: /assets/audio/2026-11-03-kimi-sanqian-bill.mp3
 ---
 
 ![Kimi 智能助手官方宣传物料（资料图）](/assets/images/2026-11-03-kimi-sanqian/01-kimi-app.jpg)
