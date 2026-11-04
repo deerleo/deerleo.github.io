@@ -1,0 +1,617 @@
+/* EduLab · 分子构型 VSEPR 布局（真·三栏：左课程大纲 / 中分子舞台 / 右知识点详解）
+   依赖 edu.css 的主题变量与 lab.css 的通用控件（ctl/quiz/hud-card/legend 视觉）。
+   本文件只管 vsepr 页面骨架与浮窗（对照表/分子列表/信息卡）折叠，不动共享布局。 */
+
+html, body { height: 100%; }
+
+body.lab.vsp {
+  display: block;
+  overflow: hidden;
+}
+
+/* ---------- 三栏骨架（顶栏细条 + 左大纲 / 中舞台 / 右详解） ---------- */
+
+.vsp-shell {
+  display: grid;
+  grid-template-columns: 246px minmax(0, 1fr) 352px;
+  grid-template-rows: auto minmax(0, 1fr);
+  grid-template-areas:
+    "top      top   top"
+    "chapters stage detail";
+  height: 100dvh;
+}
+
+/* ---------- 顶栏细条 ---------- */
+
+.vsp-toprow {
+  grid-area: top;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 9px 16px;
+  border-bottom: 1px solid var(--card-border);
+  background: color-mix(in srgb, var(--card) 60%, transparent);
+}
+.vsp-toprow .edu-logo { flex: none; }
+.vsp-toprow .lab-title {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  min-width: 0;
+  color: var(--text);
+}
+.vsp-toprow .lab-title b { font-size: 16px; white-space: nowrap; }
+.vsp-toprow .lab-title span {
+  font-size: 12.5px;
+  color: var(--text-faint);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.vsp-toprow .spacer { flex: 1; }
+.vsp-toprow .edu-header-btn { white-space: nowrap; }
+
+/* ---------- 左栏：课程大纲 ---------- */
+
+.lab-chapters {
+  grid-area: chapters;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  background: var(--bg-soft);
+  border-right: 1px solid var(--card-border);
+}
+.chap-head {
+  flex: none;
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  padding: 13px 14px 7px;
+}
+.chap-head .chap-title {
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  color: var(--text-faint);
+}
+.chap-list {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 2px 8px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.chap-list .chap-btn.on {
+  color: var(--accent);
+  background: var(--accent-soft);
+  border-color: color-mix(in srgb, var(--accent) 35%, transparent);
+  font-weight: 600;
+}
+.chap-list .chap-btn.on .chap-n { color: var(--accent); }
+
+/* ---------- 中栏：分子模型舞台 ---------- */
+
+.lab-stage3d {
+  grid-area: stage;
+  position: relative;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  background: var(--bg);
+}
+.vsp-stage {
+  position: absolute;
+  inset: 0;
+}
+.vsp-stage canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; outline: none; }
+.vsp-stage .lab-loader { position: absolute; }
+.vsp-stage .quiz-panel { z-index: 30; }   /* 测验时全覆盖中栏（高于浮窗 22） */
+
+/* 专注模式按钮（中栏左下角） */
+.stage-focus-btn {
+  position: absolute;
+  left: 14px;
+  bottom: 14px;
+  z-index: 24;
+  appearance: none;
+  font-family: inherit;
+  font-size: 12px;
+  line-height: 1;
+  padding: 7px 13px;
+  border-radius: 999px;
+  border: 1px solid var(--card-border);
+  background: color-mix(in srgb, var(--card) 74%, transparent);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  color: var(--text-dim);
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s;
+}
+.stage-focus-btn:hover { color: var(--accent); border-color: var(--accent); }
+
+.stage-foot {
+  position: absolute;
+  right: 16px;
+  bottom: 14px;
+  z-index: 24;
+  font-size: 11.5px;
+  color: var(--text-faint);
+}
+.stage-foot a { color: var(--text-faint); text-decoration: underline; text-underline-offset: 2px; }
+
+/* 舞台工具（视角重置 / 全屏） */
+.stage-tools {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  z-index: 31;   /* 高于 quiz 覆盖层（30）：视角类工具在随堂检测时仍可用 */
+  display: flex;
+  gap: 8px;
+}
+.stage-tool-btn {
+  appearance: none;
+  font-family: inherit;
+  font-size: 12px;
+  line-height: 1;
+  padding: 7px 13px;
+  border-radius: 999px;
+  border: 1px solid var(--card-border);
+  background: color-mix(in srgb, var(--card) 74%, transparent);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  color: var(--text-dim);
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s;
+}
+.stage-tool-btn:hover { color: var(--accent); border-color: var(--accent); }
+.stage-tool-btn.on {
+  color: var(--accent);
+  border-color: color-mix(in srgb, var(--accent) 45%, transparent);
+}
+
+/* ---------- 舞台浮窗（对照表 / 分子列表 / 信息卡：头部可折叠为 40px 圆徽标） ---------- */
+
+.axe-table {
+  position: absolute; left: 14px; top: 56px; z-index: 22;
+  width: 420px; max-width: calc(100% - 28px); max-height: calc(100% - 132px);
+  overflow: auto; background: var(--card);
+  border: 1px solid var(--card-border); border-radius: 14px; box-shadow: var(--shadow);
+}
+.axe-table table { width: 100%; border-collapse: collapse; font-size: 11.5px; }
+.axe-table caption { font-size: 12.5px; font-weight: 700; padding: 9px 12px 4px; text-align: left; color: var(--text); }
+.axe-table th { position: sticky; top: 0; background: var(--card); color: var(--text-dim);
+  font-weight: 600; text-align: left; padding: 5px 8px; border-bottom: 1px solid var(--card-border); }
+.axe-table td { padding: 5px 8px; border-bottom: 1px solid color-mix(in srgb, var(--card-border) 55%, transparent); color: var(--text); }
+.axe-table tr[data-k] { cursor: pointer; }
+.axe-table tbody tr:hover { background: color-mix(in srgb, var(--accent) 12%, transparent); }
+.axe-table tr.cur { background: color-mix(in srgb, var(--accent) 18%, transparent); }
+
+.lib-card {
+  position: absolute; left: 14px; top: 56px; z-index: 22;
+  width: 330px; max-width: calc(100% - 28px); max-height: calc(100% - 132px);
+  overflow: auto; background: var(--card);
+  border: 1px solid var(--card-border); border-radius: 14px; box-shadow: var(--shadow); padding: 10px 12px 12px; }
+.lib-card h4 { margin: 8px 0 6px; font-size: 11.5px; color: var(--text-dim); font-weight: 600; letter-spacing: .06em; }
+.lib-grid { display: flex; flex-wrap: wrap; gap: 6px; }
+.lib-btn { border: 1px solid var(--card-border); background: var(--chip-bg); color: var(--text);
+  border-radius: 9px; padding: 5px 10px; font-size: 12.5px; font-weight: 600; cursor: pointer; }
+.lib-btn:hover { border-color: var(--accent); }
+.lib-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+.vspr-info {
+  position: absolute; top: 56px; right: 14px; z-index: 22; width: 300px; max-width: calc(100% - 28px);
+  border-radius: 14px; overflow: hidden; border: 1px solid var(--card-border); box-shadow: var(--shadow);
+  background: var(--card);
+}
+.vspr-info-head { display: flex; align-items: baseline; gap: 8px; padding: 10px 12px; color: #fff;
+  background: linear-gradient(120deg, #3f6ea8, #2c4f7e); }
+.vspr-info-head .fm { font-size: 20px; font-weight: 800; }
+.vspr-info-head .nm { font-size: 12px; opacity: .92; }
+.vspr-info-body { padding: 8px 12px 11px; font-size: 12.5px; line-height: 1.7; color: var(--text); }
+.vspr-info-body .r { display: flex; gap: 8px; }
+.vspr-info-body .r span { color: var(--text-dim); flex: none; width: 78px; }
+.vspr-info-body .r b { font-weight: 600; }
+.vspr-note { margin-top: 6px; font-size: 11.5px; color: var(--text-dim); border-top: 1px dashed var(--card-border); padding-top: 6px; }
+
+/* 浮窗头部（对照表 / 分子列表：标题条 + 折叠钮） */
+.float-head {
+  position: sticky;
+  top: 0;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px 8px 12px;
+  font-size: 12.5px;
+  color: var(--text-dim);
+  background: var(--chip-bg);
+  border-bottom: 1px solid var(--card-border);
+}
+.float-head b { color: var(--text); white-space: nowrap; }
+.float-head .float-fold { margin-left: auto; }
+
+/* 浮窗折叠态：整窗收成 40px 圆形徽标（贴原锚点） */
+.axe-table.folded, .lib-card.folded, .vspr-info.folded {
+  overflow: visible; border: none; box-shadow: none; background: transparent;
+}
+.axe-table.folded > :not(.float-badge),
+.lib-card.folded > :not(.float-badge),
+.vspr-info.folded .vspr-info-head,
+.vspr-info.folded .vspr-info-body { display: none; }
+.float-badge {
+  position: absolute;
+  top: 0; right: 0;
+  width: 40px; height: 40px;
+  border-radius: 50%;
+  border: 3px solid color-mix(in srgb, var(--card-border) 80%, var(--text-dim));
+  background:
+    radial-gradient(circle at 34% 30%, color-mix(in srgb, var(--accent) 26%, var(--card)) 0%, var(--card) 62%);
+  color: var(--text-dim);
+  font-size: 12px;
+  font-weight: 700;
+  font-family: inherit;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: var(--shadow);
+  transition: color 0.15s, border-color 0.15s, transform 0.2s ease;
+  animation: vsp-badge-in 0.25s ease;
+}
+.float-badge:hover {
+  color: var(--accent);
+  border-color: var(--accent);
+  transform: scale(1.08);
+}
+.axe-table.folded .float-badge,
+.lib-card.folded .float-badge,
+.vspr-info.folded .float-badge { display: inline-flex; }
+.axe-table.folded .float-badge { right: auto; left: 0; }
+.lib-card.folded .float-badge { right: auto; left: 0; }
+@keyframes vsp-badge-in {
+  from { transform: scale(0.4); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+/* 信息卡自带渐变头部里的折叠钮 */
+.vspr-info-head .float-fold { margin-left: auto; align-self: center; }
+
+/* 图例（共享 lab.css 视觉；中栏布局下略上移避让专注按钮） */
+.vsp-stage .legend { bottom: 56px; }
+
+/* ---------- 栏折叠（左右独立 28px 竖条）与专注模式（双栏同折） ---------- */
+
+/* 栏宽过渡：grid-template-columns 数值插值，ResizeObserver 逐帧跟随画布 */
+.vsp-shell { transition: grid-template-columns 0.3s ease; }
+.vsp-shell.fold-l { grid-template-columns: 28px minmax(0, 1fr) 352px; }
+.vsp-shell.fold-r { grid-template-columns: 246px minmax(0, 1fr) 28px; }
+.vsp-shell.fold-l.fold-r { grid-template-columns: 28px minmax(0, 1fr) 28px; }
+
+/* 折叠态：原栏内容保持固有宽度淡出（免挤压跳动），由 overflow 裁切 */
+.chap-head, .chap-list { min-width: 246px; }
+.detail-head, .detail-body { min-width: 352px; }
+.chap-head, .chap-list, .detail-head, .detail-body { transition: opacity 0.16s ease; }
+.vsp-shell.fold-l .chap-head,
+.vsp-shell.fold-l .chap-list { opacity: 0; pointer-events: none; }
+.vsp-shell.fold-r .detail-head,
+.vsp-shell.fold-r .detail-body { opacity: 0; pointer-events: none; }
+
+/* 折叠按钮（栏头收起 / 竖条展开共用视觉） */
+.fold-btn {
+  flex: none;
+  appearance: none;
+  font-family: inherit;
+  width: 22px;
+  height: 22px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  line-height: 1;
+  border-radius: 7px;
+  border: 1px solid var(--card-border);
+  background: var(--chip-bg);
+  color: var(--text-faint);
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s, background 0.15s;
+}
+.fold-btn:hover {
+  color: var(--accent);
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+.detail-head .fold-btn { margin-left: auto; align-self: center; }
+
+/* 竖条导轨（折叠态显示：展开钮 + 章序号 / 竖排标题） */
+.fold-rail {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 0 12px;
+  background: var(--bg-soft);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.2s ease, visibility 0s linear 0.2s;
+}
+.vsp-shell.fold-l .lab-chapters .fold-rail,
+.vsp-shell.fold-r .lab-detail .fold-rail {
+  opacity: 1;
+  visibility: visible;
+  transition: opacity 0.2s ease 0.1s;
+}
+.rail-no {
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--accent);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.04em;
+}
+.rail-title {
+  writing-mode: vertical-rl;
+  max-height: 210px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 12px;
+  color: var(--text-faint);
+  letter-spacing: 0.14em;
+}
+
+/* 专注模式：语义 = 双栏同时折叠（JS 保证 focus-mode 必伴随两个 fold 类） */
+
+/* ---------- 右栏：知识点详解 + 控件 + 读数 ---------- */
+
+.lab-detail {
+  grid-area: detail;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  background: var(--bg-soft);
+  border-left: 1px solid var(--card-border);
+}
+.detail-head {
+  flex: none;
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  padding: 14px 16px 11px;
+  border-bottom: 1px solid var(--card-border);
+}
+.detail-no {
+  flex: none;
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--accent);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.02em;
+}
+.detail-title {
+  margin: 0;
+  font-size: 16px;
+  color: var(--text);
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.detail-body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 14px 16px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* 知识点正文 */
+.vsp-lesson { font-size: 13.5px; line-height: 1.7; color: var(--text-dim); }
+.vsp-lesson p { margin: 0 0 8px; }
+.vsp-lesson p:last-child { margin-bottom: 0; }
+.vsp-lesson b { color: var(--text); }
+.vsp-lesson .hl { color: var(--accent); font-weight: 600; }
+
+/* 本章控件（复用 lab.css 的 ctl 组件，纵向排列） */
+.vsp-controls { display: flex; flex-flow: row wrap; gap: 8px 10px; align-items: center; }
+.vsp-controls .ctl, .vsp-controls .ctl-toggle { flex: 1 1 100%; }
+.vsp-controls .ctl input[type="range"] { flex: 1; width: auto; }
+.vsp-controls .ctl-sep { flex: 1 1 100%; width: auto; height: 1px; background: var(--card-border); }
+.vsp-controls .ctl-btn { flex: 0 0 auto; }
+.vsp-controls:empty { display: none; }
+
+/* 快速选择：AXnEm 预设按钮行（章节一沙盘） */
+.ctl-presets { flex: 1 1 100%; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin: 2px 0 4px; }
+.ctl-presets-h { font-size: 11.5px; color: var(--text-faint); margin-right: 2px; }
+.vsp-controls .preset-btn { padding: 5px 9px; font-size: 12px; border-radius: 8px; }
+
+/* 数据坞（读数卡收纳进栏内） */
+.vsp-data .hud-card {
+  background: var(--chip-bg);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  border: 1px solid var(--card-border);
+  box-shadow: none;
+  min-width: 0;
+  width: 100%;
+}
+.vsp-data .hud-card:empty { display: none; }
+
+/* ---------- 右栏三块手风琴（详解 / 控件 / 读数，标题行点击收起 body） ---------- */
+
+.acc {
+  flex: none;
+  border: 1px solid var(--card-border);
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--card) 42%, transparent);
+  overflow: hidden;
+}
+.acc.acc-empty { display: none; }   /* 本章无控件 / 读数隐藏时整块收走 */
+.acc-head {
+  appearance: none;
+  font-family: inherit;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 9px 12px;
+  border: none;
+  background: transparent;
+  color: var(--text-faint);
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-align: left;
+  cursor: pointer;
+  transition: color 0.15s;
+}
+.acc-head:hover { color: var(--accent); }
+.acc-arrow {
+  margin-left: auto;
+  font-style: normal;
+  font-size: 10px;
+  line-height: 1;
+  transition: transform 0.25s ease;
+}
+.acc.closed .acc-arrow { transform: rotate(-90deg); }
+/* 0.25s 高度动画：grid-template-rows 1fr → 0fr，免 JS 量高 */
+.acc-fold-wrap {
+  display: grid;
+  grid-template-rows: 1fr;
+  transition: grid-template-rows 0.25s ease;
+}
+.acc.closed .acc-fold-wrap { grid-template-rows: 0fr; }
+.acc-fold-body { min-height: 0; overflow: hidden; }
+.acc-fold-inner { padding: 2px 12px 12px; }
+
+/* ---------- 栏头 ‹ 01/09 ›（上一节 / 下一节） ---------- */
+.chap-pn {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 1px;
+}
+.chap-pn .chap-count { margin-left: 0; }
+.pn-btn {
+  appearance: none;
+  font-family: inherit;
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  line-height: 1;
+  border-radius: 6px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--text-faint);
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s, background 0.15s;
+}
+.pn-btn:hover {
+  color: var(--accent);
+  border-color: var(--card-border);
+  background: var(--card);
+}
+
+/* ---------- 窄屏（≤1100px）：顶栏收窄 + 首访清爽态（读数默认收由 JS 决定） ---------- */
+
+@media (max-width: 1100px) {
+  .vsp-toprow { padding: 8px 12px; gap: 8px; }
+  .vsp-toprow .lab-title span { display: none; }
+  .vsp-toprow .lab-title b { font-size: 15px; }
+  .vsp-toprow a.edu-header-btn[href='../'] { display: none; }   /* 返回走 logo */
+
+  .axe-table { width: min(360px, calc(100% - 24px)); }
+  .lib-card { width: min(290px, calc(100% - 24px)); }
+  .vspr-info { width: min(270px, calc(100% - 24px)); }
+
+  .detail-body { padding: 10px 12px 14px; gap: 10px; }
+  .acc-head { padding: 8px 10px; }
+  .acc-fold-inner { padding: 2px 10px 10px; }
+}
+
+/* ---------- 移动端（≤860px）：纵向堆叠（章节横滚条 / 3D / 知识点在下） ---------- */
+
+@media (max-width: 860px) {
+  .vsp-shell {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto auto minmax(230px, 42dvh) minmax(0, 1fr);
+    grid-template-areas:
+      "top"
+      "chapters"
+      "stage"
+      "detail";
+  }
+
+  /* 折叠 / 专注模式为桌面端专属：移动端压回纵向堆叠并隐藏折叠控件
+     （localStorage 可能带着折叠态进来，内容透明度须复原） */
+  .vsp-shell { transition: none; }
+  .vsp-shell.fold-l,
+  .vsp-shell.fold-r,
+  .vsp-shell.fold-l.fold-r,
+  .vsp-shell.focus-mode { grid-template-columns: minmax(0, 1fr); }
+  .fold-btn, .fold-rail { display: none; }
+  .vsp-shell.fold-l .chap-head,
+  .vsp-shell.fold-l .chap-list,
+  .vsp-shell.fold-r .detail-head,
+  .vsp-shell.fold-r .detail-body { opacity: 1; pointer-events: auto; }
+
+  .vsp-toprow { padding: 8px 10px; gap: 8px; }
+  .vsp-toprow .lab-title span { display: none; }
+  .vsp-toprow .lab-title b { font-size: 14.5px; }
+  .vsp-toprow a.edu-header-btn[href='../'] { display: none; }
+
+  /* 章节列表 → 顶部横向滚动条 */
+  .lab-chapters { border-right: none; border-bottom: 1px solid var(--card-border); }
+  .chap-head { padding: 8px 12px 2px; }
+  .chap-list {
+    flex-direction: row;
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding: 5px 8px 8px;
+    gap: 4px;
+    scrollbar-width: none;
+  }
+  .chap-list::-webkit-scrollbar { display: none; }
+  .chap-list .chap-btn { flex: none; padding: 6px 10px; font-size: 12.5px; white-space: nowrap; }
+  .chap-list .chap-btn .chap-n { width: auto; margin-right: 4px; }
+
+  .lab-detail { border-left: none; border-top: 1px solid var(--card-border); }
+  .detail-head { padding: 10px 12px 8px; }
+  .detail-no { font-size: 18px; }
+  .detail-title { font-size: 14.5px; }
+  .detail-body { padding: 10px 12px 14px; }
+  .vsp-lesson { font-size: 12.5px; }
+  .acc-head { padding: 8px 10px; }
+  .acc-fold-inner { padding: 2px 10px 10px; }
+
+  /* 浮窗 / 工具在 42dvh 舞台内紧凑化 */
+  .axe-table, .lib-card { top: 44px; max-height: calc(100% - 104px); }
+  .axe-table { width: min(320px, calc(100% - 20px)); }
+  .lib-card { width: min(250px, calc(100% - 20px)); }
+  .vspr-info { top: 44px; right: 8px; width: min(236px, calc(100% - 96px)); max-height: calc(100% - 104px); overflow-y: auto; }
+  .stage-tools { top: 8px; left: 8px; gap: 4px; }
+  .stage-tool-btn { padding: 5px 8px; font-size: 10.5px; letter-spacing: -0.01em; }
+  .stage-focus-btn { left: 8px; bottom: 8px; }
+  .stage-foot { display: none; }
+  .vsp-stage .legend { bottom: 48px; }
+
+  /* 小屏 quiz 卡片高于 42dvh 舞台时可滚动（flex 居中 + 滚动的经典裁切坑：flex-start + margin auto） */
+  .vsp-stage .quiz-panel {
+    align-items: flex-start;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .vsp-stage .quiz-card { margin: auto 0; }
+}
