@@ -53,68 +53,116 @@ permalink: /books/preview/index.html
 const params=new URLSearchParams(location.search);
 const slug=params.get('b')||'';
 const title=params.get('t')||'行业 AI 书系';
-const API='https://milulab.com';
 document.getElementById('bt').textContent=title+' · 试读';
 document.title=title+' · 在线试读';
-
+const hint=document.getElementById('hint');
+function fail(msg){
+  hint.style.display='flex';
+  hint.innerHTML='<div style="text-align:center"><p style="font-size:16px;color:#a4552e;font-weight:700;margin-bottom:8px">加载失败</p><p>'+msg+'</p><p style="margin-top:12px"><a href="location.href" style="color:#173b2c">重试</a></p></div>';
+}
+function showErr(m){
+  var s=document.getElementById('errbox');
+  if(!s){s=document.createElement('div');s.id='errbox';s.style.cssText='margin:10px auto;max-width:700px;padding:10px 16px;background:#fdf2ee;border:1px solid #e8c8b8;border-radius:8px;font-size:13px;color:#7a3d20';viewer.prepend(s);}
+  var c=(+s.dataset.c||0)+1;s.dataset.c=c;
+  s.textContent='第 '+m+' 页渲染出错（已跳过）· 累计 '+c+' 页异常';
+}
 /* 禁下载：拦截右键/快捷键/拖拽（诚实的客户端约束；服务端无直链是主要屏障） */
 document.addEventListener('contextmenu',e=>e.preventDefault());
 document.addEventListener('keydown',e=>{
   if((e.ctrlKey||e.metaKey)&&['s','p','u'].includes(e.key.toLowerCase())){e.preventDefault();}
 });
 document.addEventListener('dragstart',e=>e.preventDefault());
-
+const viewer=document.getElementById('viewer');
+const bar=document.querySelector('#bar>div');
+if(!slug){fail('链接缺少书名参数');throw new Error('no slug');}
 try{
   const pdfjs=await import('/assets/pdfjs/pdf.min.mjs');
   pdfjs.GlobalWorkerOptions.workerSrc='/assets/pdfjs/pdf.worker.min.mjs';
-  /* fetch→blob 读取，避免 viewer 直接拿到可另存的 URL */
+  /* fetch→arrayBuffer 读取，避免 viewer 直接拿到可另存的 URL */
   const resp=await fetch(`/books/${encodeURIComponent(slug)}/sample.pdf`,{credentials:'omit'});
   if(!resp.ok) throw new Error('HTTP '+resp.status);
+  hint.textContent='正在加载 PDF（数 MB，约需数秒）…';
   const buf=await resp.arrayBuffer();
   const doc=await pdfjs.getDocument({data:buf,cMapUrl:'/assets/pdfjs/cmaps/',cMapPacked:true}).promise;
-  document.getElementById('meta').textContent=`试读 ${doc.numPages} 页 · 共 ${doc.numPages} 页`;
-  document.getElementById('hint').remove();
-  const viewer=document.getElementById('viewer');
-  const bar=document.querySelector('#bar>div');
+  const N=doc.numPages;
+  document.getElementById('meta').textContent=`共 ${N} 页 · 完整内容`;
+  hint.style.display='none';
   let scale=1.0;
   const rendered=new Set();
+  /* 全量占位：先为 N 页各建一个撑高的空框（含页码徽标），滚动条即真实；
+     观察器只负责把进入视口的空框换成渲染好的 canvas。 */
+  const pageH={};                        /* n -> 已知页高(px)，占位用 */
+  const boxes={};                        /* n -> box 元素 */
+  async function makeBox(n){
+    if(boxes[n])return boxes[n];
+    let h=pageH[n];
+    if(!h){
+      try{const pg=await doc.getPage(n);const w0=pg.getViewport({scale:1}).width;pageH[n]=pg.getViewport({scale:1}).height/w0;}catch(e){pageH[n]=1.35;}
+      h=pageH[n];
+    }
+    const box=document.createElement('div');box.className='pagebox';box.dataset.p=n;
+    box.style.height=Math.round((Math.min(760,Math.max(300,viewer.clientWidth*0.92)))*h*scale)+'px';
+    box.style.position='relative';
+    const badge=document.createElement('span');
+    badge.style.cssText='position:absolute;top:8px;right:10px;font-size:11px;color:#8a9a90';
+    badge.textContent=n+' / '+N;
+    box.appendChild(badge);
+    viewer.appendChild(box);boxes[n]=box;
+    return box;
+  }
   async function renderPage(n){
     if(rendered.has(n))return; rendered.add(n);
-    const page=await doc.getPage(n);
-    const vp0=page.getViewport({scale:1});
-    const target=Math.min(760,Math.max(300,viewer.clientWidth*0.92));
-    const vp=page.getViewport({scale:(target/vp0.width)*scale});
-    const box=document.createElement('div');box.className='pagebox';box.dataset.p=n;
-    const cv=document.createElement('canvas');
-    box.appendChild(cv);viewer.appendChild(box);
-    cv.width=vp.width;cv.height=vp.height;
-    await page.render({canvasContext:cv.getContext('2d'),viewport:vp}).promise;
-    box.addEventListener('contextmenu',e=>e.preventDefault());
+    try{
+      const box=await makeBox(n);
+      if(box.dataset.done)return;
+      const page=await doc.getPage(n);
+      const vp0=page.getViewport({scale:1});
+      const target=Math.min(760,Math.max(300,viewer.clientWidth*0.92));
+      const vp=page.getViewport({scale:(target/vp0.width)*scale});
+      const cv=document.createElement('canvas');
+      box.insertBefore(cv,box.firstChild);
+      cv.width=vp.width;cv.height=vp.height;
+      const task=page.render({canvasContext:cv.getContext('2d'),viewport:vp}).promise;
+      /* 后台 tab 的 rAF 冻结会让 render promise 迟迟不 resolve：3 秒超时即标记完成，不阻塞其它页 */
+      await Promise.race([task,new Promise(function(r){setTimeout(r,3000)})]);
+      box.dataset.done='1';
+      box.querySelector('span').textContent=n+' / '+N;
+      box.addEventListener('contextmenu',e=>e.preventDefault());
+    }catch(err){
+      rendered.delete(n);
+      showErr(n);
+    }
   }
-  /* 懒渲染：首屏 4 页 + IntersectionObserver 补页 */
-  const first=Math.min(4,doc.numPages);
-  for(let i=1;i<=first;i++) await renderPage(i);
+  window.__render=renderPage; window.__doc=doc;   /* 测试与兜底钩子 */
+  /* 观察器：进入视口±900px 的页 → 渲染；同时更新进度条 */
   const io=new IntersectionObserver(es=>{
-    const barTop=document.getElementById('bar');
     es.forEach(en=>{
-      if(!en.isIntersecting)return;
       const n=+en.target.dataset.p;
-      bar.style.width=(n/doc.numPages*100)+'%';
-      [n+1,n+2].forEach(p=>{if(p<=doc.numPages)renderPage(p)});
+      if(en.isIntersecting){
+        renderPage(n);
+        [n-1,n+1,n+2].forEach(p=>{if(p>=1&&p<=N)renderPage(p)});
+      }
+      if(en.isIntersecting&&en.intersectionRatio>0.05)bar.style.width=(n/N*100)+'%';
     });
-  },{root:viewer,rootMargin:'600px'});
-  const mo=new MutationObserver(()=>viewer.querySelectorAll('.pagebox').forEach(b=>io.observe(b)));
-  mo.observe(viewer,{childList:true});
-  document.getElementById('zoomIn').onclick=async()=>{scale=Math.min(1.6,scale+0.15);await rerenderAll()};
-  document.getElementById('zoomOut').onclick=async()=>{scale=Math.max(0.6,scale-0.15);await rerenderAll()};
-  async function rerenderAll(){
-    rendered.clear();viewer.innerHTML='';
-    const first=Math.min(4,doc.numPages);
-    for(let i=1;i<=first;i++)await renderPage(i);
+  },{root:viewer,rootMargin:'900px'});
+  /* 一次性建 N 个占位框并全部观察 */
+  hint.textContent='正在生成 '+N+' 页导航…';
+  for(let i=1;i<=N;i++){await makeBox(i);io.observe(boxes[i]);}
+  hint.style.display='none';
+  /* 首屏直出第 1-2 页 */
+  renderPage(1);renderPage(2);
+  document.getElementById('zoomIn').onclick=()=>{scale=Math.min(1.6,scale+0.15);rerenderAll()};
+  document.getElementById('zoomOut').onclick=()=>{scale=Math.max(0.6,scale-0.15);rerenderAll()};
+  function rerenderAll(){
+    const keep=Math.max(1,Math.round(viewer.scrollTop/Math.max(viewer.scrollHeight,1)*N));
+    Object.values(boxes).forEach(b=>{b.dataset.done='';const cv=b.querySelector('canvas');if(cv)cv.remove();});
+    rendered.clear();
+    renderPage(keep);renderPage(keep+1);
   }
 }catch(err){
-  document.getElementById('hint').textContent='加载失败：'+err.message+'（请确认链接含 ?b=书slug 参数）';
+  fail((err&&err.message||err)+'<br><small>slug='+slug+'</small>');
 }
+window.addEventListener('error',e=>{/* 静默兜底，避免单页异常冒泡中断 */});
 </script>
 </body>
 </html>
