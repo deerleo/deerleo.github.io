@@ -1,0 +1,288 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>多智能体协作编排实验台 · AI 赋能教研</title>
+<link rel="stylesheet" href="/assets/css/subpage-shell.css?v=20261026">
+<style>
+:root{
+  --forest:#173b2c;--forest-deep:#10271d;--lime:#c3ed59;--on-lime:#14231a;
+  --ivory:#f1f2ec;--ink:#1a2921;--ink3:#6a786e;--mint:#2f6b4f;
+  --line:rgba(26,41,33,.14);
+  --bad:#b4452e;--bad-soft:rgba(180,69,46,.12);
+}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;color:var(--ink);background:var(--ivory);font:15px/1.65 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif}
+.wrap{max-width:1180px;margin:auto;padding:30px 24px 80px}
+.kicker{color:var(--mint);font-size:12px;font-weight:850;letter-spacing:.18em}
+h1{margin:6px 0 10px;font-size:clamp(26px,4vw,40px);letter-spacing:-.03em;line-height:1.1}
+h1 em{font-style:normal;background:linear-gradient(transparent 62%,var(--lime) 62%)}
+.lede{max-width:780px;color:var(--ink3);font-size:15px}
+.layout{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(300px,1fr);gap:22px;margin-top:26px}
+@media(max-width:960px){.layout{grid-template-columns:1fr}}
+.panel{border:1px solid var(--line);border-radius:18px;background:#fff;padding:18px 20px}
+.panel h2{margin:0 0 4px;font-size:17px}
+.panel .sub{color:var(--ink3);font-size:12.5px;margin:0 0 14px}
+/* 编排画布 */
+#orch{position:relative;border:1px solid var(--line);border-radius:14px;background:linear-gradient(160deg,var(--forest-deep),var(--forest));min-height:400px;overflow:hidden}
+.agent{position:absolute;transform:translate(-50%,-50%);width:128px;text-align:center;transition:.3s;z-index:2}
+.agent .box{border:2px solid rgba(241,242,236,.32);border-radius:14px;padding:10px 8px;background:rgba(241,242,236,.06);color:#f1f2ec;transition:.3s}
+.agent .role{font-size:13.5px;font-weight:800}
+.agent .duty{font-size:10.5px;color:rgba(241,242,236,.6);margin-top:2px;line-height:1.4}
+.agent .state{font-size:10px;margin-top:5px;font-weight:800;letter-spacing:.06em;color:rgba(241,242,236,.45)}
+.agent.active .box{border-color:var(--lime);background:rgba(195,237,89,.15);box-shadow:0 0 20px rgba(195,237,89,.3)}
+.agent.active .state{color:var(--lime)}
+.agent.done .box{border-color:rgba(195,237,89,.45)}
+.agent.done .state{color:rgba(195,237,89,.7)}
+.agent.error .box{border-color:var(--bad);background:var(--bad-soft);animation:shake .4s}
+.agent.error .state{color:#f3a08e}
+@keyframes shake{25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
+.wire{position:absolute;height:2px;background:rgba(241,242,236,.18);transform-origin:0 50%;z-index:1;transition:.3s}
+.wire.lit{background:var(--lime);box-shadow:0 0 8px rgba(195,237,89,.5)}
+.handoff{position:absolute;transform:translate(-50%,-50%);background:rgba(16,39,29,.85);border:1px solid rgba(195,237,89,.4);color:#f1f2ec;font-size:10px;padding:3px 9px;border-radius:99px;z-index:3;pointer-events:none;white-space:nowrap;transition:.3s}
+/* 控制 */
+.modebar{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap}
+.mode{border:1px solid var(--line);background:#fff;padding:8px 14px;border-radius:11px;font-size:13px;font-weight:700;cursor:pointer;transition:.15s}
+.mode[aria-pressed=true]{background:var(--forest);color:#fff;border-color:var(--forest)}
+.btnrow{display:flex;gap:9px;margin-top:14px;flex-wrap:wrap}
+button.btn{border:1px solid var(--forest);background:var(--forest);color:#fff;padding:9px 16px;border-radius:10px;font:inherit;font-size:13.5px;font-weight:750;cursor:pointer}
+button.btn:hover{background:var(--mint)}
+button.btn.lime{background:var(--lime);color:var(--on-lime);border-color:var(--lime)}
+button.btn.ghost{background:transparent;color:var(--forest)}
+.togglebar{display:flex;gap:7px;align-items:center;margin-top:12px;flex-wrap:wrap}
+.togglebar .lbl{font-size:12.5px;color:var(--ink3);font-weight:700}
+.chip{border:1px solid var(--line);background:#fff;color:var(--ink);padding:6px 12px;border-radius:99px;font-size:12.5px;font-weight:700;cursor:pointer;transition:.15s}
+.chip[aria-pressed=true]{background:var(--bad);border-color:var(--bad);color:#fff}
+/* 记录 */
+#log{margin-top:14px;border:1px solid var(--line);border-radius:14px;background:#fbfbf7;max-height:250px;overflow:auto;padding:12px 14px;font:12px/1.7 ui-monospace,Menlo,monospace}
+#log p{margin:0 0 2px;color:var(--ink3)}
+#log p b{color:var(--ink)}
+#log p.ok b{color:var(--mint)}
+#log p.err b{color:var(--bad)}
+/* 计分 */
+.statrow{display:grid;grid-template-columns:1fr 1fr 1fr;gap:9px;margin-top:14px}
+.stat{border:1px solid var(--line);border-radius:12px;padding:10px 12px;background:#fbfbf7}
+.stat b{display:block;font-size:22px;letter-spacing:-.02em}
+.stat span{font-size:11px;color:var(--ink3)}
+.stat.good b{color:var(--mint)}
+.stat.bad b{color:var(--bad)}
+.teach{margin-top:12px;border-left:3px solid var(--lime);background:rgba(195,237,89,.14);padding:11px 13px;border-radius:0 11px 11px 0;font-size:13px}
+.teach b{color:var(--forest)}
+footer.subpage-footer{margin-top:46px}
+.badge{display:inline-block;background:var(--lime);color:var(--on-lime);font-size:11px;font-weight:800;padding:3px 10px;border-radius:99px;margin-left:8px;vertical-align:middle}
+</style>
+</head>
+<body>
+<header class="subpage-page-header">
+  <div class="nav">
+    <a class="brand" href="/">
+      <span class="mark">🦌</span>
+      <span>多智能体协作编排实验台<small>ORCHESTRATION · LESSON 07</small></span>
+    </a>
+    <nav class="nav-links" aria-label="页面导航">
+      <a class="home" href="/">⌂ 首页</a>
+      <a href="/course/ai-teaching-research/">回到课程</a>
+    </nav>
+  </div>
+</header>
+
+<div class="wrap">
+  <p class="kicker">LESSON 07 · 科研智能体系统工程</p>
+  <h1>一个全能教授，<em>还是一个教研室</em></h1>
+  <p class="lede">完成一份文献综述，可以派给一个「什么都会」的智能体，也可以拆给<b>规划→检索→写作→核验</b>四个专职角色。切换三种协作模式，注入一次检索故障，看任务怎么交接、错误在哪被兜住——以及<b>并行到底快在哪、坑在哪</b>。</p>
+
+  <div class="layout">
+    <section class="panel">
+      <h2>编排画布 <span class="badge">任务：文献综述</span></h2>
+      <p class="sub">每个智能体是一个角色，不是一个人。交接时传的是「任务单 + 已完成的产物」。</p>
+      <div id="orch"></div>
+      <div class="modebar">
+        <button class="mode" data-m="solo" aria-pressed="true">单人独干</button>
+        <button class="mode" data-m="serial" aria-pressed="false">串行流水线</button>
+        <button class="mode" data-m="parallel" aria-pressed="false">并行 + 交叉验证</button>
+      </div>
+      <div class="togglebar">
+        <span class="lbl">故障注入：</span>
+        <button class="chip" id="fault" aria-pressed="false">检索智能体中途故障</button>
+      </div>
+      <div class="btnrow">
+        <button class="btn lime" id="run">▶ 执行一次综述任务</button>
+        <button class="btn ghost" id="reset">⟲ 重置</button>
+      </div>
+      <div id="log"><p><b>系统就绪。</b>先跑「单人独干」作基线。</p></div>
+    </section>
+
+    <aside>
+      <div class="panel">
+        <h2>任务看板</h2>
+        <p class="sub">三种模式的真实差异，落到这几个数字上。</p>
+        <div class="statrow">
+          <div class="stat"><b id="t-v">—</b><span>总耗时（模拟）</span></div>
+          <div class="stat"><b id="q-v">—</b><span>结果可信度</span></div>
+          <div class="stat" id="f-stat"><b id="f-v">—</b><span>故障后果</span></div>
+        </div>
+        <div class="teach" id="verdict">跑完一轮后，这里给出本模式的判词。</div>
+      </div>
+      <div class="panel" style="margin-top:16px">
+        <h2>三种模式的适用边界</h2>
+        <p class="sub">不是越复杂越好，是按任务性质选。</p>
+        <div class="teach"><b>单人独干</b>——任务小、上下文一以贯之时最省事。但长任务会「顾前不顾后」，且没有任何校验环节。<br><b>串行流水线</b>——步骤有严格先后依赖时用（先检索才能写作）。交接单即契约，下游只信上游的产物格式。<br><b>并行 + 交叉验证</b>——子任务独立时用（多个数据源可同时检索），核验角色对成果做一致性与来源校验。成本最高，只给值得的任务。</div>
+      </div>
+      <div class="panel" style="margin-top:16px">
+        <h2>教师锚点</h2>
+        <p class="sub">类比一次，落回机制。</p>
+        <p style="font-size:13px;color:#2c3d33">像<b>课题组写综述</b>：让一个大导师从查文献写到终稿，他会累、会漏、没人校他稿；拆成「研究生检索 → 博士生起草 → 导师定框架 → 同行盲审」，每步产物交接有记录，错了知道退回哪一环。<b>多智能体的本质不是「更多AI」，是把分工、交接和校验制度化</b>——和管好一个教研室是同一门学问。</p>
+      </div>
+    </aside>
+  </div>
+</div>
+
+<footer class="subpage-footer">迷鹿 MiLU AI · 雷课「教研大模型和智能体技术栈」第 7 讲配套实验 · 时长与可信度为教学模拟值</footer>
+
+<script>
+(function(){
+"use strict";
+const $=id=>document.getElementById(id);
+const orch=$("orch");
+// 布局：按模式动态放置
+function place(mode){
+  orch.innerHTML="";
+  if(mode==="solo"){
+    addAgent("a1",50,26,"全能教授","检索+写作+自校一体","待命");
+    addAgent("a2",50,72,"交付","综述稿","待命");
+    wire("a1","a2","终稿");
+  }else{
+    addAgent("p",50,14,"规划者","拆任务、定标准","待命");
+    addAgent("r",28,46,"检索者","查库、取文献","待命");
+    addAgent("w",72,46,"写作者","起草综述","待命");
+    addAgent("v",50,78,"核验者","来源与一致性","待命");
+    wire("p","r","检索单");
+    if(mode==="serial"){wire("r","w","文献包");wire("w","v","草稿");}
+    else{wire("p","w","提纲");wire("r","v","文献包");wire("w","v","草稿");}
+    wire("v","a-done",null,true);
+  }
+}
+let agents={},wires=[];
+function addAgent(id,x,y,role,duty,state){
+  const d=document.createElement("div");d.className="agent";d.id="ag-"+id;
+  d.style.left=x+"%";d.style.top=y+"%";
+  d.innerHTML='<div class="box"><div class="role">'+role+'</div><div class="duty">'+duty+'</div><div class="state">'+state+'</div></div>';
+  orch.appendChild(d);agents[id]={el:d,x,y};
+}
+function wire(a,b,label,dummy){
+  if(dummy&&a==="v"){ // 交付标签放核验者下方
+    const lb=document.createElement("div");lb.className="handoff";lb.id="hw-end";
+    lb.style.left="50%";lb.style.top="94%";lb.textContent="✓ 综述交付";
+    lb.style.display="none";orch.appendChild(lb);return;
+  }
+  const A=agents[a],B=agents[b];if(!A||!B)return;
+  const el=document.createElement("div");el.className="wire";
+  const ax=A.x/100*orch.clientWidth,ay=A.y/100*orch.clientHeight;
+  const bx=B.x/100*orch.clientWidth,by=B.y/100*orch.clientHeight;
+  const len=Math.hypot(bx-ax,by-ay),ang=Math.atan2(by-ay,bx-ax);
+  el.style.left=ax+"px";el.style.top=ay+"px";el.style.width=len+"px";el.style.transform="rotate("+ang+"rad)";
+  orch.appendChild(el);wires.push(el);
+  if(label){
+    const lb=document.createElement("div");lb.className="handoff";lb.id="hw-"+a+"-"+b;
+    lb.style.left=(ax+bx)/2+"px";lb.style.top=(ay+by)/2+"px";lb.textContent=label;lb.style.display="none";
+    orch.appendChild(lb);
+  }
+}
+function state(id,s){const a=agents[id];if(!a)return;a.el.classList.remove("active","done","error");a.el.querySelector(".state").textContent=s;if(s==="工作")a.el.classList.add("active");if(s==="完成")a.el.classList.add("done");if(s==="故障")a.el.classList.add("error")}
+function showHandoff(a,b){const lb=document.getElementById("hw-"+a+"-"+b);if(lb){lb.style.display="block";setTimeout(()=>lb.style.display="none",1500)}}
+function litWires(mode){wires.forEach(w=>w.classList.add("lit"))}
+let mode="solo",running=false;
+document.querySelectorAll(".mode").forEach(b=>{
+  b.onclick=()=>{
+    if(running)return;
+    document.querySelectorAll(".mode").forEach(x=>x.setAttribute("aria-pressed","false"));
+    b.setAttribute("aria-pressed","true");mode=b.dataset.m;
+    agents={};wires=[];place(mode);
+    resetStats();
+  };
+});
+function resetStats(){$("t-v").textContent="—";$("q-v").textContent="—";$("f-v").textContent="—";$("f-stat").className="stat"}
+function logLine(html,cls){const p=document.createElement("p");if(cls)p.className=cls;p.innerHTML=html;const l=$("log");l.appendChild(p);l.scrollTop=l.scrollHeight}
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+let fault=false;
+$("fault").onclick=e=>{fault=!fault;e.currentTarget.setAttribute("aria-pressed",fault?"true":"false")};
+$("run").onclick=async()=>{
+  if(running)return;running=true;$("run").disabled=true;
+  $("log").innerHTML="";resetStats();
+  Object.values(agents).forEach(a=>{a.el.classList.remove("active","done","error");a.el.querySelector(".state").textContent="待命"});
+  let t=0;
+  const faultHit=fault;
+  if(mode==="solo"){
+    logLine("<b>模式：单人独干。</b>一个智能体包揽全部环节。");
+    state("a1","工作");
+    for(const s of ["解析任务…","检索文献…","撰写初稿…","自查一遍…"]){
+      logLine(s);await sleep(650);t+=650;
+      if(s==="检索文献…"&&faultHit){
+        state("a1","故障");logLine("<b>检索失败。</b>没有兜底：它用自己的旧知识硬写完了","err");
+        await sleep(500);state("a1","完成");
+        $("f-v").textContent="静默降级";$("f-stat").className="stat bad";
+        break;
+      }
+    }
+    state("a1","完成");
+    showHandoff2("end");
+    logLine("<b>交付。</b>耗时 "+fmt(t)+"。全流程无第二双眼睛——写作者即校验者，错误全靠自己发现（通常发现不了）。","ok");
+    $("t-v").textContent=fmt(t);
+    $("q-v").textContent=faultHit?"不可信（含未标注的旧知识）":"中（无独立校验）";
+    $("q-v").parentElement.className="stat "+(faultHit?"bad":"");
+    $("verdict").innerHTML=faultHit
+      ? "<b>单人模式 + 故障 = 最危险组合。</b>检索失败它不报错，用模型内的旧文献「补」——稿子读起来通顺，引用是编的。<b>没有分工就没有校验点，没有校验点就没有可信度。</b>"
+      : "<b>顺利时单人模式最快。</b>但它没有独立校验，也没有故障兜底——适合小任务、低风险场景。给重要任务用，是裸奔。";
+  }else{
+    const parallel=mode==="parallel";
+    logLine("<b>模式："+(parallel?"并行 + 交叉验证":"串行流水线")+"。</b>");
+    state("p","工作");logLine("规划者：拆解任务，产出检索单"+(parallel?"与写作提纲":""));await sleep(700);t+=700;
+    state("p","完成");
+    if(parallel){
+      state("r","工作");state("w","工作");
+      logLine("<b>并行启动：</b>检索者与写作者同时开工（提纲不依赖检索结果）");litWires();
+      const rWork=(async()=>{await sleep(900);t+=0;return "r"})();
+      const wWork=(async()=>{await sleep(1100);return "w"})();
+      await Promise.race([rWork,wWork]);t+=900;
+      if(faultHit){
+        state("r","故障");logLine("<b>检索者故障。</b>协调层收到失败信号，重试一次成功","err");await sleep(700);t+=700;
+        state("r","完成");
+        $("f-v").textContent="重试后恢复";$("f-stat").className="stat good";
+      }else{
+        await sleep(200);
+      }
+      state("r","完成");state("w","完成");t+=200;
+      showHandoff("r","v");showHandoff("w","v");
+    }else{
+      state("r","工作");logLine("检索者：按检索单执行");await sleep(900);t+=900;
+      if(faultHit){
+        state("r","故障");logLine("<b>检索者故障。</b>流程暂停，协调层重试一次成功","err");await sleep(700);t+=700;
+        $("f-v").textContent="重试后恢复";$("f-stat").className="stat good";
+      }else{
+        $("f-v").textContent="未触发";$("f-stat").className="stat";
+      }
+      state("r","完成");showHandoff("p","r");
+      state("w","工作");logLine("写作者：基于文献包起草");await sleep(1100);t+=1100;
+      state("w","完成");showHandoff("r","w");showHandoff("w","v");
+    }
+    state("v","工作");logLine("核验者：逐条核对引用来源、交叉检查数据一致性");await sleep(900);t+=900;
+    state("v","完成");showHandoff2("end");
+    logLine("<b>交付。</b>总耗时 "+fmt(t)+"，经独立核验。","ok");
+    $("t-v").textContent=fmt(t);
+    $("q-v").textContent=parallel?"高（并行提速 + 独立核验）":"高（独立核验）";
+    $("q-v").parentElement.className="stat good";
+    $("verdict").innerHTML=parallel
+      ? "<b>并行省时 "+(mode==="parallel"?"约 35%":"")+"，核验兜住质量。</b>但注意代价：协调逻辑更复杂，只有子任务真正独立（互不依赖对方的中间产物）时才值得。"
+      : "<b>串行 + 独立核验 = 最稳的默认架构。</b>每一步产物有契约、故障有重试、终稿有核验。慢一点，但每分钟都慢得明白。";
+  }
+  running=false;$("run").disabled=false;
+};
+function showHandoff2(){const lb=document.getElementById("hw-end");if(lb){lb.style.display="block";setTimeout(()=>lb.style.display="none",1500)}}
+function fmt(ms){return (ms/1000).toFixed(1)+"s"}
+place("solo");
+$("reset").onclick=()=>{if(running)return;agents={};wires=[];place(mode);resetStats();$("log").innerHTML='<p><b>系统就绪。</b></p>'};
+})();
+</script>
+</body>
+</html>

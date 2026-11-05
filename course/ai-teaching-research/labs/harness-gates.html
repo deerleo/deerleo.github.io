@@ -1,0 +1,262 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>质量门控实验台 · AI 赋能教研</title>
+<link rel="stylesheet" href="/assets/css/subpage-shell.css?v=20261026">
+<style>
+:root{
+  --forest:#173b2c;--forest-deep:#10271d;--lime:#c3ed59;--on-lime:#14231a;
+  --ivory:#f1f2ec;--ink:#1a2921;--ink3:#6a786e;--mint:#2f6b4f;
+  --line:rgba(26,41,33,.14);
+  --bad:#b4452e;--bad-soft:rgba(180,69,46,.12);
+  --warn:#c9973b;
+}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;color:var(--ink);background:var(--ivory);font:15px/1.65 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif}
+.wrap{max-width:1180px;margin:auto;padding:30px 24px 80px}
+.kicker{color:var(--mint);font-size:12px;font-weight:850;letter-spacing:.18em}
+h1{margin:6px 0 10px;font-size:clamp(26px,4vw,40px);letter-spacing:-.03em;line-height:1.1}
+h1 em{font-style:normal;background:linear-gradient(transparent 62%,var(--lime) 62%)}
+.lede{max-width:780px;color:var(--ink3);font-size:15px}
+.layout{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(300px,1fr);gap:22px;margin-top:26px}
+@media(max-width:960px){.layout{grid-template-columns:1fr}}
+.panel{border:1px solid var(--line);border-radius:18px;background:#fff;padding:18px 20px}
+.panel h2{margin:0 0 4px;font-size:17px}
+.panel .sub{color:var(--ink3);font-size:12.5px;margin:0 0 14px}
+/* 流水线画布 */
+#pipe{position:relative;border:1px solid var(--line);border-radius:14px;background:linear-gradient(160deg,var(--forest-deep),var(--forest));padding:26px 18px 22px;min-height:340px}
+.pipelabel{position:absolute;top:10px;left:18px;color:rgba(241,242,236,.5);font-size:10.5px;letter-spacing:.2em;font-weight:800}
+.steps{display:grid;grid-template-columns:repeat(5,1fr);gap:0;position:relative}
+.steps::before{content:"";position:absolute;left:9%;right:9%;top:31px;height:3px;background:rgba(241,242,236,.2)}
+.step{position:relative;text-align:center;z-index:1}
+.gate{width:64px;height:64px;margin:0 auto 8px;border-radius:50%;border:3px solid rgba(241,242,236,.35);background:rgba(241,242,236,.07);display:grid;place-items:center;font-size:24px;transition:.3s;position:relative}
+.step .nm{color:#f1f2ec;font-size:12.5px;font-weight:800;line-height:1.3}
+.step .rd{color:rgba(241,242,236,.55);font-size:10.5px;margin-top:2px}
+.step.active .gate{border-color:var(--lime);background:rgba(195,237,89,.15);box-shadow:0 0 18px rgba(195,237,89,.35);transform:scale(1.08)}
+.step.blocked .gate{border-color:var(--bad);background:var(--bad-soft);animation:shake .4s}
+.step.passed .gate{border-color:rgba(195,237,89,.5)}
+.step .verdict{font-size:10px;font-weight:800;margin-top:4px;height:14px}
+.step .verdict.b{color:var(--lime)}
+.step .verdict.x{color:#f3a08e}
+@keyframes shake{25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
+/* 污染源开关 */
+.sourcerow{margin-top:16px}
+.sourcerow .lbl{font-size:12.5px;color:var(--ink3);font-weight:700;margin-bottom:8px;display:block}
+.chips{display:flex;gap:7px;flex-wrap:wrap}
+.chip{border:1px solid var(--line);background:#fff;color:var(--ink);padding:6px 12px;border-radius:99px;font-size:12.5px;font-weight:700;cursor:pointer;transition:.15s}
+.chip[aria-pressed=true]{background:var(--bad);border-color:var(--bad);color:#fff}
+.mode{border:1px solid var(--forest);background:var(--forest);color:#fff;padding:6px 12px;border-radius:99px;font-size:12.5px;font-weight:700;cursor:pointer}
+.mode[aria-pressed=true]{background:var(--lime);color:var(--on-lime);border-color:var(--lime)}
+/* 日志 */
+#log{margin-top:14px;border:1px solid var(--line);border-radius:14px;background:#fbfbf7;max-height:260px;overflow:auto;padding:12px 14px;font:12px/1.7 ui-monospace,Menlo,monospace}
+#log p{margin:0 0 2px;color:var(--ink3)}
+#log p b{color:var(--ink)}
+#log p.ok b{color:var(--mint)}
+#log p.err b{color:var(--bad)}
+#log p.warn b{color:#8a6420}
+/* 结果对照 */
+.bigstat{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:14px}
+.stat{border:1px solid var(--line);border-radius:12px;padding:11px 13px;background:#fbfbf7}
+.stat b{display:block;font-size:26px;letter-spacing:-.02em}
+.stat span{font-size:11px;color:var(--ink3)}
+.stat.good b{color:var(--mint)}
+.stat.bad b{color:var(--bad)}
+.teach{margin-top:12px;border-left:3px solid var(--lime);background:rgba(195,237,89,.14);padding:11px 13px;border-radius:0 11px 11px 0;font-size:13px}
+.teach b{color:var(--forest)}
+.btnrow{display:flex;gap:9px;margin-top:14px;flex-wrap:wrap}
+button.btn{border:1px solid var(--forest);background:var(--forest);color:#fff;padding:9px 16px;border-radius:10px;font:inherit;font-size:13.5px;font-weight:750;cursor:pointer}
+button.btn:hover{background:var(--mint)}
+button.btn.lime{background:var(--lime);color:var(--on-lime);border-color:var(--lime)}
+button.btn.lime:hover{background:#d1f477}
+button.btn.ghost{background:transparent;color:var(--forest)}
+footer.subpage-footer{margin-top:46px}
+.badge{display:inline-block;background:var(--lime);color:var(--on-lime);font-size:11px;font-weight:800;padding:3px 10px;border-radius:99px;margin-left:8px;vertical-align:middle}
+</style>
+</head>
+<body>
+<header class="subpage-page-header">
+  <div class="nav">
+    <a class="brand" href="/">
+      <span class="mark">🦌</span>
+      <span>质量门控实验台<small>HARNESS GATES · LESSON 06</small></span>
+    </a>
+    <nav class="nav-links" aria-label="页面导航">
+      <a class="home" href="/">⌂ 首页</a>
+      <a href="/course/ai-teaching-research/">回到课程</a>
+    </nav>
+  </div>
+</header>
+
+<div class="wrap">
+  <p class="kicker">LESSON 06 · 科研智能体能力工程化</p>
+  <h1>一条脏数据进来，<em>两条路给它</em></h1>
+  <p class="lede">智能体批量跑 20 步，第 3 步进来一份<b>年份格式错误</b>的数据。没有门控，它混进结果继续传播，最后你拿到一份<b>看起来很专业、核心字段却是错的</b>报告——这比报错更危险。打开污染源，切换「裸奔 / 带门控」两种模式，看同一条流水线的两种命运。</p>
+
+  <div class="layout">
+    <section class="panel">
+      <h2>流水线 <span class="badge">20 批次模拟</span></h2>
+      <p class="sub">输入门控 → 解析 → 统计 → 交叉核对 → 输出门控。五个卡口，每个都可能是事故现场。</p>
+      <div id="pipe">
+        <span class="pipelabel">PIPELINE · BATCH ×20</span>
+        <div class="steps" id="steps"></div>
+      </div>
+      <div class="sourcerow">
+        <span class="lbl">注入脏数据（可多选）：</span>
+        <div class="chips">
+          <button class="chip" data-f="year" aria-pressed="false">年份格式错（20255）</button>
+          <button class="chip" data-f="missing" aria-pressed="false">关键字段缺失</button>
+          <button class="chip" data-f="dup" aria-pressed="false">重复记录</button>
+          <button class="chip" data-f="scan" aria-pressed="false">扫描件乱码</button>
+        </div>
+      </div>
+      <div class="sourcerow">
+        <span class="lbl">Harness 模式：</span>
+        <div class="chips">
+          <button class="mode" id="m-bare" aria-pressed="true">裸奔（无门控）</button>
+          <button class="mode" id="m-gate" aria-pressed="false">带门控（Harness）</button>
+        </div>
+      </div>
+      <div class="btnrow">
+        <button class="btn lime" id="run">▶ 跑完 20 批次</button>
+        <button class="btn ghost" id="reset">⟲ 重置</button>
+      </div>
+      <div id="log"><p><b>系统就绪。</b>建议第一次：不选脏数据，直接跑——两种模式都会绿。</p></div>
+    </section>
+
+    <aside>
+      <div class="panel">
+        <h2>终局对照</h2>
+        <p class="sub">跑完看这两个数字的区别——这就是 Harness 存在的全部理由。</p>
+        <div class="bigstat">
+          <div class="stat" id="s-acc"><b id="acc-v">—</b><span>交付结果准确率</span></div>
+          <div class="stat" id="s-stop"><b id="stop-v">—</b><span>被拦在半路的脏批次</span></div>
+        </div>
+        <div class="teach" id="verdict">先跑一轮对照，再读这里的判定。</div>
+      </div>
+      <div class="panel" style="margin-top:16px">
+        <h2>三道门的位置</h2>
+        <p class="sub">门控不是越多越好，是在三类风险点各设一道。</p>
+        <div class="teach"><b>输入门控</b>——文件在不在、格式对不对、必填齐不齐。拦在第一道最便宜。<br><b>过程门控</b>——关键中间结果（统计前的行数、去重后数量）抽检，防错误滚雪球。<br><b>输出门控</b>——结构完整、口径一致、来源可溯。最后一道也是你对用户的承诺。</div>
+      </div>
+      <div class="panel" style="margin-top:16px">
+        <h2>教师锚点</h2>
+        <p class="sub">类比一次，落回机制。</p>
+        <p style="font-size:13px;color:#2c3d33">像<b>学位论文盲审</b>：格式审查（输入门）→ 导师中期检查（过程门）→ 答辩前预审（输出门）。没有这三道门，问题论文也能"完成"——但它会在毕业后的某个时刻爆雷。Harness 就是给智能体装的<b>制度化质检</b>：不靠自觉，靠机制。</p>
+      </div>
+    </aside>
+  </div>
+</div>
+
+<footer class="subpage-footer">迷鹿 MiLU AI · 雷课「教研大模型和智能体技术栈」第 6 讲配套实验 · 数据与情景均为教学模拟</footer>
+
+<script>
+(function(){
+"use strict";
+const STEPS=[
+  {icon:"📥",nm:"输入门控",rd:"格式/完整性",pos:"in"},
+  {icon:"⚙️",nm:"解析",rd:"PDF→结构化",pos:"parse"},
+  {icon:"📊",nm:"统计汇总",rd:"聚合计算",pos:"stat"},
+  {icon:"🔎",nm:"交叉核对",rd:"一致性检查",pos:"cross"},
+  {icon:"📤",nm:"输出门控",rd:"终检",pos:"out"}
+];
+const FAULTS={
+  year:{step:"in",desc:"年份格式错（20255）"},
+  missing:{step:"in",desc:"关键字段缺失"},
+  dup:{step:"cross",desc:"重复记录"},
+  scan:{step:"in",desc:"扫描件乱码"}
+};
+const $=id=>document.getElementById(id);
+const stepsEl=$("steps");
+stepsEl.innerHTML=STEPS.map((s,i)=>'<div class="step" id="st'+i+'"><div class="gate">'+s.icon+'</div><div class="nm">'+s.nm+'</div><div class="rd">'+s.rd+'</div><div class="verdict" id="vd'+i+'"></div></div>').join("");
+let mode="bare";
+function logLine(html,cls){const p=document.createElement("p");if(cls)p.className=cls;p.innerHTML=html;const l=$("log");l.appendChild(p);l.scrollTop=l.scrollHeight}
+function sleep(ms){return new Promise(r=>setTimeout(r,ms))}
+function activeFaults(){return Object.keys(FAULTS).filter(k=>document.querySelector('[data-f="'+k+'"]').getAttribute("aria-pressed")==="true")}
+function setVerdict(i,txt,cls){const v=$("vd"+i);v.textContent=txt;v.className="verdict "+(cls||"")}
+function mark(i,cls){$("st"+i).classList.remove("active","blocked","passed");if(cls)$("st"+i).classList.add(cls)}
+function resetUI(){
+  STEPS.forEach((s,i)=>{mark(i,null);setVerdict(i,"","")});
+  $("s-acc").className="stat";$("s-stop").className="stat";
+  $("acc-v").textContent="—";$("stop-v").textContent="—";
+}
+$("m-bare").onclick=()=>{mode="bare";$("m-bare").setAttribute("aria-pressed","true");$("m-gate").setAttribute("aria-pressed","false")};
+$("m-gate").onclick=()=>{mode="gate";$("m-gate").setAttribute("aria-pressed","true");$("m-bare").setAttribute("aria-pressed","false")};
+let running=false;
+$("run").onclick=async()=>{
+  if(running)return;running=true;$("run").disabled=true;
+  resetUI();$("log").innerHTML="";
+  const faults=activeFaults();
+  const gates=mode==="gate";
+  logLine("<b>模式：</b>"+(gates?"带门控（Harness）":"裸奔（无门控）")+"｜脏数据："+(faults.length?faults.map(f=>FAULTS[f].desc).join("、"):"无"));
+  let dirty=faults.length?3:0; // 第3批出事
+  let contaminated=0,blockedBatches=0;
+  const delay=gates?260:170;
+  for(let b=1;b<=20;b++){
+    const isDirty=dirty&&b>=dirty&&faults.length;
+    for(let i=0;i<STEPS.length;i++){
+      mark(i,"active");
+      await sleep(delay);
+      const s=STEPS[i];
+      if(isDirty){
+        // 脏批次走到它的故障相关检查点
+        const faultAt=gates?"in":(FAULTS[faults[0]].step==="cross"?"cross":"stat");
+        if(gates&&(i===0)){ // 输入门拦截
+          mark(i,"blocked");setVerdict(i,"拦截","x");
+          logLine("<b>批次 #"+b+"：</b>输入门控拒绝——"+faults.map(f=>FAULTS[f].desc).join("、")+"（已记入失败清单）","err");
+          blockedBatches++;
+          $("stop-v").textContent=blockedBatches;$("s-stop").className="stat good";
+          mark(i,null);
+          break;
+        }
+        if(!gates&&i===2){ // 裸奔：污染统计步
+          contaminated++;
+          logLine("<b>批次 #"+b+"：</b>脏数据静默进入统计","err");
+        }
+        if(gates&&s.pos==="cross"&&FAULTS[faults[0]].step==="cross"){
+          mark(i,"blocked");setVerdict(i,"拦截","x");
+          logLine("<b>批次 #"+b+"：</b>交叉核对拦截——"+FAULTS[faults[0]].desc+"（一致性不通过）","err");
+          blockedBatches++;
+          $("stop-v").textContent=blockedBatches;$("s-stop").className="stat good";
+          mark(i,null);
+          break;
+        }
+      }
+      setVerdict(i,"✓","b");
+      mark(i,"passed");
+    }
+    if(b===20){
+      if(isDirty===false&&contaminated===0){}
+    }
+  }
+  // 终局
+  if(!faults.length){
+    $("acc-v").textContent="100%";$("s-acc").className="stat good";
+    logLine("<b>跑完 20 批，两种模式都全绿。</b>没出事时你看不出门控的价值——这正是它被省略的原因。","ok");
+    $("verdict").innerHTML="<b>干净数据两种模式结果一样。</b>门控的价值只在出事时显现——继续实验：打开一两个污染源再跑。";
+  }else if(gates){
+    const acc=Math.round((20-blockedBatches)/20*100);
+    $("acc-v").textContent=acc+"%（交付批次全干净）";$("s-acc").className="stat good";
+    $("stop-v").textContent=blockedBatches;$("s-stop").className="stat good";
+    logLine("<b>终局：</b>"+blockedBatches+" 个脏批次被拦在半路并记录在案，交付的批次全部干净。返工范围明确，错误可追溯。","ok");
+    $("verdict").innerHTML="<b>这就是「进得严、错得明、留得痕」。</b>脏批次没有消失——但它们被<b>挡在了报表外面</b>，还留了名字。你返工 3 个批次，而不是发现终稿不可信后重跑全部 20 个。";
+  }else{
+    $("acc-v").textContent="数据已污染";$("s-acc").className="stat bad";
+    $("stop-v").textContent="0（无门控无拦截）";$("s-stop").className="stat bad";
+    logLine("<b>终局：</b>脏数据混过全部五步，交付报告表面完整——但 "+contaminated+" 处统计已被污染，且<b>无任何记录</b>告诉你哪里错了。","err");
+    $("verdict").innerHTML="<b>最坏结局达成：</b>不是报错，是<b>交付了一份看起来专业、核心字段有错、且无法定位错处的报告</b>。学术场景里，这比崩溃更贵。切到「带门控」模式，用同样的脏数据再跑一次。";
+  }
+  running=false;$("run").disabled=false;
+};
+$("reset").onclick=()=>{resetUI();$("log").innerHTML='<p><b>系统就绪。</b></p>'};
+document.querySelectorAll(".chip[data-f]").forEach(b=>{
+  b.onclick=()=>{
+    b.setAttribute("aria-pressed",b.getAttribute("aria-pressed")==="true"?"false":"true");
+    resetUI();
+  };
+});
+})();
+</script>
+</body>
+</html>

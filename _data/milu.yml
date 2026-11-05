@@ -121,7 +121,7 @@ tutorials:
     mode: series
     title: AI 赋能教研：从任务到可复用工作流
     kicker: 实战系列
-    description: 围绕科研写作、项目申报、课程设计、反馈分析与智能体工程，练习把 AI 使用变成可验证、可复用的工作流程。
+    description: 围绕科研写作、项目申报、课程设计、反馈分析与智能体工程，练习把 AI 使用变成可验证、可复用的工作流程，配套五个可操作的互动实验台。
     level: 入门到进阶
     progress:
       done: 8

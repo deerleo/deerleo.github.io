@@ -1,0 +1,208 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>混淆矩阵实验台 · Jev 模型评估 · AI 赋能教研</title>
+<link rel="stylesheet" href="/assets/css/subpage-shell.css?v=20261026">
+<style>
+:root{
+  --forest:#173b2c;--forest-deep:#10271d;--lime:#c3ed59;--on-lime:#14231a;
+  --ivory:#f1f2ec;--ink:#1a2921;--ink3:#6a786e;--mint:#2f6b4f;
+  --line:rgba(26,41,33,.14);
+  --bad:#b4452e;--bad-soft:rgba(180,69,46,.1);
+  --warn:#c9973b;
+}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;color:var(--ink);background:var(--ivory);font:15px/1.65 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif}
+.wrap{max-width:1180px;margin:auto;padding:30px 24px 80px}
+.kicker{color:var(--mint);font-size:12px;font-weight:850;letter-spacing:.18em}
+h1{margin:6px 0 10px;font-size:clamp(26px,4vw,40px);letter-spacing:-.03em;line-height:1.1}
+h1 em{font-style:normal;background:linear-gradient(transparent 62%,var(--lime) 62%)}
+.lede{max-width:780px;color:var(--ink3);font-size:15px}
+.layout{display:grid;grid-template-columns:minmax(0,1fr) minmax(300px,1fr);gap:22px;margin-top:26px;align-items:start}
+@media(max-width:960px){.layout{grid-template-columns:1fr}}
+.panel{border:1px solid var(--line);border-radius:18px;background:#fff;padding:18px 20px}
+.panel h2{margin:0 0 4px;font-size:17px}
+.panel .sub{color:var(--ink3);font-size:12.5px;margin:0 0 14px}
+/* 场景切换 */
+.scnbar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+.scn{border:1px solid var(--line);background:#fbfbf7;padding:8px 14px;border-radius:11px;font-size:13px;font-weight:700;cursor:pointer;transition:.15s}
+.scn.active{background:var(--forest);color:#fff;border-color:var(--forest)}
+/* 矩阵 */
+.mxwrap{display:grid;grid-template-columns:auto 1fr;gap:10px;align-items:end;justify-content:center}
+.mxlabels{display:grid;grid-template-rows:1fr 1fr;gap:8px;color:var(--ink3);font-size:12px;font-weight:800;writing-mode:vertical-rl;text-orientation:mixed;transform:rotate(180deg);text-align:center}
+.mxgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.cell{border-radius:14px;padding:18px 16px;text-align:center;transition:.3s;cursor:default;border:2px solid transparent}
+.cell b{display:block;font-size:38px;font-weight:900;letter-spacing:-.02em;line-height:1}
+.cell .nm{font-size:13px;font-weight:800;margin-top:6px}
+.cell .me{font-size:11.5px;margin-top:3px;color:var(--ink3)}
+.cell.tp{background:rgba(47,107,79,.12);border-color:rgba(47,107,79,.4)}
+.cell.tn{background:rgba(23,59,44,.06);border-color:rgba(23,59,44,.2)}
+.cell.fp{background:var(--bad-soft);border-color:rgba(180,69,46,.4)}
+.cell.fn{background:rgba(201,151,59,.12);border-color:rgba(201,151,59,.45)}
+.colhead{display:grid;grid-template-columns:1fr 1fr;gap:8px;text-align:center;font-size:12.5px;font-weight:800;color:var(--forest);margin-bottom:2px}
+/* 滑杆 */
+.sliders{display:grid;gap:13px;margin-top:6px}
+.sl label{display:flex;justify-content:space-between;font-size:12.5px;font-weight:700;color:var(--ink);margin-bottom:4px}
+.sl label span{color:var(--mint)}
+input[type=range]{width:100%;accent-color:var(--mint)}
+/* 指标 */
+.metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-top:16px}
+.metric{border:1px solid var(--line);border-radius:12px;padding:11px 12px;background:#fbfbf7;text-align:center}
+.metric b{display:block;font-size:26px;letter-spacing:-.02em}
+.metric span{font-size:11px;color:var(--ink3)}
+.metric .en{font-size:10px;color:#a5b0a8;letter-spacing:.08em}
+.metric.warn b{color:#8a6420}
+.metric.bad b{color:var(--bad)}
+.metric.good b{color:var(--mint)}
+/* 解读 */
+.reading{margin-top:16px;border-left:3px solid var(--lime);background:rgba(195,237,89,.14);padding:12px 14px;border-radius:0 11px 11px 0;font-size:13.5px;line-height:1.7}
+.reading b{color:var(--forest)}
+.teach{margin-top:12px;border-left:3px solid var(--lime);background:rgba(195,237,89,.14);padding:11px 13px;border-radius:0 11px 11px 0;font-size:13px}
+.teach b{color:var(--forest)}
+footer.subpage-footer{margin-top:46px}
+.badge{display:inline-block;background:var(--lime);color:var(--on-lime);font-size:11px;font-weight:800;padding:3px 10px;border-radius:99px;margin-left:8px;vertical-align:middle}
+.cost{margin-top:14px;padding:11px 13px;border-radius:11px;font-size:12.5px;background:#fbfbf7;border:1px solid var(--line);line-height:1.6}
+.cost b{color:var(--forest)}
+</style>
+</head>
+<body>
+<header class="subpage-page-header">
+  <div class="nav">
+    <a class="brand" href="/">
+      <span class="mark">🦌</span>
+      <span>混淆矩阵实验台<small>CONFUSION MATRIX · LESSON 06 · JEV EVAL</small></span>
+    </a>
+    <nav class="nav-links" aria-label="页面导航">
+      <a class="home" href="/">⌂ 首页</a>
+      <a href="/course/ai-teaching-research/">回到课程</a>
+    </nav>
+  </div>
+</header>
+
+<div class="wrap">
+  <p class="kicker">LESSON 06 · JEV 模型训练实战</p>
+  <h1>准确率 95% 的模型，<em>可能一文不值</em></h1>
+  <p class="lede">用教师最熟的两个场景——<b>学生心理危机预警</b>和<b>作业抄袭筛查</b>——亲手调一台分类模型。同一个"准确率"，在两个场景里的意义完全不同：漏报一条危机信息和冤枉一个学生，代价天差地别。模型好不好，不看准确率，看<b>你付不起的是哪一种错</b>。</p>
+
+  <div class="layout">
+    <section class="panel">
+      <h2>判定矩阵 <span class="badge">实时联动</span></h2>
+      <p class="sub">列为「模型说」，行为「真实情况」。绿色是它做对的，黄和红是它犯错的两种方式。</p>
+      <div class="scnbar" id="scns"></div>
+      <div class="mxwrap">
+        <div class="mxlabels"><span>真实：有问题</span><span>真实：没问题</span></div>
+        <div>
+          <div class="colhead"><span>模型说：有问题</span><span>模型说：没问题</span></div>
+          <div class="mxgrid">
+            <div class="cell tp"><b id="v-tp">42</b><div class="nm" id="nm-tp">命中</div><div class="me" id="me-tp">真阳性 TP</div></div>
+            <div class="cell fn"><b id="v-fn">8</b><div class="nm" id="nm-fn">漏报</div><div class="me" id="me-fn">假阴性 FN</div></div>
+            <div class="cell fp"><b id="v-fp">15</b><div class="nm" id="nm-fp">误报</div><div class="me" id="me-fp">假阳性 FP</div></div>
+            <div class="cell tn"><b id="v-tn">935</b><div class="nm" id="nm-tn">正确放行</div><div class="me" id="me-tn">真阴性 TN</div></div>
+          </div>
+        </div>
+      </div>
+      <div class="sliders" style="margin-top:20px">
+        <div class="sl"><label>判定阈值（模型多"敏感"）<span id="l-th">0.50</span></label><input type="range" id="th" min="5" max="95" value="50"></div>
+        <div class="sl"><label>真实问题比例（基础率）<span id="l-base">5%</span></label><input type="range" id="base" min="1" max="30" value="5"></div>
+        <div class="sl"><label>模型判别力（AUC 梗概）<span id="l-power">中等</span></label><input type="range" id="power" min="10" max="95" value="55"></div>
+      </div>
+    </section>
+
+    <aside>
+      <div class="panel">
+        <h2>评估指标</h2>
+        <p class="sub">四个数字看懂模型——注意哪个在报警。</p>
+        <div class="metrics">
+          <div class="metric" id="m-acc"><b id="acc">95.0%</b><span>准确率</span><div class="en">ACCURACY</div></div>
+          <div class="metric" id="m-rec"><b id="rec">84.0%</b><span>召回率</span><div class="en">RECALL · 抓住了多少真问题</div></div>
+          <div class="metric" id="m-pre"><b id="pre">73.7%</b><span>精确率</span><div class="en">PRECISION · 报上来的多真</div></div>
+        </div>
+        <div class="reading" id="read"></div>
+        <div class="cost" id="cost"></div>
+      </div>
+      <div class="panel" style="margin-top:16px">
+        <h2>这个实验在教什么</h2>
+        <p class="sub">三句话带走。</p>
+        <div class="teach"><b>① 准确率会被基础率骗。</b>问题只占 5% 时，一个无脑全说"没问题"的模型准确率 95%——但漏掉全部真问题。这就是 Jev 训练里"类别不均衡"警告的由来。</div>
+        <div class="teach" style="margin-top:9px"><b>② 阈值是价值判断，不是技术参数。</b>调阈值 = 决定你愿意多付哪种代价。心理预警把阈值调到宁滥勿缺，抄袭筛查把阈值调到宁可放过——同一台模型，两种调法，都对。</div>
+        <div class="teach" style="margin-top:9px"><b>③ 低置信度不是失败，是分流。</b>Jev 评估后接"人工复核"通道：模型说"我不确定"的样本给专家。机器 + 复核 = 可部署；机器独断 = 事故源。</div>
+      </div>
+    </aside>
+  </div>
+</div>
+
+<footer class="subpage-footer">迷鹿 MiLU AI · 雷课「教研大模型和智能体技术栈」第 6 讲配套实验 · 模拟数据，课堂演示用</footer>
+
+<script>
+(function(){
+"use strict";
+const SCN=[
+  {name:"🚨 学生心理危机预警",
+   tp:"获干预",fn:"被漏掉",fp:"被约谈",tn:"正常在册",
+   fnCost:"一名真实需要帮助的学生被系统放过——这是支付不起的代价，召回率必须拉满。",
+   fpCost:"多约谈几十个学生：辅导员多加班，学生多聊一次——可接受的成本。",
+   good:"宁可错约一千，不可放过一个。阈值调低（敏感），精确率难看没关系。",
+   bad:"准确率虚高的假象：问题学生占比小，全放行也能 95%+。此刻报警的不是精确率，是召回率。"},
+  {name:"📝 作业抄袭筛查",
+   tp:"实锤",fn:"漏网",fp:"被冤枉",tn:"清白放行",
+   fnCost:"有抄袭没被抓：公平性受损，但可事后抽查补救。",
+   fpCost:"把清白学生定成抄袭：伤害一个无辜者的记录和名誉——教师声誉场景，误报必须严控。",
+   good:"宁可漏掉几个，不可冤枉一个。阈值调高（保守），误报压到最低，配人工复核。",
+   bad:"精确率低 = 报上来的大半是冤案。这个场景里准确率再高也不能用。"}
+];
+const $=id=>document.getElementById(id);
+let cur=0;
+$("scns").innerHTML=SCN.map((s,i)=>'<button class="scn'+(i===0?' active':'')+'" data-i="'+i+'">'+s.name+'</button>').join("");
+$("scns").addEventListener("click",e=>{
+  const b=e.target.closest(".scn");if(!b)return;
+  document.querySelectorAll(".scn").forEach(x=>x.classList.remove("active"));
+  b.classList.add("active");cur=+b.dataset.i;apply();
+});
+// 简化判定模型：给定判别力 p 与阈值 t，估算 TPR/FPR
+function rates(power,t){
+  const p=power/100, th=t/100;
+  const tpr=Math.min(.995,Math.pow(p, .9)*Math.pow(1-th,.85)*1.9+ .05);
+  const fpr=Math.pow(1-th,1.6)*Math.pow(p,1.2)*0.75+.003;
+  return {tpr:Math.max(.05,Math.min(.99,tpr)),fpr:Math.max(.002,Math.min(.6,fpr))};
+}
+const N=1000;
+function apply(){
+  const s=SCN[cur];
+  // 标签
+  $("nm-tp").textContent=s.tp;$("nm-fn").textContent=s.fn;$("nm-fp").textContent=s.fp;$("nm-tn").textContent=s.tn;
+  const base=+$("base").value/100, power=+$("power").value, th=+$("th").value;
+  $("l-th").textContent=(th/100).toFixed(2);
+  $("l-base").textContent=Math.round(base*100)+"%";
+  $("l-power").textContent=power<30?"弱":power<55?"中等":power<80?"较强":"很强";
+  const {tpr,fpr}=rates(power,th);
+  const P=Math.round(N*base), Q=N-P;
+  const tp=Math.round(P*tpr), fn=P-tp;
+  const fp=Math.round(Q*fpr), tn=Q-fp;
+  $("v-tp").textContent=tp;$("v-fn").textContent=fn;$("v-fp").textContent=fp;$("v-tn").textContent=tn;
+  const acc=(tp+tn)/N, rec=P?tp/P:0, pre=(tp+fp)?tp/(tp+fp):0;
+  $("acc").textContent=(acc*100).toFixed(1)+"%";
+  $("rec").textContent=(rec*100).toFixed(1)+"%";
+  $("pre").textContent=(pre*100).toFixed(1)+"%";
+  // 指标警示
+  const crisis=cur===0;
+  $("m-rec").className="metric "+(rec<.7?"bad":rec<.9?"warn":"good");
+  $("m-pre").className="metric "+((!crisis&&pre<.7)?"bad":pre<.5?"warn":"good");
+  $("m-acc").className="metric "+(acc<.7?"bad":"good");
+  // 解读
+  $("read").innerHTML=crisis
+    ? (rec<.9
+        ? "<b>⚠️ 召回率 "+(rec*100).toFixed(0)+"%——每 100 个真需要帮助的学生，约 "+Math.round((1-rec)*100)+" 个被漏掉。</b>这个阈值在心理预警场景不可部署。把「判定阈值」往左拉，宁可多约谈。"
+        : "<b>✓ 召回率 "+(rec*100).toFixed(0)+"%，达标（≥90%）。</b>代价是精确率 "+(pre*100).toFixed(0)+"%——很多被约谈的学生其实没问题。在这个场景，这个代价是社会可接受的：约谈是帮助，不是惩罚。")
+    : (pre<.7
+        ? "<b>⚠️ 精确率 "+(pre*100).toFixed(0)+"%——报上来的抄袭里，约 "+Math.round((1-pre)*100)+"% 是冤枉的。</b>按这个模型发指控，每个班都会冤枉好几个学生。把阈值往右拉，并接人工复核。"
+        : "<b>✓ 精确率 "+(pre*100).toFixed(0)+"%，指控基本可信。</b>代价是漏网（召回 "+(rec*100).toFixed(0)+"%）——抄袭筛查可接受，配期末抽查兜底。");
+  $("cost").innerHTML="<b>漏报代价：</b>"+s.fnCost+"<br><b>误报代价：</b>"+s.fpCost;
+}
+["th","base","power"].forEach(id=>$(id).addEventListener("input",apply));
+apply();
+})();
+</script>
+</body>
+</html>
