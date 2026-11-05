@@ -1,0 +1,292 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>智能体执行循环实验台 · AI 赋能教研</title>
+<link rel="stylesheet" href="/assets/css/subpage-shell.css?v=20261026">
+<style>
+:root{
+  --forest:#173b2c;--forest-deep:#10271d;--lime:#c3ed59;--on-lime:#14231a;
+  --ivory:#f1f2ec;--ink:#1a2921;--ink3:#6a786e;--mint:#2f6b4f;
+  --line:rgba(26,41,33,.14);--panel:#ffffff;
+  --bad:#b4452e;--bad-soft:rgba(180,69,46,.12);
+}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;color:var(--ink);background:var(--ivory);font:15px/1.65 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif}
+.wrap{max-width:1180px;margin:auto;padding:30px 24px 80px}
+header.labb{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-bottom:8px}
+.kicker{color:var(--mint);font-size:12px;font-weight:850;letter-spacing:.18em}
+h1{margin:6px 0 10px;font-size:clamp(26px,4vw,40px);letter-spacing:-.03em;line-height:1.1}
+.lede{max-width:760px;color:var(--ink3);font-size:15px}
+h1 em{font-style:normal;background:linear-gradient(transparent 62%,var(--lime) 62%)}
+.layout{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(280px,1fr);gap:22px;margin-top:26px}
+@media(max-width:900px){.layout{grid-template-columns:1fr}}
+.panel{border:1px solid var(--line);border-radius:18px;background:var(--panel);padding:18px 20px}
+.panel h2{margin:0 0 4px;font-size:17px}
+.panel .sub{color:var(--ink3);font-size:12.5px;margin:0 0 14px}
+/* 循环画布 */
+#stage{position:relative;border:1px solid var(--line);border-radius:14px;background:linear-gradient(160deg,var(--forest-deep),var(--forest));min-height:430px;overflow:hidden}
+.loopnode{position:absolute;transform:translate(-50%,-50%);width:118px;text-align:center;transition:.25s}
+.loopnode .box{border:2px solid rgba(241,242,236,.35);border-radius:13px;padding:10px 8px;background:rgba(241,242,236,.06);color:#f1f2ec;font-size:13px;font-weight:700;line-height:1.35}
+.loopnode .box small{display:block;font-weight:500;color:rgba(241,242,236,.62);font-size:10.5px;margin-top:2px}
+.loopnode.active .box{border-color:var(--lime);background:rgba(195,237,89,.14);box-shadow:0 0 22px rgba(195,237,89,.28)}
+.loopnode.done .box{border-color:rgba(195,237,89,.45);color:var(--lime)}
+.loopnode.error .box{border-color:var(--bad);background:var(--bad-soft);color:#f3c2b4;animation:shake .4s}
+@keyframes shake{25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
+.edge{position:absolute;height:2px;background:rgba(241,242,236,.22);transform-origin:0 50%;transition:.3s}
+.edge.lit{background:var(--lime);box-shadow:0 0 8px rgba(195,237,89,.6)}
+.edgelabel{position:absolute;transform:translate(-50%,-50%);font-size:10px;color:rgba(241,242,236,.55);background:rgba(16,39,29,.8);padding:2px 7px;border-radius:99px;pointer-events:none;white-space:nowrap}
+.edgelabel.lit{color:var(--on-lime);background:var(--lime);font-weight:700}
+/* 控制区 */
+.controls{display:flex;gap:9px;flex-wrap:wrap;margin-top:14px}
+button.btn{border:1px solid var(--forest);background:var(--forest);color:#fff;padding:9px 16px;border-radius:10px;font:inherit;font-size:13.5px;font-weight:750;cursor:pointer;transition:.15s}
+button.btn:hover{background:var(--mint)}
+button.btn.lime{background:var(--lime);color:var(--on-lime);border-color:var(--lime)}
+button.btn.lime:hover{background:var(--lime-soft,#d1f477)}
+button.btn.ghost{background:transparent;color:var(--forest)}
+button.btn.ghost:hover{background:rgba(23,59,44,.08)}
+button.btn:disabled{opacity:.4;cursor:not-allowed}
+.togglebar{display:flex;gap:7px;align-items:center;margin-top:12px;flex-wrap:wrap}
+.togglebar .lbl{font-size:12.5px;color:var(--ink3);font-weight:700}
+.chip{border:1px solid var(--line);background:#fff;color:var(--ink);padding:6px 12px;border-radius:99px;font-size:12.5px;font-weight:700;cursor:pointer;transition:.15s}
+.chip[aria-pressed=true]{background:var(--bad);border-color:var(--bad);color:#fff}
+/* 日志区 */
+#log{margin-top:14px;border:1px solid var(--line);border-radius:14px;background:#fbfbf7;max-height:300px;overflow:auto;padding:12px 14px;font:12px/1.7 ui-monospace,SFMono-Regular,Menlo,monospace}
+#log p{margin:0 0 2px;color:var(--ink3)}
+#log p b{color:var(--ink)}
+#log p.ok b{color:var(--mint)}
+#log p.err b{color:var(--bad)}
+#log p .t{color:#a5b0a8;margin-right:6px}
+/* 计数与讲解 */
+.statrow{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-top:14px}
+.stat{border:1px solid var(--line);border-radius:12px;padding:10px 12px;background:#fbfbf7}
+.stat b{display:block;font-size:22px;letter-spacing:-.02em}
+.stat span{font-size:11px;color:var(--ink3)}
+.stat.hl b{color:var(--mint)}
+.teach{margin-top:12px;border-left:3px solid var(--lime);background:rgba(195,237,89,.14);padding:11px 13px;border-radius:0 11px 11px 0;font-size:13px;color:var(--ink)}
+.teach b{color:var(--forest)}
+.teach.hide{display:none}
+footer.subpage-footer{margin-top:46px}
+.badge{display:inline-block;background:var(--lime);color:var(--on-lime);font-size:11px;font-weight:800;padding:3px 10px;border-radius:99px;letter-spacing:.04em;vertical-align:middle;margin-left:8px}
+</style>
+</head>
+<body>
+<header class="subpage-page-header">
+  <div class="nav">
+    <a class="brand" href="/">
+      <span class="mark">🦌</span>
+      <span>智能体执行循环实验台<small>AGENT EXECUTION LOOP · LESSON 05</small></span>
+    </a>
+    <nav class="nav-links" aria-label="页面导航">
+      <a class="home" href="/">⌂ 首页</a>
+      <a href="/course/ai-teaching-research/">回到课程</a>
+    </nav>
+  </div>
+</header>
+
+<div class="wrap">
+  <p class="kicker">LESSON 05 · AI 科研智能体构建实战</p>
+  <h1>委托一名研究生，<em>然后发生了什么</em></h1>
+  <p class="lede">把"帮我整理这 20 篇文献"交给智能体后，它不是一次回答，而是走一个<b>循环</b>：理解任务 → 定计划 → 调工具 → 检查结果 → 交付。点击运行，观察每一步在系统里真实发生的事；再打开故障开关，看它在第几步、以什么方式翻车。</p>
+
+  <div class="layout">
+    <section class="panel">
+      <h2>执行画布 <span class="badge">单步可追踪</span></h2>
+      <p class="sub">每个节点是一次真实的工作交接：模型只负责"想"，工具负责"做"，循环负责"兜底"。</p>
+      <div id="stage"></div>
+      <div class="controls">
+        <button class="btn lime" id="run">▶ 运行一次完整循环</button>
+        <button class="btn ghost" id="step">单步执行</button>
+        <button class="btn ghost" id="reset">⟲ 重置</button>
+      </div>
+      <div class="togglebar">
+        <span class="lbl">故障注入：</span>
+        <button class="chip" id="fault-pdf" aria-pressed="false">损坏的 PDF</button>
+        <button class="chip" id="fault-net" aria-pressed="false">检索超时</button>
+        <button class="chip" id="fault-none" aria-pressed="false">要求输出不存在的数据</button>
+        <span class="lbl" style="margin-left:6px">速度：</span>
+        <button class="chip" id="speed" aria-pressed="false">慢速</button>
+      </div>
+      <div id="log"><p><b>系统就绪。</b>点击"运行"开始。日志按真实执行顺序滚动。</p></div>
+    </section>
+
+    <aside>
+      <div class="panel">
+        <h2>循环计数</h2>
+        <p class="sub">看清楚：任务不是"一口气答完"的，是在循环里逐步收敛的。</p>
+        <div class="statrow" style="grid-template-columns:1fr 1fr 1fr">
+          <div class="stat hl"><b id="c-loop">0</b><span>循环轮次</span></div>
+          <div class="stat"><b id="c-tool">0</b><span>工具调用</span></div>
+          <div class="stat"><b id="c-retry">0</b><span>重试次数</span></div>
+        </div>
+      </div>
+      <div class="panel" style="margin-top:16px">
+        <h2>这一步是什么</h2>
+        <p class="sub">当前高亮节点的教学注解。</p>
+        <div class="teach" id="teach"><b>任务理解。</b>模型读入你的指令和可用材料，产出的是"我打算怎么做"——注意此时还没做任何事。</div>
+      </div>
+      <div class="panel" style="margin-top:16px">
+        <h2>教师锚点</h2>
+        <p class="sub">类比一次，落回机制，不再重复。</p>
+        <p style="font-size:13px;color:var(--ink-2,#2c3d33)">像<b>委托研究生整理文献</b>：你说清需求（任务理解），他列提纲（计划），去数据库下载（工具），发现 PDF 扫描件读不了回来找你（异常处理），最后交文献表（交付）。区别只有一个——他下班了会停，<b>循环机制让智能体自己先重试、先报错，而不是把半成品交给你</b>。</p>
+      </div>
+    </aside>
+  </div>
+</div>
+
+<footer class="subpage-footer">迷鹿 MiLU AI · 雷课「教研大模型和智能体技术栈」第 5 讲配套实验 · 数据与情景均为教学演示</footer>
+
+<script>
+(function(){
+"use strict";
+// ---- 画布节点与边 ----
+const NODES=[
+  {id:"task",  x:50, y:12, name:"任务理解", sub:"读指令与材料"},
+  {id:"plan",  x:50, y:30, name:"生成计划", sub:"拆解执行步骤"},
+  {id:"act",   x:22, y:52, name:"工具调用", sub:"解析/检索/计算"},
+  {id:"check", x:50, y:70, name:"检查结果", sub:"完整？格式对？"},
+  {id:"deliver",x:78,y:52, name:"交付产出", sub:"表格/报告/页面"}
+];
+const EDGES=[
+  {from:"task",to:"plan",label:"怎么做"},
+  {from:"plan",to:"act",label:"执行"},
+  {from:"act",to:"check",label:"产物"},
+  {from:"check",to:"deliver",label:"合格",bend:1},
+  {from:"check",to:"plan",label:"不合格：回炉",bend:-1,back:true}
+];
+const TEACH={
+  task:"<b>任务理解。</b>模型读入你的指令和可用材料，产出的是「我打算怎么做」——注意此时还没做任何事。",
+  plan:"<b>生成计划。</b>把大任务拆成带顺序的小步骤（先解析 20 个 PDF，再提取元数据，再汇总）。计划是模型写给自己的工作说明。",
+  act:"<b>工具调用。</b>真正「动手」的是工具：读文件、跑 Python、查数据库。模型自己不会下载 PDF——它调用会下载的程序。",
+  check:"<b>检查结果。</b>循环的关键就在这：产出完整吗？字段对吗？不合格就带着失败原因回到计划步。这一步做扎实，工具才「敢用」。",
+  deliver:"<b>交付产出。</b>结构化表格 / Markdown 报告 / 可视化页面。交付物是给人验收的，不是给模型看的。"
+};
+const FAULT_MSG={
+  pdf:{at:"act",log:["<b>解析 doc_07.pdf 失败：</b>文件是扫描图像，无文本层","工具返回错误码 EXTRACT_FAIL，未产出元数据行"],node:"act"},
+  net:{at:"act",log:["<b>检索超时：</b>学术 API 30s 无响应","工具返回错误码 NET_TIMEOUT"],node:"act"},
+  none:{at:"check",log:["<b>检查不通过：</b>输出缺少「被引次数」字段——本次检索源不提供该数据","检查器拒绝进入交付步"],node:"check"}
+};
+const stage=document.getElementById("stage"),log=document.getElementById("log");
+const elN={},elE={};
+// 节点
+NODES.forEach(n=>{
+  const d=document.createElement("div");d.className="loopnode";d.id="n-"+n.id;
+  d.style.left=n.x+"%";d.style.top=n.y+"%";
+  d.innerHTML='<div class="box">'+n.name+"<small>"+n.sub+"</small></div>";
+  stage.appendChild(d);elN[n.id]=d;
+});
+// 边（直线近似，back 边走左侧弧线用旋转+宽度实现）
+EDGES.forEach((e,i)=>{
+  const a=NODES.find(n=>n.id===e.from),b=NODES.find(n=>n.id===e.to);
+  const ax=a.x/100*stage.clientWidth,ay=a.y/100*stage.clientHeight;
+  const bx=b.x/100*stage.clientWidth,by=b.y/100*stage.clientHeight;
+  const line=document.createElement("div");line.className="edge";line.id="e"+i;
+  const dx=bx-ax,dy=by-ay,len=Math.sqrt(dx*dx+dy*dy),ang=Math.atan2(dy,dx);
+  let x1=ax,y1=ay,w=len;
+  if(e.back){ // 回炉边：绕外侧
+    const mx=(ax+bx)/2,my=(ay+by)/2;
+    const side= e.bend<0? -1:1;
+    // 控制点外推
+    const cx=mx+side*70,cy=my;
+    // 二次贝塞尔近似：三段折线太碎，用两段
+    const seg1=document.createElement("div");seg1.className="edge";seg1.id="e"+i+"a";
+    setSeg(seg1,ax,ay,cx,cy);stage.appendChild(seg1);
+    const seg2=document.createElement("div");seg2.className="edge";seg2.id="e"+i+"b";
+    setSeg(seg2,cx,cy,bx,by);stage.appendChild(seg2);
+    elE[i]=[seg1,seg2];
+  }else{
+    setSeg(line,x1,y1,w,ang);stage.appendChild(line);elE[i]=[line];
+  }
+  const lx=(ax+bx)/2+(e.back?(e.bend<0?-70:70):0),ly=(ay+by)/2-12;
+  const lb=document.createElement("div");lb.className="edgelabel";lb.id="l"+i;
+  lb.style.left=lx+"px";lb.style.top=ly+"px";lb.textContent=e.label;
+  stage.appendChild(lb);
+});
+function setSeg(el,x,y,len,ang){el.style.left=x+"px";el.style.top=y+"px";el.style.width=len+"px";el.style.transform="rotate("+ang+"rad)"}
+// 智能重算（窗口变化时）
+let built=false;
+function rebuild(){location.reload()}
+window.addEventListener("resize",()=>{clearTimeout(window.__rz);window.__rz=setTimeout(rebuild,300)});
+// ---- 状态机 ----
+const FLOW=["task","plan","act","check","deliver"];
+const CHECK_EDGE=3,LOOP_EDGE=4;
+let busy=false,timer=null;
+const $=id=>document.getElementById(id);
+function logLine(html,cls){const p=document.createElement("p");if(cls)p.className=cls;p.innerHTML=html;log.appendChild(p);log.scrollTop=log.scrollHeight}
+function stamp(){const d=new Date();return ("0"+d.getMinutes()).slice(-2)+":"+("0"+d.getSeconds()).slice(-2)}
+function markNode(id,state){Object.entries(elN).forEach(([k,el])=>el.classList.remove("active","error"));if(state)elN[id].classList.add(state);if(state==="done"){elN[id].classList.add("done")}}
+function setTeach(id){$("teach").innerHTML=TEACH[id]||""}
+function litEdge(i){(elE[i]||[]).forEach(el=>el.classList.add("lit"));$("l"+i).classList.add("lit")}
+function dimEdges(){document.querySelectorAll(".edge").forEach(el=>el.classList.remove("lit"));document.querySelectorAll(".edgelabel").forEach(el=>el.classList.remove("lit"))}
+function activeFault(){for(const k of ["pdf","net","none"])if($("fault-"+k).getAttribute("aria-pressed")==="true")return k;return null}
+function speed(){return $("speed").getAttribute("aria-pressed")==="true"?1100:520}
+function upd(loop,tool,retry){$("c-loop").textContent=loop;$("c-tool").textContent=tool;$("c-retry").textContent=retry}
+async function wait(ms){return new Promise(r=>timer=setTimeout(r,ms))}
+async function runFlow(singleStep){
+  if(busy)return;busy=true;
+  $("run").disabled=true;$("step").disabled=true;
+  let loop=0,tool=0,retry=0,done=false,stepIdx=0;
+  dimEdges();
+  Object.values(elN).forEach(el=>el.classList.remove("done","active","error"));
+  log.innerHTML="";
+  logLine("<b>收到任务：</b>「整理这 20 篇文献的标题、作者、年份、方法标签，输出 CSV」");
+  const fault=activeFault();
+  while(!done){
+    loop++;
+    for(;stepIdx<FLOW.length;stepIdx++){
+      const id=FLOW[stepIdx];
+      markNode(id,"active");setTeach(id);litEdgeFor(id);
+      await wait(speed());
+      // 故障插入
+      if(fault&&FAULT_MSG[fault].node===id&&!window["fired_"+fault]){
+        window["fired_"+fault]=true;
+        elN[id].classList.add("error");
+        FAULT_MSG[fault].log.forEach(m=>logLine(m,"err"));
+        if(fault==="none"){ // 检查步拦截，直接回炉
+          logLine("进入回炉：向计划步补充「移除无法获得的字段」","err");
+          stepIdx=1;retry++;upd(loop,tool,retry);
+          markNode("plan","active");setTeach("plan");
+          await wait(speed());
+          continue;
+        }else{ // 工具步错误 → 循环重试一次后换降级策略
+          retry++;upd(loop,tool,retry);
+          logLine("循环机制介入：第 "+retry+" 次重试（自动，无需人工）");
+          await wait(speed());
+          logLine(fault==="pdf"?"<b>降级策略：</b>改用 OCR 通道解析扫描件，成功":"<b>降级策略：</b>切换备用数据源，检索成功","ok");
+          elN[id].classList.remove("error");
+        }
+      }
+      if(id==="act"){tool++;upd(loop,tool,retry);logLine("<b>工具调用 #"+tool+"：</b>"+(id==="act"?"批量解析 PDF → 提取元数据":""))}
+      if(id==="task")logLine("计划概要：解析 20 份 PDF → 提取 4 字段 → 质量抽检 → 汇总 CSV");
+      if(id==="check")logLine("抽检 3/20 行：字段完整、年份格式一致 → <b>通过</b>","ok");
+      if(id==="deliver"){logLine("<b>交付：</b>literature_meta.csv（20 行 × 4 字段）+ 质检记录","ok");done=true}
+      elN[id].classList.add("done");
+      if(singleStep){stepIdx++;busy=false;$("run").disabled=false;$("step").disabled=false;return}
+    }
+    break;
+  }
+  upd(loop,tool,retry);
+  logLine("<b>循环结束。</b>轮次 "+loop+"、工具调用 "+tool+"、重试 "+retry+"——这就是「一次对话」背后真实发生的工作量。","ok");
+  busy=false;$("run").disabled=false;$("step").disabled=false;
+}
+function litEdgeFor(id){
+  const map={task:-1,plan:0,act:1,check:2,deliver:CHECK_EDGE};
+  if(id==="plan"&&window.__backflow)  {litEdge(LOOP_EDGE);window.__backflow=false;return}
+  const i=map[id];if(i!=null&&i>=0)litEdge(i);
+}
+$("run").onclick=()=>{["fired_pdf","fired_net","fired_none"].forEach(k=>window[k]=false);runFlow(false)};
+$("step").onclick=()=>{["fired_pdf","fired_net","fired_none"].forEach(k=>window[k]=false);runFlow(true)};
+$("reset").onclick=()=>{location.reload()};
+["pdf","net","none"].forEach(k=>{
+  $("fault-"+k).onclick=e=>{
+    const b=e.currentTarget,on=b.getAttribute("aria-pressed")==="true";
+    ["pdf","net","none"].forEach(o=>$("fault-"+o).setAttribute("aria-pressed","false"));
+    b.setAttribute("aria-pressed",on?"false":"true");
+  };
+});
+$("speed").onclick=e=>{const b=e.currentTarget;b.setAttribute("aria-pressed",b.getAttribute("aria-pressed")==="true"?"false":"true")};
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,239 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>需求五要素训练器 · AI 赋能教研</title>
+<link rel="stylesheet" href="/assets/css/subpage-shell.css?v=20261026">
+<style>
+:root{
+  --forest:#173b2c;--forest-deep:#10271d;--lime:#c3ed59;--on-lime:#14231a;
+  --ivory:#f1f2ec;--ink:#1a2921;--ink3:#6a786e;--mint:#2f6b4f;
+  --line:rgba(26,41,33,.14);
+  --bad:#b4452e;--good:#2f6b4f;
+}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;color:var(--ink);background:var(--ivory);font:15px/1.65 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif}
+.wrap{max-width:1180px;margin:auto;padding:30px 24px 80px}
+.kicker{color:var(--mint);font-size:12px;font-weight:850;letter-spacing:.18em}
+h1{margin:6px 0 10px;font-size:clamp(26px,4vw,40px);letter-spacing:-.03em;line-height:1.1}
+h1 em{font-style:normal;background:linear-gradient(transparent 62%,var(--lime) 62%)}
+.lede{max-width:760px;color:var(--ink3);font-size:15px}
+.layout{display:grid;grid-template-columns:minmax(0,1fr) minmax(300px,420px);gap:22px;margin-top:26px;align-items:start}
+@media(max-width:960px){.layout{grid-template-columns:1fr}}
+.panel{border:1px solid var(--line);border-radius:18px;background:#fff;padding:18px 20px}
+.panel h2{margin:0 0 4px;font-size:17px}
+.panel .sub{color:var(--ink3);font-size:12.5px;margin:0 0 12px}
+/* 任务选择 */
+.scenarios{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+.scn{border:1px solid var(--line);background:#fbfbf7;padding:8px 14px;border-radius:11px;font-size:13px;font-weight:700;cursor:pointer;transition:.15s}
+.scn.active{background:var(--forest);color:#fff;border-color:var(--forest)}
+/* 五要素表 */
+.req{display:grid;grid-template-columns:120px 1fr;gap:10px 14px}
+.req label{font-size:13.5px;font-weight:800;color:var(--forest);padding-top:9px}
+.req label small{display:block;font-weight:500;color:var(--ink3);font-size:11px}
+textarea{width:100%;min-height:52px;border:1px solid var(--line);border-radius:11px;padding:10px 12px;font:inherit;font-size:13.5px;resize:vertical;background:#fbfbf7;color:var(--ink)}
+textarea:focus{outline:2px solid var(--lime);border-color:var(--mint)}
+.hintrow{grid-column:2;font-size:11.5px;color:var(--ink3);margin-top:-6px}
+/* 评分卡 */
+.score-item{border:1px solid var(--line);border-left:4px solid var(--line);border-radius:0 12px 12px 0;padding:9px 12px;margin-bottom:9px;background:#fbfbf7;transition:.25s}
+.score-item .head{display:flex;justify-content:space-between;align-items:center;font-size:13px;font-weight:800}
+.score-item .why{font-size:12px;color:var(--ink3);margin-top:3px;line-height:1.5}
+.score-item.pass{border-left-color:var(--good)}
+.score-item.pass .head{color:var(--good)}
+.score-item.fail{border-left-color:var(--bad)}
+.score-item.fail .head{color:var(--bad)}
+.score-item.part{border-left-color:#c9973b}
+.score-item.part .head{color:#8a6420}
+.pill{font-size:10.5px;font-weight:800;padding:2px 9px;border-radius:99px;letter-spacing:.04em}
+.pill.pass{background:rgba(47,107,79,.15);color:var(--good)}
+.pill.fail{background:rgba(180,69,46,.14);color:var(--bad)}
+.pill.part{background:rgba(201,151,59,.16);color:#8a6420}
+/* 对照区 */
+.compare{margin-top:14px;display:none}
+.compare.show{display:block}
+.compare pre{margin:0;white-space:pre-wrap;font:12px/1.7 ui-monospace,Menlo,monospace;background:var(--forest-deep);color:#dfe9e2;border-radius:12px;padding:14px}
+.compare pre b{color:var(--lime)}
+.btnrow{display:flex;gap:9px;margin-top:14px;flex-wrap:wrap}
+button.btn{border:1px solid var(--forest);background:var(--forest);color:#fff;padding:9px 18px;border-radius:10px;font:inherit;font-size:13.5px;font-weight:750;cursor:pointer}
+button.btn:hover{background:var(--mint)}
+button.btn.lime{background:var(--lime);color:var(--on-lime);border-color:var(--lime)}
+button.btn.lime:hover{background:#d1f477}
+button.btn.ghost{background:transparent;color:var(--forest)}
+/* 雷达式五要素总览 */
+.radar{display:grid;grid-template-columns:repeat(5,1fr);gap:7px;margin-top:14px}
+.radar div{text-align:center;border:1px solid var(--line);border-radius:11px;padding:8px 4px;font-size:11px;font-weight:700;color:var(--ink3);background:#fbfbf7;transition:.25s}
+.radar div b{display:block;font-size:15px;margin-bottom:2px;color:var(--line)}
+.radar div.ok{border-color:var(--good);color:var(--good)}
+.radar div.ok b{color:var(--good)}
+.teach{margin-top:14px;border-left:3px solid var(--lime);background:rgba(195,237,89,.14);padding:11px 13px;border-radius:0 11px 11px 0;font-size:13px}
+.teach b{color:var(--forest)}
+footer.subpage-footer{margin-top:46px}
+.badge{display:inline-block;background:var(--lime);color:var(--on-lime);font-size:11px;font-weight:800;padding:3px 10px;border-radius:99px;margin-left:8px;vertical-align:middle}
+</style>
+</head>
+<body>
+<header class="subpage-page-header">
+  <div class="nav">
+    <a class="brand" href="/">
+      <span class="mark">🦌</span>
+      <span>需求五要素训练器<small>REQUIREMENT CARD · LESSON 05</small></span>
+    </a>
+    <nav class="nav-links" aria-label="页面导航">
+      <a class="home" href="/">⌂ 首页</a>
+      <a href="/course/ai-teaching-research/">回到课程</a>
+    </nav>
+  </div>
+</header>
+
+<div class="wrap">
+  <p class="kicker">LESSON 05 · AI 科研智能体构建实战</p>
+  <h1>「帮我处理一下文献」<em>为什么做不出来</em></h1>
+  <p class="lede">学员最常见的失败不是模型不行，是<b>需求没说清</b>。「帮我处理文献」缺了五样东西：<b>谁用、输入什么、按什么规则、输出什么长什么样、怎么算做完了</b>。选一个场景，把五要素补全，系统逐项体检——补全的那一刻，你自己就知道这个任务能不能交给智能体。</p>
+
+  <div class="layout">
+    <section class="panel">
+      <h2>练习场 <span class="badge">逐项体检</span></h2>
+      <p class="sub">先选一个你熟悉的场景，再填五要素。系统按「可执行性」逐项判定。</p>
+      <div class="scenarios" id="scns"></div>
+      <div class="req">
+        <label>① 使用者<small>谁运行、谁看结果</small></label>
+        <textarea id="f-user" placeholder="例：我本人和课题组的2名研究生；结果我验收"></textarea>
+        <label>② 输入材料<small>给什么东西、什么格式</small></label>
+        <textarea id="f-input" placeholder="例：文献文件夹，20个PDF，中英文混合，可能有扫描件"></textarea>
+        <label>③ 处理规则<small>按什么标准做判断</small></label>
+        <textarea id="f-rule" placeholder="例：提取标题/作者/年份/方法标签；扫描件走OCR；读不了的记入失败清单"></textarea>
+        <label>④ 输出格式<small>交什么、长什么样</small></label>
+        <textarea id="f-output" placeholder="例：CSV 五列；附 Markdown 汇总报告，按方法标签分组"></textarea>
+        <label>⑤ 验收标准<small>怎么判断做完了、做对了</small></label>
+        <textarea id="f-accept" placeholder="例：20行全覆盖；抽3行人工核对无误；失败文件有清单可追溯"></textarea>
+        <p class="hintrow">提示：写得越具体越好。模糊的词（"整理一下""大概""看看"）会被扣分。</p>
+      </div>
+      <div class="btnrow">
+        <button class="btn lime" id="check">⚖ 体检这份需求</button>
+        <button class="btn ghost" id="sample">填入一个典型差需求</button>
+        <button class="btn ghost" id="good">看合格示范</button>
+        <button class="btn ghost" id="clear">清空</button>
+      </div>
+      <div class="compare" id="cmpWrap">
+        <pre id="cmpText"></pre>
+      </div>
+    </section>
+
+    <aside>
+      <div class="panel">
+        <h2>五要素体检结果</h2>
+        <p class="sub">每项三档：合格 / 部分 / 缺失。判定逻辑按"智能体能否据此开工"。</p>
+        <div id="scores"></div>
+        <div class="radar" id="radar">
+          <div data-k="user"><b>①</b>使用者</div>
+          <div data-k="input"><b>②</b>输入</div>
+          <div data-k="rule"><b>③</b>规则</div>
+          <div data-k="output"><b>④</b>输出</div>
+          <div data-k="accept"><b>⑤</b>验收</div>
+        </div>
+      </div>
+      <div class="panel" style="margin-top:16px">
+        <h2>判定读法</h2>
+        <p class="sub">不是扣分游戏，是开工判据。</p>
+        <div class="teach" id="verdict">五项全绿 = 这份需求可以直接派给智能体开工（本实验第5讲 S2 检票就以此为准）。有红色项 = 先回去补，再谈工具。</div>
+      </div>
+      <div class="panel" style="margin-top:16px">
+        <h2>为什么要五要素</h2>
+        <p class="sub">锚点一次，落回机制。</p>
+        <p style="font-size:13px;color:#2c3d33">像给研究生交代活儿：<b>"帮我整理文献"</b>他会做三版你都不满意；<b>五要素版本</b>他一遍就能交差。智能体比研究生多一个特点——它<b>不会猜</b>：缺验收标准时它自认为做完了，缺输出格式时它随便挑一个。五要素不是文风要求，是把"你想的"翻译成"它能执行的"。</p>
+      </div>
+    </aside>
+  </div>
+</div>
+
+<footer class="subpage-footer">迷鹿 MiLU AI · 雷课「教研大模型和智能体技术栈」第 5 讲配套实验 · 课堂检票①使用</footer>
+
+<script>
+(function(){
+"use strict";
+const SCN=[
+  {name:"文献批处理",u:"我和课题组研究生",i:"20个PDF文献，中英混合，含扫描件",r:"提取标题/作者/年份/方法标签；扫描件OCR；失败记录清单",o:"CSV五列+Markdown汇总（按方法分组）",a:"20行全覆盖；抽3行核对；失败可追溯"},
+  {name:"学生评教分析",u:"系教学副主任",i:"本学期3门课的评教开放题文本（Excel一列）",r:"主题编码：教学态度/内容/节奏/其他；每条可多标签",o:"各主题频次表+代表性原话各5条+改进建议段",a:"编码覆盖100%条目；两人抽检20%一致率>85%"},
+  {name:"问卷开放题归类",u:"我自己（论文用）",i:"312份问卷的开放题回答CSV",r:"按理论框架编码；无法归类的进'其他'并说明理由",o:"编码表+频次分布+与量表得分交叉表",a:"编码手册先行；抽10%复核一致；交叉表数字可复算"}
+];
+const BAD="帮我处理一下文献，整理得好一点，最好能有点分析。";
+const CHECKS=[
+  {k:"user", id:"f-user", name:"① 使用者",
+   why:"没有使用者就没有验收人。『我课题组』和『发给学生自己用』会导致完全不同的容错设计。",
+   fuzzy:["大家","老师们","有人"]},
+  {k:"input", id:"f-input", name:"② 输入材料",
+   why:"数量、格式、脏数据可能性不定，工具选择就定不了——20个PDF和3条URL是两个项目。",
+   fuzzy:["一些","若干","资料","文件","数据"]},
+  {k:"rule", id:"f-rule", name:"③ 处理规则",
+   why:"规则缺位时模型会用通用做法替你决定（比如自选分类标签），结果不可复现。",
+   fuzzy:["整理","处理","分析一下","优化","好一点"]},
+  {k:"output", id:"f-output", name:"④ 输出格式",
+   why:"没定格式，模型每次可能给不同的东西，无法批量接续使用。",
+   fuzzy:["报告","表格","好看","清楚"]},
+  {k:"accept", id:"f-accept", name:"⑤ 验收标准",
+   why:"没有验收标准就没有『做完』的概念——智能体会在自认为完成时停下，你还不知道该查什么。",
+   fuzzy:["差不多","尽量","满意","合格","靠谱"]}
+];
+const $=id=>document.getElementById(id);
+let cur=0;
+// 场景按钮
+$("scns").innerHTML=SCN.map((s,i)=>'<button class="scn'+(i===0?' active':'')+'" data-i="'+i+'">'+s.name+'</button>').join("");
+$("scns").addEventListener("click",e=>{
+  const b=e.target.closest(".scn");if(!b)return;
+  document.querySelectorAll(".scn").forEach(x=>x.classList.remove("active"));
+  b.classList.add("active");cur=+b.dataset.i;
+});
+function hasFuzzy(text,list){return list.some(w=>text.includes(w))}
+function lenOk(t){return t.replace(/\s/g,"").length>=8}
+$("check").onclick=()=>{
+  const vals={};let any=false;
+  CHECKS.forEach(c=>{vals[c.k]=$(c.id).value.trim();if(vals[c.k])any=true});
+  if(!any){$("scores").innerHTML='<p style="color:#6a786e;font-size:13px;margin:0">五项都是空的。点「填入一个典型差需求」感受一下它的下场。</p>';renderRadar({});return}
+  let pass=0;
+  $("scores").innerHTML=CHECKS.map(c=>{
+    const v=vals[c.k];
+    let cls,pill;
+    if(!v){cls="fail";pill="缺失"}
+    else if(!lenOk(v)||hasFuzzy(v,c.fuzzy)){cls="part";pill="部分"}
+    else{cls="pass";pill="合格";pass++}
+    return '<div class="score-item '+cls+'"><div class="head"><span>'+c.name+'</span><span class="pill '+cls+'">'+pill+'</span></div><div class="why">'+(cls==="fail"?"<b>缺了这项，智能体开工时会自己编一个默认值。</b> "+c.why:(cls==="part"?"<b>疑似含模糊表述或过短。</b> "+c.why:"可执行。"+c.why.split("。")[0]+"。"))+'</div></div>';
+  }).join("");
+  renderRadar(CHECKS.reduce((m,c)=>{const v=vals[c.k];m[c.k]=v&&(lenOk(v)||!hasFuzzy(v,c.fuzzy));return m},{}));
+  const allPass=pass===5;
+  $("verdict").innerHTML=allPass
+    ? "<b>五项全绿——这份需求可以开工。</b>把它直接发给 Claude Code，产出的东西不会跑偏。这就是第5讲检票①的达标线。"
+    : "<b>还差 "+(5-pass)+" 项。</b>红/黄项补完之前，先别碰工具——这不是形式主义，是让产出可验收的唯一前提。";
+};
+function renderRadar(ok){
+  document.querySelectorAll("#radar div").forEach(d=>{
+    const good=ok[d.dataset.k];
+    d.classList.toggle("ok",!!good);
+    d.querySelector("b").textContent=good?"✓":"①②③④⑤"[["user","input","rule","output","accept"].indexOf(d.dataset.k)];
+  });
+}
+$("sample").onclick=()=>{
+  ["f-user","f-input","f-rule","f-output","f-accept"].forEach(id=>$(id).value="");
+  $("f-input").value=BAD;
+  $("scores").innerHTML='<div class="score-item fail"><div class="head"><span>典型差需求</span><span class="pill fail">0/5</span></div><div class="why">「帮我处理一下文献」——五个要素缺四个半。模型会：自选解析工具（可能只读前10个）、自定输出格式、在它"觉得"完成时停下。你拿到的东西能用的概率，取决于运气。</div></div>';
+  renderRadar({});
+  $("verdict").innerHTML="<b>这就是大多数失败任务的真面目。</b>不是模型笨，是需求没长手。点「体检这份需求」之前先把它补成五要素。";
+};
+$("good").onclick=()=>{
+  const s=SCN[cur];
+  $("f-user").value=s.u;$("f-input").value=s.i;$("f-rule").value=s.r;$("f-output").value=s.o;$("f-accept").value=s.a;
+  $("cmpWrap").classList.add("show");
+  $("cmpText").innerHTML='<b>给智能体的完整任务书（'+s.name+'场景）</b>\n\n'+
+    '<b>【使用者】</b>'+s.u+'\n<b>【输入】</b>'+s.i+'\n<b>【规则】</b>'+s.r+'\n<b>【输出】</b>'+s.o+'\n<b>【验收】</b>'+s.a+
+    '\n\n↑ 把这五行原样发给 Claude Code，即可开工。对比你自己刚才填的版本，看差在哪。';
+  $("check").click();
+};
+$("clear").onclick=()=>{
+  ["f-user","f-input","f-rule","f-output","f-accept"].forEach(id=>$(id).value="");
+  $("scores").innerHTML="";$("cmpWrap").classList.remove("show");renderRadar({});
+  $("verdict").textContent="五项全绿 = 这份需求可以直接派给智能体开工（本实验第5讲 S2 检票就以此为准）。有红色项 = 先回去补，再谈工具。";
+};
+})();
+</script>
+</body>
+</html>
