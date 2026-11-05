@@ -1,0 +1,646 @@
+/* EduLab · 趣味数学 WonderLab 布局（真·三栏：左课程大纲 / 中数学画布·3D 曲面舞台 / 右知识点详解）
+   依赖 edu.css 的主题变量与 lab.css 的通用控件（ctl/quiz/hud-card/chap/loader 视觉）。
+   本文件只管 wonder 页面骨架与本章专属视觉，不动共享布局。 */
+
+html, body { height: 100%; }
+
+body.lab.wond {
+  display: block;
+  overflow: hidden;
+}
+
+/* ---------- 三栏骨架（顶栏细条 + 左大纲 / 中舞台 / 右详解） ---------- */
+
+.wonder-shell {
+  display: grid;
+  grid-template-columns: 246px minmax(0, 1fr) 352px;
+  grid-template-rows: auto minmax(0, 1fr);
+  grid-template-areas:
+    "top      top   top"
+    "chapters stage detail";
+  height: 100dvh;
+}
+
+/* ---------- 顶栏细条 ---------- */
+
+.wond-toprow {
+  grid-area: top;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 9px 16px;
+  border-bottom: 1px solid var(--card-border);
+  background: color-mix(in srgb, var(--card) 60%, transparent);
+}
+.wond-toprow .edu-logo { flex: none; }
+.wond-toprow .lab-title {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  min-width: 0;
+  color: var(--text);
+}
+.wond-toprow .lab-title b { font-size: 16px; white-space: nowrap; }
+.wond-toprow .lab-title span {
+  font-size: 12.5px;
+  color: var(--text-faint);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.wond-toprow .spacer { flex: 1; }
+.wond-toprow .edu-header-btn { white-space: nowrap; }
+
+/* ---------- 左栏：课程大纲 ---------- */
+
+.lab-chapters {
+  grid-area: chapters;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  background: var(--bg-soft);
+  border-right: 1px solid var(--card-border);
+}
+.chap-head {
+  flex: none;
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  padding: 13px 14px 7px;
+}
+.chap-head .chap-title {
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  color: var(--text-faint);
+}
+.chap-count {
+  margin-left: auto;
+  font-size: 11.5px;
+  color: var(--text-faint);
+  font-variant-numeric: tabular-nums;
+}
+.chap-list {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 2px 8px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.chap-list .chap-btn.on {
+  color: var(--accent);
+  background: var(--accent-soft);
+  border-color: color-mix(in srgb, var(--accent) 35%, transparent);
+  font-weight: 600;
+}
+.chap-list .chap-btn.on .chap-n { color: var(--accent); }
+.chap-list .chap-btn .chap-en {
+  display: block;
+  font-size: 10px;
+  letter-spacing: 0.05em;
+  color: var(--text-faint);
+  font-weight: 400;
+}
+.chap-list .chap-btn.on .chap-en { color: color-mix(in srgb, var(--accent) 72%, transparent); }
+
+/* ---------- 中栏：画布 / 3D 港湾舞台 ---------- */
+
+.lab-stage3d {
+  grid-area: stage;
+  position: relative;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  background: var(--bg);
+}
+.wond-stage {
+  position: absolute;
+  inset: 0;
+}
+.wond-stage canvas.wond-canvas {
+  position: absolute;
+  inset: 0;
+  z-index: 2; /* 3D 画布之上；工具(30)/quiz(28)/徽标·脚注(22-24)之下 */
+  display: block;
+  outline: none;
+  touch-action: none;
+  cursor: grab;
+}
+.wond-stage canvas.wond-canvas.grabbing { cursor: grabbing; }
+.wond-stage canvas.wond-canvas.pt-cross { cursor: crosshair; }
+.wond-stage canvas.wond-canvas.ew-resize { cursor: ew-resize; }
+.wond-stage canvas.wond-canvas.hidden3d { visibility: hidden; }
+.wond-stage .lab-loader { position: absolute; }
+.wond-stage .quiz-panel { z-index: 28; }
+
+/* 舞台左下角状态徽标（当前章图形名 · 风格名，随风格切换） */
+.stage-badge {
+  position: absolute;
+  left: 14px;
+  top: 12px;
+  z-index: 22;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  color: var(--text-faint);
+  padding: 5px 11px;
+  border-radius: 999px;
+  border: 1px solid var(--card-border);
+  background: color-mix(in srgb, var(--card) 64%, transparent);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  pointer-events: none;
+}
+.stage-badge i {
+  font-style: normal;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 8px color-mix(in srgb, var(--accent) 70%, transparent);
+}
+
+/* 专注模式按钮（中栏左下角） */
+.stage-focus-btn {
+  position: absolute;
+  left: 14px;
+  bottom: 14px;
+  z-index: 24;
+  appearance: none;
+  font-family: inherit;
+  font-size: 12px;
+  line-height: 1;
+  padding: 7px 13px;
+  border-radius: 999px;
+  border: 1px solid var(--card-border);
+  background: color-mix(in srgb, var(--card) 74%, transparent);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  color: var(--text-dim);
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s;
+}
+.stage-focus-btn:hover { color: var(--accent); border-color: var(--accent); }
+
+.stage-foot {
+  position: absolute;
+  right: 16px;
+  bottom: 14px;
+  z-index: 24;
+  font-size: 11.5px;
+  color: var(--text-faint);
+}
+.stage-foot a { color: var(--text-faint); text-decoration: underline; text-underline-offset: 2px; }
+
+/* 拖拽提示角标（可拖顶点 / 手柄的章节显示） */
+.stage-drag-hint {
+  position: absolute;
+  left: 50%;
+  top: 12px;
+  transform: translateX(-50%);
+  z-index: 22;
+  font-size: 11.5px;
+  letter-spacing: 0.06em;
+  color: var(--text-faint);
+  padding: 5px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--card-border);
+  background: color-mix(in srgb, var(--card) 70%, transparent);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.25s ease;
+}
+.stage-drag-hint.show { opacity: 1; }
+
+/* ---------- 栏折叠（左右独立 28px 竖条）与专注模式（双栏同折） ---------- */
+
+.wonder-shell { transition: grid-template-columns 0.3s ease; }
+.wonder-shell.fold-l { grid-template-columns: 28px minmax(0, 1fr) 352px; }
+.wonder-shell.fold-r { grid-template-columns: 246px minmax(0, 1fr) 28px; }
+.wonder-shell.fold-l.fold-r { grid-template-columns: 28px minmax(0, 1fr) 28px; }
+
+/* 折叠态：原栏内容保持固有宽度淡出（免挤压跳动），由 overflow 裁切 */
+.chap-head, .chap-list { min-width: 246px; }
+.detail-head, .detail-body { min-width: 352px; }
+.chap-head, .chap-list, .detail-head, .detail-body { transition: opacity 0.16s ease; }
+.wonder-shell.fold-l .chap-head,
+.wonder-shell.fold-l .chap-list { opacity: 0; pointer-events: none; }
+.wonder-shell.fold-r .detail-head,
+.wonder-shell.fold-r .detail-body { opacity: 0; pointer-events: none; }
+
+/* 折叠按钮（栏头收起 / 竖条展开共用视觉） */
+.fold-btn {
+  flex: none;
+  appearance: none;
+  font-family: inherit;
+  width: 22px;
+  height: 22px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  line-height: 1;
+  border-radius: 7px;
+  border: 1px solid var(--card-border);
+  background: var(--chip-bg);
+  color: var(--text-faint);
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s, background 0.15s;
+}
+.fold-btn:hover {
+  color: var(--accent);
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+.detail-head .fold-btn { margin-left: auto; align-self: center; }
+
+/* 竖条导轨（折叠态显示：展开钮 + 章序号 / 竖排标题） */
+.fold-rail {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 0 12px;
+  background: var(--bg-soft);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.2s ease, visibility 0s linear 0.2s;
+}
+.wonder-shell.fold-l .lab-chapters .fold-rail,
+.wonder-shell.fold-r .lab-detail .fold-rail {
+  opacity: 1;
+  visibility: visible;
+  transition: opacity 0.2s ease 0.1s;
+}
+.rail-no {
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--accent);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.04em;
+}
+.rail-title {
+  writing-mode: vertical-rl;
+  max-height: 210px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 12px;
+  color: var(--text-faint);
+  letter-spacing: 0.14em;
+}
+
+/* 专注模式：语义 = 双栏同时折叠，布局完全复用 .fold-l/.fold-r 竖条形态
+   （JS 保证 focus-mode 必伴随两个 fold 类），进入前状态由 JS 保存、退出时恢复 */
+
+/* ---------- 右栏：知识点详解 + 控件 + 读数 ---------- */
+
+.lab-detail {
+  grid-area: detail;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  background: var(--bg-soft);
+  border-left: 1px solid var(--card-border);
+}
+.detail-head {
+  flex: none;
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  padding: 14px 16px 11px;
+  border-bottom: 1px solid var(--card-border);
+}
+.detail-no {
+  flex: none;
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--accent);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.02em;
+}
+.detail-title {
+  margin: 0;
+  font-size: 16px;
+  color: var(--text);
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.detail-body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 14px 16px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* 知识点正文 */
+.lc-lesson { font-size: 13.5px; line-height: 1.7; color: var(--text-dim); }
+.lc-lesson p { margin: 0 0 8px; }
+.lc-lesson p:last-child { margin-bottom: 0; }
+.lc-lesson b { color: var(--text); }
+.lc-lesson .hl { color: var(--accent); font-weight: 600; }
+
+/* 迭代读数表（科赫章：n / 边数 / 周长 / 面积） */
+.wond-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  margin: 2px 0 8px;
+}
+.wond-table th, .wond-table td {
+  padding: 3.5px 8px;
+  text-align: right;
+  border-bottom: 1px dashed var(--card-border);
+  color: var(--text-dim);
+}
+.wond-table th { color: var(--text-faint); font-weight: 600; font-size: 11px; }
+.wond-table th:first-child, .wond-table td:first-child { text-align: left; }
+.wond-table tr.on td {
+  color: var(--accent);
+  font-weight: 600;
+  background: color-mix(in srgb, var(--accent) 8%, transparent);
+}
+
+/* 斐波那契比值行（黄金章 fib 模式的表） */
+.wond-fibrows { display: flex; flex-direction: column; gap: 2px; margin: 2px 0 8px; }
+.wond-fibrow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-dim);
+}
+.wond-fibrow .fr-num { flex: none; width: 64px; color: var(--text-faint); }
+.wond-fibrow .fr-bar {
+  height: 5px;
+  border-radius: 3px;
+  background: color-mix(in srgb, var(--accent) 55%, transparent);
+  min-width: 2px;
+}
+.wond-fibrow .fr-val { margin-left: auto; }
+
+/* 本章控件（复用 lab.css 的 ctl 组件，纵向排列） */
+.lc-controls { display: flex; flex-flow: row wrap; gap: 8px 10px; align-items: center; }
+.lc-controls .ctl, .lc-controls .ctl-toggle { flex: 1 1 100%; }
+.lc-controls .ctl input[type="range"] { flex: 1; width: auto; }
+.lc-controls .ctl-sep { flex: 1 1 100%; width: auto; height: 1px; background: var(--card-border); }
+.lc-controls .ctl-btn { flex: 0 0 auto; }
+.lc-controls .ctl-btn[disabled] { opacity: 0.4; cursor: not-allowed; }
+.lc-controls:empty { display: none; }
+
+/* 数据坞（读数卡收纳进栏内） */
+.lc-data .hud-card {
+  background: var(--chip-bg);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  border: 1px solid var(--card-border);
+  box-shadow: none;
+  min-width: 0;
+  width: 100%;
+}
+.lc-data .hud-card:empty { display: none; }
+
+/* 黄金分割猜点小面板（画布内的浮动判分卡，答完后展示） */
+.wond-guess-card {
+  position: absolute;
+  right: 14px;
+  top: 52px;
+  z-index: 23;
+  width: 220px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid var(--card-border);
+  background: color-mix(in srgb, var(--card) 82%, transparent);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.18);
+  font-size: 12.5px;
+  color: var(--text-dim);
+  animation: wondCardIn 0.28s ease;
+}
+@keyframes wondCardIn {
+  from { opacity: 0; transform: translateY(-6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.wond-guess-card h4 { margin: 0 0 6px; font-size: 12px; color: var(--text-faint); letter-spacing: 0.08em; }
+.wond-guess-card .gc-row { display: flex; justify-content: space-between; padding: 2.5px 0; font-variant-numeric: tabular-nums; }
+.wond-guess-card .gc-row b { color: var(--text); font-weight: 600; }
+.wond-guess-card .gc-score { color: var(--accent); font-weight: 700; font-size: 15px; }
+
+/* ---------- 右栏三块手风琴（详解 / 控件 / 读数，标题行点击收起 body） ---------- */
+
+.acc {
+  flex: none;
+  border: 1px solid var(--card-border);
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--card) 42%, transparent);
+  overflow: hidden;
+}
+.acc.acc-empty { display: none; }
+.acc-head {
+  appearance: none;
+  font-family: inherit;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 9px 12px;
+  border: none;
+  background: transparent;
+  color: var(--text-faint);
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-align: left;
+  cursor: pointer;
+  transition: color 0.15s;
+}
+.acc-head:hover { color: var(--accent); }
+.acc-arrow {
+  margin-left: auto;
+  font-style: normal;
+  font-size: 10px;
+  line-height: 1;
+  transition: transform 0.25s ease;
+}
+.acc.closed .acc-arrow { transform: rotate(-90deg); }
+.acc-fold-wrap {
+  display: grid;
+  grid-template-rows: 1fr;
+  transition: grid-template-rows 0.25s ease;
+}
+.acc.closed .acc-fold-wrap { grid-template-rows: 0fr; }
+.acc-fold-body { min-height: 0; overflow: hidden; }
+.acc-fold-inner { padding: 2px 12px 12px; }
+
+/* ---------- 窄屏（≤1100px）：顶栏收窄，手风琴更紧凑
+   （数据读数默认收起的首访清爽态由 JS 按 viewport 决定） ---------- */
+
+@media (max-width: 1100px) {
+  .wond-toprow { padding: 8px 12px; gap: 8px; }
+  .wond-toprow .lab-title span { display: none; }
+  .wond-toprow .lab-title b { font-size: 15px; }
+  .wond-toprow a.edu-header-btn[href='../'] { display: none; }
+
+  .detail-body { padding: 10px 12px 14px; gap: 10px; }
+  .acc-head { padding: 8px 10px; }
+  .acc-fold-inner { padding: 2px 10px 10px; }
+  .wond-guess-card { display: none; }   /* 窄屏判分收进右栏读数，画布卡撤走 */
+}
+
+/* ---------- 移动端（≤860px）：纵向堆叠（章节横滚条 / 画布 / 知识点在下） ---------- */
+
+@media (max-width: 860px) {
+  .wonder-shell {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto auto minmax(230px, 44dvh) minmax(0, 1fr);
+    grid-template-areas:
+      "top"
+      "chapters"
+      "stage"
+      "detail";
+  }
+
+  /* 折叠 / 专注模式为桌面端专属：移动端压回纵向堆叠并隐藏折叠控件
+     （localStorage 可能带着折叠态进来，内容透明度须复原） */
+  .wonder-shell { transition: none; }
+  .wonder-shell.fold-l,
+  .wonder-shell.fold-r,
+  .wonder-shell.fold-l.fold-r,
+  .wonder-shell.focus-mode { grid-template-columns: minmax(0, 1fr); }
+  .fold-btn, .fold-rail { display: none; }
+  .wonder-shell.fold-l .chap-head,
+  .wonder-shell.fold-l .chap-list,
+  .wonder-shell.fold-r .detail-head,
+  .wonder-shell.fold-r .detail-body { opacity: 1; pointer-events: auto; }
+
+  .wond-toprow { padding: 8px 10px; gap: 8px; }
+  .wond-toprow .lab-title span { display: none; }
+  .wond-toprow .lab-title b { font-size: 14.5px; }
+  .wond-toprow a.edu-header-btn[href='../'] { display: none; }
+
+  /* 章节列表 → 顶部横向滚动条 */
+  .lab-chapters { border-right: none; border-bottom: 1px solid var(--card-border); }
+  .chap-head { padding: 8px 12px 2px; }
+  .chap-list {
+    flex-direction: row;
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding: 5px 8px 8px;
+    gap: 4px;
+    scrollbar-width: none;
+  }
+  .chap-list::-webkit-scrollbar { display: none; }
+  .chap-list .chap-btn { flex: none; padding: 6px 10px; font-size: 12.5px; white-space: nowrap; }
+  .chap-list .chap-btn .chap-en { display: none; }
+  .chap-list .chap-btn .chap-n { width: auto; margin-right: 4px; }
+
+  .lab-detail { border-left: none; border-top: 1px solid var(--card-border); }
+  .detail-head { padding: 10px 12px 8px; }
+  .detail-no { font-size: 18px; }
+  .detail-title { font-size: 14.5px; }
+  .detail-body { padding: 10px 12px 14px; }
+  .lc-lesson { font-size: 12.5px; }
+  .acc-head { padding: 8px 10px; }
+  .acc-fold-inner { padding: 2px 10px 10px; }
+
+  .stage-focus-btn { left: 8px; bottom: 8px; }
+  .stage-badge { display: none; }
+  .stage-foot { display: none; }
+}
+
+/* ---------- 原版功能块 1:1：上一/下一节（栏头 ‹ 01/07 ›）· 舞台右上角工具 ---------- */
+.chap-pn {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 1px;
+}
+.chap-pn .chap-count { margin-left: 0; }
+.pn-btn {
+  appearance: none;
+  font-family: inherit;
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  line-height: 1;
+  border-radius: 6px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--text-faint);
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s, background 0.15s;
+}
+.pn-btn:hover {
+  color: var(--accent);
+  border-color: var(--card-border);
+  background: var(--card);
+}
+.stage-tools {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 30;   /* 高于 quiz 覆盖层（28）：视角类工具在随堂检测时仍可用 */
+  display: flex;
+  gap: 8px;
+}
+.stage-tool-btn {
+  appearance: none;
+  font-family: inherit;
+  font-size: 12px;
+  line-height: 1;
+  padding: 7px 13px;
+  border-radius: 999px;
+  border: 1px solid var(--card-border);
+  background: color-mix(in srgb, var(--card) 74%, transparent);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  color: var(--text-dim);
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s;
+}
+.stage-tool-btn:hover { color: var(--accent); border-color: var(--accent); }
+.stage-tool-btn.on {
+  color: var(--accent);
+  border-color: color-mix(in srgb, var(--accent) 45%, transparent);
+}
+
+/* 小屏 quiz 卡片高于 44dvh 舞台时可滚动（flex 居中 + 滚动的经典裁切坑：flex-start + margin auto） */
+@media (max-width: 860px) {
+  .wond-stage .quiz-panel {
+    align-items: flex-start;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .wond-stage .quiz-card { margin: auto 0; }
+}
+
+/* 小屏舞台工具：移到右下角紧凑排布（置于文件末尾以覆盖顶层 top:12px，防 top+bottom 同时生效把容器拉满） */
+@media (max-width: 860px) {
+  .stage-tools { top: auto; bottom: 8px; right: 8px; left: auto; gap: 4px; }
+  .stage-tool-btn { padding: 5px 7px; font-size: 10.5px; letter-spacing: -0.01em; }
+}
