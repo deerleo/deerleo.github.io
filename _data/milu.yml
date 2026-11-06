@@ -185,6 +185,14 @@ tutorials:
     level: 零基础
     link: /course/api-keys-guide/
 
+  - id: coding-plans
+    mode: single
+    title: AI Coding Plan 对比
+    kicker: 横评指南
+    description: 九家 AI 编程套餐横评——智谱 GLM、阿里云百炼、Kimi、MiniMax、火山方舟、OpenCode Go、小米 MiMo、ChatGPT、Claude 的价格档位、模型阵容、额度口径与教学选型建议，数据随官方页持续更新。
+    level: 选型参考
+    link: /course/coding-plans/
+
 media:
   - id: accounts
     kicker: Media

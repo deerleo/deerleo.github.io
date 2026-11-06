@@ -1,0 +1,136 @@
+---
+layout: null
+---
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#f1f2ec">
+  {% include theme-init.html %}
+  <link rel="stylesheet" href="{{ '/assets/css/theme.css' | relative_url }}?v=20261027">
+  <script src="{{ '/assets/js/theme.js' | relative_url }}" defer></script>
+  <meta name="description" content="9 家 AI Coding Plan 横评：智谱 GLM、阿里云百炼、Kimi、MiniMax、火山方舟、OpenCode Go、小米 MiMo、ChatGPT、Claude 的价格档位、模型阵容、额度口径与教学选型建议，数据随官方页持续更新。">
+  <meta name="robots" content="index,follow">
+  <title>AI Coding Plan 对比 · 迷鹿 MiLu</title>
+  <style>
+    *{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:var(--page-glow),var(--bg);color:var(--ink);font:16px/1.7 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
+    a{color:inherit}.wrap{max-width:1100px;margin:auto;padding:48px 24px 88px}
+    .hero{max-width:780px;margin-bottom:44px}.eyebrow{color:var(--cyan);font-size:12px;font-weight:800;letter-spacing:.16em;text-transform:uppercase}
+    .hero h1{margin:10px 0 16px;font-size:clamp(34px,5.5vw,56px);line-height:1.08;letter-spacing:-.05em}.hero h1 em{color:var(--mint);font-style:normal}
+    .hero p{max-width:720px;color:var(--muted);font-size:17px}
+    .statrow{display:flex;gap:26px;margin-top:22px;flex-wrap:wrap}
+    .stat b{display:block;font-size:26px;letter-spacing:-.02em;color:var(--ink)}.stat span{color:var(--ink-3);font-size:12px;font-weight:700;letter-spacing:.05em}
+    h2.sec{font-size:15px;font-weight:850;letter-spacing:.12em;color:var(--cyan);text-transform:uppercase;margin:54px 0 18px}
+    .tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:16px;background:var(--card-grad)}
+    table.cmp{width:100%;border-collapse:collapse;min-width:760px;font-size:14px}
+    table.cmp th{padding:13px 16px;text-align:left;font-size:11px;font-weight:850;letter-spacing:.1em;color:var(--ink-3);border-bottom:1px solid var(--line);white-space:nowrap}
+    table.cmp td{padding:13px 16px;border-bottom:1px solid var(--line);vertical-align:top}
+    table.cmp tr:last-child td{border-bottom:none}
+    table.cmp tbody tr{transition:background .12s ease}table.cmp tbody tr:hover{background:var(--panel-soft)}
+    table.cmp a{font-weight:800;text-decoration:none;color:var(--cyan)}
+    .models-cell{color:var(--muted);font-size:12.5px;line-height:1.6}
+    .price-cell{font-weight:800;white-space:nowrap}
+    .badge{display:inline-block;padding:3px 10px;border:1px solid var(--line);border-radius:999px;font-size:11px;font-weight:750;letter-spacing:.03em;color:var(--ink-2);white-space:nowrap}
+    .badge.limited{color:#c26a00;border-color:rgba(194,106,0,.4)}
+    .platcard{border:1px solid var(--line);border-radius:20px;background:var(--card-grad);padding:28px;margin-bottom:22px;scroll-margin-top:24px}
+    .plat-head{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap;align-items:flex-start;margin-bottom:6px}
+    .plat-head h3{margin:0;font-size:24px;letter-spacing:-.02em;line-height:1.3}
+    .plat-org{color:var(--ink-3);font-size:12px;font-weight:700;letter-spacing:.04em;margin-top:2px}
+    .hl{flex-shrink:0;padding:4px 12px;border-radius:999px;background:var(--panel-soft);border:1px solid var(--line);color:var(--mint);font-size:12px;font-weight:800;white-space:nowrap}
+    .tagline{color:var(--muted);font-size:14px;margin:6px 0 4px;max-width:820px}
+    .models-line{font-size:12.5px;color:var(--ink-2);margin:8px 0 18px}.models-line b{color:var(--ink-3);font-size:11px;letter-spacing:.1em;font-weight:850;margin-right:8px}
+    .tiers{display:grid;grid-template-columns:repeat(auto-fit,minmax(215px,1fr));gap:12px;margin-bottom:16px}
+    .tier{border:1px solid var(--line);border-radius:14px;padding:16px;background:var(--panel-soft);display:flex;flex-direction:column;gap:6px}
+    .tier .tname{font-size:11px;font-weight:850;letter-spacing:.1em;color:var(--cyan);text-transform:uppercase}
+    .tier .tprice{font-size:22px;font-weight:800;letter-spacing:-.02em}
+    .tier .tnote{color:var(--ink-3);font-size:12px;min-height:18px}
+    .tier ul{margin:6px 0 0;padding-left:18px;font-size:13px;color:var(--muted);line-height:1.65}
+    .plat-foot{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+    .tags{display:flex;gap:8px;flex-wrap:wrap}
+    .teach{margin-top:14px;padding:12px 16px;border-left:3px solid var(--mint);border-radius:0 10px 10px 0;background:var(--panel-soft);color:var(--muted);font-size:13.5px}
+    .teach b{color:var(--ink);font-size:12px;letter-spacing:.08em;margin-right:6px}
+    .cta{display:inline-block;padding:10px 22px;border-radius:12px;background:var(--mint);color:var(--bg);font-weight:850;font-size:14px;text-decoration:none;letter-spacing:.02em;transition:opacity .15s ease;white-space:nowrap}
+    .cta:hover{opacity:.85}
+    .cta-note{color:var(--ink-3);font-size:11.5px;margin-top:6px}
+    .fresh{padding:18px 22px;border:1px solid var(--line);border-radius:16px;background:var(--panel-soft);color:var(--muted);font-size:13px;margin-top:44px}
+    .fresh a{color:var(--mint);font-weight:800;text-decoration:none}
+    .footer{display:flex;justify-content:space-between;gap:16px;margin-top:60px;padding-top:18px;border-top:1px solid var(--line);color:var(--ink-3);font-size:12px}
+    @media (max-width:680px){.wrap{padding-top:38px}.platcard{padding:20px}.plat-head h3{font-size:20px}.tier .tprice{font-size:19px}.statrow{gap:18px}.footer{display:block}.footer span{display:block;margin:5px 0}}
+  </style>
+  <link rel="stylesheet" href="{{ '/assets/css/subpage-shell.css?v=20261027' | relative_url }}">
+</head>
+<body id="top">
+  {% include subpage-shell.html identity="AI Coding Plan 对比" descriptor="Coding Plans" %}
+  <main class="wrap">
+    <header class="hero">
+      <p class="eyebrow">Coding Plans · 横评</p>
+      <h1>AI Coding Plan<br><em>九家套餐，一张表看懂。</em></h1>
+      <p>把各家 AI 编程套餐的价格档位、模型阵容、额度口径放到同一张对比表，配教学选型建议。上这套课之前，先在这里选好你的「弹药」。价格与权益随官方页更新，购买前以官方页面为准。</p>
+      <div class="statrow">
+        <div class="stat"><b>9</b><span>家平台</span></div>
+        <div class="stat"><b>¥9.9</b><span>首购最低价</span></div>
+        <div class="stat"><b>30+</b><span>覆盖模型</span></div>
+        <div class="stat"><b>{{ site.data.coding_plans.meta.page_updated }}</b><span>数据截至</span></div>
+      </div>
+    </header>
+
+    <h2 class="sec">快速对比</h2>
+    <div class="tablewrap">
+      <table class="cmp">
+        <thead><tr><th>平台</th><th>起步价</th><th>核心模型</th><th>额度口径</th><th>状态</th></tr></thead>
+        <tbody>
+          {% for p in site.data.coding_plans.platforms %}
+          <tr>
+            <td><a href="#{{ p.id }}">{{ p.name }}</a><br><span class="models-cell">{{ p.org }}</span></td>
+            <td class="price-cell">{{ p.start_price }}</td>
+            <td class="models-cell">{{ p.models }}</td>
+            <td class="models-cell">{{ p.quota_brief }}</td>
+            <td><span class="badge{% if p.status == '限量' %} limited{% endif %}">{{ p.status }}</span></td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <h2 class="sec">详细方案</h2>
+    {% for p in site.data.coding_plans.platforms %}
+    <section class="platcard" id="{{ p.id }}">
+      <div class="plat-head">
+        <div>
+          <h3>{{ p.name }}</h3>
+          <div class="plat-org">{{ p.org }} · 档位数据截至 {{ p.updated }}</div>
+        </div>
+        <span class="hl">{{ p.highlight }}</span>
+      </div>
+      <p class="tagline">{{ p.tagline }}</p>
+      <div class="models-line"><b>MODELS</b>{{ p.models }}</div>
+      <div class="tiers">
+        {% for t in p.tiers %}
+        <div class="tier">
+          <div class="tname">{{ t.name }}</div>
+          <div class="tprice">{{ t.price }}</div>
+          <div class="tnote">{{ t.price_note }}</div>
+          <ul>{% for pt in t.points %}<li>{{ pt }}</li>{% endfor %}</ul>
+        </div>
+        {% endfor %}
+      </div>
+      <div class="plat-foot">
+        <div class="tags">{% for tag in p.tags %}<span class="badge">{{ tag }}</span>{% endfor %}</div>
+        <a class="cta" href="{{ p.cta_url }}" target="_blank" rel="noopener sponsored">{{ p.cta_label }}</a>
+      </div>
+      <div class="teach"><b>教学建议</b>{{ p.teach_note }}</div>
+    </section>
+    {% endfor %}
+
+    <div class="fresh">
+      本页价格、额度与权益来自各平台官方页面（基线 {{ site.data.coding_plans.meta.data_source }}），随时可能调整，购买前请以官方页面为准。部分购买链接可能带推荐返利参数——不影响你的价格，仅支持本站持续更新。「教学建议」为迷鹿个人观点，按你的预算与场景自行判断。想从零开始接入模型 API？先看<a href="{{ '/course/api-keys-guide/' | relative_url }}">《AI 平台注册与 API 密钥申请指南》</a>。
+    </div>
+
+    <div class="footer">
+      <span>迷鹿 MiLu · AI Coding Plan 对比</span>
+      <span><a href="{{ '/tutorials/' | relative_url }}" style="color:var(--mint);font-weight:800;text-decoration:none">← 返回教程与课程</a></span>
+    </div>
+  </main>
+</body>
+</html>
