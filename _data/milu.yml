@@ -177,6 +177,14 @@ tutorials:
         text: 完成主题作品，并检查隐私、授权与标注
         status: 已发布
 
+  - id: api-keys-guide
+    mode: single
+    title: AI 平台注册与 API 密钥申请指南
+    kicker: 上手指南
+    description: 手把手走完 DeepSeek、阿里云百炼（通义千问）、Kimi 三家平台的注册、实名、创建 API Key、充值 / 领免费额度与首次调用，含密钥安全须知。
+    level: 零基础
+    link: /course/api-keys-guide/
+
 media:
   - id: accounts
     kicker: Media
