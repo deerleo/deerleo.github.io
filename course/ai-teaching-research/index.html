@@ -24,7 +24,7 @@
 <body id="top">
   {% include subpage-shell.html identity="AI 赋能教研" descriptor="教程" %}
   <main class="wrap">
-    <header class="hero"><p class="eyebrow">AI for teaching & research</p><h1>AI 赋能教研：<br><em>把任务变成可复用的流程</em></h1><p>这套实战课从真实的高校教研工作坊材料中整理而来。课程不以“生成一段漂亮文字”为终点，而是练习如何定义任务、提供可信材料、检查输出，并把有效做法沉淀成团队可以复用的工作流。</p><div class="chips"><span>8 个学习单元</span><span>5 个互动实验台</span><span>适合教师与研究者</span><span>工具无关的方法</span><span>强调人工复核</span></div></header>
+    <header class="hero"><p class="eyebrow">AI for teaching & research</p><h1>AI 赋能教研：<br><em>把任务变成可复用的流程</em></h1><p>这套实战课从真实的高校教研工作坊材料中整理而来。课程不以“生成一段漂亮文字”为终点，而是练习如何定义任务、提供可信材料、检查输出，并把有效做法沉淀成团队可以复用的工作流。</p><div class="chips"><span>8 个学习单元</span><span>6 个互动实验台</span><span>适合教师与研究者</span><span>工具无关的方法</span><span>强调人工复核</span></div></header>
     <section class="callout"><div><h2>先定任务，再选 AI</h2><p>同一个模型既能协助文字整理，也能处理资料、调用工具或串联步骤。但任务边界、可用数据、允许的动作和验收办法，都需要由使用者先说明。</p></div><div class="formula">目标 + 输入 + 过程 + 输出 + 验收<small>每个环节都要能被人检查；不确定之处要明确标出来。</small></div></section>
 
     <section id="design"><div class="section-title"><h2>01–02 · 先学会把任务说清楚</h2><p>把“帮我做得更好”改写成模型能执行、人能验收的工作说明。</p></div><div class="grid">
@@ -41,9 +41,10 @@
       <article class="lesson"><div class="meta"><span>05 · 课堂反馈与教学评估</span><span>约 30 分钟</span></div><h3>从零散反馈走向下一步行动</h3><p>在分析前先去除姓名、学号和可识别细节。让 AI 按透明的主题框架归类意见，再抽查原始反馈，记录反例和不确定性。反馈样本反映的是提供反馈的人，不宜自动推断为全体学生的意见。</p><h4>练习步骤</h4><ul><li>将评论整理为去标识化文本，并记录样本范围。</li><li>先确定主题定义，再分类、抽样核对和修正。</li><li>把发现转为一两项可验证的教学调整，下一轮再回看效果。</li></ul><div class="output">完成标志：报告呈现证据与局限，并给出可追踪的改进行动。</div></article>
     </div></section>
 
-    <section id="labs" style="margin-top:52px"><div class="section-title"><h2>配套互动实验台</h2><p>五个可操作的实验，对应「智能体执行 / 需求工程 / 质量门控 / 模型评估 / 多智能体协作」五个核心概念。课堂上跟着讲次使用，课后可反复练习。</p></div><div class="labgrid">
+    <section id="labs" style="margin-top:52px"><div class="section-title"><h2>配套互动实验台</h2><p>六个可操作的实验，对应「智能体执行 / 需求工程 / 规则的力量 / 质量门控 / 模型评估 / 多智能体协作」六个核心概念。课堂上跟着讲次使用，课后可反复练习。</p></div><div class="labgrid">
       <a class="lab" href="./labs/agent-loop.html"><span class="tag">第 5 讲 · 执行循环</span><h3>智能体执行循环实验台</h3><p>单步追踪「任务→计划→工具→检查→交付」的完整循环；注入损坏 PDF、检索超时等故障，看循环机制如何自动兜底。</p><span class="go">进入实验 →</span></a>
       <a class="lab" href="./labs/requirement-card.html"><span class="tag">第 5 讲 · 需求工程</span><h3>需求五要素训练器</h3><p>「帮我处理文献」为什么做不出来？补全使用者、输入、规则、输出、验收五要素，系统逐项体检这份需求能不能直接开工。</p><span class="go">进入实验 →</span></a>
+      <a class="lab" href="./labs/harness-bugfix.html"><span class="tag">第 6 讲 · Harness Engineering</span><h3>规则的力量实验台</h3><p>复刻台大 2026 开场实验：同一道修 bug 任务，无规则的小模型会「编造文件、谎报完成」；加上环境感知与完成标准，立刻变工程师流。亲眼看见规则的力量。</p><span class="go">进入实验 →</span></a>
       <a class="lab" href="./labs/harness-gates.html"><span class="tag">第 6 讲 · 质量门控</span><h3>Harness 质量门控实验台</h3><p>一条脏数据进来，裸奔与带门控两种模式两种命运：看错误如何静默污染终稿，又如何被输入/过程/输出三道门拦截在半路。</p><span class="go">进入实验 →</span></a>
       <a class="lab" href="./labs/confusion-matrix.html"><span class="tag">第 6 讲 · 模型评估</span><h3>混淆矩阵实验台</h3><p>准确率 95% 的心理危机预警模型可能一文不值。用学生预警与抄袭筛查两个场景，亲手调阈值，理解漏报与误报的代价权衡。</p><span class="go">进入实验 →</span></a>
       <a class="lab" href="./labs/multi-agent.html"><span class="tag">第 7 讲 · 多智能体协作</span><h3>多智能体编排实验台</h3><p>一个全能教授还是一个教研室？对比单人独干、串行流水线、并行+交叉验证三种模式的耗时、可信度与故障兜底。</p><span class="go">进入实验 →</span></a>
