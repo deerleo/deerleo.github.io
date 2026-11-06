@@ -1,0 +1,399 @@
+---
+---
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#f1f2ec">
+  {% include theme-init.html %}
+  <link rel="stylesheet" href="{{ '/assets/css/theme.css' | relative_url }}?v=20261027">
+  <script src="{{ '/assets/js/theme.js' | relative_url }}" defer></script>
+  <meta name="description" content="手把手图文教程：注册 DeepSeek、阿里云百炼（通义千问）、Kimi（月之暗面）三大 AI 平台，创建 API Key 并完成首次调用。覆盖实名认证、充值、免费额度领取与密钥安全，零基础可跟做。">
+  <meta name="robots" content="index,follow">
+  <title>AI 平台注册与 API 密钥申请指南（DeepSeek / 通义千问 / Kimi） · 迷鹿 MiLu</title>
+  <style>
+    *{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:var(--page-glow),var(--bg);color:var(--ink);font:16px/1.7 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
+    a{color:inherit}.wrap{max-width:1100px;margin:auto;padding:48px 24px 88px}
+    .hero{max-width:780px;margin-bottom:40px}.eyebrow{color:var(--cyan);font-size:12px;font-weight:800;letter-spacing:.16em;text-transform:uppercase}
+    .hero h1{margin:10px 0 16px;font-size:clamp(34px,5.6vw,56px);line-height:1.1;letter-spacing:-.045em}.hero h1 em{color:var(--mint);font-style:normal}
+    .hero p{max-width:700px;color:var(--muted);font-size:17px}
+    .stats{display:flex;gap:10px;flex-wrap:wrap;margin-top:20px}.stats span{border:1px solid var(--line);border-radius:999px;padding:6px 12px;color:var(--ink-2);font-size:12px}
+    .anchor-nav{display:flex;gap:10px;flex-wrap:wrap;margin:0 0 46px}
+    .anchor-nav a{padding:9px 16px;border:1px solid var(--line);border-radius:999px;color:var(--ink-2);font-size:13.5px;font-weight:700;text-decoration:none;background:var(--panel-soft)}
+    .anchor-nav a:hover{border-color:var(--mint);color:var(--mint)}
+    .plat{padding:30px 28px;border:1px solid var(--line);border-radius:20px;background:var(--card-grad);margin-bottom:34px}
+    .plat-head{display:flex;justify-content:space-between;align-items:flex-start;gap:14px;flex-wrap:wrap;margin-bottom:6px}
+    .plat-head h2{margin:0;font-size:clamp(24px,3.4vw,32px);letter-spacing:-.03em}
+    .plat-head .time{padding:6px 13px;border:1px solid var(--line);border-radius:999px;color:var(--ink-2);font-size:12.5px;font-weight:700;white-space:nowrap}
+    .plat-sub{color:var(--muted);font-size:14.5px;margin:6px 0 20px;max-width:760px}
+    .steps{display:flex;flex-direction:column;gap:22px}
+    .step{display:grid;grid-template-columns:44px 1fr;gap:16px;align-items:start}
+    .step>div{min-width:0}
+    .step-no{width:44px;height:44px;border-radius:13px;background:var(--mint);color:#fff;font-weight:900;font-size:18px;display:flex;align-items:center;justify-content:center;margin-top:2px}
+    .step h3{margin:0 0 8px;font-size:18.5px;letter-spacing:-.01em}
+    .step p{margin:0 0 12px;color:var(--ink-2);font-size:14.5px}
+    .step p code,.tip code,.faq-card p code,.cmp-note code{background:var(--panel-2);border:1px solid var(--line);border-radius:6px;padding:1px 7px;font-size:13px;font-family:"SF Mono",Menlo,Consolas,monospace}
+    code{overflow-wrap:anywhere}
+    figure.shot{margin:0 0 12px}
+    figure.shot img{display:block;width:100%;max-width:820px;height:auto;border:1px solid var(--line);border-radius:14px;background:#fff}
+    figure.shot figcaption{margin-top:7px;color:var(--ink-3);font-size:12.5px}
+    .tip,.pit{max-width:820px;border-radius:11px;padding:12px 16px;font-size:13.5px;line-height:1.8}
+    .tip{background:var(--accent-soft);border-left:3px solid var(--mint);color:var(--ink-2)}
+    .pit{background:rgba(245,158,11,.1);border:1px solid rgba(217,119,6,.4);color:#8a5a0a}
+    html[data-theme="dark"] .pit{color:#e8b26a}
+    .pit b{color:#b45309}html[data-theme="dark"] .pit b{color:#f0b45a}
+    .errtable{width:100%;max-width:820px;border-collapse:collapse;margin:10px 0 4px;font-size:13.5px;background:var(--panel-soft)}
+    .errtable th,.errtable td{border:1px solid var(--line);padding:9px 13px;text-align:left;vertical-align:top}
+    .errtable th{background:var(--panel-2);font-size:12.5px;color:var(--ink-2)}
+    .tbl-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
+    .section-head{margin:0 0 18px}.section-head h2{margin:0 0 8px;font-size:clamp(24px,3.4vw,32px);letter-spacing:-.03em}
+    .section-head p{margin:0;color:var(--muted);font-size:14.5px;max-width:760px}
+    .cmp-table{width:100%;border-collapse:collapse;font-size:13.5px;background:var(--panel-soft);min-width:820px;table-layout:fixed}
+    .cmp-table th,.cmp-table td{border:1px solid var(--line);padding:11px 14px;text-align:left;vertical-align:top;line-height:1.65}
+    .cmp-table th{background:var(--panel-2);font-size:12.5px;white-space:nowrap}
+    .cmp-table th:nth-child(1),.cmp-table td:nth-child(1){width:10%}
+    .cmp-table th:nth-child(2),.cmp-table td:nth-child(2){width:16%}
+    .cmp-table th:nth-child(3),.cmp-table td:nth-child(3){width:16%}
+    .cmp-table th:nth-child(4),.cmp-table td:nth-child(4){width:21%}
+    .cmp-table th:nth-child(5),.cmp-table td:nth-child(5){width:21%}
+    .cmp-table th:nth-child(6),.cmp-table td:nth-child(6){width:16%}
+    .cmp-table td b{color:var(--mint)}
+    .update-note{display:inline-block;margin-top:14px;padding:7px 14px;border:1px dashed var(--line-strong);border-radius:9px;color:var(--ink-3);font-size:12.5px}
+    .faq-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:15px}
+    .faq-card{padding:20px 22px;border:1px solid var(--line);border-radius:16px;background:var(--card-grad)}
+    .faq-card h3{margin:0 0 8px;font-size:16.5px}
+    .faq-card p{margin:0;color:var(--ink-2);font-size:13.5px;line-height:1.8}
+    .footer{display:flex;justify-content:space-between;gap:16px;margin-top:60px;padding-top:18px;border-top:1px solid var(--line);color:var(--ink-3);font-size:12px}
+    .codebox{max-width:820px;background:#16181d;border-radius:12px;padding:16px 20px;font-family:"SF Mono",Menlo,Consolas,monospace;font-size:13.5px;line-height:1.9;color:#e8e8ea;overflow-x:auto;white-space:pre;margin:0 0 12px}
+    .codebox .c{color:#9aa3ad}.codebox .k{color:#f5c065}.codebox .g{color:#5fb878}
+    @media(max-width:680px){.wrap{padding-top:38px}.plat{padding:22px 16px}.step{grid-template-columns:36px 1fr;gap:12px}.step-no{width:36px;height:36px;font-size:15px;border-radius:10px}.faq-grid{grid-template-columns:1fr}.footer{display:block}.footer span{display:block;margin:5px 0}}
+  </style>
+  <link rel="stylesheet" href="{{ '/assets/css/subpage-shell.css?v=20261027' | relative_url }}">
+</head>
+<body id="top">
+  {% include subpage-shell.html identity="API 平台注册与密钥申请指南" descriptor="上手指南" %}
+  <main class="wrap">
+    <header class="hero">
+      <p class="eyebrow">Getting started · API Keys</p>
+      <h1>三家 AI 平台，<br><em>从注册到拿到 Key。</em></h1>
+      <p>想在程序、工作流或智能体里调用大模型，第一步是注册平台账号、申请 API Key（调用凭证）。这篇教程手把手走完 DeepSeek、阿里云百炼（通义千问）、Kimi（月之暗面）三家的完整流程：注册 → 实名 → 创建 Key → 充值 / 领免费额度 → 跑通第一次调用。</p>
+      <div class="stats"><span>零基础可跟做</span><span>3 个平台 · 18 张配图</span><span>每家约 10–15 分钟</span><span>更新：2026-11</span></div>
+    </header>
+
+    <nav class="anchor-nav" aria-label="目录">
+      <a href="#intro">① 先搞懂 API Key</a>
+      <a href="#deepseek">② DeepSeek</a>
+      <a href="#bailian">③ 通义千问 · 百炼</a>
+      <a href="#kimi">④ Kimi</a>
+      <a href="#security">⑤ 密钥安全</a>
+      <a href="#faq">⑥ 常见问题</a>
+    </nav>
+
+    <!-- ============ §0 ============ -->
+    <section id="intro" class="plat" aria-labelledby="intro-title">
+      <div class="section-head"><h2 id="intro-title">① 先花 3 分钟搞懂 API Key</h2><p>API（Application Programming Interface，应用程序编程接口）是程序之间对话的约定；API Key（API 密钥）就是你在某家平台上的「调用凭证」——平台靠它识别请求来自谁的账户、该向谁扣费。</p></div>
+      <div class="steps" style="gap:16px">
+        <div class="step">
+          <div class="step-no">?</div>
+          <div>
+            <h3>一句话原理</h3>
+            <p>你的程序带着 Key 发请求 → 平台校验 Key、按用量扣费 → 返回模型生成的结果。所以 <b>Key 等同于账号密码</b>：谁拿到它，谁就能花你账户里的钱。</p>
+            <figure class="shot"><img src="{{ '/assets/images/api-keys-guide/common/00-what-is-api-key.webp' | relative_url }}" alt="示意图：API Key 的调用原理——程序带 Key 请求平台，平台扣费后返回结果" loading="lazy"><figcaption>示意图：API Key 调用原理（非真实界面）。</figcaption></figure>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-no">≠</div>
+          <div>
+            <h3>三家怎么选（也可以都注册）</h3>
+            <p>三家都是 OpenAI 兼容接口，会一家就等于会三家；差异主要在实名门槛、免费额度和模型风格。价格与额度随时调整，<b>以下供开局参考，以各平台官方页面为准</b>。</p>
+            <div class="tbl-scroll">
+            <table class="cmp-table">
+              <tr><th>平台</th><th>入口</th><th>注册与实名</th><th>免费额度（2026-11 口径）</th><th>OpenAI 兼容 base_url</th><th>适合谁</th></tr>
+              <tr><td><b>DeepSeek</b></td><td>platform.deepseek.com</td><td>手机号 / 微信扫码，注册即用</td><td>无长期免费额度，需充值（几元起步即可学习）</td><td><code>https://api.deepseek.com</code></td><td>性价比主力，通用对话与推理</td></tr>
+              <tr><td><b>通义千问<br>（阿里云百炼）</b></td><td>bailian.console.aliyun.com</td><td>阿里云账号 + <b>实名认证（硬性门槛）</b></td><td>新用户可按模型领取体验额度（常有 90 天有效期），以控制台为准</td><td><code>https://dashscope.aliyuncs.com/compatible-mode/v1</code>（北京）</td><td>要 Qwen 系列 / 阿里云生态与企业采购流程</td></tr>
+              <tr><td><b>Kimi<br>（月之暗面）</b></td><td>platform.kimi.com</td><td>中国大陆手机号 + 个人实名认证</td><td>新用户通常有体验金（如 15 元 / 30 天有效），以控制台为准</td><td><code>https://api.moonshot.cn/v1</code></td><td>长文本处理、编程与智能体协作</td></tr>
+            </table>
+            </div>
+            <span class="update-note">本教程更新于 2026-11；界面、价格与额度政策以后续官方页面为准。</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ §1 DeepSeek ============ -->
+    <section id="deepseek" class="plat" aria-labelledby="ds-title">
+      <div class="plat-head"><h2 id="ds-title">② DeepSeek</h2><span class="time">预计耗时约 10 分钟（不含充值）</span></div>
+      <p class="plat-sub">DeepSeek 的<b>开发者平台</b>（platform.deepseek.com）和<b>聊天端</b>（chat.deepseek.com）是两套账号体系——API Key 只能在开发者平台申请。</p>
+      <div class="steps">
+        <div class="step">
+          <div class="step-no">1</div>
+          <div>
+            <h3>打开开发者平台，注册并登录</h3>
+            <p>浏览器访问 <code>platform.deepseek.com</code>，用大陆手机号 + 验证码注册，或直接微信扫码登录。</p>
+            <figure class="shot"><img src="{{ '/assets/images/api-keys-guide/deepseek/01-home.webp' | relative_url }}" alt="DeepSeek 开放平台登录页：手机号验证码登录与微信扫码登录" loading="lazy"><figcaption>DeepSeek 开放平台登录页（2026-11 实截）。截图版权归 DeepSeek 所有，仅作教学指引。</figcaption></figure>
+            <div class="pit"><b>⚠️ 坑点：</b>别进成 chat.deepseek.com——那是聊天端，注册了也申请不了 API Key。</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-no">2</div>
+          <div>
+            <h3>左侧「API keys」→ 创建 API key</h3>
+            <p>登录后进入控制台，左侧菜单点「API Keys」，再点右上角蓝色按钮「创建 API key」，可给它起个名字方便日后区分。</p>
+            <figure class="shot"><img src="{{ '/assets/images/api-keys-guide/deepseek/02-api-keys.webp' | relative_url }}" alt="示意图：DeepSeek 控制台 API Keys 页面，含创建按钮与密钥列表" loading="lazy"><figcaption>示意图：API Keys 管理页（非真实界面，实际布局以平台为准）。</figcaption></figure>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-no">3</div>
+          <div>
+            <h3>立即复制密钥——只显示这一次</h3>
+            <p>创建成功后会弹出 <code>sk-</code> 开头的完整密钥，<b>关掉弹窗后就再也看不全了</b>。当场复制，存进环境变量（见第 ⑤ 节）。</p>
+            <figure class="shot"><img src="{{ '/assets/images/api-keys-guide/deepseek/03-create-key.webp' | relative_url }}" alt="示意图：密钥创建成功弹窗，提示完整密钥仅显示一次" loading="lazy"><figcaption>示意图：「仅显示一次」提醒弹窗（非真实界面，密钥为演示占位串）。</figcaption></figure>
+            <div class="pit"><b>⚠️ 坑点：</b>没保存下来怎么办？——只能把这条 Key 删掉重新创建，旧 Key 立即失效。整个补救过程 30 秒，别慌。</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-no">4</div>
+          <div>
+            <h3>充值（几块钱就能开始学）</h3>
+            <p>左侧菜单「充值」→ 选金额 → 支付宝 / 微信支付。DeepSeek 无长期免费额度，<b>余额为 0 时调用会报 402 错误</b>；学习用途充 10 元以内足够跑很久。</p>
+            <figure class="shot"><img src="{{ '/assets/images/api-keys-guide/deepseek/04-topup.webp' | relative_url }}" alt="示意图：DeepSeek 充值页，余额、金额选项与支付方式" loading="lazy"><figcaption>示意图：充值页（非真实界面，金额与支付方式以官网为准）。</figcaption></figure>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-no">5</div>
+          <div>
+            <h3>首次调用</h3>
+            <p>DeepSeek 接口与 OpenAI 格式兼容：把 base_url 指到 <code>https://api.deepseek.com</code>，带上你的 Key 即可。当前官方文档示例模型为 <code>deepseek-flash</code>（更强的对话模型有 <code>deepseek-v4-pro</code>），实际以<a href="https://api-docs.deepseek.com/zh-cn/" target="_blank" rel="noopener">官方文档</a>为准。</p>
+            <div class="codebox"><span class="c"># 密钥放环境变量，不写进命令历史</span>
+export DEEPSEEK_API_KEY=<span class="k">"sk-你的密钥"</span>
+
+curl https://api.deepseek.com/chat/completions \
+  -H <span class="k">"Content-Type: application/json"</span> \
+  -H <span class="k">"Authorization: Bearer $DEEPSEEK_API_KEY"</span> \
+  -d <span class="k">'{"model":"deepseek-flash",
+      "messages":[{"role":"user","content":"你好"}]}'</span></div>
+            <figure class="shot"><img src="{{ '/assets/images/api-keys-guide/deepseek/05-first-call.webp' | relative_url }}" alt="示意图：终端里 curl 调用 DeepSeek 接口并收到回复" loading="lazy"><figcaption>示意图：首次调用的命令与返回（非真实界面）。</figcaption></figure>
+            <div class="tip">💡 会写代码的话更简单：pip 装好 <code>openai</code> 库，把 <code>base_url</code> 改成上面的地址、<code>api_key</code> 读环境变量，其余写法和调 OpenAI 一模一样。</div>
+            <div class="tbl-scroll">
+            <table class="errtable">
+              <tr><th>报错</th><th>含义</th><th>处理</th></tr>
+              <tr><td><b>401</b> Unauthorized</td><td>密钥无效：没带上、复制错了，或 Key 已被删除</td><td>检查环境变量是否生效，必要时重建 Key</td></tr>
+              <tr><td><b>402</b> Payment Required</td><td>账户余额不足</td><td>去「充值」页充值后再调用</td></tr>
+              <tr><td><b>429</b> / 超时</td><td>触发限流或网络超时</td><td>稍等重试；连续出现可降低并发</td></tr>
+            </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ §2 百炼 ============ -->
+    <section id="bailian" class="plat" aria-labelledby="bl-title">
+      <div class="plat-head"><h2 id="bl-title">③ 通义千问 · 阿里云百炼</h2><span class="time">预计耗时约 15 分钟（含实名认证）</span></div>
+      <p class="plat-sub">百炼（Model Studio）是阿里云的大模型服务平台，通义千问（Qwen）系列模型从这里调用。<b>实名认证是硬性门槛</b>：不实名就无法开通服务、无法调用。</p>
+      <div class="steps">
+        <div class="step">
+          <div class="step-no">1</div>
+          <div>
+            <h3>注册阿里云账号并完成实名认证</h3>
+            <p>先在 <code>aliyun.com</code> 注册账号，然后进入「实名认证」：个人认证用支付宝授权 / 扫脸，<b>即时生效</b>；企业认证需营业执照，约 1–3 个工作日。</p>
+            <figure class="shot"><img src="{{ '/assets/images/api-keys-guide/bailian/02-realname.webp' | relative_url }}" alt="示意图：阿里云实名认证页，个人认证即时生效流程" loading="lazy"><figcaption>示意图：实名认证流程（非真实界面）。</figcaption></figure>
+            <div class="pit"><b>⚠️ 坑点：</b>实名没做完，后面百炼的开通按钮都是灰的。先花 2 分钟把实名清掉，别反反复复撞墙。</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-no">2</div>
+          <div>
+            <h3>进入百炼控制台，开通服务</h3>
+            <p>访问 <code>bailian.console.aliyun.com</code>，首次进入按提示免费开通服务（按 token 用量计费，开通本身不收费）。</p>
+            <figure class="shot"><img src="{{ '/assets/images/api-keys-guide/bailian/01-console.webp' | relative_url }}" alt="阿里云百炼控制台落地页：探索模型开始构建，底部有 API Key 与免费额度入口" loading="lazy"><figcaption>百炼控制台落地页（2026-11 实截，底部可见「API Key」「免费额度」入口）。截图版权归阿里云所有，仅作教学指引。</figcaption></figure>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-no">3</div>
+          <div>
+            <h3>右上角头像 →「API-KEY 管理」→ 创建</h3>
+            <p>创建前<b>先在页面右上角选好地域</b>（常用「华北2 - 北京」），再点「创建我的 API-KEY」。创建成功后密钥仅完整显示一次，立即复制。</p>
+            <figure class="shot"><img src="{{ '/assets/images/api-keys-guide/bailian/03-apikey-mgmt.webp' | relative_url }}" alt="示意图：百炼 API-KEY 管理页，右上角地域选择与头像菜单" loading="lazy"><figcaption>示意图：API-KEY 管理页与地域选择（非真实界面）。</figcaption></figure>
+            <div class="pit"><b>⚠️ 坑点：</b>每个地域的接入域名、API Key、模型列表<b>相互独立、不能跨地域混用</b>——用北京的 Key 打上海地域的域名会直接报错。教程统一按「华北2 - 北京」走。</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-no">4</div>
+          <div>
+            <h3>（可选）配置权限与业务空间</h3>
+            <p>创建时可选归属业务空间与授权范围：默认「全部模型可用」，也可自定义——限定可用的模型范围、设置 IP 白名单。多人协作或多项目并行的团队建议分 Key 管理，泄露哪个吊销哪个。</p>
+            <figure class="shot"><img src="{{ '/assets/images/api-keys-guide/bailian/04-create-key.webp' | relative_url }}" alt="示意图：创建 API Key 弹窗，归属账号与权限配置" loading="lazy"><figcaption>示意图：创建弹窗的权限配置（非真实界面）。</figcaption></figure>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-no">5</div>
+          <div>
+            <h3>领取免费额度</h3>
+            <p>控制台里的「免费额度」页可以按模型一键领取新用户体验额度（按 token 计量，通常有 90 天有效期，过期作废）——<b>先领再跑</b>，能省一笔。具体额度以控制台实时展示为准。</p>
+            <figure class="shot"><img src="{{ '/assets/images/api-keys-guide/bailian/05-free-quota.webp' | relative_url }}" alt="示意图：百炼免费额度页，按模型领取体验额度" loading="lazy"><figcaption>示意图：免费额度领取页（非真实界面，数值为演示示例）。</figcaption></figure>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-no">6</div>
+          <div>
+            <h3>首次调用</h3>
+            <p>北京地域的 OpenAI 兼容地址是 <code>https://dashscope.aliyuncs.com/compatible-mode/v1</code>，常用入门模型 <code>qwen-plus</code>（环境变量名各家惯例：<code>DASHSCOPE_API_KEY</code>）。模型名与各地域接入点以<a href="https://help.aliyun.com/zh/model-studio/" target="_blank" rel="noopener">官方文档</a>为准。</p>
+            <figure class="shot"><img src="{{ '/assets/images/api-keys-guide/bailian/06-first-call.webp' | relative_url }}" alt="示意图：终端里 curl 调用百炼兼容接口并收到回复" loading="lazy"><figcaption>示意图：首次调用（北京地域）的命令与返回（非真实界面）。</figcaption></figure>
+            <div class="tip">💡 换平台 = 只改三处：base_url、模型名、API Key。代码结构一行都不用动——这也是三家都走 OpenAI 兼容格式的好处。</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ §3 Kimi ============ -->
+    <section id="kimi" class="plat" aria-labelledby="km-title">
+      <div class="plat-head"><h2 id="km-title">④ Kimi · 月之暗面开放平台</h2><span class="time">预计耗时约 10 分钟</span></div>
+      <p class="plat-sub">Kimi 的<b>开放平台</b>（platform.kimi.com，旧域名 platform.moonshot.cn 仍可访问）和<b>聊天端</b>（kimi.com）是两套入口——API Key 在开放平台的控制台申请。</p>
+      <div class="steps">
+        <div class="step">
+          <div class="step-no">1</div>
+          <div>
+            <h3>打开开放平台，注册登录</h3>
+            <p>访问 <code>platform.kimi.com</code>，用中国大陆手机号（+86）注册登录。</p>
+            <figure class="shot"><img src="{{ '/assets/images/api-keys-guide/kimi/01-home.webp' | relative_url }}" alt="Kimi 开放平台首页：模型即服务，右上角登录入口" loading="lazy"><figcaption>Kimi 开放平台首页（2026-11 实截）。截图版权归月之暗面所有，仅作教学指引。</figcaption></figure>
+            <div class="pit"><b>⚠️ 坑点：</b>海外手机号注册可能受阻；另外别进成聊天端——聊天会员和 API 账户是分开的。</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-no">2</div>
+          <div>
+            <h3>完成实名认证</h3>
+            <p>进入控制台后按提示完成实名：个人认证用身份证，通常即时通过；企业认证约 1–3 个工作日（以平台内提示为准）。未实名无法正常使用开放平台服务。</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-no">3</div>
+          <div>
+            <h3>控制台「API Key 管理」→ 新建</h3>
+            <p>左侧菜单进「API Key 管理」，点「新建 API Key」，填一个名字（如 <code>my-first-key</code>），确认后立即复制完整密钥——同样<b>只显示一次</b>。</p>
+            <figure class="shot"><img src="{{ '/assets/images/api-keys-guide/kimi/02-apikeys.webp' | relative_url }}" alt="示意图：Kimi 开放平台控制台 API Key 管理页" loading="lazy"><figcaption>示意图：API Key 管理页（非真实界面）。</figcaption></figure>
+            <figure class="shot"><img src="{{ '/assets/images/api-keys-guide/kimi/03-create-key.webp' | relative_url }}" alt="示意图：新建 API Key 弹窗，填写名称并提示仅显示一次" loading="lazy"><figcaption>示意图：新建弹窗（非真实界面）。</figcaption></figure>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-no">4</div>
+          <div>
+            <h3>费用中心确认体验金</h3>
+            <p>新用户通常会自动到账一笔体验金 / 代金券（金额与有效期以控制台为准，常见如 15 元 / 30 天）。<b>先到「费用中心」确认到账和到期时间再开跑</b>——过期作废。</p>
+            <figure class="shot"><img src="{{ '/assets/images/api-keys-guide/kimi/04-voucher.webp' | relative_url }}" alt="示意图：费用中心展示现金余额与体验金有效期" loading="lazy"><figcaption>示意图：费用中心（非真实界面，金额为演示示例）。</figcaption></figure>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-no">5</div>
+          <div>
+            <h3>首次调用</h3>
+            <p>OpenAI 兼容地址 <code>https://api.moonshot.cn/v1</code>（环境变量惯例名 <code>MOONSHOT_API_KEY</code>）。当前旗舰模型为 <code>kimi-k3.1-pro</code>，实际以开放平台「模型列表」页为准。</p>
+            <figure class="shot"><img src="{{ '/assets/images/api-keys-guide/kimi/05-first-call.webp' | relative_url }}" alt="示意图：终端里 curl 调用 Kimi 接口并收到回复" loading="lazy"><figcaption>示意图：首次调用的命令与返回（非真实界面）。</figcaption></figure>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ §4 安全 ============ -->
+    <section id="security" class="plat" aria-labelledby="sec-title">
+      <div class="section-head"><h2 id="sec-title">⑤ 密钥安全：四条底线（三家通用）</h2><p>API Key 就是账户密码：泄露 = 别人花你的钱、用你的额度跑任意任务。下面的规矩三家通用，2 分钟养成习惯。</p></div>
+      <div class="steps">
+        <div class="step">
+          <div class="step-no">1</div>
+          <div>
+            <h3>只存环境变量，不写进代码</h3>
+            <p>代码里只出现变量名，实际值放在终端环境或系统变量里；这样密钥不会被写进代码仓库、截图和聊天记录。</p>
+            <figure class="shot"><img src="{{ '/assets/images/api-keys-guide/common/05-env-vars.webp' | relative_url }}" alt="示意图：macOS 与 Windows 下把密钥写入环境变量的命令" loading="lazy"><figcaption>示意图：环境变量配置（macOS / Windows 双示例）。</figcaption></figure>
+            <div class="pit"><b>⚠️ 坑点：</b>把 Key 硬编码进代码再推上 GitHub，是密钥泄露的第一大来源——爬虫几分钟内就会扫到并盗用。万一推了：立即删 Key 重建，并清理提交历史。</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-no">2</div>
+          <div>
+            <h3>按项目 / 按环境分开建 Key</h3>
+            <p>学习、工作、demo 各用各的 Key。哪条泄露了，吊销哪条就行，不影响其他项目。</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-no">3</div>
+          <div>
+            <h3>不进仓库、不发群聊、不截图外传</h3>
+            <p>包含 <code>.env</code> 文件加入 <code>.gitignore</code>；发求助帖先打码；给别人部署服务时用对方的 Key，不共享你的。</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-no">4</div>
+          <div>
+            <h3>怀疑泄露，立即删除重建</h3>
+            <p>到对应平台的 Key 管理页删除旧 Key、创建新 Key，全程 30 秒。旧 Key 立即失效，损失就此截断。顺手开启平台提供的余额告警（如有），钱花超会提醒你。</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ §5 FAQ ============ -->
+    <section id="faq" aria-labelledby="faq-title">
+      <div class="section-head"><h2 id="faq-title">⑥ 常见问题</h2><p>三篇教程走完后最常被问到的几件事。</p></div>
+      <div class="faq-grid">
+        <article class="faq-card"><h3>Key 丢了 / 没保存下来怎么办？</h3><p>找回不可能（平台只显示一次），补救很简单：到 Key 管理页删除旧 Key → 新建一个 → 立即复制保存。旧 Key 马上失效，不用慌。</p></article>
+        <article class="faq-card"><h3>换一家平台，代码要改多少？</h3><p>只改三处：① base_url（接口地址）② 模型名 ③ API Key（换成新平台的环境变量）。请求结构完全不变——三家都是 OpenAI 兼容格式。</p></article>
+        <article class="faq-card"><h3>计费怎么算，会不会跑爆账单？</h3><p>按 token（可理解为字词片段）计量，输入与输出分开计价，各家定价页为准。先用小额度试跑，确认效果再放量；个人学习单日消耗通常不到 1 元。担心失控就开余额告警、只放小额预算。</p></article>
+        <article class="faq-card"><h3>401 / 402 / 429 分别是什么意思？</h3><p>401 = 密钥无效（没带上、复制错、被删除）；402 = 余额不足（主要见于 DeepSeek，充值即可）；429 = 触发限流，稍等重试或降低并发。对照表见第 ② 节末尾。</p></article>
+        <article class="faq-card"><h3>能把自己的 Key 分享给同学 / 同事用吗？</h3><p>不建议。账单混在一起、泄露面变大。正确做法：各自注册各自建 Key；给团队用则在平台内分项目建多个 Key，权限范围按需配置（百炼支持模型范围与 IP 白名单）。</p></article>
+        <article class="faq-card"><h3>聊天端账号和 API 账号是一回事吗？</h3><p>DeepSeek 与 Kimi 的聊天端和开放平台是<b>两套账号体系</b>：聊天端充值买会员，开放平台充值调接口，互不相通。申请 Key 请认准 developer / platform / 开放平台入口。</p></article>
+      </div>
+    </section>
+
+    <footer class="footer">
+      <span>迷鹿 MiLu · AI 平台注册与 API 密钥申请指南</span>
+      <span>教程更新：2026-11 · 价格与额度以各平台官方页面为准 · 真实界面截图版权归对应平台所有，仅作教学指引</span>
+    </footer>
+  </main>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    "headline": "AI 平台注册与 API 密钥申请指南（DeepSeek / 通义千问 / Kimi）",
+    "url": "{{ site.url }}/course/api-keys-guide/",
+    "inLanguage": "zh-CN",
+    "datePublished": "2026-11-06",
+    "dateModified": "2026-11-06",
+    "author": {
+      "@type": "Person",
+      "name": "Leo Lu",
+      "alternateName": "迷鹿 MiLu",
+      "url": "{{ site.url }}/",
+      "sameAs": ["https://github.com/deerleo", "https://maudelclaw.ai"]
+    },
+    "description": "手把手图文教程：注册 DeepSeek、阿里云百炼（通义千问）、Kimi 三大 AI 平台，创建 API Key 并完成首次调用，覆盖实名认证、充值、免费额度与密钥安全。"
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      { "@type": "ListItem", "position": 1, "name": "首页", "item": "{{ site.url }}/" },
+      { "@type": "ListItem", "position": 2, "name": "教程与课程", "item": "{{ site.url }}/tutorials/" },
+      { "@type": "ListItem", "position": 3, "name": "AI 平台注册与 API 密钥申请指南", "item": "{{ site.url }}/course/api-keys-guide/" }
+    ]
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      { "@type": "Question", "name": "API Key 丢了 / 没保存下来怎么办？", "acceptedAnswer": { "@type": "Answer", "text": "找回不可能（平台只显示一次），补救很简单：到 Key 管理页删除旧 Key → 新建一个 → 立即复制保存。旧 Key 马上失效，不用慌。" } },
+      { "@type": "Question", "name": "换一家平台，代码要改多少？", "acceptedAnswer": { "@type": "Answer", "text": "只改三处：base_url（接口地址）、模型名、API Key。请求结构完全不变——三家都是 OpenAI 兼容格式。" } },
+      { "@type": "Question", "name": "API 计费怎么算，会不会跑爆账单？", "acceptedAnswer": { "@type": "Answer", "text": "按 token（可理解为字词片段）计量，输入与输出分开计价，各家定价页为准。先用小额度试跑，确认效果再放量；担心失控就开余额告警、只放小额预算。" } },
+      { "@type": "Question", "name": "401 / 402 / 429 分别是什么意思？", "acceptedAnswer": { "@type": "Answer", "text": "401 = 密钥无效（没带上、复制错、被删除）；402 = 余额不足（充值即可）；429 = 触发限流，稍等重试或降低并发。" } },
+      { "@type": "Question", "name": "能把自己的 API Key 分享给同学 / 同事用吗？", "acceptedAnswer": { "@type": "Answer", "text": "不建议。账单混在一起、泄露面变大。正确做法：各自注册各自建 Key；团队使用则分项目建多个 Key，按需配置权限范围。" } },
+      { "@type": "Question", "name": "聊天端账号和 API 账号是一回事吗？", "acceptedAnswer": { "@type": "Answer", "text": "DeepSeek 与 Kimi 的聊天端和开放平台是两套账号体系：聊天端充值买会员，开放平台充值调接口，互不相通。申请 Key 请认准 developer / platform / 开放平台入口。" } }
+    ]
+  }
+  </script>
+</body>
+</html>
