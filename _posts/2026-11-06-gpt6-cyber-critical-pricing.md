@@ -7,6 +7,10 @@ series: "哟哟鹿鸣"
 
 ![OpenAI DevDay 大会现场，Sam Altman 在演讲](/assets/images/2026-11-06-gpt6-cyber/openai-devday.jpg)
 
+<video controls preload="metadata" style="display:block;max-width:100%;width:720px;margin:0 auto;" poster="/assets/videos/2026-11-06-gpt6-cyber-critical-pricing-cover.jpg" src="/assets/videos/2026-11-06-gpt6-cyber-critical-pricing.mp4"></video>
+
+*懒得读字的话，视频版在这，两分半讲完。*
+
 11 月 5 日，OpenAI 发布了一个专门找漏洞、写攻击代码的模型，名字叫 GPT-6 Cyber。发布消息里最扎眼的一句，是它给自己评的级：网络安全风险 Critical，关键级。在它自家的安全框架里，这已经是顶格。
 
 评分机构给债券定级，发行方付钱，评级越高越好卖。2008 年之后全世界都知道这套玩法会出什么事。现在 AI 行业有了自己的版本：造模型的给自己定级，而且定级越高，卖得越贵。
