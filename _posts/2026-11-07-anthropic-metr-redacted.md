@@ -3,6 +3,8 @@ title: "Anthropic 的作业，涂黑了才交"
 description: "METR 花十一周审计 Anthropic，门是真开了，钱是真没收，可公开报告的措辞把 1.97 写成'不到 2 倍'，最关键的证据被涂黑，算力审计查到一半被砍。本文拆这层合法的错位。"
 tags: [Anthropic, METR, AI安全, 透明度, 哟哟鹿鸣]
 series: "哟哟鹿鸣"
+status: published
+podcast: /assets/audio/2026-11-07-anthropic-metr-redacted.mp3
 ---
 
 ![旧金山 Slack 前总部大楼，Anthropic 现总部所在地——本周，一份关于这家公司的审计报告在这里被涂黑后出版（资料图）](/assets/images/2026-11-07-anthropic-metr-redacted/cover.jpg)
