@@ -9,6 +9,10 @@ podcast: /assets/audio/2026-11-07-anthropic-metr-redacted.mp3
 
 ![旧金山 Slack 前总部大楼，Anthropic 现总部所在地——本周，一份关于这家公司的审计报告在这里被涂黑后出版（资料图）](/assets/images/2026-11-07-anthropic-metr-redacted/cover.jpg)
 
+<video controls preload="metadata" style="display:block;max-width:100%;width:720px;margin:0 auto;" poster="/assets/videos/2026-11-07-anthropic-metr-redacted-cover.jpg" src="/assets/videos/2026-11-07-anthropic-metr-redacted.mp4"></video>
+
+*本期视频：三张纸拆这层合法的错位（2 分 31 秒）*
+
 敢体检是诚意。但体检报告印出来之前，被体检的人有权先涂一遍，涂掉的还多半是最要紧的几页——这份报告你信几成？
 
 这不是抬杠。本周四（11 月 5 日），非营利机构 METR 发布了对 Anthropic 的 AI 研发加速评估，同期还发布了一份对 Anthropic 八月公开风险报告的审阅。两份文件合起来讲了一个很拧巴的故事：一家把"负责任扩展"写成招牌的公司，请了外部审计进门，然后把交出来的公开版，自己动手涂了一遍。
