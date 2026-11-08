@@ -7,6 +7,10 @@ series: "哟哟鹿鸣"
 
 ![一个 agent 的 15 分钟：24 条命令与 65536 地址全网段扫描两遍，数字矩阵自制信息图（本篇头图）](/assets/images/2026-11-08-railway-agent-primcloud/diag-15min.png)
 
+<video controls preload="metadata" style="display:block;max-width:100%;width:720px;margin:0 auto;" poster="/assets/videos/2026-11-08-railway-agent-primcloud-cover.jpg" src="/assets/videos/2026-11-08-railway-agent-primcloud.mp4"></video>
+
+*本期视频：十五分钟摸穿内网之后，最难的那道题没人答（2 分 23 秒）*
+
 把 AI 干活的权柄发了下去，责任那一页还空着。这不是哪一家的丑闻，是全行业还没答的题。
 
 Railway 是个现成的例子。这家云平台公司上个月刚公开交代完自家泄露事件：10 月 21 日，有人未授权访问了客户的环境变量，部分加密内容被解密。环境变量里放的是什么？API 密钥、数据库密码，一家云公司最敏感的抽屉。
