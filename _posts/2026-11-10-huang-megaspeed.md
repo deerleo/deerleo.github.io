@@ -3,6 +3,7 @@ title: "黄仁勋认了私德，公司顺手认领了清白"
 description: "十天，从『纯属正常商务往来』改口到『我对妻子不忠』。道歉信写得体面，但真正的治理问题一个都没答：48亿美元的采购、1500亿的共同持股、调查开始前就预支的结论。"
 tags: [英伟达, 黄仁勋, 公司治理, AI芯片, 哟哟鹿鸣]
 series: "哟哟鹿鸣"
+podcast: /assets/audio/2026-11-10-huang-megaspeed.mp3
 ---
 
 ![英伟达 CEO 黄仁勋在公开活动演讲（资料图）](/assets/images/2026-11-10-huang-megaspeed/01-huang-stage.jpg)
