@@ -8,6 +8,10 @@ podcast: /assets/audio/2026-11-09-musk-midterm.mp3
 
 ![马斯克在公开活动讲台上的资料图，本次中期选举他为共和党投入创纪录的4.74亿美元](/assets/images/2026-11-09-musk-midterm/final_01_musk-rally.jpg)
 
+<video controls preload="metadata" style="display:block;max-width:100%;width:720px;margin:0 auto;" poster="/assets/videos/2026-11-09-musk-midterm-cover.jpg" src="/assets/videos/2026-11-09-musk-midterm.mp4"></video>
+
+*本期视频：四点七四亿美元买影响力，选民回了一张电费单（2 分 33 秒）*
+
 古话说，钱能通神。但神也得讲个先来后到：先有的电费单，后有的账。
 
 11月3日美国中期选举投票日，马斯克早上9点半刚过，在他2.4亿粉丝的X账号上发了一句：「今天投红色！」（Vote red today!）
