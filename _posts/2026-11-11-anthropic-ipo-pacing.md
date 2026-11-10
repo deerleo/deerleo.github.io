@@ -3,6 +3,7 @@ title: "劝全行业踩刹车的人，自己踩了油门"
 description: "9月12日，Dario Amodei 发长文呼吁全行业放慢 AI 能力提升，换一到两年部署安全。10天后 Anthropic 发了新旗舰，6周发了四款模型，10月26日递交招股书赶感恩节上市窗口。招股书里写着：那个定速呼吁，不描述公司自身的开发时间表。"
 tags: [Anthropic, IPO, AI安全, Claude, 哟哟鹿鸣]
 series: "哟哟鹿鸣"
+podcast: /assets/audio/2026-11-11-anthropic-ipo-pacing.mp3
 ---
 
 ![华尔街纽约证券交易所外景，科技公司上市造势的经典场景（资料图）](/assets/images/2026-11-11-anthropic-ipo-pacing/01-wallstreet.jpg)
