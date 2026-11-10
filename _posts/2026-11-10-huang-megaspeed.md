@@ -8,6 +8,9 @@ podcast: /assets/audio/2026-11-10-huang-megaspeed.mp3
 
 ![英伟达 CEO 黄仁勋在公开活动演讲（资料图）](/assets/images/2026-11-10-huang-megaspeed/01-huang-stage.jpg)
 
+<video controls preload="metadata" style="display:block;max-width:100%;width:720px;margin:0 auto;" poster="/assets/videos/2026-11-10-huang-megaspeed-cover.jpg" src="/assets/videos/2026-11-10-huang-megaspeed.mp4"></video>
+*十天改口、四十八亿采购、一千五百亿共同持股，两分半讲清这封道歉信背后没答的题*
+
 老话说，纸包不住火。但比纸包不住火更耐人寻味的，是纸破了之后，大家怎么补。
 
 11 月 8 日，英伟达官网刊登了黄仁勋致全体员工的信。他承认对妻子不忠：「我的行为伤害了她和我们的孩子。我所做的一切没有任何借口。」63 岁，执掌英伟达三十多年，第一次用这种体裁公开认错。信写得体面，认错认得干脆，还专门请求外界给家人留点隐私。
