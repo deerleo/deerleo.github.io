@@ -8,6 +8,10 @@ podcast: /assets/audio/2026-11-11-anthropic-ipo-pacing.mp3
 
 ![华尔街纽约证券交易所外景，科技公司上市造势的经典场景（资料图）](/assets/images/2026-11-11-anthropic-ipo-pacing/01-wallstreet.jpg)
 
+<video controls preload="metadata" style="display:block;max-width:100%;width:720px;margin:0 auto;" poster="/assets/videos/2026-11-11-anthropic-ipo-pacing-cover.jpg" src="/assets/videos/2026-11-11-anthropic-ipo-pacing.mp4"></video>
+
+*同一件事的视频版，六周四款旗舰与招股书对账*
+
 老话讲，开车的和修路的不能是同一个人。修路的要是自己先超了速，再劝别人慢点开，这话就没人听了。
 
 ![Dario Amodei 在纽约时报 DealBook Summit 现场（资料图）](/assets/images/2026-11-11-anthropic-ipo-pacing/02-dario-dealbook.png)
