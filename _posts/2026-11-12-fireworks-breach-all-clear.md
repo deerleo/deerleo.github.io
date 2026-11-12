@@ -8,6 +8,10 @@ podcast: /assets/audio/2026-11-12-fireworks-breach-all-clear.mp3
 
 ![机房交换机上红灯亮起，蓝色线缆间一片警示色（资料图）——推理平台把客户的钥匙、数据、模型权重集中放在这样的机房里](/assets/images/2026-11-12-fireworks-breach-all-clear/final_01_cover.jpg)
 
+<video controls preload="metadata" style="display:block;max-width:100%;width:720px;margin:0 auto;" poster="/assets/videos/2026-11-12-fireworks-breach-all-clear-cover.jpg" src="/assets/videos/2026-11-12-fireworks-breach-all-clear.mp4"></video>
+
+*同一件事的视频版，两份公告逐句对账*
+
 老话说，话别说太满。你今天写下「未发现证据」，下个月就得解释当时为什么没发现。
 
 11 月 9 日，Fireworks AI 第二次通报 10 月的安全事件。这家公司靠一句话吃饭：你把钥匙、数据、微调好的权重，放我这儿。Notion、Cursor、Harvey 都是冲这句话来的，据 Forbes 报道，它手里攥着大约一万家企业客户。
