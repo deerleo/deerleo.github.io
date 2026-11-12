@@ -3,6 +3,7 @@ title: "第一次说没事的东西，第二次全在失窃清单里"
 description: "Fireworks AI 一个月内两次通报安全事件：第一次公告说未见模型与数据集被碰，第二次公告把未完成模型权重和数据集片段写进失窃清单。两次公告原文对照着读，看推理平台的「没事」是怎么变成一份状态更新的。"
 tags: [AI安全, Fireworks, 供应链, 数据泄露]
 series: "哟哟鹿鸣"
+podcast: /assets/audio/2026-11-12-fireworks-breach-all-clear.mp3
 ---
 
 ![机房交换机上红灯亮起，蓝色线缆间一片警示色（资料图）——推理平台把客户的钥匙、数据、模型权重集中放在这样的机房里](/assets/images/2026-11-12-fireworks-breach-all-clear/final_01_cover.jpg)
