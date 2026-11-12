@@ -2094,7 +2094,7 @@ chap({
   },
 });
 
-/* ---------- 03 测电源电动势和内阻 ---------- */
+/* ---------- 03 测电源的电动势与内阻 ---------- */
 const S3 = { R: 6, pts: [] };
 chap({
   id: 'emfr', title: '测干电池的电动势与内阻',
@@ -2558,7 +2558,7 @@ function updLc() {
   hset('note', '总能量 ' + (E * 1000).toFixed(1) + ' mJ（缓降）');
 }
 
-/* ---------- 08 桥式整流与电容滤波 ---------- */
+/* ---------- 08 桥式整流·电容滤波 ---------- */
 const S8 = { filt: false, trace: [], tt: 0 };
 chap({
   id: 'bridge', title: '整流桥与电容的滤波',
@@ -2916,7 +2916,7 @@ function updXfmr() {
   hset('i1', '≈ ' + (i2 * n).toFixed(3) + ' A');
 }
 
-/* ---------- 12 二极管单向导电性 ---------- */
+/* ---------- 12 二极管·单向导电性 ---------- */
 const S12 = { rev: false };
 chap({
   id: 'diode', title: '二极管的单向导通性',
@@ -3284,7 +3284,7 @@ function shortTick(dt) {
   updShort();
 }
 
-/* ---------- 16 稳压二极管稳压电路 ---------- */
+/* ---------- 16 稳压二极管·稳压电路 ---------- */
 const S16 = { U: 9 };
 chap({
   id: 'zener', title: '稳压管削波稳压电路',
@@ -4042,7 +4042,7 @@ function diyBuildControls() {
   bClear.type = 'button'; bClear.className = 'ctl-btn'; bClear.textContent = '🧹 清空实验台';
   bClear.addEventListener('click', () => { DIY.items = []; DIY.omega = 0; pushUndoNow(); diyRebuild(); diyBuildControls(); toast('实验台已清空'); });
   const bRepair = document.createElement('button');
-  bRepair.type = 'button'; bRepair.className = 'ctl-btn'; bRepair.textContent = '🔧 修复所有损坏元件';
+  bRepair.type = 'button'; bRepair.className = 'ctl-btn'; bRepair.textContent = '🔧 修复全部故障元件';
   bRepair.addEventListener('click', repairAll);
   act.append(bClear, bRepair);
   controlsEl.appendChild(act);
@@ -4179,7 +4179,7 @@ function diyTick(dt) {
         const rec = ELVIS.get('fu');
         if (rec && rec.parts && rec.parts.wire) rec.parts.wire.visible = false;
         sfx('burn');
-        toast('⚡ 保险丝熔断了！先排除短路（删除短接线）再点「修复所有损坏元件」，否则新保险丝会再熔断', 'warn');
+        toast('⚡ 保险丝熔断了！先排除短路（删除短接线）再点「修复全部故障元件」，否则新保险丝会再熔断', 'warn');
         DIY.fuseT = 0;
       }
     } else DIY.fuseT = Math.max(0, DIY.fuseT - dt * 2);
@@ -4326,7 +4326,7 @@ function updDiyHud() {
     mot ? '电机 ' + DIY.omega.toFixed(0) + ' rpm' : '无电机',
     DIY.items.some((it) => it.blown) ? '有烧毁元件' : '元件完好',
   ].join(' · '));
-  hset('note', '过流先断保险丝 · 点「修复所有损坏元件」复位');
+  hset('note', '过流先断保险丝 · 点「修复全部故障元件」复位');
   if (diyListEl) {
     const meta = diyListEl.querySelector('.diy-meta');
     if (meta) meta.textContent = '主链电流 ' + i.toFixed(2) + ' A · 元件 ' + DIY.items.length + '/12';
@@ -4868,7 +4868,7 @@ function restoreState(s) {
 }
 function undoAct() {
   if (HIST.i > 0) { HIST.i--; restoreState(HIST.s[HIST.i]); toast('已撤销'); sfx('click'); }
-  else toast('没有可撤销的操作');
+  else toast('没有可撤销的步骤');
 }
 function redoAct() {
   if (HIST.i < HIST.s.length - 1) { HIST.i++; restoreState(HIST.s[HIST.i]); toast('已重做'); sfx('click'); }
@@ -4877,7 +4877,7 @@ function redoAct() {
 controlsEl.addEventListener('input', (e) => { if (e.target && e.target.tagName === 'INPUT') pushUndoSoon(); }, true);
 controlsEl.addEventListener('change', (e) => { if (e.target && e.target.tagName === 'INPUT') pushUndoSoon(); }, true);
 
-/* ---- 修复所有损坏元件（DIY + 短路章保险丝全覆盖） ---- */
+/* ---- 修复全部故障元件（DIY + 短路章保险丝全覆盖） ---- */
 function repairAll() {
   let n = 0;
   CIR.els.forEach((e) => {
@@ -5005,10 +5005,10 @@ function showHelp() {
             <tr><td><kbd>Ctrl</kbd>+<kbd>Z</kbd> / <kbd>Y</kbd></td><td>撤销 / 重做</td></tr>
           </table>
           <h4>仿真工具条</h4>
-          <p><b>⏸/▶</b> 暂停或继续；<b>⏭ 单步</b>暂停状态下推进一小段；<b>⟲ 重置本章</b>复位时间与元件状态（原版「重置时间与元件状态」）。<b>流速</b>调节仿真时间快慢；<b>精度</b>调节每帧计算步数（越高越平滑）。</p>
+          <p><b>⏸/▶</b> 暂停或继续；<b>⏭ 单步</b>暂停状态下推进一小段；<b>⟲ 重置本章</b>复位时间与元件状态（原版同款按钮）。<b>流速</b>调节仿真时间快慢；<b>精度</b>调节每帧计算步数（越高越平滑）。</p>
           <p><b>电流珠</b>开关电流动画；<b>电子流向</b>让小珠按电子方向（与电流相反）流动；<b>电势着色</b>按导线两端电势高低着色（青=低·灰=零·橙红=高）；<b>标签</b>开关 3D 元件标注；<b>音效</b>开关操作与事件提示音。</p>
           <h4>自由搭建（空白实验台 → DIY）</h4>
-          <p>元件托盘点选加入主链，自动布线；「串/并」按钮切换与前一串联件的连接关系；滑杆调参数。电流超过元件额定持续 0.6s 会烧毁，保险丝超过额定 1.4 倍立即熔断——修复用「🔧 修复所有损坏元件」。</p>
+          <p>元件托盘点选加入主链，自动布线；「串/并」按钮切换与前一串联件的连接关系；滑杆调参数。电流超过元件额定持续 0.6s 会烧毁，保险丝超过额定 1.4 倍立即熔断——修复用「🔧 修复全部故障元件」。</p>
           <h4>电路文件</h4>
           <p>「导出 JSON」保存当前电路（DIY 模式含全部元件与参数）；「导入 JSON」恢复；「复制分享链接」把章节与 DIY 电路编进 URL 发给同学。</p>
         </div>
@@ -5080,7 +5080,7 @@ function buildSimBar() {
   menu.innerHTML = `
     <button type="button" data-act="undo">↩ 撤销 <kbd>Ctrl+Z</kbd></button>
     <button type="button" data-act="redo">↪ 重做 <kbd>Ctrl+Y</kbd></button>
-    <button type="button" data-act="repair">🔧 修复所有损坏元件</button>
+    <button type="button" data-act="repair">🔧 修复全部故障元件</button>
     <span class="mm-sep"></span>
     <button type="button" data-act="export">⬇ 导出电路 JSON</button>
     <button type="button" data-act="import">⬆ 导入 JSON</button>

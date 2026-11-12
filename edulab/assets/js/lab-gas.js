@@ -1,5 +1,5 @@
 /* EduLab · 实验室制取气体（gas）
- * 课题：加热高锰酸钾制氧气 / 分解过氧化氢制氧气 / 制取二氧化碳 / 氧气与二氧化碳的性质 / 随堂检测
+ * 课题：加热高锰酸钾来制氧气 / 分解过氧化氢来制氧气 / 制取二氧化碳 / 氧气、二氧化碳的性质 / 随堂检测
  * 布局（micro 三件套移植）：真·三栏教学布局——左栏课题列表（点击切章 + ‹01/05› 上下课题）/ 中栏 3D 化学实验台
  *   （相机飞行）/ 右栏 讲解 + 实验步骤·条件 + 实验记录；左右栏独立折叠（28px 竖条）+ 专注模式 +
  *   右栏三块手风琴（localStorage 记忆，切章不重置）；导管口气流曲线浮窗可折叠为 40px 圆形徽标（gas.foldChart）。
@@ -1085,7 +1085,7 @@ function buildProps() {
   propG.add(filt);
   bakeContactShadow(-1.28, -0.52, 0.1, 0.1, 0.26);
 }
-/* ---------------- 工位 A：加热高锰酸钾制氧气 ---------------- */
+/* ---------------- 工位 A：加热高锰酸钾来制氧气 ---------------- */
 
 const stA = {
   group: new THREE.Group(), step: 0, lit: false, preheatDone: false, tiltUp: false,
@@ -1169,7 +1169,7 @@ function buildStationA() {
   A = { stand, clamp, tubeG, drug, cotton, stopper, del, lamp, trough, jarG, jarWater, plate, ...clamp.userData };
 }
 
-/* ---------------- 工位 B：分解过氧化氢制氧气 ---------------- */
+/* ---------------- 工位 B：分解过氧化氢来制氧气 ---------------- */
 
 const stB = { group: new THREE.Group(), running: false, step: 0, cock: 0.55, mno2Added: false, mno2Recycled: false, mode: 'drain', collected: 0, total: 0, funnelML: 0 };
 scene.add(stB.group);
@@ -1709,7 +1709,7 @@ function paintSteps(btns, idx) {
   });
 }
 
-/* 子操作行（上下文相关的下一步动作，也可以直接点击桌上的器材） */
+/* 子操作行（上下文相关的下一步动作，也允许直接点桌面器材来执行） */
 const subRow = document.createElement('div');
 subRow.className = 'gas-subrow';
 function renderSub(list) {
@@ -1814,7 +1814,7 @@ function doTilt(up) {
   setJaw(1);
   addTween(0.5, (k) => { A.tubeG.rotation.z = from + (to - from) * k; });
   if (up) {
-    toast('管口向上倾斜……加热时药品里的水分会在管口冷凝，倒流回灼热的管底。', 'warn');
+    toast('管口朝上……受热后，药品里的水分会凝在管口，再倒流回灼热的管底。', 'warn');
   } else {
     toast('铁夹夹在距管口约三分之一处，管口微微朝下——免得冷凝水倒流回滚烫的管底。', 'ok');
   }
@@ -1837,7 +1837,7 @@ function doLightLamp() {
 function doPreheat() {
   if (!stA.lit) { toast('先点燃酒精灯，再来回移动预热。', 'warn'); return; }
   if (stA.swingT >= 0 || stA.preheatDone) {
-    if (stA.preheatDone) toast('预热已经完成，可以对准药品部位集中加热了。', 'warn');
+    if (stA.preheatDone) toast('预热已经完成，接下来把外焰对准药品处集中加热。', 'warn');
     return;
   }
   stA.swingT = 0;
@@ -1921,7 +1921,7 @@ function coverJarAndLift(onDone, silent = false) {
       A.plate.position.set(-1.06, BENCH_Y + 0.128 + 0.002, -0.06);
     }
   }, () => { onDone && onDone(); });
-  if (!silent) toast('在水里用玻璃片把瓶口盖严，再取出水面正立放到台面上——氧气的密度比空气大。', 'ok');
+  if (!silent) toast('在水里用玻璃片把瓶口盖严，再取出水面正立放到台面上——因为氧气的密度大于空气。', 'ok');
 }
 
 /* 验：木条伸入瓶中，按收集时机给出三种结果 */
@@ -2303,7 +2303,7 @@ function doIron() {
             D.o2d.grp.rotation.z = -k * 1.2;
             D.o2d.grp.position.z = 0.5 - k * 0.06;
           });
-          showFault('<b>瓶底炸裂了！</b>铁丝烧得火星四溅，高温熔融物直接砸在没有水的瓶底上。<br><b>正确操作</b>：实验前瓶里要预先放少量水或铺一层细沙。换「瓶底有少量水」的氧气瓶重做。');
+          showFault('<b>瓶底炸裂了！</b>铁丝烧得火星四溅，高温熔融物直接砸在没有水的瓶底上。<br><b>正确操作</b>：动手前，先在瓶里加少量水，或垫一层细沙。换「瓶底有少量水」的氧气瓶重做。');
           hudTextD.o2 = '1 瓶（1 瓶已损坏）';
           stD.busy = false;
         }, 1200);
@@ -2417,7 +2417,7 @@ function buildSteps(btnDefs) {
   return btns;
 }
 
-/* 器材点击（射线拾取）：也可以直接点击桌上的器材执行当前步骤 */
+/* 器材点击（射线拾取）：也允许直接点桌面器材执行当前这一步 */
 const clickTargets = [];   // { root, id }
 function registerClicks(list) {
   clickTargets.length = 0;
@@ -2492,10 +2492,10 @@ function stationClick(id) {
 
 const SECTIONS = [
   {
-    title: '加热高锰酸钾制氧气',
-    html: `<p>高锰酸钾是紫黑色的晶体，受热分解放出氧气。氧气<b>不易溶于水</b>，可以用<b>排水法</b>收集。</p>
-<p>记住七个字：<span class="hl">查、装、定、点、收、离、熄</span>，最后用带火星的木条<b>验</b>。按顺序完成步骤——也可以故意做错一步，看看会发生什么。</p>
-<p>⚠️ 试管口要<b>略向下倾斜</b>；先<b>预热</b>再集中加热；结束先<b>撤导管</b>再熄灯，否则水倒吸炸裂试管。</p>
+    title: '加热高锰酸钾来制氧气',
+    html: `<p>高锰酸钾是一种紫黑色晶体，受热时会分解放出氧气。氧气<b>不易溶于水</b>，能用<b>排水法</b>来收集。</p>
+<p>记住七个字：<span class="hl">查、装、定、点、收、离、熄</span>，最后用带火星的木条<b>验</b>。按顺序完成步骤——也可以故意错上一两步，看看会发生什么。</p>
+<p>⚠️ 试管口要<b>稍微向下倾斜</b>；先<b>预热</b>、再集中加热；结束先<b>撤导管</b>再熄灯，否则水倒吸炸裂试管。</p>
 <p>反应原理：2KMnO₄ —Δ→ K₂MnO₄ + MnO₂ + O₂↑</p>`,
     enter() {
       hideAllStations();
@@ -2529,9 +2529,9 @@ const SECTIONS = [
     },
   },
   {
-    title: '分解过氧化氢制氧气',
-    html: `<p>过氧化氢溶液在常温下分解得很慢；加入<b>二氧化锰</b>后迅速放出氧气，二氧化锰本身的质量和化学性质不变——它是<b>催化剂</b>。</p>
-<p>这套装置<b>不需要加热</b>。用<b>分液漏斗</b>控制滴加速度，从而控制反应速率。先不加二氧化锰滴一会儿，再加入，比较冒泡的快慢。</p>
+    title: '分解过氧化氢来制氧气',
+    html: `<p>常温下过氧化氢溶液分解得很慢；一旦加入<b>二氧化锰</b>，氧气便迅速涌出，而二氧化锰自身质量与化学性质都保持不变——它是<b>催化剂</b>。</p>
+<p>这套装置<b>无需加热</b>。用<b>分液漏斗</b>控制滴加速度，就能掌控反应的快慢。先别加二氧化锰、滴上一阵，再加进去，比较前后冒泡的快慢。</p>
 <p>2H₂O₂ <span class="hl">—MnO₂→</span> 2H₂O + O₂↑；氧气<b>不易溶于水</b>（排水法）、<b>密度比空气略大</b>（向上排空气法）。</p>`,
     enter() {
       hideAllStations();
@@ -2581,10 +2581,10 @@ const SECTIONS = [
   },
   {
     title: '制取二氧化碳',
-    html: `<p>实验室用<b>大理石（或石灰石）与稀盐酸</b>反应制取二氧化碳，不需要加热。</p>
+    html: `<p>实验室用<b>大理石（或石灰石）跟稀盐酸</b>反应来制取二氧化碳，不需要加热。</p>
 <p>CaCO₃ + 2HCl = CaCl₂ + H₂O + CO₂↑</p>
-<p>CO₂ <b>能溶于水</b>、<b>密度比空气大</b>，用<span class="hl">向上排空气法</span>收集；验满时把燃着的木条放在<b>瓶口</b>；用澄清石灰水检验。</p>
-<p>换成稀硫酸、浓盐酸或大理石粉末试试，想一想实验室为什么不用它们。长颈漏斗下端必须<span class="hl">泡在液面以下</span>形成液封。</p>`,
+<p>CO₂ <b>能溶于水</b>、<b>密度比空气大</b>，用<span class="hl">向上排空气法</span>来收集；验满时，把点着的木条平搭到<b>瓶口</b>上；检验则用澄清的石灰水。</p>
+<p>换成稀硫酸、浓盐酸，或把大理石换成粉末各试一回，想一想实验室为何不选它们。长颈漏斗下端必须<span class="hl">泡在液面以下</span>形成液封。</p>`,
     enter() {
       hideAllStations();
       resetStationC();
@@ -2629,7 +2629,7 @@ const SECTIONS = [
         onChange: (v) => {
           stC.acid = v;
           let hint = null;
-          if (v === 'h2so4') hint = '提示：生成的 CaSO₄ 微溶于水，会覆盖在大理石表面使反应停止。';
+          if (v === 'h2so4') hint = '提示：生成的 CaSO₄ 微溶于水，会蒙在大理石表面上，让反应半途停摆。';
           if (v === 'conc') hint = '提示：浓盐酸易挥发，制得的 CO₂ 混有 HCl，石灰水不易变浑浊。';
           restartExperimentC(hint);
         },
@@ -2643,7 +2643,7 @@ const SECTIONS = [
         onChange: (v) => {
           stC.form = v;
           if (C.lblMarble) setSpriteText(C.lblMarble, v === 'powder' ? '大理石粉末' : '大理石');
-          restartExperimentC(v === 'powder' ? '提示：粉末与酸接触面积太大，反应会过于剧烈，不便收集。' : null);
+          restartExperimentC(v === 'powder' ? '提示：粉末跟酸的接触面太大，反应会过于猛烈，不便收集。' : null);
         },
       });
       ctl.button({ label: '↺ 重置', onClick: () => SECTIONS[2].enter() });
@@ -2656,10 +2656,10 @@ const SECTIONS = [
     },
   },
   {
-    title: '氧气与二氧化碳的性质',
-    html: `<p>桌上已经准备好收集满的氧气和二氧化碳。</p>
-<p><b>氧气</b>能支持燃烧：带火星的木条复燃；铁丝在氧气中剧烈燃烧、火星四射，生成黑色固体四氧化三铁——<span class="hl">瓶底要预先放少量水或细沙</span>，防止高温熔融物炸裂瓶底。</p>
-<p><b>二氧化碳</b>不能燃烧也不支持燃烧，密度比空气大（阶梯蜡烛下层先灭），能与水反应生成碳酸（石蕊变红，受热又褪回紫色）。</p>`,
+    title: '氧气、二氧化碳的性质',
+    html: `<p>台面上摆着两瓶集满的气体：一瓶氧气、一瓶二氧化碳。</p>
+<p><b>氧气</b>能支持燃烧：带火星的木条会复燃；铁丝在氧气里剧烈燃烧、火星四射，生成黑色固体四氧化三铁——<span class="hl">瓶底要提前铺少量水或细沙</span>，防止高温熔融物炸裂瓶底。</p>
+<p><b>二氧化碳</b>自身不可燃，也不支持燃烧；密度大于空气（阶梯蜡烛下层先灭），跟水反应会生成碳酸（石蕊变红，受热又褪回紫色）。</p>`,
     enter() {
       hideAllStations();
       resetStationD();
@@ -2694,7 +2694,7 @@ const SECTIONS = [
       bindClick(D.indLiquid, 'indi');
       bindClick(D.indCup, 'indi');
       bindClick(D.iron, 'iron');
-      toast('观察现象，或在右侧调整条件；也可以直接点击桌上的器材', 'ok');
+      toast('观察现象，也可在右侧改条件；同样可以直接点桌面上的器材', 'ok');
     },
   },
   {
@@ -2715,10 +2715,10 @@ function runBtnTxtC(on) { hudTextC.phase = on ? '进行中……' : stC.step >= 
 
 const QUIZ = [
   {
-    q: '加热高锰酸钾制氧气时，要求试管口稍稍向下倾斜，主要原因是',
+    q: '加热高锰酸钾来制氧气时，要求试管口稍稍向下倾斜，主要原因是',
     opts: ['方便加热操作', '防止冷凝水倒流回灼热管底，造成试管炸裂', '让氧气排得更快', '避免药品粉末进入导管'],
     a: 1,
-    ex: '加热时药品里的水分会在管口凝成水珠。管口朝上，水珠会倒流回灼热的管底，试管一激就裂——所以管口要微微朝下。（挡粉末靠的是管口的棉花。）',
+    ex: '受热后，药品里的水分会凝成水珠挂在管口。管口朝上，水珠会倒流回灼热的管底，试管一激就裂——所以管口要微微朝下。（挡粉末靠的是管口的棉花。）',
   },
   {
     q: '排水法收集氧气完毕，正确的收尾操作是',
@@ -2733,7 +2733,7 @@ const QUIZ = [
     ex: '最先冒出的气泡是管内受热膨胀的空气；等气泡连成一串又均匀时，出来的才是较纯的氧气。收早了，瓶里的氧气会掺进空气。',
   },
   {
-    q: '过氧化氢分解实验里，对二氧化锰的描述哪项是对的？',
+    q: '过氧化氢分解的实验中，对二氧化锰的描述哪项是对的？',
     opts: ['加了它氧气产量会变大', '反应完后质量变轻', '加快反应速率，自身质量和化学性质保持不变', '没有它过氧化氢就完全不分解'],
     a: 2,
     ex: '催化剂只管改变速率：反应前后自身质量和化学性质都不变，也不增加产量。没有催化剂过氧化氢照样分解，只是慢得多。',
@@ -2745,14 +2745,14 @@ const QUIZ = [
     ex: '稀硫酸的产物 CaSO₄ 微溶，糊在大理石表面让反应停摆；碳酸钠粉末反应猛得收不住；浓盐酸挥发出的 HCl 会搅黄石灰水的浑浊——所以用大理石（石灰石）配稀盐酸。',
   },
   {
-    q: '怎么判断一瓶二氧化碳已经集满？',
+    q: '怎么知道一瓶二氧化碳已经收集满了？',
     opts: ['燃着的木条伸进瓶内', '燃着的木条搁在瓶口', '灌入澄清石灰水', '带火星的木条放瓶口'],
     a: 1,
     ex: '验满看的是瓶口还有没有空气：燃着的木条搁在瓶口，火一灭就算满。石灰水用来检验 CO₂，不是验满；带火星木条是氧气的专用工具。',
   },
   {
-    q: '铁丝在氧气中燃烧实验前，瓶底要先放少量水，目的是',
-    opts: ['溶解生成的四氧化三铁', '接住高温溅落物，防止炸裂瓶底', '帮铁丝烧得更旺', '消耗瓶内多余的氧气'],
+    q: '铁丝在氧气里做燃烧实验前，瓶底要先放少量水，目的是',
+    opts: ['把烧成的四氧化三铁溶进水里', '接住高温溅落物，防止炸裂瓶底', '帮铁丝烧得更旺', '消耗瓶内多余的氧气'],
     a: 1,
     ex: '铁丝烧得火星四溅，高温熔融物直接砸在干瓶底上会把瓶底炸裂——预先放少量水（或铺细沙）就是用来接住它们的。',
   },
@@ -3084,7 +3084,7 @@ app.onFrame((dt) => {
         stA.swingT = -1;
         stA.preheatDone = true;
         A.lamp.position.x = -1.655;
-        toast('预热完成，气泡还在断续——用外焰对准药品部位集中加热吧。', 'ok');
+        toast('预热完成，气泡还在断续——把外焰挪到药品处集中加热吧。', 'ok');
       }
     }
   }
@@ -3113,7 +3113,7 @@ app.onFrame((dt) => {
         stA.fullToast = true;
         stA.collecting = false;
         if (!stA.jarOut) {
-          toast('瓶里的水全被挤了出去，瓶口正往外翻大气泡——气体收满一瓶了。先在水下盖好玻璃片再取出正放。', 'ok');
+          toast('瓶里的水全被挤了出去，瓶口正往外翻大气泡——气体收满一瓶了。先在水里盖好玻璃片，取出后正立安放。', 'ok');
           coverJarAndLift(null, true);
         } else {
           toast('瓶里的水全被挤了出去，瓶口正往外翻大气泡——气体收满一瓶了。', 'ok');
@@ -3204,7 +3204,7 @@ app.onFrame((dt) => {
           stC.fullToastC = true;
           stC.running = false;
           runBtnTxtC(false);
-          toast('CO₂ 收满一瓶了！验满时把燃着的木条平放在瓶口。', 'ok');
+          toast('CO₂ 收满一瓶了！验满时，把点着的木条平搭在瓶口。', 'ok');
         }
       }
     }

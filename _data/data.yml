@@ -17,7 +17,7 @@ sidebar:
     phone:
     timezone: Asia/Shanghai # Enter your timezone, e.g., America/Havana, Africa/Casablanca, America/North_Dakota/Center
     citizenship: P.R.C China
-    website: https://milulab.com # Include the full website URL, including "http://" or "https://".
+    website: milulab.com # 仅作展示文案；链接渲染在 contact.html 中已改为站内相对路径
     linkedin:
     xing:
     github: deerleo

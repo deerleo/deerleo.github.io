@@ -2082,7 +2082,7 @@ const GOLDEN = (() => {
   function lesson() {
     const total = st.scores.reduce((a, b) => a + b, 0);
     if (st.mode === 'spiral') {
-      return `<p>长宽之比为 φ ≈ 1.618 的矩形叫<b>黄金矩形</b>。切掉一个正方形，剩下的还是黄金矩形——再切、再切，每一次都自相似。</p>
+      return `<p>长宽之比为 φ ≈ 1.618 的矩形，称为<b>黄金矩形</b>。切掉一个正方形，剩下的还是黄金矩形——再切、再切，每一次都自相似。</p>
 <p>把每个切口处的直角弧线依次接起来，就得到<b>黄金螺旋</b>。每放大 φ⁴ ≈ 6.85 倍，画面与原来一模一样，所以它可以<b>无限放大</b>而永不重复、也永不结束。</p>`;
     }
     if (st.mode === 'fib') {
@@ -2093,7 +2093,7 @@ const GOLDEN = (() => {
         const dev = Math.abs(rs[i] - PHI);
         rows += `<div class="wond-fibrow"><span class="fr-num">${f[i + 1]} / ${f[i]}</span><span class="fr-bar" style="width:${clamp(90 - dev * 500, 6, 90)}px"></span><span class="fr-val">${rs[i].toFixed(6)}</span></div>`;
       }
-      return `<p>1, 1, 2, 3, 5, 8, 13, 21…每一项都是前两项之和。<b>相邻两项之比</b>越来越贴近 φ ≈ 1.618034，而且是交替地一头偏大、一头偏小，像钟摆一样夹向真值。</p>
+      return `<p>1, 1, 2, 3, 5, 8, 13, 21…每一项都是前两项之和。<b>相邻两项的比值</b>正一步步逼近 φ ≈ 1.618034，而且是交替地一头偏大、一头偏小，像钟摆一样夹向真值。</p>
 <div class="wond-fibrows">${rows}</div>`;
     }
     if (st.round >= N_ROUNDS) {

@@ -33,7 +33,7 @@
 
     {% if sidebar.website %}
     <li class="website"><i class="fas fa-globe-americas"></i>
-      <a href="{{ sidebar.website }}" target="_blank">{{ sidebar.website }}</a>
+      <a href="{{ '/' | relative_url }}">{{ site.url | remove: 'https://' | remove: 'http://' }}</a>
     </li>
     {% endif %}
 

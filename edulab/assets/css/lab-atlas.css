@@ -530,3 +530,41 @@ body.lab.atlas {
   .stage-focus-btn { left: 8px; bottom: 8px; }
   .stage-foot { display: none; }
 }
+
+/* ===== 疆域实算读数浮窗（右上，随时间轴推演滚动） ===== */
+.coastal-window.stat-win {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  bottom: auto;
+  width: 238px;
+  background: linear-gradient(160deg, rgba(20,26,34,0.92), rgba(14,18,24,0.94));
+  border: 1px solid rgba(232,103,74,0.35);
+  border-radius: 10px;
+  padding: 10px 12px 12px;
+  color: #d8dde4;
+  backdrop-filter: blur(6px);
+  z-index: 5;
+  animation: areaPanelIn 0.25s ease;
+}
+.coastal-window.stat-win.hidden { display: none; }
+.coastal-window.stat-win .cw-head { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+.coastal-window.stat-win .cw-head b { flex: 1; font-size: 12.5px; font-weight: 600; letter-spacing: 0.02em; color: #ffd166; white-space: nowrap; }
+.coastal-window.stat-win .stat-close {
+  width: 20px; height: 20px;
+  display: inline-flex; align-items: center; justify-content: center;
+  border-radius: 6px;
+  background: rgba(255,255,255,0.08);
+  color: #d8dde4;
+  font-size: 14px;
+  cursor: pointer;
+  user-select: none;
+}
+.coastal-window.stat-win .stat-close:hover { background: rgba(255,255,255,0.16); }
+.coastal-window.stat-win .stat-row {
+  display: flex; align-items: baseline; justify-content: space-between;
+  font-size: 12.5px;
+  padding: 3px 0;
+}
+.coastal-window.stat-win .stat-row span { opacity: 0.62; }
+.coastal-window.stat-win .stat-row b { font-variant-numeric: tabular-nums; font-weight: 600; color: #f2ede0; }

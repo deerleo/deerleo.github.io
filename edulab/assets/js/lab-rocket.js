@@ -61,6 +61,8 @@ const COL = {
   concrete: 0xc9c4bb, concreteDeep: 0x8f959c, asphalt: 0x4c4f55,
   warnYellow: 0xe8c23f, warnInk: 0x1c1e22,
   water: 0x7ab8e8, tankSilver: 0xb8bec4, windowLit: 0xffe9b0,
+  // 回收测控装备族
+  rcWhite: 0xe2e6ea, rcBlue: 0x2a5aa8, rcPadYellow: 0xd8b23f,
   // 太空族
   space: 0x03060c, dawn: 0x9cc2e6, dustDawn: 0x8f95a8,
   earthNight: 0xffca7a, atmoBlue: 0x7fb4ff, orbitLine: 0x69c8ff,
@@ -1559,7 +1561,7 @@ function updateForces() {
   if (drag > 3e4) fa.D.set(c.clone().addScaledVector(dirV, -12), c.clone().addScaledVector(dirV, -12 - clamp(drag / 1.5e5, 3, 18)));
   else fa.D.hide();
 }
-/* ---------------- 发射场深度建模（酒泉卫星发射中心 · 教学重建） ----------------
+/* ---------------- 发射场深度建模（酒泉卫星发射场 · 教学重建） ----------------
  * 组成：戈壁地面 / 混凝土场坪 / 公路 / 发射平台（工位编号盘 + 警示环）/
  *       导流槽（楔形导流 + 喷水降温管路）/ 固定勤务塔（格构承力 + 10 层平台 + 电梯井 +
  *       双脐带摆杆 + 天车 + 避雷针尖 + 航空障碍灯）/ 避雷塔×2 / 勤务楼（测控屏 + 抛物面天线）/
@@ -2142,7 +2144,7 @@ function buildSite(g, tex) {
 
   /* --- 发射场标注（第 1 章 / 档案章开启） --- */
   RKT.siteLabels = [
-    ['酒泉卫星发射中心', 0, 34, 118, COL.label],
+    ['酒泉卫星发射场', 0, 34, 118, COL.label],
     ['固定勤务塔 · 脐带摆杆', 10, 66, -10, COL.labelBlue],
     ['导流槽 · 喷水降温', -10, 8, -30, COL.labelGreen],
     ['避雷塔', -42, 96, -34, COL.labelViolet],
@@ -3892,6 +3894,114 @@ function buildReentryExtras(g) {
 /* ---------------- 着陆扩展：搜救直升机 / 旗阵 / 围栏 ---------------- */
 
 RKT.heliRotors = [];
+RKT.rcAntennas = [];   // 回收测控天线（帧扫描）
+
+/** 直升机停机坪「H」标（沥青底 + 黄圈白字 + 进近虚线 + 方位刻度） */
+function texPadH() {
+  return ctex('padH', () => {
+    const S = 512, c = S / 2;
+    const cv = document.createElement('canvas');
+    cv.width = cv.height = S;
+    const ctx = cv.getContext('2d');
+    // 沥青底 + 磨损噪点
+    ctx.fillStyle = '#3d4147';
+    ctx.fillRect(0, 0, S, S);
+    for (let i = 0; i < 2600; i++) {
+      ctx.fillStyle = `rgba(${180 + Math.random() * 40 | 0},${180 + Math.random() * 40 | 0},${170 + Math.random() * 30 | 0},${(Math.random() * 0.05).toFixed(3)})`;
+      ctx.fillRect(Math.random() * S, Math.random() * S, 2, 2);
+    }
+    // 外黄环（双圈）
+    ctx.strokeStyle = '#d8b23f';
+    ctx.lineWidth = 16;
+    ctx.beginPath(); ctx.arc(c, c, c - 40, 0, TAU); ctx.stroke();
+    ctx.lineWidth = 4;
+    ctx.beginPath(); ctx.arc(c, c, c - 62, 0, TAU); ctx.stroke();
+    // 进近虚线（正东方向四段）
+    ctx.lineWidth = 10;
+    ctx.setLineDash([34, 26]);
+    ctx.beginPath(); ctx.moveTo(c - 34, c); ctx.lineTo(30, c); ctx.stroke();
+    ctx.setLineDash([]);
+    // 中央白「H」
+    ctx.fillStyle = '#eef1f4';
+    const hw = 46, hh = 150, hx = c;
+    ctx.fillRect(hx - hh / 2 - hw, -hh / 2 + c, hw, hh);
+    ctx.fillRect(hx + hh / 2, -hh / 2 + c, hw, hh);
+    ctx.fillRect(hx - hh / 2, c - 17, hh * 2 - hw, 34);
+    // 方位刻度（N/E/S/W + 短刻度线）
+    ctx.font = '700 40px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillStyle = '#c8ccd2';
+    ctx.fillText('N', c, 34);
+    ctx.save();
+    ctx.translate(c, S - 34); ctx.rotate(Math.PI); ctx.fillText('S', 0, 0);
+    ctx.restore();
+    ctx.save();
+    ctx.translate(34, c); ctx.rotate(-Math.PI / 2); ctx.fillText('E', 0, 0);
+    ctx.restore();
+    ctx.save();
+    ctx.translate(S - 34, c); ctx.rotate(Math.PI / 2); ctx.fillText('W', 0, 0);
+    ctx.restore();
+    for (let i = 0; i < 32; i++) {
+      const a = i / 32 * TAU;
+      const r1 = c - 66, r2 = i % 8 === 0 ? c - 88 : c - 78;
+      ctx.strokeStyle = '#9aa0a8';
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.moveTo(c + Math.cos(a) * r1, c + Math.sin(a) * r1);
+      ctx.lineTo(c + Math.cos(a) * r2, c + Math.sin(a) * r2);
+      ctx.stroke();
+    }
+    const tex = new THREE.CanvasTexture(cv);
+    tex.colorSpace = THREE.SRGBColorSpace;
+    tex.anisotropy = 4;
+    return tex;
+  });
+}
+
+/** 回收测控车侧涂装（白底蓝带 + 编号 + 职能字样） */
+function texTruckMark(no, role) {
+  return ctex('truck:' + no + role, () => {
+    const w = 420, h = 150;
+    const cv = document.createElement('canvas');
+    cv.width = w; cv.height = h;
+    const ctx = cv.getContext('2d');
+    ctx.fillStyle = '#e2e6ea';
+    ctx.fillRect(0, 0, w, h);
+    // 蓝色腰带 + 上沿细线
+    ctx.fillStyle = '#2a5aa8';
+    ctx.fillRect(0, 86, w, 30);
+    ctx.fillStyle = '#1c3f78';
+    ctx.fillRect(0, 118, w, 6);
+    // 编号（蓝带内反白）
+    ctx.fillStyle = '#f2f4f6';
+    ctx.font = '700 34px "PingFang SC", sans-serif';
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(no, 24, 101);
+    ctx.font = '600 26px "PingFang SC", sans-serif';
+    ctx.fillText(role, 24 + ctx.measureText(no).width + 26, 101);
+    // 右侧站徽（金环 + 五角星简化）
+    ctx.strokeStyle = '#c9a44a';
+    ctx.lineWidth = 4;
+    ctx.beginPath(); ctx.arc(w - 56, 52, 26, 0, TAU); ctx.stroke();
+    ctx.fillStyle = '#c9a44a';
+    starPath(ctx, w - 56, 52, 15);
+    // 涂装刮痕（低透明度短划）
+    for (let i = 0; i < 40; i++) {
+      ctx.strokeStyle = `rgba(60,66,74,${(Math.random() * 0.12).toFixed(3)})`;
+      ctx.lineWidth = 1 + Math.random() * 2;
+      const x0 = Math.random() * w, y0 = Math.random() * h;
+      ctx.beginPath(); ctx.moveTo(x0, y0);
+      ctx.lineTo(x0 + (Math.random() - 0.5) * 26, y0 + (Math.random() - 0.5) * 8);
+      ctx.stroke();
+    }
+    const tex = new THREE.CanvasTexture(cv);
+    tex.colorSpace = THREE.SRGBColorSpace;
+    tex.anisotropy = 4;
+    return tex;
+  });
+}
 
 function buildLandingExtras(g, tex) {
   // 搜救直升机（机身 + 尾梁 + 主旋翼盘 + 尾桨 + 撬式起落架）
@@ -3971,6 +4081,207 @@ function buildLandingExtras(g, tex) {
     instBoxes(g, sm('towerhi', () => sm('twrHi', () => M(COL.towerSteelHi, 0.5, 0.45))), fp);
     instBoxes(g, sm('towerhi', () => sm('twrHi', () => M(COL.towerSteelHi, 0.5, 0.45))), fr);
   }
+
+  /* --- 回收测控装备阵列（东侧：天线车×3 + 指挥车 + 电源车 + 野战电缆 + 停机坪） --- */
+
+  // 测控天线车（白漆车体 + 蓝裙带 + 液压三节桅杆 + 扫描抛物面）
+  function makeRcAntennaVan(no) {
+    const van = new THREE.Group();
+    const paintW = matPaint(COL.rcWhite, { rough: 0.42 });
+    const paintB = matPaint(COL.rcBlue, { rough: 0.4 });
+    const frame = box(6.6, 0.34, 2.6, sm('vframe', () => M(COL.darkMetal, 0.7, 0.5)));
+    frame.position.y = 0.62;
+    van.add(frame);
+    // 驾驶室（白漆 + 裙带 + 前风挡玻璃）
+    const cab = box(1.7, 1.5, 2.4, paintW);
+    cab.position.set(2.3, 1.5, 0);
+    van.add(cab);
+    const cabBand = box(1.72, 0.32, 2.42, paintB);
+    cabBand.position.set(2.3, 0.9, 0);
+    van.add(cabBand);
+    const windshield = box(0.07, 0.6, 2.0, matGlassLite(0x9cc2e6, { opacity: 0.5 }));
+    windshield.position.set(3.16, 1.8, 0);
+    van.add(windshield);
+    const grill = box(0.06, 0.34, 1.5, sm('vgrill', () => M(COL.darkMetal, 0.75, 0.4)));
+    grill.position.set(3.17, 1.0, 0);
+    van.add(grill);
+    // 货厢（侧贴编号涂装，双面）
+    const cargo = box(3.7, 1.95, 2.5, paintW);
+    cargo.position.set(-0.9, 1.86, 0);
+    van.add(cargo);
+    const decal = new THREE.Mesh(new THREE.PlaneGeometry(3.4, 1.2),
+      new THREE.MeshStandardMaterial({ map: texTruckMark(no, '回收测控'), roughness: 0.6 }));
+    decal.position.set(-0.9, 1.9, 1.26);
+    van.add(decal);
+    const decal2 = decal.clone();
+    decal2.rotation.y = Math.PI;
+    decal2.position.z = -1.26;
+    van.add(decal2);
+    // 货厢顶检修走板 + 排风口
+    const walkway = box(3.5, 0.08, 2.3, sm('vwalk', () => M(COL.darkMetalHi, 0.65, 0.45)));
+    walkway.position.set(-0.9, 2.88, 0);
+    van.add(walkway);
+    // 液压三节升降桅杆（渐细）+ 抛物面天线组
+    const mast = new THREE.Group();
+    mast.position.set(-2.3, 0.78, 0.72);
+    const s1 = cyl(0.1, 0.125, 2.3, sm('mastA', () => M(COL.chromeDeep, 0.5, 0.55)), 10);
+    s1.position.y = 1.15;
+    const s2 = cyl(0.078, 0.098, 2.1, sm('mastB', () => M(COL.chromeDeep, 0.5, 0.55)), 10);
+    s2.position.y = 3.1;
+    const s3 = cyl(0.056, 0.076, 1.9, sm('mastC', () => M(COL.chrome, 0.4, 0.65)), 10);
+    s3.position.y = 4.9;
+    mast.add(s1, s2, s3);
+    // 节间液压环
+    for (const hy of [2.15, 4.0]) {
+      const ring = torus(0.1, 0.022, sm('hydRing', () => M(COL.darkMetal, 0.6, 0.5)), 12, 6);
+      ring.rotation.x = Math.PI / 2;
+      ring.position.y = hy;
+      mast.add(ring);
+    }
+    // 抛物面天线（碗面 + 馈源臂 + 喇叭口），登记帧扫描
+    const dishG = new THREE.Group();
+    dishG.position.y = 6.0;
+    const dish = lathe(profile([[0.26, 0], [1.1, 0.48], [1.85, 1.0]]),
+      new THREE.MeshStandardMaterial({ map: texRadarMesh(), roughness: 0.6, metalness: 0.2, side: THREE.DoubleSide }), 22);
+    dish.rotation.x = -1.05;
+    dishG.add(dish);
+    const feed = cyl(0.035, 0.035, 1.7, sm('feedM', () => M(COL.chrome, 0.35, 0.7)), 6);
+    feed.rotation.x = 1.05;
+    feed.position.set(0, 0.62, 0.72);
+    dishG.add(feed);
+    const horn = cone(0.16, 0.34, sm('hornM', () => M(0xd8dcdf, 0.5, 0.15)), 10);
+    horn.rotation.x = 1.05;
+    horn.position.set(0, 1.16, 1.42);
+    dishG.add(horn);
+    mast.add(dishG);
+    RKT.rcAntennas.push(dishG);
+    van.add(mast);
+    // 支腿 ×4（作业时接地）
+    const legs = [];
+    for (const lx of [-2.9, 1.2]) for (const lz of [-1.3, 1.3]) legs.push({ p: [lx, 0.3, lz], s: [0.12, 0.6, 0.12] });
+    instBoxes(van, sm('vleg', () => M(COL.darkMetal, 0.7, 0.45)), legs);
+    // 轮胎 ×6
+    const wheels = [];
+    for (const wx of [2.5, -0.5, -2.0]) for (const wz of [-1.24, 1.24]) wheels.push({ p: [wx, 0.45, wz], r: 0.45, h: 0.32, rx: Math.PI / 2 });
+    instCyls(van, sm('vtyre', () => M(COL.rubber, 0.95, 0)), wheels, 12);
+    van.add(contactShadow(7.8, 3.6, 0.55));
+    return van;
+  }
+
+  for (const [i, [px, pz, ry]] of [[34, 12, -0.5], [40, 16.5, -0.16], [45.5, 9.5, -0.9]].entries()) {
+    const van = makeRcAntennaVan('HK-0' + (i + 1));
+    van.position.set(px, 0, pz);
+    van.rotation.y = ry;
+    g.add(van);
+  }
+  const rcLbl = lbl('回收测控站', COL.labelGreen, 0.05);
+  rcLbl.position.set(39, 12, 14);
+  rcLbl.visible = false;
+  g.add(rcLbl);
+  RKT.landLabels.push(rcLbl);
+
+  // 指挥调度车（长厢 + 侧窗带 + 顶置天线阵）
+  {
+    const cmd = new THREE.Group();
+    const paintW = matPaint(COL.rcWhite, { rough: 0.42 });
+    const body = box(7.6, 2.3, 2.8, paintW);
+    body.position.y = 1.88;
+    cmd.add(body);
+    const skirt = box(7.62, 0.52, 2.82, matPaint(COL.rcBlue, { rough: 0.4 }));
+    skirt.position.y = 0.94;
+    cmd.add(skirt);
+    // 侧窗发光带（作业灯微亮）×2 侧
+    for (const sz of [1.41, -1.41]) {
+      const winB = box(5.6, 0.5, 0.05, sm('cmdwin', () => new THREE.MeshStandardMaterial({ color: 0x274a86, emissive: COL.windowLit, emissiveIntensity: 0.55, roughness: 0.3 })));
+      winB.position.set(-0.6, 2.2, sz);
+      cmd.add(winB);
+    }
+    const decal = new THREE.Mesh(new THREE.PlaneGeometry(5.2, 1.15),
+      new THREE.MeshStandardMaterial({ map: texTruckMark('ZK-01', '指挥调度'), roughness: 0.6 }));
+    decal.position.set(-0.6, 1.78, 1.42);
+    cmd.add(decal);
+    // 顶置设备：空调罩 + 三片刀片天线 + 一根鞭状天线
+    const acBox = box(1.5, 0.42, 1.3, sm('acbox', () => M(COL.darkMetalHi, 0.6, 0.45)));
+    acBox.position.set(2.2, 3.2, 0);
+    cmd.add(acBox);
+    for (const ax of [-3.0, -2.4, 1.2]) {
+      const blade = box(0.05, 0.72, 0.26, sm('blade2', () => M(COL.darkMetal, 0.55, 0.5)));
+      blade.position.set(ax, 3.2, 0.6);
+      cmd.add(blade);
+    }
+    const whip = cyl(0.018, 0.03, 1.9, sm('whip', () => M(COL.darkMetal, 0.6, 0.45)), 6);
+    whip.position.set(-3.3, 4.2, -0.5);
+    cmd.add(whip);
+    const wheels = [];
+    for (const wx of [2.7, -0.3, -2.4]) for (const wz of [-1.34, 1.34]) wheels.push({ p: [wx, 0.46, wz], r: 0.46, h: 0.34, rx: Math.PI / 2 });
+    instCyls(cmd, sm('vtyre', () => M(COL.rubber, 0.95, 0)), wheels, 12);
+    cmd.add(contactShadow(8.8, 3.8, 0.6));
+    cmd.position.set(28.5, 0, 20.5);
+    cmd.rotation.y = 0.5;
+    g.add(cmd);
+  }
+
+  // 移动电源车（厢体 + 顶部散热格栅 + 尾部电缆卷盘）
+  {
+    const pwr = new THREE.Group();
+    const body = box(5.2, 2.0, 2.5, matPaint(COL.rcWhite, { rough: 0.45 }));
+    body.position.y = 1.74;
+    pwr.add(body);
+    const skirt = box(5.22, 0.44, 2.52, matPaint(COL.rcBlue, { rough: 0.4 }));
+    skirt.position.y = 0.9;
+    pwr.add(skirt);
+    // 顶部散热格栅（六条深缝）
+    const vents = [];
+    for (let i = 0; i < 6; i++) vents.push({ p: [-1.6 + i * 0.52, 2.78, 0], s: [0.3, 0.1, 1.8] });
+    instBoxes(pwr, sm('vent', () => M(COL.darkMetal, 0.8, 0.35)), vents);
+    // 尾部电缆卷盘 ×2
+    for (const rz of [0.62, -0.62]) {
+      const reel = torus(0.52, 0.16, sm('reel', () => M(COL.warnInk, 0.85, 0.1)), 18, 8);
+      reel.rotation.y = Math.PI / 2;
+      reel.position.set(-2.7, 1.5, rz);
+      pwr.add(reel);
+    }
+    const wheels = [];
+    for (const wx of [1.8, -1.6]) for (const wz of [-1.2, 1.2]) wheels.push({ p: [wx, 0.42, wz], r: 0.42, h: 0.3, rx: Math.PI / 2 });
+    instCyls(pwr, sm('vtyre', () => M(COL.rubber, 0.95, 0)), wheels, 12);
+    pwr.add(contactShadow(6.4, 3.4, 0.55));
+    pwr.position.set(28.5, 0, 25.5);
+    pwr.rotation.y = 0.42;
+    g.add(pwr);
+  }
+
+  // 野战电缆束（主干 CatmullRom 放样贴地起伏 + 三路分支进各天线车）
+  {
+    const cableM = sm('fieldcable', () => M(COL.darkMetalHi, 0.85, 0.05));
+    const trunk = tubeAlong([
+      V3(29.6, 0.36, 21.8), V3(32.4, 0.2, 16.2), V3(36.6, 0.16, 13.2),
+      V3(41.2, 0.14, 6.2), V3(43.8, 0.16, -1.2), V3(46.6, 0.3, -6.2),
+    ], 0.055, cableM, 56, 6);
+    g.add(trunk);
+    g.add(tubeAlong([V3(32.4, 0.2, 16.2), V3(33.2, 0.15, 14.0), V3(34.2, 0.4, 13.0)], 0.034, cableM, 14, 6));
+    g.add(tubeAlong([V3(36.6, 0.16, 13.2), V3(38.6, 0.14, 15.0), V3(39.6, 0.4, 16.4)], 0.034, cableM, 14, 6));
+    g.add(tubeAlong([V3(41.2, 0.14, 6.2), V3(44.2, 0.16, 8.8), V3(45.2, 0.4, 9.6)], 0.034, cableM, 14, 6));
+  }
+
+  // 直升机停机坪（沥青底「H」标 + 边缘四枚蓝色示位灯）
+  {
+    const pad = new THREE.Mesh(new THREE.CircleGeometry(7.4, 42),
+      new THREE.MeshStandardMaterial({ map: texPadH(), roughness: 0.85 }));
+    pad.rotation.x = -Math.PI / 2;
+    pad.position.set(42, 0.03, -6);
+    g.add(pad);
+    const edgeLights = [];
+    for (let i = 0; i < 4; i++) {
+      const a = i / 4 * TAU + Math.PI / 4;
+      edgeLights.push({ p: [42 + Math.cos(a) * 7.0, 0.22, -6 + Math.sin(a) * 7.0], s: [0.22, 0.22, 0.22] });
+    }
+    instBoxes(g, sm('padlamp', () => new THREE.MeshStandardMaterial({ color: 0x274a86, emissive: 0x8fd3ff, emissiveIntensity: 0.9, roughness: 0.4 })), edgeLights);
+    const padLbl = lbl('回收停机坪', COL.labelGreen, 0.045);
+    padLbl.position.set(42, 5.5, -6);
+    padLbl.visible = false;
+    g.add(padLbl);
+    RKT.landLabels.push(padLbl);
+  }
 }
 
 /* ---------------- 着陆场帧动画（旋翼 + 灯光）与发射场帧动画 ---------------- */
@@ -3987,6 +4298,10 @@ function stepSiteExtras(dt) {
   // 雷达天线缓慢扫描
   RKT.radarDishes.forEach((d, i) => {
     d.rotation.y = Math.sin(t * 0.22 + i * 1.4) * 0.5;
+  });
+  // 回收测控天线方位扇摆（三台错相）
+  RKT.rcAntennas.forEach((d, i) => {
+    d.rotation.y = Math.sin(t * 0.3 + i * 2.1) * 0.6;
   });
 }
 /* ---------------- 数据表：长征族谱 / 伞系参数 / 分级对比 ---------------- */
@@ -4026,7 +4341,7 @@ function stagingCalc(n = STAGING.n, R = STAGING.R, isp = STAGING.isp) {
 
 const RKT_CARDS = [
   { name: '逃逸塔', cam: [[14, 64, 22], [0, 60, 0]], text: '顶部塔状逃生装置：8 台固体发动机，故障时 0.2 秒内把飞船拉离火箭，120 秒后分离抛掉——神舟每乘组起飞时它都在值班。' },
-  { name: '整流罩', cam: [[12, 52, 20], [0, 49, 0]], text: '气动防护「外套」：保护飞船穿过稠密大气，200 秒、110 km 以上分离抛掉，减重约 2 t。剖视整流罩可以看到里面的神舟。' },
+  { name: '整流罩', cam: [[12, 52, 20], [0, 49, 0]], text: '气动防护「外套」：为飞船挡住稠密大气层的气动加热与气流冲击，200 秒、110 km 以上分离抛掉，减重约 2 t。剖视整流罩可以看到里面的神舟。' },
   { name: '神舟飞船', cam: [[9, 51, 15], [0, 49.5, 0]], text: '三舱结构：轨道舱（前）+ 返回舱（中）+ 推进舱（后）。只有钟形的返回舱带着防热大底回家，其余都留在太空。' },
   { name: '二级发动机', cam: [[8, 34, 14], [0, 32, 0]], text: '真空发动机：比冲约 300 s，负责最后 6 km/s 的加速；尾部 4 台游机负责姿态与末速修正。585 秒关机，船箭分离。' },
   { name: '电缆罩', cam: [[9, 30, 10], [1.8, 30, 0]], text: '箭体侧面的白色「脊背」：把贯穿两级的电缆与管路罩起来，防气动撕扯——细节件，但少它不可。' },
@@ -5099,7 +5414,7 @@ GLOSSARY.push(
   ['测控弧段', '地面站/中继卫星能看到飞船的时间窗，弧段外失联是常态'],
   ['逃逸走廊', '低高度故障时逃逸系统能把飞船送到开伞区的时间-速度包线'],
   ['配平攻角', '返回舱质心偏置使其在大气中自动保持一个迎角，从而产生升力'],
-  ['滚转控制', '升力式再入中靠滚转改变升力方向的机动方式'],
+  ['滚转控制', '升力式再入过程中借助滚转调整升力指向的机动方式'],
   ['过载 g', '物体承受的加速度与重力加速度之比，人体耐限约 4~5 g（持续）'],
   ['声速封顶', '跨声速段阻力系数陡增，Ma≈1 附近是上升段第二个气动关口'],
   ['标称 vs 实飞', '标称弹道是设计基准；实飞遥测与它的偏差是飞行的「体检报告」'],
@@ -5896,7 +6211,7 @@ const SECTIONS = [
     group: '飞行任务 · 上升', id: 'intro', title: '认识长征二号F',
     html: `<p>神舟飞船由<b>长征二号F</b>（CZ-2F）发射：全箭约 <b>58 m</b>（相当于 20 层楼）、起飞质量约 <b>480 t</b>，其中约 <b>90%</b> 是推进剂。芯级直径 3.35 m，两级 + 4 台助推器。</p>
 <p>从下到上：一级（4 台主机）＋ 助推器 ×4 → 二级（真空发动机）→ 整流罩内的神舟飞船，顶部是<b>逃逸塔</b>——起飞后 120 秒内的「生命保险」，出故障时能在零点几秒内把飞船拉离火箭。</p>
-<p>一级与助推器用<b>四氧化二氮 + 偏二甲肼</b>：两者一接触就自燃、可常温储存，尾焰因此带一点红棕色。每一部分用完就扔掉，剩下的火箭越来越轻。</p>
+<p>一级与助推器用<b>四氧化二氮 + 偏二甲肼</b>：一经混合即刻自燃，无需点火装置，可常温长期储存，尾焰因此带一点红棕色。烧掉一段就抛掉一段，箭体越飞越轻。</p>
 <p>拖动旋转缩放箭体，切换视角按钮细看每个部件；打开「剖视整流罩」能看到里面的神舟飞船。</p>
 <div class="rkt-note">右侧酒泉发射场的<b>固定勤务塔</b>提供脐带摆杆（加注管路/电缆）与工作平台；起飞前摆杆摆开，导流槽开始喷水降温。</div>
 <p style="margin-top:10px;font-size:12px;color:var(--text-faint)">长征家族速览（LEO 运载量为公开参数量级）：</p>
@@ -5922,7 +6237,7 @@ const SECTIONS = [
   {
     group: '飞行任务 · 上升', id: 'construct', title: '构造与推进',
     html: `<p><b>火箭为什么能飞？</b>向后高速喷出气体，反作用力（推力）推箭体向前——牛顿第三定律。发动机每秒喷出的质量越大、喷气速度越快，推力就越大：<span class="hl">F = q·v<sub>e</sub></span>。</p>
-<p><b>变质量运动</b>是火箭问题的核心：飞行中质量不断减小，即使推力不变，加速度 a = F/m 也会越来越大。齐奥尔科夫斯基公式给出速度增量：<span class="hl">Δv = v<sub>e</sub>·ln(m₀/m<sub>f</sub>)</span>——提高比冲（v<sub>e</sub>）或质量比（扔掉空壳）是仅有的两条路，「分级」正是为了提高质量比。</p>
+<p><b>变质量运动</b>是火箭问题的核心：飞行中质量不断减小，即使推力不变，加速度 a = F/m 也会越来越大。齐奥尔科夫斯基火箭方程给出速度增量：<span class="hl">Δv = v<sub>e</sub>·ln(m₀/m<sub>f</sub>)</span>——提高比冲（v<sub>e</sub>）或质量比（扔掉空壳）是仅有的两条路，「分级」正是为了提高质量比。</p>
 <p><b>试一试</b>：拖动比冲与质量比两个滑杆，看理想 Δv 何时够到入轨所需的约 9.3 km/s（含重力与大气损耗）。再点「逃逸救生演示」，看逃逸塔怎么在 0.2 秒内把飞船拉离故障火箭。</p>
 <div class="rkt-note">CZ-2F 一级主机单台海平面推力约 750 kN；二级真空机比冲约 300 s——这就是滑杆的默认量级。右栏「分级数」滑杆用等尺寸分级近似对比 1~4 级方案：级数越多，ln 项相加越大——这就是「不分级就到不了轨道」的定量演示。</div>`,
     enter() {
@@ -5961,7 +6276,7 @@ const SECTIONS = [
   {
     group: '飞行任务 · 上升', id: 'ascent', title: '冲出大气',
     html: `<p>火箭不是直着飞：<b>程序转弯（重力转弯）</b>让弹道逐渐倾斜，沿着地球曲面「横」过来——最终目的不是飞高，而是<b>达到 7.9 km/s 的第一宇宙速度量级</b>。</p>
-<p>大气密度随高度<b>指数下降</b>（标准大气：11 km 以下每升 5.5 km 密度约减半）：阻力 F<sub>D</sub> = ½ρv²C<sub>D</sub>A 与动压 q = ½ρv² 在约 <b>70 s、高度 11 km</b> 处达到峰值（Max-Q），这是箭体受力最严酷的时刻，此后空气阻力迅速消失。同时 N = m(g+a)：<b>航天员处于超重状态</b>，火箭里的「体重」随加速度增大。</p>
+<p>大气密度随高度<b>指数下降</b>（标准大气：11 km 以下每升 5.5 km 密度约减半）：阻力 F<sub>D</sub> = ½ρv²C<sub>D</sub>A 与动压 q = ½ρv² 在约 <b>70 s、高度 11 km</b> 处达到峰值（Max-Q），这是全程中箭体载荷最严酷的一刻，此后空气阻力迅速消失。同时 N = m(g+a)：<b>航天员处于超重状态</b>，火箭里的「体重」随加速度增大。</p>
 <p>开「受力分析」看推力/重力/阻力箭头；遥测面板实时画出速度、高度、动压、过载四条曲线；打开「真实任务对比」可以把你的飞行与<b>标称弹道</b>（虚线）叠加比较。</p>`,
     enter() {
       useScene('site', (g) => { buildSite(g, TEX); });
@@ -5980,8 +6295,8 @@ const SECTIONS = [
   },
   {
     group: '飞行任务 · 上升', id: 'sep', title: '抛掉包袱',
-    html: `<p>分级是把「用完的空壳」扔掉——这是<span class="hl">多级火箭</span>的核心思想：轻装加速。烧空的助推器和一级如果一直带着，就是「死重」，质量比上不去。神舟任务中的分离时序：</p>
-<p>① ~120 s <b>逃逸塔分离</b>（最危险的时段已过）；② ~139 s <b>助推器分离</b>；③ ~157 s <b>一二级「热分离」</b>——一级还没关机二级就先点火，燃气从级间段的排焰窗排出，然后解锁分离，二级立刻接着加速；④ ~200 s、高度 110 km 以上<b>整流罩分离</b>（出了大气层，飞船不再需要「外套」，减重约 2 t）；⑤ ~585 s <b>二级关机 · 船箭分离</b>，神舟入轨。</p>
+    html: `<p>分级是把「用完的空壳」扔掉——这是<span class="hl">多级火箭</span>的核心思想：轻装加速。烧空了的助推器与一级若继续挂在箭上，就是「死重」，质量比上不去。神舟任务中的分离时序：</p>
+<p>① ~120 s <b>逃逸塔分离</b>（最危险的时段已过）；② ~139 s <b>助推器分离</b>；③ ~157 s <b>一二级「热分离」</b>——一级未关机时二级先行点火，燃气经级间段的排焰窗导流排出，随后解锁分离，由上面级马上接力加速；④ ~200 s、高度 110 km 以上<b>整流罩分离</b>（已出大气层，飞船不再需要「外套」，减重约 2 t）；⑤ ~585 s <b>二级关机 · 船箭分离</b>，神舟入轨。</p>
 <p>点「跳到分离前」再慢速观看每个分离瞬间。</p>`,
     enter() {
       useScene('site', (g) => { buildSite(g, TEX); });
@@ -6003,7 +6318,7 @@ const SECTIONS = [
     html: `<p>二级把飞船推到 <b>350 km</b> 左右、速度接近该高度的圆轨道速度 <span class="hl">v = √(μ/r)</span>（约 7.7 km/s；贴近地面时是 7.9 km/s，即第一宇宙速度）——关机后不再有推力，飞船靠惯性「落不下来」，这就是入轨。</p>
 <p>火箭向东飞：发射纬度越低，能借到的地球自转速度越多（酒泉纬度约 41°，白捡约 0.35 km/s）。</p>
 <p>改变四个真实参数试试：<b>载荷质量</b>（神舟飞船约 8 t）、<b>二级比冲</b>（发动机效率）、<b>起飞推力</b>与<b>目标轨道高度</b>。载荷太重或比冲太低 → 差一点速度，<b>入轨失败</b>。</p>
-<p>齐奥尔科夫斯基公式 Δv = v<sub>e</sub>·ln(m₀/m<sub>f</sub>) 告诉我们：每一千克载荷都在吃掉速度余量——这也是「不分级就到不了轨道」的数学原因。</p>`,
+<p>齐奥尔科夫斯基火箭方程 Δv = v<sub>e</sub>·ln(m₀/m<sub>f</sub>) 告诉我们：每一千克载荷都在吃掉速度余量——这也是「不分级就到不了轨道」的数学原因。</p>`,
     enter() {
       useScene('site', (g) => { buildSite(g, TEX); });
       if (!RKT.built) buildRocket();
@@ -6021,7 +6336,7 @@ const SECTIONS = [
   },
   {
     group: '在轨与返回', id: 'orbit', title: '在轨飞行',
-    html: `<p>入轨后，飞船进入<b>完全失重</b>：不是没有重力，而是<span class="hl">重力全部用来提供向心力</span>（万有引力 = m v²/r = GMm/r²），舱内一切都在「自由下落」，所以自由漂浮。这个高度的重力加速度仍有约 <b>8.7 m/s²</b>（只比地面小 11%）。</p>
+    html: `<p>入轨后，飞船进入<b>完全失重</b>：不是没有重力，而是<span class="hl">重力全部用来提供向心力</span>（万有引力 = m v²/r = GMm/r²），舱内一切都在「自由下落」，所以自由漂浮。在此轨道上，重力加速度约为 <b>8.7 m/s²</b>（只比地面小 11%）。</p>
 <p>轨道越低速度越快、周期越短。神舟在约 390 km 高度与<b>天宫空间站</b>对接，<b>约 92 分钟绕地球一圈</b>，一天能看到 16 次日出日落。第一宇宙速度（7.9 km/s，贴地飞行）是圆轨道速度的最大值；轨道升高，速度下降、周期变长。</p>
 <p>拖动「轨道高度」滑杆，看速度、周期与当地重力的变化；视角按钮切换跟随舱/全景；点「对接演示」看神舟如何一步步靠上天宫的前向端口。</p>`,
     enter() {
@@ -6042,7 +6357,7 @@ const SECTIONS = [
   {
     group: '在轨与返回', id: 'reentry', title: '再入大气',
     html: `<p>回家比去更惊险：返回舱以 <b>7.6 km/s</b> 冲进大气，动能约 <b>10<sup>11</sup> J</b> 全部换成<b>热</b>——船头周围形成上千摄氏度的<b>等离子鞘</b>，电离气体屏蔽电磁波，这就是 <b>黑障</b>（约 80~40 km）。</p>
-<p><b>再入角</b>是关键：<span class="hl">太浅会被大气像打水漂一样弹回太空，太陡则减速过猛、过载超限</span>。神舟的再入角约 1.5°~2°，过载控制在 5 g 以内——返回舱的配平攻角产生少量升力，靠滚转改变升力方向来控制落点、降低过载。</p>
+<p><b>再入角</b>是关键：<span class="hl">太浅会被大气像打水漂一样弹回太空，太陡则减速过猛、过载超限</span>。神舟的再入角约 1.5°~2°，过载控制在 5 g 以内——返回舱以配平攻角飞行时会带出一份小升力，通过滚转调整这份升力的指向，用来修正落点并压低过载。</p>
 <p>调「再入角」滑杆后点「开始再入」，看过载峰值、烧蚀热度与黑障区间怎么变；绿色虚线是 <b>1.2°~2.6° 的再入走廊</b>。</p>`,
     enter() {
       useScene('reentry', (g) => reentryBuildWrap(g));
@@ -6353,7 +6668,7 @@ SECTIONS.push({
 const RKT_QUIZ = [
   { q: 'CZ-2F 的逃逸塔作用是什么？', opts: ['为火箭提供额外推力', '起飞初期出现故障时，把飞船快速拉离火箭', '在轨道上调整飞船姿态', '分离后为二级提供电源'], a: 1, ex: '逃逸塔是起飞后约 120 秒内的「生命保险」：固体发动机点火，零点几秒内把整流罩连同飞船拉离故障火箭，随后开伞着陆（第 2 章可演示）。' },
   { q: '火箭离地的最低条件是？', opts: ['推力大于重力（T/W > 1）', '速度大于音速', '高度超过 10 km', '质量小于 100 t'], a: 0, ex: '推重比 T/W > 1 才能离地。CZ-2F 起飞推重比约 1.26；把「起飞推力」滑到 90% 以下，T/W < 1，火箭就钉在发射台上（第 3 章）。' },
-  { q: 'Max-Q（最大动压）出现在什么高度量级？', opts: ['地面附近', '约 11 km（70 秒前后）', '约 60 km', '入轨前'], a: 1, ex: '动压 q=½ρv²：低空密度大速度小、高空速度大密度小，两者乘积在约 11 km、70 s 达峰（约 31 kPa）。这是箭体受力最严酷的时刻（第 4 章）。' },
+  { q: 'Max-Q（最大动压）出现在什么高度量级？', opts: ['地面附近', '约 11 km（70 秒前后）', '约 60 km', '入轨前'], a: 1, ex: '动压 q=½ρv²：低空密度大速度小、高空速度大密度小，两者乘积在约 11 km、70 s 达峰（约 31 kPa）。即第 4 章所讲的载荷峰值时刻。' },
   { q: '「重力转弯」的目的是？', opts: ['保持竖直向上最快离地', '逐渐把速度方向从竖直转向水平，达到轨道速度', '减小噪声', '节省降落伞'], a: 1, ex: '入轨需要的是约 7.9 km/s 的水平速度而非高度。程序转弯让弹道逐渐倾斜，沿地球曲面「横」过来（第 4 章）。' },
   { q: '神舟任务中一二级「热分离」的特点是？', opts: ['一级关机熄火后再分离', '二级先点火再解锁分离，燃气从排焰窗排出', '整流罩先抛掉', '在真空中不能分离'], a: 1, ex: '热分离：一级尚未关机、二级先点火，级间段的排焰窗把二次燃气排走，随后解锁分离——衔接无缝、损失小（第 5 章）。' },
   { q: '第一宇宙速度的数值与含义是？', opts: ['7.9 km/s，贴近地面圆轨道速度', '11.2 km/s，逃逸地球速度', '16.7 km/s，逃逸太阳速度', '3.8 km/s，月球轨道速度'], a: 0, ex: '7.9 km/s 是贴地圆轨道速度（v=√(μ/r)），也是圆轨道速度的最大值；轨道越高速度越低。11.2 km/s 是第二宇宙速度（逃逸）（第 6、7 章）。' },
@@ -6362,7 +6677,7 @@ const RKT_QUIZ = [
   { q: '「黑障」期间发生了什么？', opts: ['航天员失明', '等离子鞘屏蔽电磁波，通信中断', '太阳能帆板失效', '发动机无法点火'], a: 1, ex: '约 80~40 km 高度，船头高温电离气体形成等离子鞘，吸收/反射无线电波，通信中断数分钟——这是正常现象（第 8 章）。' },
   { q: '神舟主伞的面积约为？', opts: ['120 m²', '500 m²', '1200 m²', '5000 m²'], a: 2, ex: '主伞约 1200 m²，把返回舱从 ~180 m/s 减到平衡速度约 7 m/s（v=√(2mg/ρC_dA)）。伞面积就是刹车片（第 9 章）。' },
   { q: '着陆前 1 m 点燃反推发动机的原理是？', opts: ['把伞吹开', '动量定理：减小接地速度 Δv，配合座椅缓冲延长 Δt，减小冲击力', '点燃信号弹', '融化冻土'], a: 1, ex: 'FΔt = mΔv：反推把 ~7 m/s 再压到 ~2 m/s，冲击大幅减小。关掉反推试试「硬着陆」判定（第 9 章）。' },
-  { q: '齐奥尔科夫斯基公式 Δv = ve·ln(m₀/mf) 告诉我们？', opts: ['火箭越重飞得越快', '提高比冲或扔掉空壳（分级）才能提高速度增量', '燃料越多越好', '真空里火箭无法加速'], a: 1, ex: '两条路：提高喷气速度 ve（更好的发动机）或提高质量比 m₀/mf（分级扔掉死重）。「抛掉包袱」正是分级的意义（第 2、5 章）。' },
+  { q: '齐奥尔科夫斯基火箭方程 Δv = ve·ln(m₀/mf) 告诉我们？', opts: ['火箭越重飞得越快', '提高比冲或扔掉空壳（分级）才能提高速度增量', '燃料越多越好', '真空里火箭无法加速'], a: 1, ex: '两条路：提高喷气速度 ve（更好的发动机）或提高质量比 m₀/mf（分级扔掉死重）。「抛掉包袱」正是分级的意义（第 2、5 章）。' },
   { q: '神舟飞船由哪三舱组成？', opts: ['指令舱-服务舱-登陆舱', '轨道舱-返回舱-推进舱', '前舱-中舱-后舱', '生活舱-实验舱-气闸舱'], a: 1, ex: '轨道舱（前，带对接机构）、返回舱（中，钟形防热大底，航天员乘员舱）、推进舱（后，主发动机与太阳翼）。剖视整流罩可以看它（第 1、7 章）。' },
   { q: '东风着陆场承担的神舟任务是？', opts: ['全部早期无人试验', 'SZ-12 起的主着陆场（此前为四子王旗）', '仅应急着陆', '海上溅落'], a: 1, ex: '自空间站阶段（SZ-12，2021）起，东风着陆场成为主着陆场；早期任务主用四子王旗着陆场（第 9 章场景即东风着陆场）。' },
 ];
@@ -7017,7 +7332,7 @@ RKT_QUIZ.push(
   { q: '上升段航天员「胸背向」过载最高约多少？', opts: ['1 g', '4 g 左右', '9 g', '0 g'], a: 1, ex: 'CZ-2F 上升段轴向过载峰值约 4 g 且沿胸背轴——人体在这个方向最能扛；再入段被升力式再入压在 5 g 以内（第 4、8 章）。' },
   { q: '飞船的轨道舱在任务结束后的去向是？', opts: ['随返回舱一起回家', '留轨继续开展空间探测', '拖到坟墓轨道', '改装成空间站舱段'], a: 1, ex: '早期神舟任务轨道舱留轨数月继续工作——「能留则留」也是任务效益的一部分（第 1 章）。' },
   { q: 'Max-Q 之后箭体承受的气动载荷如何变化？', opts: ['继续增大直到入轨', '随空气密度下降迅速减小', '不变', '随机波动'], a: 1, ex: 'q=½ρv²：过了 11 km 密度指数下降占主导，q 迅速回落——结构最难的考试在 70 秒就交卷了（第 4 章）。' },
-  { q: '整流罩抛掉后换来什么？', opts: ['燃料增加', '约 60 m/s 的速度增量（减重 2 t 的回报）', '姿态更稳', '通信更好'], a: 1, ex: '按齐奥尔科夫斯基公式，2 t 死重消失直接换速度——抛罩是全程「性价比」最高的减重动作（第 4、5 章）。' },
+  { q: '整流罩抛掉后换来什么？', opts: ['燃料增加', '约 60 m/s 的速度增量（减重 2 t 的回报）', '姿态更稳', '通信更好'], a: 1, ex: '按齐奥尔科夫斯基火箭方程，2 t 死重消失直接换速度——抛罩是全程「性价比」最高的减重动作（第 4、5 章）。' },
   { q: '黑障期间地面还有哪双「眼睛」？', opts: ['完全没有', '测控雷达 + 预测弹道外推', '航天员手机', '气象卫星'], a: 1, ex: '等离子鞘屏蔽无线电，雷达是黑障里唯一的跟踪手段，落点预报靠外推（第 8 章）。' },
   { q: '主伞的三级收口是为了什么？', opts: ['好看', '分级充气控制开伞冲击，保护伞衣与结构', '节省布料', '传统仪式'], a: 1, ex: '180 m/s 下一次充满的冲击会撕裂伞体：收口绳让伞先小口进气、逐步张满（第 9 章）。' },
   { q: '为什么仿真要「每次只改一个参数」？', opts: ['省时间', '控制变量——才能归因到参数与结果的因果', '软件限制', '避免作弊'], a: 1, ex: '多参数同改时结果无法归因；单变量法是工程实验的第一戒律（第 11 章）。' },

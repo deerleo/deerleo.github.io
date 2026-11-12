@@ -2,15 +2,21 @@
  * 章节：照片 51 号 / 动手搭 DNA 模型 / DNA 双螺旋的结构 / 随堂检测
  * 场景：X 射线衍射图样实时计算（螺距/半径/链数可调，对照照片 51 号）、
  *       脱氧核苷酸组装与互补配对、按序列生成的 B 型双螺旋（点碱基对看氢键、查哥夫规则计算器）。
+ * 工艺：CatmullRom 变宽放样主链（磷酸珠串轮廓）+ 车削玻璃器皿 + 顶点色小件烘培合并 +
+ *       程序化木纹/粉笔板/标签/手绘记录本贴图 + 摄影棚环境反射与接触阴影体系 +
+ *       实验台-背景货架-试剂道具阵列叙事；结构章碱基对悬停高亮与随转提示牌联动。
  * 布局：真·三栏（左章节大纲 / 中 3D 舞台 / 右知识点详解）+ 全元素折叠 + 专注模式，
- *       视觉工艺经 attachVFX 轻接入（后处理管线 + cubic 运镜）。
+ *       视觉工艺经 attachVFX 接入（后处理管线 + cubic 运镜）。
  */
 import {
   THREE, DEG, TAU, clamp,
   createApp, makeLoader,
   createControlsPanel, makeHUD, makeTextSprite, setSpriteText,
 } from './edu-core.js';
-import { attachVFX } from './edu-vfx.js';
+import {
+  attachVFX, PAL, matSheen, matCoat, matStd,
+  makeStudioEnvironment, makeWoodTexture, makeLabelTexture, fbm3,
+} from './edu-vfx.js';
 
 /* ---------------- 基础与工艺接入 ---------------- */
 
@@ -27,6 +33,9 @@ const { scene, camera, controls } = app;
 /* 视觉工艺接入：后处理管线接管渲染与相机缓动（setCamera 升级为 cubic 运镜） */
 const vfx = attachVFX(app, 'illus');
 
+/* 摄影棚环境反射：金属件与玻璃器皿的 PBR 反射来源（程序化，按 renderer 缓存） */
+scene.environment = makeStudioEnvironment(app.renderer);
+
 scene.add(new THREE.AmbientLight(0xe6ecf5, 1.15));
 const key = new THREE.DirectionalLight(0xfff2e0, 1.7);
 key.position.set(5, 8, 6);
@@ -34,6 +43,15 @@ scene.add(key);
 const rim = new THREE.DirectionalLight(0xbcd4ff, 0.5);
 rim.position.set(-6, 2, -5);
 scene.add(rim);
+/* 补光体系：天光罩（上冷下暖）+ 低位补光 + 地面反弹，消除背光面的死黑 */
+const hemi = new THREE.HemisphereLight(0xdfe9f4, 0x35281a, 0.55);
+scene.add(hemi);
+const fill = new THREE.DirectionalLight(0xd9e5f2, 0.5);
+fill.position.set(-3.5, 4.5, 7.5);
+scene.add(fill);
+const bounce = new THREE.DirectionalLight(0xffe2c2, 0.28);
+bounce.position.set(2.5, -3.5, -6);
+scene.add(bounce);
 
 const M = (color, rough = 0.7, metal = 0, extra = {}) =>
   new THREE.MeshStandardMaterial({ color, roughness: rough, metalness: metal, ...extra });
@@ -44,8 +62,214 @@ function label(text, color = '#ffffff', scale = 0.0055, bg = 'rgba(10,16,24,0.72
 }
 
 const BASE_COLORS = { A: 0x59d999, T: 0xe05252, G: 0xffb054, C: 0x6f9de0 };
+const BASE_NAMES = { A: '腺嘌呤', T: '胸腺嘧啶', G: '鸟嘌呤', C: '胞嘧啶' };
+const BASE_EN = { A: 'Adenine', T: 'Thymine', G: 'Guanine', C: 'Cytosine' };
 const COMPLEMENT = { A: 'T', T: 'A', G: 'C', C: 'G' };
 const HBONDS = { A: 2, T: 2, G: 3, C: 3 };   // 与互补碱基之间的氢键数（A=T 2，G≡C 3）
+const PLATE_W = { A: 0.88, G: 0.88, T: 0.64, C: 0.64 };   // 嘌呤双环宽 / 嘧啶单环窄
+
+/* ---------------- 工艺工具集（材质分层 / 变宽放样 / 倒角板件 / 接触阴影） ---------------- */
+
+/* 按角色分层的共享材质：骨架漆面 / 磷酸黄铜 / 糖环绒面 / 器皿玻璃 / 台面深金属。
+   全部常驻复用，rebuild 时只释放几何体，勿 dispose 这批材质。 */
+const craftMats = {
+  backbone: matCoat(0x9aa6ba, { roughness: 0.3, metalness: 0.2, clearcoatRoughness: 0.2 }),
+  phosphorus: matStd(PAL.brass, { roughness: 0.34, metalness: 0.85 }),
+  sugar: matSheen(0x8fb6d8, { roughness: 0.42, sheen: 0.55 }),
+  /* 器皿玻璃：透明清漆近似（不用 transmission——那会让渲染器每帧多跑一趟全场景，draw call 翻倍） */
+  glass: matCoat(0xd9edf2, { roughness: 0.08, metalness: 0.06, clearcoatRoughness: 0.12, opacity: 0.26, side: THREE.DoubleSide }),
+  metalDark: matStd(0x39424f, { roughness: 0.42, metalness: 0.72 }),
+  plinth: matStd(0x48535f, { roughness: 0.5, metalness: 0.58 }),
+  steel: matStd(PAL.steel, { roughness: 0.28, metalness: 0.92 }),
+  paper: matStd(PAL.paper, { roughness: 0.85 }),
+};
+/* 四种碱基各一块绒面材质（板件经 clone 出独立副本身份，供悬停高亮单独打光） */
+const plateMats = {};
+for (const b of Object.keys(BASE_COLORS)) {
+  plateMats[b] = matSheen(BASE_COLORS[b], { roughness: 0.4, sheen: 0.62 });
+}
+/* 氢键虚线的共享线材质（两个章节复用，规格一致就不必逐对新建） */
+const dashMat = new THREE.LineDashedMaterial({ color: 0xffe08a, dashSize: 0.055, gapSize: 0.05 });
+
+/* 变宽截面放样：沿 CatmullRom 样条扫掠半径随弧长参数变化的圆截面。
+   截面法向按 parallel transport 逐段递推（上一段法向投影到当前法平面），急弯不翻扭转。
+   用于磷酸-脱氧核糖主链管：radiusFn 制造等间距「珠粒」隆起 + fbm 细微肌理。 */
+function loftTube(pts, radiusFn, { segs = 200, radial = 10, mat } = {}) {
+  const curve = new THREE.CatmullRomCurve3(pts);
+  const pos = [], uvs = [], idx = [];
+  let prevN = null;
+  for (let s = 0; s <= segs; s++) {
+    const u = s / segs;
+    const c = curve.getPointAt(u);
+    const t = curve.getTangentAt(u).normalize();
+    const ref = Math.abs(t.y) < 0.9 ? new THREE.Vector3(0, 1, 0) : new THREE.Vector3(1, 0, 0);
+    let n = ref.sub(t.clone().multiplyScalar(ref.dot(t))).normalize();
+    if (prevN) n = prevN.clone().sub(t.clone().multiplyScalar(prevN.dot(t))).normalize();
+    prevN = n.clone();
+    const b = t.clone().cross(n).normalize();
+    const r = radiusFn(u);
+    for (let j = 0; j <= radial; j++) {
+      const a = (j / radial) * TAU;
+      const dir = n.clone().multiplyScalar(Math.cos(a)).add(b.clone().multiplyScalar(Math.sin(a)));
+      pos.push(c.x + dir.x * r, c.y + dir.y * r, c.z + dir.z * r);
+      uvs.push(j / radial, u);
+    }
+  }
+  const ring = radial + 1;
+  for (let s = 0; s < segs; s++) {
+    for (let j = 0; j < radial; j++) {
+      const a = s * ring + j, bq = a + ring;
+      idx.push(a, bq, a + 1, a + 1, bq, bq + 1);
+    }
+  }
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+  geo.setAttribute('uv', new THREE.Float32BufferAttribute(uvs, 2));
+  geo.setIndex(idx);
+  geo.computeVertexNormals();
+  const grp = new THREE.Group();
+  grp.add(new THREE.Mesh(geo, mat));
+  /* 链两端各封一个圆头，避免管口露馅 */
+  const capGeo = new THREE.SphereGeometry(Math.max(radiusFn(0), radiusFn(1)) * 1.08, 10, 8);
+  for (const u of [0, 1]) {
+    const cap = mesh(capGeo, mat);
+    cap.position.copy(curve.getPointAt(u));
+    grp.add(cap);
+  }
+  return grp;
+}
+
+/* 倒角圆角板件：碱基板 / 试剂标签底板用，替代裸 Box 的塑料感。
+   嘌呤（A/G 双环）比嘧啶（T/C 单环）更宽更厚，化学上站得住。 */
+function plateGeo(w, h, d, r = 0.05) {
+  const s = new THREE.Shape();
+  s.moveTo(-w / 2 + r, -h / 2);
+  s.lineTo(w / 2 - r, -h / 2);
+  s.quadraticCurveTo(w / 2, -h / 2, w / 2, -h / 2 + r);
+  s.lineTo(w / 2, h / 2 - r);
+  s.quadraticCurveTo(w / 2, h / 2, w / 2 - r, h / 2);
+  s.lineTo(-w / 2 + r, h / 2);
+  s.quadraticCurveTo(-w / 2, h / 2, -w / 2, h / 2 - r);
+  s.lineTo(-w / 2, -h / 2 + r);
+  s.quadraticCurveTo(-w / 2, -h / 2, -w / 2 + r, -h / 2);
+  const geo = new THREE.ExtrudeGeometry(s, {
+    depth: Math.max(0.01, d - r * 1.6),
+    bevelEnabled: true, bevelThickness: r * 0.8, bevelSize: r * 0.8, bevelSegments: 2, curveSegments: 5,
+  });
+  geo.translate(0, 0, -(d - r * 1.6) / 2);
+  return geo;
+}
+
+/* 接触阴影贴片：径向渐变圆盘压在道具落地处，消除「漂浮感」 */
+const shadowTex = (() => {
+  const S = 128;
+  const cv = document.createElement('canvas');
+  cv.width = cv.height = S;
+  const c = cv.getContext('2d');
+  const g = c.createRadialGradient(S / 2, S / 2, S * 0.06, S / 2, S / 2, S * 0.5);
+  g.addColorStop(0, 'rgba(4,8,12,0.52)');
+  g.addColorStop(0.55, 'rgba(4,8,12,0.2)');
+  g.addColorStop(1, 'rgba(4,8,12,0)');
+  c.fillStyle = g;
+  c.fillRect(0, 0, S, S);
+  return new THREE.CanvasTexture(cv);
+})();
+function contactShadow(rx, rz, opacity = 0.55, y = 0.005) {
+  const m = mesh(
+    new THREE.PlaneGeometry(rx * 2, rz * 2),
+    new THREE.MeshBasicMaterial({ map: shadowTex, transparent: true, opacity, depthWrite: false })
+  );
+  m.rotation.x = -Math.PI / 2;
+  m.position.y = y;
+  m.renderOrder = 2;
+  return m;
+}
+
+/* 车削玻璃瓶：LatheGeometry 瓶身轮廓（瓶底圆角 → 直身 → 收肩 → 瓶口），
+   内部液面 + 弯月面 + 黄铜旋盖 + 双面标签，四种碱基溶液一套。 */
+function makeReagentBottle(base) {
+  const g = new THREE.Group();
+  const prof = [
+    [0.02, 0.02], [0.3, 0.02], [0.34, 0.1], [0.35, 0.5], [0.31, 0.76], [0.18, 0.9], [0.155, 1.04], [0.165, 1.1],
+  ].map(([x, y]) => new THREE.Vector2(x, y));
+  const body = mesh(new THREE.LatheGeometry(prof, 26), craftMats.glass);
+  g.add(body);
+  const liqMat = matSheen(BASE_COLORS[base], { roughness: 0.24, sheen: 0.4, opacity: 0.85 });
+  const liq = mesh(new THREE.CylinderGeometry(0.295, 0.315, 0.4, 22), liqMat);
+  liq.position.y = 0.26;
+  g.add(liq);
+  const meniscus = mesh(new THREE.SphereGeometry(0.295, 20, 8, 0, TAU, 0, Math.PI / 2), liqMat);
+  meniscus.scale.y = 0.24;
+  meniscus.position.y = 0.46;
+  g.add(meniscus);
+  const cap = mesh(new THREE.CylinderGeometry(0.185, 0.185, 0.15, 18), craftMats.phosphorus);
+  cap.position.y = 1.17;
+  const capRing = mesh(new THREE.TorusGeometry(0.185, 0.022, 8, 20), craftMats.steel);
+  capRing.rotation.x = Math.PI / 2;
+  capRing.position.y = 1.1;
+  g.add(cap, capRing);
+  const accent = '#' + new THREE.Color(BASE_COLORS[base]).getHexString();
+  const lblTex = makeLabelTexture(
+    [`${base} · ${BASE_NAMES[base]}`, BASE_EN[base], '0.10 mol/L'],
+    { w: 256, h: 150, accent, lineSizes: [34, 22, 20] }
+  );
+  const lblMat = new THREE.MeshStandardMaterial({ map: lblTex, roughness: 0.85 });
+  const lbl = mesh(new THREE.PlaneGeometry(0.44, 0.27), lblMat);
+  lbl.position.set(0, 0.42, 0.353);
+  lbl.rotation.x = -0.05;
+  const lblBack = lbl.clone();
+  lblBack.rotation.y = Math.PI;
+  lblBack.position.z = -0.353;
+  g.add(lbl, lblBack);
+  return g;
+}
+
+/* 小件烘培合并：把一组（几何+颜色）小件合成单个顶点色网格。
+   核苷酸的磷酸/氧/五碳糖/环键等 14 个微件合并为 1 个 draw，散件不减造型。 */
+const bakeMat = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.52, metalness: 0.12 });
+function bakePartsToMesh(parts, mat = bakeMat) {
+  let vCount = 0;
+  const filled = parts.map(({ geo, color }) => {
+    const g = geo.index ? geo.toNonIndexed() : geo;
+    if (!g.attributes.normal) g.computeVertexNormals();
+    const n = g.attributes.position.count;
+    const col = new Float32Array(n * 3);
+    const c = new THREE.Color(color);
+    for (let i = 0; i < n; i++) { col[i * 3] = c.r; col[i * 3 + 1] = c.g; col[i * 3 + 2] = c.b; }
+    g.setAttribute('color', new THREE.BufferAttribute(col, 3));
+    vCount += n;
+    return g;
+  });
+  const pos = new Float32Array(vCount * 3);
+  const nor = new Float32Array(vCount * 3);
+  const colAll = new Float32Array(vCount * 3);
+  let o = 0;
+  for (const g of filled) {
+    pos.set(g.attributes.position.array, o * 3);
+    nor.set(g.attributes.normal.array, o * 3);
+    colAll.set(g.attributes.color.array, o * 3);
+    o += g.attributes.position.count;
+  }
+  const merged = new THREE.BufferGeometry();
+  merged.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+  merged.setAttribute('normal', new THREE.BufferAttribute(nor, 3));
+  merged.setAttribute('color', new THREE.BufferAttribute(colAll, 3));
+  return mesh(merged, mat);
+}
+
+/* 两点间成键：圆柱沿键向量定向（糖环键 / 糖苷键共用），返回已摆到位的几何 */
+function bondGeoBetween(va, vb, r = 0.026) {
+  const len = va.distanceTo(vb);
+  const g = new THREE.CylinderGeometry(r, r, len, 8);
+  const q = new THREE.Quaternion().setFromUnitVectors(
+    new THREE.Vector3(0, 1, 0),
+    vb.clone().sub(va).normalize()
+  );
+  g.applyMatrix4(new THREE.Matrix4().makeRotationFromQuaternion(q));
+  const mid = va.clone().add(vb).multiplyScalar(0.5);
+  g.translate(mid.x, mid.y, mid.z);
+  return g;
+}
 
 const gPhoto = new THREE.Group();
 const gBuild = new THREE.Group();
@@ -54,12 +278,387 @@ scene.add(gPhoto, gBuild, gStruct);
 const GROUPS = [gPhoto, gBuild, gStruct];
 function showGroup(g) { GROUPS.forEach((x) => { x.visible = x === g; }); }
 
+/* ================= 实验室场景叙事（地台 / 实验台 / 背景货架 / 试剂道具阵列，全章常驻） ================= */
+
+const FLOOR_Y = -4.4;
+const BENCH_TOP_Y = FLOOR_Y + 0.72;   /* 实验台顶面高度（展台底座与道具均以此为地面） */
+const gEnv = new THREE.Group();
+scene.add(gEnv);
+
+/* 木质实验台：桌面木纹（程序化年轮+纤维纹）+ 前缘护边 + 四根收腿 + 台底接触阴影 */
+function buildBench() {
+  const g = new THREE.Group();
+  const woodTop = makeWoodTexture({ base: '#6e4f30', dark: '#4a3016', light: '#8a6a42', seed: 11, planks: 5 });
+  woodTop.repeat.set(2.6, 1.0);
+  const topMat = new THREE.MeshStandardMaterial({ map: woodTop, roughness: 0.7, metalness: 0.03 });
+  const top = mesh(new THREE.BoxGeometry(15, 0.2, 4.6), topMat);
+  top.position.set(0, BENCH_TOP_Y - 0.1, 0.2);
+  g.add(top);
+  const trim = mesh(new THREE.BoxGeometry(15.12, 0.09, 4.72), craftMats.metalDark);
+  trim.position.set(0, BENCH_TOP_Y - 0.18, 0.2);
+  g.add(trim);
+  for (const [lx, lz] of [[-6.9, -1.7], [6.9, -1.7], [-6.9, 1.9], [6.9, 1.9]]) {
+    const leg = mesh(new THREE.CylinderGeometry(0.09, 0.13, 0.62, 12), craftMats.metalDark);
+    leg.position.set(lx, FLOOR_Y + 0.31, lz);
+    const foot = mesh(new THREE.CylinderGeometry(0.15, 0.16, 0.05, 14), craftMats.steel);
+    foot.position.set(lx, FLOOR_Y + 0.03, lz);
+    g.add(leg, foot);
+  }
+  const cross = mesh(new THREE.BoxGeometry(13.4, 0.07, 0.09), craftMats.metalDark);
+  cross.position.set(0, FLOOR_Y + 0.18, -1.7);
+  g.add(cross);
+  g.add(contactShadow(7.6, 2.7, 0.5, FLOOR_Y + 0.012));
+  gEnv.add(g);
+}
+
+/* 背景货架：双层木板 + 侧立板 + 背板（板面上手写粉笔要点，教学氛围道具） */
+function makeBoardTexture() {
+  const cv = document.createElement('canvas');
+  cv.width = 1024; cv.height = 200;
+  const c = cv.getContext('2d');
+  c.fillStyle = '#1a222b';
+  c.fillRect(0, 0, 1024, 200);
+  /* 板面擦痕 */
+  for (let i = 0; i < 60; i++) {
+    c.fillStyle = 'rgba(255,255,255,0.015)';
+    const x = Math.random() * 1024, y = Math.random() * 200;
+    c.fillRect(x, y, 30 + Math.random() * 70, 2 + Math.random() * 5);
+  }
+  c.strokeStyle = 'rgba(216,201,160,0.35)';
+  c.lineWidth = 4;
+  c.strokeRect(10, 10, 1004, 180);
+  c.fillStyle = 'rgba(226,214,182,0.5)';
+  c.font = '600 40px "PingFang SC", sans-serif';
+  c.fillText('A = T    G ≡ C    嘌呤 = 嘧啶', 60, 82);
+  c.font = '400 26px "PingFang SC", sans-serif';
+  c.fillStyle = 'rgba(226,214,182,0.38)';
+  c.fillText('螺距 3.4 nm · 直径 2 nm · 每圈 10 对碱基', 62, 148);
+  /* 右侧小螺旋涂鸦：两条正弦弧 + 横档 */
+  c.strokeStyle = 'rgba(159,216,200,0.4)';
+  c.lineWidth = 3;
+  for (const off of [0, Math.PI]) {
+    c.beginPath();
+    for (let x = 0; x <= 120; x += 4) {
+      const y = 100 + Math.sin(x / 38 + off) * 34;
+      x === 0 ? c.moveTo(870 + x, y) : c.lineTo(870 + x, y);
+    }
+    c.stroke();
+  }
+  for (let i = 0; i < 7; i++) {
+    const x = 878 + i * 16;
+    const y1 = 100 + Math.sin(x / 38) * 34, y2 = 100 + Math.sin(x / 38 + Math.PI) * 34;
+    c.beginPath(); c.moveTo(x, y1); c.lineTo(x, y2); c.stroke();
+  }
+  const tex = new THREE.CanvasTexture(cv);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  tex.anisotropy = 8;
+  return tex;
+}
+
+function buildShelf() {
+  const g = new THREE.Group();
+  const wood = makeWoodTexture({ base: '#6f5a3e', dark: '#4e3d24', light: '#8d744e', seed: 23 });
+  wood.repeat.set(3.2, 0.4);
+  const boardMat = new THREE.MeshStandardMaterial({ map: wood, roughness: 0.6, metalness: 0.04 });
+  const mkBoard = (y) => {
+    const b = mesh(new THREE.BoxGeometry(13.6, 0.12, 1.05), boardMat);
+    b.position.set(0, y, -3.62);
+    return b;
+  };
+  g.add(mkBoard(-0.52), mkBoard(1.14));
+  for (const sx of [-6.85, 6.85]) {
+    const side = mesh(new THREE.BoxGeometry(0.16, 2.2, 1.02), boardMat);
+    side.position.set(sx, 0.31, -3.62);
+    g.add(side);
+  }
+  const back = mesh(
+    new THREE.PlaneGeometry(13.3, 2.1),
+    new THREE.MeshStandardMaterial({ map: makeBoardTexture(), roughness: 0.92, color: 0xb8c2ca })
+  );
+  back.position.set(0, 0.31, -4.14);
+  g.add(back);
+  gEnv.add(g);
+}
+
+/* 离心管架：木座 4 孔 + A/T/G/C 四色盖离心管（管身磨砂玻璃感） */
+function buildTubeRack() {
+  const g = new THREE.Group();
+  const block = mesh(new THREE.BoxGeometry(1.5, 0.16, 0.42), craftMats.backbone);
+  block.position.y = 0.08;
+  g.add(block);
+  const holes = mesh(new THREE.BoxGeometry(1.34, 0.03, 0.3), craftMats.metalDark);
+  holes.position.y = 0.165;
+  g.add(holes);
+  const order = ['A', 'T', 'G', 'C'];
+  order.forEach((b, i) => {
+    const x = (i - 1.5) * 0.3;
+    const tube = mesh(new THREE.CylinderGeometry(0.09, 0.07, 0.4, 12), craftMats.glass);
+    tube.position.set(x, 0.36, 0);
+    const cap = mesh(new THREE.CylinderGeometry(0.098, 0.098, 0.09, 12), plateMats[b]);
+    cap.position.set(x, 0.56, 0);
+    g.add(tube, cap);
+  });
+  g.add(contactShadow(1.05, 0.42, 0.4, 0.014));
+  g.position.set(-0.9, -0.46, -3.58);
+  g.rotation.y = 0.06;
+  gEnv.add(g);
+}
+
+/* 烧杯 + 移液滴管 + 刻度贴：玻璃器皿一件三网格（杯身/水柱/滴管斜靠） */
+function makeGraduationTexture() {
+  const cv = document.createElement('canvas');
+  cv.width = 64; cv.height = 320;
+  const c = cv.getContext('2d');
+  c.clearRect(0, 0, 64, 320);
+  c.strokeStyle = 'rgba(255,255,255,0.75)';
+  for (let i = 0; i < 7; i++) {
+    const y = 288 - i * 40;
+    const w = i % 2 === 0 ? 34 : 20;
+    c.lineWidth = i % 2 === 0 ? 3 : 2;
+    c.beginPath(); c.moveTo(10, y); c.lineTo(10 + w, y); c.stroke();
+  }
+  const tex = new THREE.CanvasTexture(cv);
+  return tex;
+}
+
+function buildBeaker() {
+  const g = new THREE.Group();
+  const prof = [
+    [0.02, 0.02], [0.42, 0.02], [0.46, 0.08], [0.46, 0.96], [0.5, 1.0], [0.47, 1.04],
+  ].map(([x, y]) => new THREE.Vector2(x, y));
+  const body = mesh(new THREE.LatheGeometry(prof, 24), craftMats.glass);
+  g.add(body);
+  const water = mesh(new THREE.CylinderGeometry(0.42, 0.43, 0.5, 22),
+    matSheen(0x9fd4d8, { roughness: 0.18, sheen: 0.5, opacity: 0.55 }));
+  water.position.y = 0.31;
+  g.add(water);
+  const gradu = mesh(new THREE.PlaneGeometry(0.14, 0.66),
+    new THREE.MeshBasicMaterial({ map: makeGraduationTexture(), transparent: true }));
+  gradu.position.set(0.18, 0.56, 0.4);
+  g.add(gradu);
+  const pipe = mesh(new THREE.CylinderGeometry(0.014, 0.02, 1.15, 8), craftMats.glass);
+  pipe.position.set(-0.2, 0.72, 0.12);
+  pipe.rotation.z = 0.42;
+  const pipeTip = mesh(new THREE.ConeGeometry(0.022, 0.1, 8), craftMats.glass);
+  pipeTip.position.set(-0.415, 0.24, 0.12);
+  pipeTip.rotation.z = 0.42;
+  g.add(pipe, pipeTip);
+  g.add(contactShadow(0.62, 0.62, 0.42));
+  return g;
+}
+
+/* 培养皿：皿体 + 培养基淡面 + 皿盖（盖沿留缝），旁边平放 */
+function buildPetri() {
+  const g = new THREE.Group();
+  const dish = mesh(new THREE.CylinderGeometry(0.55, 0.55, 0.07, 30), craftMats.glass);
+  const agar = mesh(new THREE.CylinderGeometry(0.47, 0.47, 0.035, 26), matSheen(0xd8cfa8, { roughness: 0.5, opacity: 0.8 }));
+  agar.position.y = 0.012;
+  const lid = mesh(new THREE.CylinderGeometry(0.58, 0.58, 0.055, 30), craftMats.glass);
+  lid.position.y = 0.1;
+  g.add(dish, agar, lid);
+  g.add(contactShadow(0.7, 0.7, 0.36));
+  return g;
+}
+
+/* 实验记录本：摊开双页（方格纸 + X 衍射手绘草图 + 潦草笔记 + 咖啡杯环）+ 木质铅笔 */
+function makeNotebookTexture() {
+  const cv = document.createElement('canvas');
+  cv.width = 512; cv.height = 384;
+  const c = cv.getContext('2d');
+  c.fillStyle = '#f2eede';
+  c.fillRect(0, 0, 512, 384);
+  /* 纸纹噪点 */
+  for (let i = 0; i < 500; i++) {
+    c.fillStyle = 'rgba(120,110,80,0.045)';
+    c.fillRect(Math.random() * 512, Math.random() * 384, 2, 2);
+  }
+  /* 方格 */
+  c.strokeStyle = 'rgba(96,138,158,0.16)';
+  c.lineWidth = 1;
+  for (let x = 24; x < 512; x += 24) { c.beginPath(); c.moveTo(x, 16); c.lineTo(x, 368); c.stroke(); }
+  for (let y = 16; y < 384; y += 24) { c.beginPath(); c.moveTo(24, y); c.lineTo(488, y); c.stroke(); }
+  /* 左页：X 形衍射示意——沿对角撒 300 个墨点，四处交叉亮斑 */
+  c.save();
+  c.translate(150, 190);
+  c.strokeStyle = 'rgba(40,50,60,0.5)';
+  c.lineWidth = 2;
+  c.beginPath(); c.arc(0, 0, 120, 0, TAU); c.stroke();
+  for (const dir of [-1, 1]) {
+    for (let i = 0; i < 150; i++) {
+      const t = (i / 150 - 0.5) * 2;
+      const spread = (Math.random() - 0.5) * 22;
+      const a = (1 - Math.abs(t)) * 0.85;
+      c.fillStyle = `rgba(45,52,66,${0.1 + a * 0.4 * Math.random()})`;
+      const r = 3 + Math.random() * 5 * a;
+      c.beginPath();
+      c.arc(t * 105 * dir + spread * 0.4, t * 88 + spread, r, 0, TAU);
+      c.fill();
+    }
+  }
+  for (const [sx, sy] of [[-52, -44], [52, 44], [-52, 44], [52, -44]]) {
+    c.fillStyle = 'rgba(30,36,46,0.5)';
+    c.beginPath(); c.arc(sx, sy, 7, 0, TAU); c.fill();
+  }
+  c.restore();
+  /* 右页：潦草笔记横线 + 下划重点 */
+  c.strokeStyle = 'rgba(52,60,74,0.6)';
+  for (let i = 0; i < 8; i++) {
+    const y = 52 + i * 34;
+    c.lineWidth = 2.4;
+    c.beginPath();
+    c.moveTo(300, y);
+    const wob = 2 + Math.random() * 3;
+    for (let x = 300; x < 470; x += 14) c.lineTo(x, y + Math.sin(x / 17) * wob);
+    c.stroke();
+    if (i === 2 || i === 5) {
+      c.strokeStyle = 'rgba(200,90,60,0.7)';
+      c.beginPath(); c.moveTo(300, y + 8); c.lineTo(430, y + 8); c.stroke();
+      c.strokeStyle = 'rgba(52,60,74,0.6)';
+    }
+  }
+  /* 咖啡杯环 */
+  c.strokeStyle = 'rgba(150,96,52,0.28)';
+  c.lineWidth = 9;
+  c.beginPath(); c.arc(430, 300, 42, 0.4, 5.6); c.stroke();
+  const tex = new THREE.CanvasTexture(cv);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  tex.anisotropy = 8;
+  return tex;
+}
+
+function buildNotebook() {
+  const g = new THREE.Group();
+  const cover = mesh(new THREE.BoxGeometry(1.5, 0.045, 1.1), craftMats.metalDark);
+  g.add(cover);
+  const pageMat = new THREE.MeshStandardMaterial({ map: makeNotebookTexture(), roughness: 0.95, color: 0xc9c4b4 });
+  const pgL = mesh(new THREE.PlaneGeometry(0.72, 1.02), pageMat);
+  pgL.rotation.x = -Math.PI / 2;
+  pgL.rotation.z = Math.PI / 2;
+  pgL.position.set(-0.365, 0.028, 0);
+  const pgR = pgL.clone();
+  pgR.position.x = 0.365;
+  g.add(pgL, pgR);
+  /* 铅笔：木杆 + 笔芯尖 + 黄铜箍 */
+  const pencil = new THREE.Group();
+  const shaft = mesh(new THREE.CylinderGeometry(0.028, 0.028, 0.62, 10), craftMats.paper);
+  shaft.rotation.z = Math.PI / 2;
+  const tip = mesh(new THREE.ConeGeometry(0.028, 0.09, 10), craftMats.phosphorus);
+  tip.rotation.z = Math.PI / 2;
+  tip.position.x = -0.35;
+  const eraser = mesh(new THREE.CylinderGeometry(0.03, 0.03, 0.06, 10), matSheen(PAL.granule, { roughness: 0.6 }));
+  eraser.rotation.z = Math.PI / 2;
+  eraser.position.x = 0.34;
+  pencil.add(shaft, tip, eraser);
+  pencil.position.set(0.1, 0.06, 0.62);
+  pencil.rotation.y = 0.5;
+  g.add(pencil);
+  g.add(contactShadow(0.95, 0.75, 0.4));
+  return g;
+}
+
+/* 底片盒 + 储物木箱（X 射线底片与备用试剂的语境道具） */
+function buildFilmBox() {
+  const g = new THREE.Group();
+  const box = mesh(new THREE.BoxGeometry(1.15, 0.3, 0.78), craftMats.metalDark);
+  box.position.y = 0.15;
+  const lid = mesh(new THREE.BoxGeometry(1.18, 0.05, 0.8), craftMats.steel);
+  lid.position.y = 0.32;
+  const lbl = mesh(new THREE.PlaneGeometry(0.8, 0.22),
+    new THREE.MeshStandardMaterial({
+      map: makeLabelTexture(['X 射线底片', '5 cm × 5 cm', '避光保存'], { w: 256, h: 110, lineSizes: [30, 22, 18] }),
+      roughness: 0.85,
+    }));
+  lbl.rotation.x = -Math.PI / 2;
+  lbl.position.y = 0.352;
+  g.add(box, lid, lbl);
+  g.add(contactShadow(0.78, 0.58, 0.42));
+  return g;
+}
+
+function buildCrate() {
+  const g = new THREE.Group();
+  const wood = makeWoodTexture({ base: '#7a5a36', dark: '#553a1e', light: '#95734a', seed: 37, planks: 3 });
+  wood.repeat.set(1.2, 1.2);
+  const boxMat = new THREE.MeshStandardMaterial({ map: wood, roughness: 0.75 });
+  const box = mesh(new THREE.BoxGeometry(1.5, 1.15, 1.15), boxMat);
+  box.position.y = 0.575;
+  const frame = mesh(new THREE.BoxGeometry(1.56, 0.08, 1.2), craftMats.metalDark);
+  frame.position.y = 1.13;
+  const lbl = mesh(new THREE.PlaneGeometry(0.9, 0.3),
+    new THREE.MeshStandardMaterial({
+      map: makeLabelTexture(['ATGC 试剂（备用）', '干燥 避光'], { w: 256, h: 110, lineSizes: [30, 22], accent: '#5a4630' }),
+      roughness: 0.85,
+    }));
+  lbl.position.set(0, 0.62, 0.59);
+  g.add(box, frame, lbl);
+  g.add(contactShadow(1.0, 0.85, 0.45));
+  return g;
+}
+
+/* 展台底座：模型落位处的金属圆盘 + 立柱 + 支撑面接触阴影，把悬浮模型「放」进房间 */
+function makePlinth(rTop, yTop, x = 0, z = 0, sx = 1, sz = 1, baseY = BENCH_TOP_Y) {
+  const g = new THREE.Group();
+  const top = mesh(new THREE.CylinderGeometry(rTop, rTop * 1.08, 0.12, 36), craftMats.plinth);
+  top.scale.set(sx, 1, sz);
+  top.position.set(x, yTop - 0.06, z);
+  const colH = Math.max(0.05, yTop - 0.12 - baseY);
+  const col = mesh(new THREE.CylinderGeometry(rTop * 0.24, rTop * 0.34, colH, 14), craftMats.plinth);
+  col.scale.set(sx, 1, sz);
+  col.position.set(x, baseY + colH / 2, z);
+  const sh = contactShadow(rTop * 1.2 * sx, rTop * 1.2 * sz, 0.38, baseY + 0.012);
+  sh.position.x = x;
+  sh.position.z = z;
+  g.add(top, col, sh);
+  return g;
+}
+
+/* 地面 + 家具落位（装配一次，此后常驻；阴影贴片逐件铺设） */
+buildBench();
+buildShelf();
+buildTubeRack();
+{
+  const floor = mesh(new THREE.PlaneGeometry(64, 40), matStd(0x1c242d, { roughness: 0.94 }));
+  floor.rotation.x = -Math.PI / 2;
+  floor.position.y = FLOOR_Y;
+  gEnv.add(floor);
+  const bA = makeReagentBottle('A'); bA.position.set(-4.95, -0.46, -3.6); bA.rotation.y = -0.3;
+  const bT = makeReagentBottle('T'); bT.position.set(-3.9, -0.46, -3.64); bT.rotation.y = 0.22;
+  const bG = makeReagentBottle('G'); bG.position.set(4.3, -0.46, -3.6); bG.rotation.y = 0.4;
+  const bC = makeReagentBottle('C'); bC.position.set(5.35, -0.46, -3.66); bC.rotation.y = -0.15;
+  for (const b of [bA, bT, bG, bC]) {
+    b.add(contactShadow(0.52, 0.52, 0.4));
+    gEnv.add(b);
+  }
+  const beaker = buildBeaker();
+  beaker.position.set(-1.95, 1.2, -3.55);
+  beaker.rotation.y = -0.4;
+  gEnv.add(beaker);
+  const petri = buildPetri();
+  petri.position.set(-0.55, 1.2, -3.6);
+  gEnv.add(petri);
+  const note = buildNotebook();
+  note.position.set(1.5, 1.2, -3.55);
+  note.rotation.y = -0.35;
+  gEnv.add(note);
+  const filmBox = buildFilmBox();
+  filmBox.position.set(6.1, -0.46, -3.55);
+  filmBox.rotation.y = 0.5;
+  gEnv.add(filmBox);
+  const crate = buildCrate();
+  crate.position.set(-5.7, FLOOR_Y, -3.3);
+  crate.rotation.y = 0.3;
+  gEnv.add(crate);
+  /* 各章模型落位底座（章节 2 梯子直接落台面，阴影在 initBuild 里铺） */
+  gPhoto.add(makePlinth(1.35, -3.08));
+  gStruct.add(makePlinth(1.45, -2.68));
+}
+
 /* 螺旋生成器：骨架管 + 碱基对横档 */
 function buildHelix({ pitch = 3.4, radius = 1.0, rise = 0.34, height = 6, strands = 2, tubes = true, bps = true, baseLen = 0.86, phase2 = 0.4 }) {
   const g = new THREE.Group();
   const bpCount = Math.max(2, Math.round(height / rise));
   const turns = pitch / rise;
-  const strandMat = M(0x8a94a8, 0.4, 0.25);
+  const strandMat = craftMats.backbone;
   const bpMat = M(0xb9c2d4, 0.5);
 
   function strandPoint(t, phase) {
@@ -75,10 +674,12 @@ function buildHelix({ pitch = 3.4, radius = 1.0, rise = 0.34, height = 6, strand
       const pts = [];
       const N = 120;
       for (let i = 0; i <= N; i++) pts.push(strandPoint(i / N, ph));
-      const tube = new THREE.Mesh(
-        new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts), 200, 0.055, 8),
-        strandMat
-      );
+      /* 变宽放样：核苷酸节距处「珠粒」微隆 + fbm 肌理，主链呈磷酸-糖交替的串珠观感 */
+      const beads = Math.max(4, Math.round(height / rise));
+      const tube = loftTube(pts, (u) => {
+        const bead = Math.pow(0.5 + 0.5 * Math.cos(u * beads * TAU), 2.6);
+        return 0.048 + bead * 0.03 + fbm3(u * 36, ph * 5.3, 1.7, 5) * 0.004;
+      }, { segs: 200, radial: 10, mat: strandMat });
       g.add(tube);
     }
   }
@@ -202,49 +803,36 @@ function calcRef51() {
 
 /* ================= 章节 2：动手搭 DNA 模型 ================= */
 
-const pentMat = M(0x6f9de0, 0.5);
-const phosMat = M(0xffb054, 0.45);
-const bondGray = M(0xaeb9c8, 0.55);
-
-/* 单个脱氧核苷酸：磷酸（橙）+ 脱氧核糖（蓝五边形）+ 含氮碱基（字母板） */
+/* 单个脱氧核苷酸：磷酸（橙）+ 两个氧 + 脱氧核糖五元环 + 糖苷键烘为一件顶点色网格，
+   含氮碱基用倒角板件独立成形（嘌呤双环宽、嘧啶单环窄）+ 字母浮牌。 */
 function makeNucleotide(base) {
   const g = new THREE.Group();
-  // 磷酸
-  const p = mesh(new THREE.SphereGeometry(0.17, 14, 10), phosMat);
-  p.position.set(0, 0.34, 0);
-  const o1 = mesh(new THREE.SphereGeometry(0.09, 10, 8), M(0xe05252, 0.5));
-  o1.position.set(0.15, 0.46, 0.05);
-  const o2 = o1.clone(); o2.position.set(-0.13, 0.44, -0.05);
-  g.add(p, o1, o2);
-  // 脱氧核糖（五元环）
+  const parts = [];
+  /* 磷酸基团：中心磷球 + 两侧氧原子 */
+  parts.push({ geo: new THREE.SphereGeometry(0.17, 14, 10).translate(0, 0.34, 0), color: 0xffb054 });
+  parts.push({ geo: new THREE.SphereGeometry(0.09, 10, 8).translate(0.15, 0.46, 0.05), color: 0xe05252 });
+  parts.push({ geo: new THREE.SphereGeometry(0.09, 10, 8).translate(-0.13, 0.44, -0.05), color: 0xe05252 });
+  /* 脱氧核糖（五元环）：糖原子与环内 C-O 键 */
   const ribPts = [];
   for (let i = 0; i < 5; i++) {
     const a = (i / 5) * TAU - TAU / 2;
     ribPts.push(new THREE.Vector3(Math.cos(a) * 0.17, Math.sin(a) * 0.17 + 0.02, 0));
   }
-  const ribAtoms = ribPts.map((pt) => {
-    const m = mesh(new THREE.SphereGeometry(0.075, 10, 8), pentMat);
-    m.position.copy(pt);
-    g.add(m);
-    return m;
-  });
-  for (let i = 0; i < 5; i++) {
-    const va = ribAtoms[i].position, vb = ribAtoms[(i + 1) % 5].position;
-    const c = mesh(new THREE.CylinderGeometry(0.026, 0.026, va.distanceTo(vb), 6), bondGray);
-    c.position.copy(va).add(vb).multiplyScalar(0.5);
-    c.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), vb.clone().sub(va).normalize());
-    g.add(c);
+  for (const rp of ribPts) {
+    parts.push({ geo: new THREE.SphereGeometry(0.075, 10, 8).translate(rp.x, rp.y, rp.z), color: 0x8fb6d8 });
   }
-  // 糖苷键 + 碱基
-  const gly = mesh(new THREE.CylinderGeometry(0.026, 0.026, 0.24, 6), bondGray);
-  gly.position.set(0.1, 0.16, 0);
-  gly.rotation.z = -TAU / 8;
-  g.add(gly);
-  const plate = mesh(new THREE.BoxGeometry(0.62, 0.34, 0.09), M(BASE_COLORS[base], 0.45));
-  plate.position.set(0.62, 0.3, 0);
+  for (let i = 0; i < 5; i++) {
+    parts.push({ geo: bondGeoBetween(ribPts[i], ribPts[(i + 1) % 5], 0.026), color: 0xaeb9c8 });
+  }
+  /* 糖苷键：从糖环接向碱基板内缘 */
+  parts.push({ geo: bondGeoBetween(new THREE.Vector3(0.08, 0.08, 0), new THREE.Vector3(0.42, 0.3, 0), 0.026), color: 0xaeb9c8 });
+  g.add(bakePartsToMesh(parts));
+  const w = PLATE_W[base] * 0.76;
+  const plate = mesh(plateGeo(w, 0.32, 0.1, 0.04), plateMats[base]);
+  plate.position.set(0.42 + w / 2, 0.3, 0);
   g.add(plate);
   const ch = label(base, '#' + new THREE.Color(BASE_COLORS[base]).getHexString(), 0.0042);
-  ch.position.set(0.62, 0.3, 0.14);
+  ch.position.set(0.42 + w / 2, 0.3, 0.14);
   g.add(ch);
   return g;
 }
@@ -256,9 +844,13 @@ const buildParts = { template: [], incoming: [], hb: [], bps: [], ladder: null, 
 function initBuild() {
   if (buildParts.ladder) return;
   const ladder = new THREE.Group();
-  ladder.position.set(-0.32, 0, 0);
+  ladder.position.set(-0.32, 0.55, 0);
   gBuild.add(ladder);
   buildParts.ladder = ladder;
+  /* 台面接触阴影：梯子落位在实验台上方，投影贴着桌面 */
+  const benchSh = contactShadow(3.1, 1.6, 0.42, -3.662);
+  benchSh.position.x = 1.15;
+  gBuild.add(benchSh);
   // 每对碱基一个支点组（绕中轴扭转）
   TEMPLATE_SEQ.forEach((b, i) => {
     const pivot = new THREE.Group();
@@ -277,10 +869,10 @@ function initBuild() {
     buildParts.bps.push(pivot);
   });
   buildParts.axis = label('模板链 5′→3′（自上而下）', '#cfdcee', 0.0046);
-  buildParts.axis.position.set(-0.32, 4.35, 0);
+  buildParts.axis.position.set(-0.32, 4.92, 0);
   gBuild.add(buildParts.axis);
   buildParts.hint = label('从 5′ 端开始：点下方碱基按钮完成互补配对', '#ffd166', 0.0046);
-  buildParts.hint.position.set(1.2, 4.35, 0);
+  buildParts.hint.position.set(1.2, 4.92, 0);
   gBuild.add(buildParts.hint);
 }
 
@@ -351,7 +943,8 @@ function buildBModel(seq) {
     gStruct.remove(modelRoot);
     modelRoot.traverse((o) => {
       if (o.geometry) o.geometry.dispose();
-      if (o.material && o.material.dispose && o.isMesh) o.material.dispose();
+      /* 仅释放板件 clone 出的独立材质；共享工艺材质（骨架/磷酸/氢键线）常驻复用 */
+      if (o.isMesh && o.material && o.material.userData && o.material.userData.own) o.material.dispose();
     });
   }
   bpPickables.length = 0;
@@ -360,22 +953,47 @@ function buildBModel(seq) {
   const n = seqU.length;
   const RADIUS = 1.0, RISE = 0.34, TWIST = 36 * DEG, PHASE2 = 140 * DEG;
   const H = (n - 1) * RISE;
-  const strandMat = M(0x8a94a8, 0.38, 0.3);
+  const strandMat = craftMats.backbone;
 
   function pt(bpIndex, phase) {
     const y = H / 2 - bpIndex * RISE;
     const a = bpIndex * TWIST + phase;
     return new THREE.Vector3(Math.cos(a) * RADIUS, y, Math.sin(a) * RADIUS);
   }
-  // 骨架
+  // 骨架：变宽放样（核苷酸站点处珠粒微隆），替代等径直管
   for (const phase of [0, PHASE2]) {
     const pts = [];
     for (let i = 0; i < n; i++) pts.push(pt(i, phase));
     pts.push(pt(n - 1 + 0.55, phase));
-    modelRoot.add(new THREE.Mesh(
-      new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts), n * 12, 0.06, 8),
-      strandMat
-    ));
+    modelRoot.add(loftTube(pts, (u) => {
+      const bead = Math.pow(0.5 + 0.5 * Math.cos(u * (n - 0.55) * TAU), 3);
+      return 0.052 + bead * 0.022 + fbm3(u * 30, phase * 3.7, 2.3, 9) * 0.003;
+    }, { segs: Math.max(120, n * 14), radial: 10, mat: strandMat }));
+  }
+  // 磷酸珠：两条链的核苷酸站点各一粒黄铜珠（实例化，1 个 draw）
+  const beads = new THREE.InstancedMesh(new THREE.SphereGeometry(0.085, 10, 8), craftMats.phosphorus, n * 2);
+  {
+    const tmpM = new THREE.Matrix4();
+    let bi = 0;
+    for (const phase of [0, PHASE2]) {
+      for (let i = 0; i < n; i++) {
+        const p = pt(i, phase);
+        tmpM.makeTranslation(p.x, p.y, p.z);
+        beads.setMatrixAt(bi++, tmpM);
+      }
+    }
+  }
+  modelRoot.add(beads);
+  // 链末端化学封头：5′ 端磷酸锥 + 3′ 端羟基球
+  for (const phase of [0, PHASE2]) {
+    const p5 = pt(0, phase);
+    const tip = mesh(new THREE.ConeGeometry(0.08, 0.18, 10), craftMats.phosphorus);
+    tip.position.copy(p5);
+    tip.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), p5.clone().setY(0).normalize());
+    const p3 = pt(n - 1 + 0.55, phase);
+    const oh = mesh(new THREE.SphereGeometry(0.075, 10, 8), craftMats.sugar);
+    oh.position.copy(p3);
+    modelRoot.add(tip, oh);
   }
   // 末端标记 5'/3'
   const l5a = label('5′', '#ffd166', 0.0045); l5a.position.copy(pt(0, 0)).multiplyScalar(1.22);
@@ -384,7 +1002,7 @@ function buildBModel(seq) {
   const l5b = label('5′', '#9adfff', 0.0045); l5b.position.copy(pt(n - 1 + 0.5, PHASE2)).multiplyScalar(1.22);
   modelRoot.add(l5a, l3a, l3b, l5b);
 
-  // 碱基对
+  // 碱基对：倒角板件（嘌呤宽/嘧啶窄），板身材质 clone 出独立身份供悬停高亮
   const counts = { A: 0, T: 0, G: 0, C: 0 };
   for (let i = 0; i < n; i++) {
     const b1 = seqU[i], b2 = COMPLEMENT[b1];
@@ -397,29 +1015,30 @@ function buildBModel(seq) {
     pair.position.copy(mid);
     pair.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), dir);
     for (const [base, s] of [[b1, -1], [b2, 1]]) {
-      const plate = mesh(new THREE.BoxGeometry(0.78, 0.3, 0.1), M(BASE_COLORS[base], 0.42));
-      plate.position.x = s * (0.62 + halfGap);
+      const w = PLATE_W[base];
+      const pm = plateMats[base].clone();
+      pm.userData.own = true;
+      const plate = mesh(plateGeo(w, 0.3, 0.1, 0.045), pm);
+      plate.position.x = s * (halfGap + w / 2);
       plate.name = 'baseplate';
       plate.userData = { bp: i, base };
       pair.add(plate);
       bpPickables.push(plate);
       const ch = label(base, '#' + new THREE.Color(BASE_COLORS[base]).getHexString(), 0.0038);
-      ch.position.set(s * (0.62 + halfGap), 0, 0.16);
+      ch.position.set(s * (halfGap + w / 2), 0, 0.16);
       ch.name = 'letter';
       pair.add(ch);
     }
-    // 氢键短横线
+    // 氢键短横线：一对并成一条 LineSegments（2~3 段一次画完，共享线材质）
     const hbn = HBONDS[b1];
-    const dashMat = new THREE.LineDashedMaterial({ color: 0xffe08a, dashSize: 0.05, gapSize: 0.045 });
+    const dashPts = [];
     for (let k = 0; k < hbn; k++) {
       const yOff = (k - (hbn - 1) / 2) * 0.085;
-      const line = new THREE.Line(
-        new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(-halfGap, yOff, 0), new THREE.Vector3(halfGap, yOff, 0)]),
-        dashMat
-      );
-      line.computeLineDistances();
-      pair.add(line);
+      dashPts.push(new THREE.Vector3(-halfGap, yOff, 0), new THREE.Vector3(halfGap, yOff, 0));
     }
+    const dashes = new THREE.LineSegments(new THREE.BufferGeometry().setFromPoints(dashPts), dashMat);
+    dashes.computeLineDistances();
+    pair.add(dashes);
     modelRoot.add(pair);
   }
   // 沟标注
@@ -472,6 +1091,41 @@ app.dom.addEventListener('pointerup', (e) => {
     struct.pulse = 1;
     updateChargaffHud();
   }
+});
+
+/* 悬停联动：结构章指针掠过碱基对 → 板件即时提亮 + 浮动提示牌跟随（氢键数一眼可读） */
+const tipSprite = label('', '#ffe9b0', 0.0042);
+tipSprite.visible = false;
+let hoveredPlate = null;
+function setHover(plate) {
+  if (hoveredPlate === plate) return;
+  if (hoveredPlate && hoveredPlate.material.userData.own) {
+    hoveredPlate.material.emissive.setHex(0x000000);
+    hoveredPlate.material.emissiveIntensity = 1;
+  }
+  hoveredPlate = plate;
+  if (plate && activeSectionId === 'structure') {
+    plate.material.emissive.setHex(0xf2f6ff);
+    plate.material.emissiveIntensity = 0.3;
+    const { base } = plate.userData;
+    setSpriteText(tipSprite, `${base}—${COMPLEMENT[base]} · ${HBONDS[base]} 个氢键`, { fontSize: 30, color: '#ffe9b0', scale: 0.0042, bg: 'rgba(10,16,24,0.78)' });
+    /* 提示牌挂到碱基对组上：模型自转时跟着转，不脱锚 */
+    plate.parent.add(tipSprite);
+    tipSprite.position.set(0, 0.62, 0);
+    tipSprite.visible = true;
+    app.dom.style.cursor = 'pointer';
+  } else {
+    tipSprite.visible = false;
+    app.dom.style.cursor = '';
+  }
+}
+app.dom.addEventListener('pointermove', (e) => {
+  if (activeSectionId !== 'structure' || !modelRoot) { setHover(null); return; }
+  const r = app.dom.getBoundingClientRect();
+  pointer.set(((e.clientX - r.left) / r.width) * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1);
+  raycaster.setFromCamera(pointer, camera);
+  const hits = raycaster.intersectObjects(bpPickables, false);
+  setHover(hits.length ? hits[0].object : null);
 });
 
 function tickStruct(dt, t) {
@@ -574,7 +1228,7 @@ const SECTIONS = [
     id: 'structure',
     title: 'DNA 双螺旋的结构',
     html: `<p>沃森、克里克模型（B 型 DNA）要点：① <b>双链反向平行</b>（一条 5′→3′，另一条 3′→5′）；② <b>右手双螺旋</b>，螺距 3.4 nm，每圈 10 对碱基，直径 2 nm；③ 碱基对平面叠在螺旋内部，<b>A=T（2 氢键）、G≡C（3 氢键）</b>；④ 螺旋表面有<b>大沟与小沟</b>。</p>
-<p><b>碱基计算器</b>：改写下方输入框生成任意序列的原子级模型，右侧实时验证<span class="hl">查哥夫规则</span>（A=T、G=C、嘌呤总数 = 嘧啶总数）。</p>
+<p><b>碱基计算器</b>：改写下方输入框生成任意序列的原子级模型，右栏读数即时核对<span class="hl">查哥夫规则</span>（A=T、G=C、嘌呤总数 = 嘧啶总数）。</p>
 <p><b>点击任一碱基</b>，看高亮与氢键数量提示。</p>`,
     enter() {
       showGroup(gStruct);
@@ -836,6 +1490,7 @@ function selectChapter(i) {
   lessonEl.innerHTML = sec.html || '';
   if (activeQuizCleanup) { activeQuizCleanup(); activeQuizCleanup = null; }
   activeSectionId = sec.id;
+  if (sec.id !== 'structure') setHover(null);
   sec.enter();
   /* 本章无控件时整块手风琴收走（不动用户的手风琴偏好；数据块由帧循环按读数显隐同步） */
   accSecs.controls.classList.toggle('acc-empty', !controlsEl.children.length);
@@ -944,6 +1599,6 @@ loader.hide();
 
 window.__eduSections = { select: selectChapter };
 /* 调试句柄（自动化验收/像素级自查用） */
-window.__dnaDebug = { vfx, app, photo, buildState, struct };
+window.__dnaDebug = { vfx, app, photo, buildState, struct, hover: () => hoveredPlate };
 
 selectChapter(0);

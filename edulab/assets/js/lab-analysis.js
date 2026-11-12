@@ -1,5 +1,5 @@
 /* EduLab · 化学分析实验台（analysis / AnalytLab）
- * 章节：认识滴定管与移液管 / 中和滴定 / 指示剂与滴定曲线 / 误差分析 / 阳离子检验 / 阴离子检验 / 焰色反应 / 鉴定未知盐 / 随堂检测
+ * 章节：滴定管与移液管的认识 / 中和滴定 / 滴定曲线与指示剂 / 误差分析 / 阳离子检验 / 阴离子检验 / 焰色反应 / 鉴定未知盐 / 随堂检测
  * 实现：全 2D canvas 夜间实验室仿真（仪器矢量绘制），复用 edu-core 的章节/控制条/HUD/quiz。
  */
 import {
@@ -114,11 +114,22 @@ function drawLabBG() {
   ctx.lineWidth = 1;
   for (let x = 0; x < VW; x += 64) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, VH); ctx.stroke(); }
   for (let y = 0; y < VH; y += 64) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(VW, y); ctx.stroke(); }
+  // 摄影棚暗角（缓存离屏层，压住四角把视线收向台心）
+  ctx.drawImage(vignetteTex(), 0, 0, VW, VH);
 }
+let benchPatCache = null;
 function bench(line = 690) {
-  ctx.fillStyle = 'rgba(255,255,255,0.035)';
+  if (!benchPatCache) benchPatCache = ctx.createPattern(benchTex(), 'repeat');
+  ctx.fillStyle = benchPatCache;
   ctx.fillRect(0, line, VW, VH - line);
-  ctx.strokeStyle = 'rgba(255,255,255,0.09)';
+  // 台面顶缘受光带 + 前缘压暗（给出体积朝向）
+  const eg = ctx.createLinearGradient(0, line, 0, line + 30);
+  eg.addColorStop(0, 'rgba(210,224,238,0.15)');
+  eg.addColorStop(0.3, 'rgba(210,224,238,0.04)');
+  eg.addColorStop(1, 'rgba(0,0,0,0)');
+  ctx.fillStyle = eg;
+  ctx.fillRect(0, line, VW, 30);
+  ctx.strokeStyle = 'rgba(255,255,255,0.10)';
   ctx.lineWidth = 1.2;
   ctx.beginPath(); ctx.moveTo(40, line); ctx.lineTo(VW - 40, line); ctx.stroke();
 }
@@ -135,10 +146,18 @@ function backlight(x, y, w, h) {
 /* ---------------- 仪器绘制 ---------------- */
 
 function drawStand(x, groundY, topY, clamps) {
+  contactShadow(x, groundY + 10, 98, 11, 0.42);
   ctx.fillStyle = '#272d35';
   ctx.beginPath(); ctx.roundRect(x - 62, groundY - 8, 124, 16, 6); ctx.fill();
   ctx.fillStyle = '#39414c';
   ctx.beginPath(); ctx.roundRect(x - 62, groundY - 8, 124, 6, 3); ctx.fill();
+  // 底座固定螺栓（左右一对，金属高光点）
+  [-44, 44].forEach((bx) => {
+    ctx.fillStyle = '#4e5764';
+    ctx.beginPath(); ctx.arc(x + bx, groundY, 3.4, 0, 7); ctx.fill();
+    ctx.fillStyle = 'rgba(255,255,255,0.35)';
+    ctx.beginPath(); ctx.arc(x + bx - 1, groundY - 1, 1.2, 0, 7); ctx.fill();
+  });
   ctx.fillStyle = '#3d4551';
   ctx.beginPath(); ctx.roundRect(x - 4.5, topY, 9, groundY - topY - 6, 4); ctx.fill();
   ctx.fillStyle = '#4b5462';
@@ -147,6 +166,18 @@ function drawStand(x, groundY, topY, clamps) {
     ctx.strokeStyle = '#59636f';
     ctx.lineWidth = 7;
     ctx.beginPath(); ctx.moveTo(x, c.y); ctx.lineTo(c.x - 15, c.y); ctx.stroke();
+    // 夹持旋钮（滚花螺帽）
+    ctx.fillStyle = '#4e5764';
+    ctx.beginPath(); ctx.arc(x + 5, c.y + 9, 5, 0, 7); ctx.fill();
+    ctx.strokeStyle = 'rgba(255,255,255,0.22)';
+    ctx.lineWidth = 1;
+    for (let k = 0; k < 4; k++) {
+      const a = k * Math.PI / 2 + 0.4;
+      ctx.beginPath();
+      ctx.moveTo(x + 5 + Math.cos(a) * 2.4, c.y + 9 + Math.sin(a) * 2.4);
+      ctx.lineTo(x + 5 + Math.cos(a) * 4.6, c.y + 9 + Math.sin(a) * 4.6);
+      ctx.stroke();
+    }
     ctx.strokeStyle = '#737e8e';
     ctx.lineWidth = 3;
     ctx.beginPath(); ctx.arc(c.x - 14, c.y, 9, -0.6, 0.7); ctx.stroke();
@@ -169,6 +200,13 @@ function drawBurette(x, top, o = {}) {
     ctx.strokeStyle = 'rgba(230,240,255,0.65)';
     ctx.lineWidth = 1.3;
     ctx.beginPath(); ctx.ellipse(x, ly, r - 2.5, 3, 0, 0, 7); ctx.stroke();
+    // 凹液面（下弯月面暗弧 + 两侧上沿亮弧）
+    ctx.strokeStyle = 'rgba(16,24,34,0.55)';
+    ctx.lineWidth = 1.6;
+    ctx.beginPath(); ctx.arc(x, ly + 2.2, r - 3.2, 0.35, Math.PI - 0.35); ctx.stroke();
+    ctx.strokeStyle = 'rgba(255,255,255,0.4)';
+    ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.arc(x, ly - 1, r - 2.8, Math.PI + 0.5, -0.5); ctx.stroke();
   }
   ctx.strokeStyle = 'rgba(205,222,240,0.9)';
   ctx.lineWidth = 2;
@@ -419,6 +457,346 @@ function drawBottle(x, y, o = {}) {
   if (o.label) txt(o.label, x, y + 14, { size: 11.5, color: o.sel ? '#ffb59f' : '#9fb0c2', halo: null });
 }
 
+/* ---------------- 工艺层：Catmull-Rom 放样 / 接触阴影 / 程序化纹理（缓存离屏画布） ---------------- */
+
+/* Catmull-Rom 样条采样：控制点折线 → 平滑曲线点列（器皿轮廓 / 软管 / 金属丝 / 水流通用放样） */
+function crPoints(pts, res = 12) {
+  const out = [];
+  const P = (i) => pts[Math.max(0, Math.min(pts.length - 1, i))];
+  for (let i = 0; i < pts.length - 1; i++) {
+    const p0 = P(i - 1), p1 = P(i), p2 = P(i + 1), p3 = P(i + 2);
+    for (let j = 0; j < res; j++) {
+      const t = j / res, t2 = t * t, t3 = t2 * t;
+      out.push([
+        0.5 * (2 * p1[0] + (-p0[0] + p2[0]) * t + (2 * p0[0] - 5 * p1[0] + 4 * p2[0] - p3[0]) * t2 + (-p0[0] + 3 * p1[0] - 3 * p2[0] + p3[0]) * t3),
+        0.5 * (2 * p1[1] + (-p0[1] + p2[1]) * t + (2 * p0[1] - 5 * p1[1] + 4 * p2[1] - p3[1]) * t2 + (-p0[1] + 3 * p1[1] - 3 * p2[1] + p3[1]) * t3),
+      ]);
+    }
+  }
+  out.push([pts[pts.length - 1][0], pts[pts.length - 1][1]]);
+  return out;
+}
+function traceCR(pts, res = 12, close = false) {
+  const s = crPoints(pts, res);
+  ctx.beginPath();
+  s.forEach((p, i) => { i ? ctx.lineTo(p[0], p[1]) : ctx.moveTo(p[0], p[1]); });
+  if (close) ctx.closePath();
+}
+
+/* 接触阴影：贴地椭圆软阴影（径向渐变 × 纵向压扁），消除仪器「漂浮感」 */
+function contactShadow(x, y, rx, ry, a = 0.38) {
+  const g = ctx.createRadialGradient(x, y, ry * 0.25, x, y, rx);
+  g.addColorStop(0, `rgba(0,0,0,${a})`);
+  g.addColorStop(0.65, `rgba(0,0,0,${a * 0.42})`);
+  g.addColorStop(1, 'rgba(0,0,0,0)');
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.scale(1, ry / rx);
+  ctx.translate(-x, -y);
+  ctx.fillStyle = g;
+  ctx.beginPath();
+  ctx.arc(x, y, rx, 0, 7);
+  ctx.fill();
+  ctx.restore();
+}
+
+/* 程序化纹理工厂：按 key 缓存离屏画布，首帧生成、逐帧 drawImage（零重复绘制成本） */
+const texCache = new Map();
+function offTex(key, w, h, painter) {
+  let c = texCache.get(key);
+  if (!c) {
+    c = document.createElement('canvas');
+    c.width = w;
+    c.height = h;
+    painter(c.getContext('2d'), w, h);
+    texCache.set(key, c);
+  }
+  return c;
+}
+/* 台面材质：黑色酚醛树脂板（磨砂颗粒 + 拼缝 + 斜向磨痕） */
+function benchTex() {
+  return offTex('bench', 420, 140, (g, w, h) => {
+    const base = g.createLinearGradient(0, 0, 0, h);
+    base.addColorStop(0, '#141b22');
+    base.addColorStop(0.5, '#10161d');
+    base.addColorStop(1, '#0a0f15');
+    g.fillStyle = base;
+    g.fillRect(0, 0, w, h);
+    for (let i = 0; i < 900; i++) {
+      const x = Math.random() * w, y = Math.random() * h;
+      g.fillStyle = Math.random() > 0.5
+        ? `rgba(212,226,240,${(0.02 + Math.random() * 0.025).toFixed(3)})`
+        : `rgba(0,0,0,${(0.05 + Math.random() * 0.08).toFixed(3)})`;
+      g.fillRect(x, y, 1.3, 1.3);
+    }
+    g.strokeStyle = 'rgba(0,0,0,0.5)';
+    g.lineWidth = 2;
+    g.beginPath(); g.moveTo(0, h * 0.55); g.lineTo(w, h * 0.55); g.stroke();
+    g.strokeStyle = 'rgba(255,255,255,0.03)';
+    g.beginPath(); g.moveTo(0, h * 0.55 + 2); g.lineTo(w, h * 0.55 + 2); g.stroke();
+    for (let i = 0; i < 26; i++) {
+      g.strokeStyle = `rgba(255,255,255,${(0.008 + Math.random() * 0.012).toFixed(3)})`;
+      g.lineWidth = 0.8;
+      const x0 = Math.random() * w, y0 = Math.random() * h;
+      g.beginPath();
+      g.moveTo(x0, y0);
+      g.lineTo(x0 + 30 + Math.random() * 60, y0 + (Math.random() - 0.5) * 10);
+      g.stroke();
+    }
+  });
+}
+/* 画幅四角压暗（摄影棚暗角，缓存在离屏层） */
+function vignetteTex() {
+  return offTex('vig', 320, 190, (g, w, h) => {
+    const r = g.createRadialGradient(w / 2, h / 2, Math.min(w, h) * 0.34, w / 2, h / 2, Math.max(w, h) * 0.72);
+    r.addColorStop(0, 'rgba(0,0,0,0)');
+    r.addColorStop(1, 'rgba(2,4,8,0.4)');
+    g.fillStyle = r;
+    g.fillRect(0, 0, w, h);
+  });
+}
+/* 试剂标签贴图：纸底 + 双线框 + 纸纹 + 居中多行（瓶装道具的身份识别层） */
+function labelTex(lines, tone = '#dfe3cf') {
+  return offTex('lab:' + tone + ':' + lines.join('|'), 120, 72, (g, w, h) => {
+    g.fillStyle = tone;
+    g.fillRect(0, 0, w, h);
+    for (let i = 0; i < 70; i++) {
+      g.fillStyle = `rgba(94,78,46,${(0.03 + Math.random() * 0.04).toFixed(3)})`;
+      g.fillRect(Math.random() * w, Math.random() * h, 1.2, 1.2);
+    }
+    g.strokeStyle = '#96452f';
+    g.lineWidth = 3;
+    g.strokeRect(4.5, 4.5, w - 9, h - 9);
+    g.strokeStyle = 'rgba(150,69,47,0.5)';
+    g.lineWidth = 1;
+    g.strokeRect(9.5, 9.5, w - 19, h - 19);
+    g.fillStyle = '#40302a';
+    g.font = '600 15px ' + FONT;
+    g.textAlign = 'center';
+    g.textBaseline = 'middle';
+    lines.forEach((s, i) => {
+      g.fillText(s, w / 2, h / 2 + (i - (lines.length - 1) / 2) * 20);
+    });
+  });
+}
+
+/* ---------------- 场景叙事道具：细口试剂瓶 / 洗瓶 / 备用试管架 ---------------- */
+
+/* 瓶身轮廓放样：底 → 直壁 → 曲线收肩 → 瓶颈（Catmull-Rom 过控制点，两侧镜像闭合） */
+function bottlePath(x, groundY, w, h, neck) {
+  const half = w / 2;
+  const pts = [
+    [x - half, groundY],
+    [x - half, groundY - h * 0.45],
+    [x - half + 1, groundY - h * 0.60],
+    [x - neck - 3, groundY - h * 0.80],
+    [x - neck, groundY - h * 0.92],
+    [x - neck, groundY - h],
+    [x + neck, groundY - h],
+    [x + neck, groundY - h * 0.92],
+    [x + neck + 3, groundY - h * 0.80],
+    [x + half - 1, groundY - h * 0.60],
+    [x + half, groundY - h * 0.45],
+    [x + half, groundY],
+  ];
+  const s = crPoints(pts, 10);
+  const p = new Path2D();
+  s.forEach((q, i) => { i ? p.lineTo(q[0], q[1]) : p.moveTo(q[0], q[1]); });
+  p.closePath();
+  return p;
+}
+/* 带标签贴图与内液的细口瓶（标准液 / 指示剂 / 试剂道具通用） */
+function drawReagentBottle(x, groundY, o = {}) {
+  const w = o.w || 40, h = o.h || 62, neck = Math.max(6, w * 0.16);
+  contactShadow(x, groundY + 2, w * 0.8, 6.5, 0.32);
+  const p = bottlePath(x, groundY, w, h, neck);
+  ctx.fillStyle = 'rgba(178,198,222,0.13)';
+  ctx.fill(p);
+  if (o.fill) {
+    ctx.save();
+    ctx.clip(p);
+    const fy = groundY - h * (o.fillH || 0.45);
+    ctx.fillStyle = o.fill;
+    ctx.fillRect(x - w, fy, w * 2, groundY - fy + 2);
+    ctx.fillStyle = 'rgba(255,255,255,0.12)';
+    ctx.fillRect(x - w, fy, w * 2, 2.5);
+    ctx.restore();
+  }
+  ctx.strokeStyle = 'rgba(205,222,240,0.82)';
+  ctx.lineWidth = 1.8;
+  ctx.stroke(p);
+  ctx.fillStyle = 'rgba(196,206,222,0.88)';
+  ctx.beginPath();
+  ctx.roundRect(x - neck - 2.5, groundY - h - 7, (neck + 2.5) * 2, 8, 3);
+  ctx.fill();
+  ctx.strokeStyle = 'rgba(120,132,152,0.8)';
+  ctx.lineWidth = 1.2;
+  ctx.stroke();
+  if (o.label) {
+    const lt = labelTex(Array.isArray(o.label) ? o.label : [o.label]);
+    const lw = w * 0.94, lh = lw * 0.6;
+    ctx.drawImage(lt, x - lw / 2, groundY - h * 0.52 - lh / 2, lw, lh);
+  }
+  ctx.strokeStyle = 'rgba(255,255,255,0.20)';
+  ctx.lineWidth = 1.4;
+  ctx.beginPath();
+  ctx.moveTo(x - w / 2 + 4, groundY - 6);
+  ctx.lineTo(x - w / 2 + 4.5, groundY - h * 0.62);
+  ctx.stroke();
+}
+/* 洗瓶（塑料挤压瓶）：弯管喷嘴放样 + 吸水管；sq∈[0,1] 为挤压形变（冲洗联动） */
+function drawWashBottle(x, groundY, sq = 0) {
+  contactShadow(x, groundY + 2, 30, 6, 0.3);
+  ctx.save();
+  if (sq > 0) {
+    ctx.translate(x, groundY);
+    ctx.scale(1 - 0.1 * sq, 1 + 0.06 * sq);
+    ctx.translate(-x, -groundY);
+  }
+  const p = bottlePath(x, groundY, 46, 64, 8);
+  ctx.fillStyle = 'rgba(178,198,222,0.17)';
+  ctx.fill(p);
+  ctx.save();
+  ctx.clip(p);
+  ctx.fillStyle = 'rgba(160,208,255,0.35)';
+  ctx.fillRect(x - 30, groundY - 28, 60, 30);
+  ctx.fillStyle = 'rgba(255,255,255,0.12)';
+  ctx.fillRect(x - 30, groundY - 28, 60, 2.5);
+  ctx.restore();
+  ctx.strokeStyle = 'rgba(205,222,240,0.85)';
+  ctx.lineWidth = 1.8;
+  ctx.stroke(p);
+  ctx.restore();
+  ctx.fillStyle = 'rgba(196,206,222,0.88)';
+  ctx.beginPath();
+  ctx.roundRect(x - 11, groundY - 72, 22, 9, 3);
+  ctx.fill();
+  ctx.strokeStyle = 'rgba(205,222,240,0.9)';
+  ctx.lineWidth = 3.4;
+  ctx.lineCap = 'round';
+  traceCR([[x + 7, groundY - 70], [x + 11, groundY - 88], [x + 23, groundY - 95], [x + 35, groundY - 90], [x + 38, groundY - 79]], 12);
+  ctx.stroke();
+  ctx.lineCap = 'butt';
+  ctx.strokeStyle = 'rgba(205,222,240,0.5)';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(x - 3, groundY - 64);
+  ctx.lineTo(x - 3, groundY - 8);
+  ctx.stroke();
+  txt('洗瓶', x, groundY + 17, { size: 11, color: '#8fa0b2', halo: null });
+}
+/* 木制备用试管架（孔板 + 立柱 + 洁净试管阵列，台面叙事道具） */
+function drawSpareRack(x, groundY, n = 4) {
+  contactShadow(x, groundY + 2, 66, 7, 0.3);
+  const w = 128;
+  ctx.fillStyle = '#39332a';
+  ctx.beginPath(); ctx.roundRect(x - w / 2, groundY - 14, w, 14, 4); ctx.fill();
+  ctx.fillStyle = '#464032';
+  ctx.beginPath(); ctx.roundRect(x - w / 2, groundY - 14, w, 4.5, 2); ctx.fill();
+  ctx.fillStyle = '#39332a';
+  ctx.beginPath(); ctx.roundRect(x - w / 2, groundY - 78, w, 11, 4); ctx.fill();
+  ctx.fillStyle = '#403a2e';
+  ctx.fillRect(x - w / 2 + 8, groundY - 67, 5, 53);
+  ctx.fillRect(x + w / 2 - 13, groundY - 67, 5, 53);
+  for (let i = 0; i < n; i++) {
+    drawTube(x - (n - 1) * 15 + i * 30, groundY - 74, { w: 20, len: 56 });
+  }
+  txt('洁净试管', x, groundY + 17, { size: 11, color: '#8fa0b2', halo: null });
+}
+
+/* ---------------- 磁力搅拌器（章节 2 互动联动）：调速旋钮 / 指示灯 / 转子 / 涡流 ---------------- */
+
+const stir = { on: false, ramp: 0, angle: 0 };
+/* 主机：不锈钢顶板承托锥形瓶，旋钮随 ramp 转动，LED 带辉光 */
+function drawStirrer(x, groundY) {
+  contactShadow(x, groundY + 28, 74, 9, 0.4);
+  ctx.fillStyle = '#252b34';
+  ctx.beginPath(); ctx.roundRect(x - 58, groundY + 2, 116, 24, 7); ctx.fill();
+  ctx.fillStyle = '#2e3540';
+  ctx.beginPath(); ctx.roundRect(x - 58, groundY + 2, 116, 6, 4); ctx.fill();
+  const pg = ctx.createLinearGradient(x - 62, 0, x + 62, 0);
+  pg.addColorStop(0, '#3e4551');
+  pg.addColorStop(0.5, '#5a6472');
+  pg.addColorStop(1, '#3a4150');
+  ctx.fillStyle = pg;
+  ctx.beginPath(); ctx.roundRect(x - 62, groundY - 3, 124, 7, 3); ctx.fill();
+  const kx = x + 40, ky = groundY + 15;
+  ctx.fillStyle = '#454e5c';
+  ctx.beginPath(); ctx.arc(kx, ky, 7.5, 0, 7); ctx.fill();
+  ctx.strokeStyle = '#cdd6e2';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(kx, ky);
+  ctx.lineTo(kx + Math.cos(-2.2 + stir.ramp * 4.0) * 6, ky + Math.sin(-2.2 + stir.ramp * 4.0) * 6);
+  ctx.stroke();
+  ctx.fillStyle = stir.ramp > 0.05 ? 'rgba(96,220,148,0.9)' : 'rgba(96,220,148,0.16)';
+  ctx.beginPath(); ctx.arc(x - 44, groundY + 15, 3, 0, 7); ctx.fill();
+  if (stir.ramp > 0.05) {
+    const lg = ctx.createRadialGradient(x - 44, groundY + 15, 0.5, x - 44, groundY + 15, 9);
+    lg.addColorStop(0, 'rgba(96,220,148,0.5)');
+    lg.addColorStop(1, 'rgba(96,220,148,0)');
+    ctx.fillStyle = lg;
+    ctx.beginPath(); ctx.arc(x - 44, groundY + 15, 9, 0, 7); ctx.fill();
+  }
+  ctx.drawImage(labelTex(['MAGNETIC', 'STIRRER'], '#c9ccd4'), x - 30, groundY + 8, 40, 24);
+}
+/* 转子与涡流：瓶内磁棒透视旋转（高速带残影），液面中心随转速下凹 */
+function drawStirRotor(x, baseY) {
+  const ry = baseY - 8;
+  ctx.save();
+  ctx.clip(flaskPath(x, baseY, 1));
+  const surfY = baseY - 62;
+  const dip = 4.5 * stir.ramp;
+  const vg = ctx.createRadialGradient(x, surfY + dip * 0.4, 1, x, surfY + dip * 0.4, 16);
+  vg.addColorStop(0, `rgba(8,14,22,${(0.3 * stir.ramp).toFixed(3)})`);
+  vg.addColorStop(1, 'rgba(8,14,22,0)');
+  ctx.fillStyle = vg;
+  ctx.beginPath();
+  ctx.ellipse(x, surfY + dip * 0.4, 15, 3.2 + dip, 0, 0, 7);
+  ctx.fill();
+  const ghosts = stir.ramp > 0.55 ? [0, -0.45, -0.9] : [0];
+  ghosts.forEach((ga, gi) => {
+    const ang = stir.angle + ga;
+    const hx = Math.cos(ang) * 13, hy = Math.sin(ang) * 2.6;
+    ctx.fillStyle = gi === 0 ? 'rgba(226,232,240,0.92)' : 'rgba(226,232,240,0.28)';
+    ctx.beginPath();
+    ctx.ellipse(x + hx * 0.5, ry + hy * 0.4, Math.abs(hx) + 6, 2.8, 0, 0, 7);
+    ctx.fill();
+  });
+  ctx.fillStyle = 'rgba(255,255,255,0.5)';
+  ctx.beginPath(); ctx.arc(x, ry, 1.4, 0, 7); ctx.fill();
+  ctx.restore();
+}
+
+/* 共热演示（NH₄⁺ 检验联动）：酒精灯 + 脉动火焰 + 灯口到管底的热气流丝 */
+function drawHeating(x, groundY, topY, k) {
+  if (k <= 0.02) return;
+  contactShadow(x, groundY + 3, 27, 5.5, 0.34);
+  ctx.fillStyle = 'rgba(178,198,222,0.15)';
+  ctx.beginPath(); ctx.roundRect(x - 17, groundY - 22, 34, 22, 6); ctx.fill();
+  ctx.strokeStyle = 'rgba(205,222,240,0.8)';
+  ctx.lineWidth = 1.6;
+  ctx.stroke();
+  ctx.fillStyle = 'rgba(196,206,222,0.85)';
+  ctx.beginPath(); ctx.roundRect(x - 7, groundY - 29, 14, 8, 3); ctx.fill();
+  drawFlame(x, groundY - 28, uiClock, { color: '#3f7fd9', h: (26 + 5 * Math.sin(uiClock * 9)) * (0.7 + 0.3 * k), w: 11, root: false });
+  ctx.save();
+  ctx.lineWidth = 1.4;
+  for (let i = 0; i < 3; i++) {
+    const ph = uiClock * 2.1 + i * 2.2;
+    const sway = 5 + i * 3;
+    const pts = [];
+    for (let s = 0; s <= 4; s++) {
+      const f = s / 4;
+      pts.push([x + Math.sin(ph + f * 5) * sway * (0.4 + f), groundY - 30 - (groundY - 34 - topY) * f]);
+    }
+    ctx.strokeStyle = `rgba(180,214,244,${(0.05 + 0.16 * k).toFixed(3)})`;
+    traceCR(pts, 8);
+    ctx.stroke();
+  }
+  ctx.restore();
+}
+
 function cobaltOverlay(on) {
   if (!on) return;
   ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
@@ -438,6 +816,7 @@ const ctl = createControlsPanel(document.getElementById('controls'));
 let chapterTick = null;
 let activeCleanup = null;
 let hits = [];
+let uiClock = 0; /* 全局动画时钟（火焰脉动 / 水珠巡航 / 热气流丝共用） */
 /* HUD 读数卡收进右栏「数据读数」手风琴（setHud(null) 时整块收走） */
 const hudBox = document.createElement('div');
 document.getElementById('lcData').appendChild(hudBox);
@@ -467,7 +846,7 @@ canvas.addEventListener('pointermove', (e) => {
   canvas.style.cursor = hits.some((hh) => x >= hh.x && x <= hh.x + hh.w && y >= hh.y && y <= hh.y + hh.h) ? 'pointer' : 'default';
 });
 
-/* ================= 章节 1：认识滴定管与移液管 ================= */
+/* ================= 章节 1：滴定管与移液管的认识 ================= */
 
 const P1 = { part: null, view: 'level', showAll: false };
 const PARTS = {
@@ -489,10 +868,10 @@ function p1PartHotspots() {
   ];
 }
 const secTools = {
-  id: 'tools', title: '认识滴定管与移液管',
+  id: 'tools', title: '滴定管与移液管的认识',
   html: `<p>滴定分析的三件量器。左侧是<b>酸式滴定管</b>（玻璃活塞），中间是<b>碱式滴定管</b>（橡胶管+玻璃珠），右侧是 <b>20 mL 单标线移液管</b>。</p>
 <p><b>点击部件</b>查看名称与用途（活塞 / 刻度 / 尖嘴 / 零刻度线）。注意滴定管刻度<b>自上而下增大</b>，读数须估读到 0.01 mL。</p>
-<p>滴定管使用前的准备顺序：<b>查漏</b>（装水静置看活塞与尖嘴是否渗水）→ <b>蒸馏水洗涤</b> → <span class="hl">用待装溶液润洗 2~3 次</span> → 装液到 0 刻度以上 → <b>快速放液赶出尖嘴气泡</b> → 调节液面到 0 或 0 以下某一刻度。漏掉润洗或没赶气泡，都会把误差带进结果（见「误差分析」章）。</p>
+<p>滴定管使用前的准备顺序：<b>查漏</b>（装水静置看活塞与尖嘴是否渗水）→ <b>蒸馏水洗涤</b> → <span class="hl">用待装溶液润洗 2~3 次</span> → 装液到 0 刻度以上 → <b>开活塞快放一段液，赶出尖嘴里的气泡</b> → 调节液面到 0 或 0 以下某一刻度。漏掉润洗或没赶气泡，都会把误差带进结果（见「误差分析」章）。</p>
 <p>右侧下方是<b>读数误差演示</b>：切换「平视 / 俯视 / 仰视」，看视线落点如何让读数偏小或偏大——滴定管 0 在上，所以<b>仰视读数偏大、俯视读数偏小</b>（量筒正好相反）。</p>`,
   enter() {
     P1.part = null; P1.view = 'level'; P1.showAll = false;
@@ -518,6 +897,8 @@ function drawTools() {
   drawLabBG();
   bench();
   drawStand(180, 700, 120, [{ y: 150, x: 260 }]);
+  // 台面叙事道具：洁净备用试管架（右侧空位）
+  drawSpareRack(620, 664, 4);
   // 酸式滴定管
   const hot = {};
   p1PartHotspots().forEach((h) => { hot[h.id] = h; });
@@ -777,7 +1158,7 @@ const secTitr = {
 <p><b>操作</b>：① 推动「活塞开度」控制滴速（先快后慢）；② 出现<b>局部粉色</b>时点「摇瓶」摇匀——不摇匀会误判终点；③ 接近终点时关活塞，用「半滴」（悬而不落）+「洗瓶冲下」控制到半滴；④ 瓶内变<b>浅粉且 30 s 不褪</b>即达终点，读数自动记入<b>实验记录本</b>。</p>
 <p><span class="hl">c(HCl) = c(NaOH)·V(NaOH) / V(HCl)</span>。终点后点「重新滴定」做<b>两次平行测定</b>，相对偏差 ≤ 0.2% 才合格。</p>`,
   enter() {
-    setHud([['run', '测定'], ['v', 'V(NaOH) 加入'], ['ph', 'pH'], ['st', '状态']]);
+    setHud([['run', '测定'], ['v', 'V(NaOH) 加入'], ['ph', 'pH'], ['st', '状态'], ['mix', '搅拌']]);
     ctl.clear();
     ctl.slider({
       label: '活塞开度', min: 0, max: 100, step: 1, value: 0,
@@ -824,6 +1205,7 @@ const secTitr = {
         tit.swirl = 1.4; tit.swirlPhase = 0;
       },
     });
+    ctl.toggle({ label: '磁力搅拌', value: stir.on, onChange: (v) => { stir.on = v; } });
     ctl.button({ label: '↺ 重新滴定', onClick: () => titReset(true) });
     titReset(false);
     chapterTick = (dt) => titTick(dt);
@@ -868,6 +1250,12 @@ function titTick(dt) {
     }
     if (t.swirl > 0) { t.swirl -= dt; t.swirlPhase += dt; }
     if (t.wash > 0) t.wash -= dt;
+    // 磁力搅拌：转速爬升/衰减 + 高速时加速混匀局部色斑
+    stir.ramp += ((stir.on ? 1 : 0) - stir.ramp) * Math.min(1, dt * 2.4);
+    if (stir.ramp > 0.02) stir.angle += dt * (6 + 20 * stir.ramp) * stir.ramp;
+    if (stir.ramp > 0.55) {
+      for (const p of t.plumes) { p.r += 80 * dt; p.a -= 0.7 * dt; }
+    }
     if (t.phase === 'observe') {
       t.obsT -= dt * 6;
       if (t.obsT <= 0) titEndpoint();
@@ -883,6 +1271,7 @@ function titTick(dt) {
     hud.set('v', t.vAdd.toFixed(2) + ' mL');
     hud.set('ph', phAtTit(t.vAdd).toFixed(2));
     hud.set('st', t.phase === 'ready' ? '待开始' : t.phase === 'observe' ? `静置观察 ${Math.ceil(t.obsT)} s` : t.phase === 'done' ? '终点已记录' : '滴定中');
+    hud.set('mix', stir.ramp > 0.05 ? `开 ${Math.round(stir.ramp * 100)}%` : '关');
   }
   drawTit();
 }
@@ -893,12 +1282,20 @@ function drawTit() {
   backlight(190, 498, 180, 168);
   const t = tit;
   const reading = t.init[t.run - 1] != null ? t.init[t.run - 1] + t.vAdd : 0.00;
+  // 台面叙事道具：洗瓶（冲洗联动挤压）+ NaOH 标准液瓶 + 酚酞指示剂瓶
+  drawWashBottle(118, 676, Math.max(0, t.wash / 0.9));
+  drawReagentBottle(1120, 676, { w: 40, h: 64, fill: 'rgba(150,200,255,0.30)', fillH: 0.46, label: ['NaOH', '0.1000mol/L'] });
+  drawReagentBottle(1186, 676, { w: 32, h: 52, fill: 'rgba(240,98,146,0.32)', fillH: 0.40, label: ['酚酞'] });
+  // 磁力搅拌主机（顶板承托锥形瓶）
+  drawStirrer(FLASK_X, 640);
   // 锥形瓶（摇瓶摆动）
   const ang = t.swirl > 0 ? Math.sin(t.swirlPhase * 10) * 0.09 : 0;
   ctx.save();
   ctx.translate(FLASK_X, 640); ctx.rotate(ang); ctx.translate(-FLASK_X, -640);
   drawFlask(FLASK_X, 640, { liquidH: 62, color: liqColor(phAtTit(t.vAdd)), plumes: t.plumes });
   ctx.restore();
+  // 转子与涡流（世界坐标，不随手摇旋转）
+  if (stir.ramp > 0.02) drawStirRotor(FLASK_X, 640);
   txt('锥形瓶：20.00 mL 待测盐酸 + 2 滴酚酞', FLASK_X, 712, { size: 12, color: '#9fb0c2' });
   // 滴定管（碱式，NaOH）
   drawBurette(FLASK_X, 96, { level: reading / 50, liquid: 'rgba(150,200,255,0.24)', style: 'base' });
@@ -922,13 +1319,21 @@ function drawTit() {
     ctx.lineWidth = 3;
     ctx.beginPath(); ctx.moveTo(FLASK_X, TIP_Y + 4); ctx.lineTo(FLASK_X, SURF_Y); ctx.stroke();
   }
-  // 洗瓶动画
+  // 洗瓶冲洗水流（洗瓶嘴 → 尖嘴上方，样条放样 + 沿途水珠巡航）
   if (t.wash > 0) {
-    drawBottle(FLASK_X - 130, 600, { fill: 'rgba(160,210,255,0.5)', fillH: 0.5, label: '洗瓶' });
-    ctx.strokeStyle = 'rgba(175,220,255,0.85)';
+    const k = Math.min(1, t.wash / 0.9);
+    const pts = crPoints([[156, 597], [178, 540], [FLASK_X - 36, 516], [FLASK_X, TIP_Y + 8]], 18);
+    ctx.strokeStyle = `rgba(175,220,255,${(0.85 * k).toFixed(3)})`;
     ctx.lineWidth = 2;
-    ctx.beginPath(); ctx.moveTo(FLASK_X - 112, 560);
-    ctx.quadraticCurveTo(FLASK_X - 40, 500, FLASK_X + 2, TIP_Y + 10); ctx.stroke();
+    ctx.beginPath();
+    pts.forEach((q, i) => { i ? ctx.lineTo(q[0], q[1]) : ctx.moveTo(q[0], q[1]); });
+    ctx.stroke();
+    for (let i = 1; i <= 3; i++) {
+      const f = (uiClock * 1.7 + i * 0.33) % 1;
+      const q = pts[Math.min(pts.length - 1, Math.floor(f * (pts.length - 1)))];
+      ctx.fillStyle = 'rgba(200,232,255,0.9)';
+      ctx.beginPath(); ctx.arc(q[0], q[1], 1.8, 0, 7); ctx.fill();
+    }
   }
   // 接近终点的酸色提示
   const ph = phAtTit(t.vAdd);
@@ -941,7 +1346,7 @@ function drawTit() {
   if (hud) hud.set('v', t.vAdd.toFixed(2) + ' mL');
 }
 
-/* ================= 章节 3：指示剂与滴定曲线 ================= */
+/* ================= 章节 3：滴定曲线与指示剂 ================= */
 
 const INDS = [
   { id: 'pp', name: '酚酞', lo: 8.2, hi: 10.0, color: '#f06292', note: '变色范围几乎全部落在突跃内——强碱滴强酸首选。酸中无色，碱中浅粉→红。', ok: '✔ 可用' },
@@ -980,7 +1385,7 @@ function indColor(ph, id) {
   return 'rgba(70,120,220,0.65)';
 }
 const secCurve = {
-  id: 'curve', title: '指示剂与滴定曲线',
+  id: 'curve', title: '滴定曲线与指示剂',
   html: `<p>0.1000 mol/L NaOH 滴定 20.00 mL 0.1000 mol/L 盐酸的<b>pH–V 曲线</b>：V=20.00 mL（pH=7.00）处发生<b>突跃</b>，pH 由约 4.3 跳到 9.7（±0.1% 内）。</p>
 <p>指示剂选择原则：<b>变色范围全部或部分落在突跃范围内</b>。切换酚酞 / 甲基橙 / 石蕊，看它们的变色范围带与突跃的关系。</p>
 <p>点「▶ 滴加动画」看滴加过程中 pH 沿曲线爬升、小锥形瓶颜色随指示剂变化。</p>`,
@@ -1109,6 +1514,7 @@ function drawCurve() {
   const pNow = phIdeal(cur3.v);
   const col = indColor(pNow, cur3.ind);
   drawFlask(830, yy + 190, { s: 0.62, liquidH: 40, color: col || 'rgba(150,200,255,0.18)' });
+  contactShadow(830, yy + 192, 30, 6, 0.3);
   txt(`V = ${cur3.v.toFixed(2)} mL   pH = ${pNow.toFixed(2)}`, 1010, yy + 96, { size: 14, bold: true, align: 'left', color: '#ffe9b0', halo: null });
   txt(col ? '已变色' : (cur3.ind === 'pp' ? '无色' : '呈酸性色'), 1010, yy + 126, { size: 12.5, align: 'left', color: '#c6d2df', halo: null });
   wrapText('选择原则：指示剂变色范围应全部或部分落在滴定突跃范围内，否则终点误差大。', 754, yy + 250, 470, 21, { size: 12.5, align: 'left', color: '#9fb0c2', halo: null });
@@ -1124,7 +1530,7 @@ function drawCurve() {
 
 const ERRS = [
   { t: '滴定管洗净后未用标准液润洗', ans: 0, chain: '残留蒸馏水稀释了标准液 → 装入的 c(NaOH) 实际偏低 → 消耗 V(NaOH) 偏大 → 由 c(HCl)=c(NaOH)·V(NaOH)/V(HCl)，结果偏高' },
-  { t: '锥形瓶用待测液（盐酸）润洗', ans: 0, chain: '瓶内多出一部分待测 HCl → n(HCl) 增多 → 消耗 V(NaOH) 偏大 → 结果偏高（锥形瓶只能用蒸馏水洗）' },
+  { t: '锥形瓶用待测液（盐酸）润洗', ans: 0, chain: '瓶内多出一部分待测 HCl → n(HCl) 增多 → 消耗 V(NaOH) 偏大 → 结果偏高（锥形瓶不可用待测液润洗，只能以蒸馏水洗净）' },
   { t: '滴定前活塞下有气泡，滴定中消失', ans: 0, chain: '气泡被液体取代，其体积被计入读数 → 终读数偏大 → V(NaOH) 偏大 → 结果偏高（滴定前须赶尽气泡）' },
   { t: '终点时仰视读取终读数', ans: 0, chain: '滴定管刻度自上而下增大，仰视读数偏大 → 终读数偏大 → V(NaOH)=终−初 偏大 → 结果偏高' },
   { t: '移液管转移盐酸前未用待测液润洗', ans: 1, chain: '管内残留的蒸馏水把待测盐酸稀释 → 实际移取的 n(HCl) 偏少 → 消耗 V(NaOH) 偏小 → 结果偏低（移液管须先用待测液润洗 2~3 次）' },
@@ -1215,6 +1621,7 @@ function drawErr() {
 /* ================= 章节 5/6：离子检验（共用框架） ================= */
 
 function ionRack(xs, yTop, sel, tubes, revealMap) {
+  contactShadow((xs[0] + xs[xs.length - 1]) / 2, yTop + 168, (xs[xs.length - 1] - xs[0]) / 2 + 52, 8, 0.32);
   ctx.fillStyle = '#3a332a';
   ctx.beginPath(); ctx.roundRect(xs[0] - 58, yTop + 148, xs[xs.length - 1] - xs[0] + 116, 14, 5); ctx.fill();
   ctx.fillStyle = '#463d30';
@@ -1352,10 +1759,11 @@ function catApply() {
   } else {
     if (!T.naoh) { CAT.msg = '检验 NH₄⁺：须先加 NaOH 溶液，再共热，湿润红色石蕊试纸置于管口'; return; }
     T.paper = true;
+    T.heat = 3.2; /* 共热演示计时（酒精灯点燃 3.2 s） */
     if (ion === 'NH₄⁺') {
       T.paperBlue = true;
-      T.log.push('＋NaOH，共热 → 湿润红色石蕊试纸变蓝');
-      T.con = '含 NH₄⁺：NH₄⁺ + OH⁻ =Δ= NH₃↑ + H₂O（氨气使湿润红色石蕊试纸变蓝）';
+      T.log.push('＋NaOH，共热 → 湿润红色石蕊试纸转蓝');
+      T.con = '含 NH₄⁺：NH₄⁺ + OH⁻ =Δ= NH₃↑ + H₂O（氨气使湿润红色石蕊试纸转蓝）';
     } else {
       T.log.push('＋NaOH，共热 → 试纸不变蓝（无 NH₄⁺）');
     }
@@ -1411,7 +1819,7 @@ const secCation = {
 <p>点「显示答案」核对六支试管。</p>`,
   enter() {
     ionSel = 0;
-    CAT.tubes.forEach((T) => Object.assign(T, { ppt: null, bubbles: [], anim: 0, naoh: false, deep: false, feT: -1, kscn: false, paper: false, paperBlue: false, log: [], con: null, sol: T.sol0 }));
+    CAT.tubes.forEach((T) => Object.assign(T, { ppt: null, bubbles: [], anim: 0, naoh: false, deep: false, feT: -1, kscn: false, paper: false, paperBlue: false, heat: 0, log: [], con: null, sol: T.sol0 }));
     CAT.reveal = false; CAT.msg = '点选试管 → 选试剂 → 滴加';
     setHud([['tube', '试管'], ['reg', '试剂'], ['st', '提示']]);
     ctl.clear();
@@ -1427,7 +1835,7 @@ const secCation = {
     ctl.button({
       label: '↺ 重置',
       onClick() {
-        CAT.tubes.forEach((T) => Object.assign(T, { ppt: null, bubbles: [], anim: 0, naoh: false, deep: false, feT: -1, kscn: false, paper: false, paperBlue: false, log: [], con: null, sol: T.sol0 }));
+        CAT.tubes.forEach((T) => Object.assign(T, { ppt: null, bubbles: [], anim: 0, naoh: false, deep: false, feT: -1, kscn: false, paper: false, paperBlue: false, heat: 0, log: [], con: null, sol: T.sol0 }));
         CAT.reveal = false;
       },
     });
@@ -1435,6 +1843,7 @@ const secCation = {
     chapterTick = (dt) => {
       CAT.tubes.forEach((T) => {
         if (T.anim > 0) T.anim -= dt;
+        if (T.heat > 0) T.heat -= dt;
         if (T.feT >= 0) {
           T.feT += dt;
           if (T.feT < 3) T.ppt = { color: '#eceee8', k: 1 };
@@ -1462,6 +1871,9 @@ function drawCation() {
     ionDropperAnim(catXs[k], 400, T);
   });
   txt('六种阳离子各其一（顺序见「显示答案」）', 410, 620, { size: 12, color: '#9fb0c2' });
+  // 共热演示：当前管做 NH₄⁺ 检验时点亮酒精灯与热气流丝
+  const selTube = CAT.tubes[ionSel];
+  if (selTube.heat > 0) drawHeating(catXs[ionSel], 640, 540, Math.min(1, selTube.heat / 1.4));
   drawIonPanelCation();
   pill(CAT.msg, 410, 34);
   if (hud) {
@@ -1573,7 +1985,7 @@ const secAnion = {
 <p>• <b>卤素离子</b>：先加稀硝酸酸化，再加 AgNO₃——<span class="hl">Cl⁻ 白色、Br⁻ 浅黄色、I⁻ 黄色</span>沉淀，都<b>不溶于稀硝酸</b>（沉淀颜色由浅到深）<br>
 • <b>SO₄²⁻</b>：<b>先加稀盐酸（无沉淀）</b>，再加 BaCl₂ → 白色沉淀 ⇒ BaSO₄（先酸化排除 CO₃²⁻ / Ag⁺ 干扰）<br>
 • <b>CO₃²⁻</b>：滴稀盐酸 → 气泡 → 澄清石灰水变浑浊</p>
-<p>• <b>NO₃⁻</b>（稀溶液）：加 NaOH 溶液与铝箔共热，放出的 NH₃ 使湿润红色石蕊试纸变蓝（原题不做演示，记住方法）。</p>
+<p>• <b>NO₃⁻</b>（稀溶液）：加 NaOH 溶液与铝箔共热，放出的 NH₃ 使湿润红色石蕊试纸转蓝（原题不做演示，记住方法）。</p>
 <p>故意「不按顺序」试试：直接对 SO₄²⁻ 管加 BaCl₂，看记录里怎么提醒你。</p>`,
   enter() {
     ionSel = 0;
@@ -1683,6 +2095,7 @@ function drawFlameCh() {
   // 酒精灯/煤气灯 + 火焰
   const bx = 380, by = 600;
   drawBurner(bx, by);
+  contactShadow(bx, by + 8, 46, 8, 0.4);
   const E = FL.elem ? FL.elems.find((e) => e.id === FL.elem) : null;
   let col = '#3f7fd9';
   if (E && FL.phase === 'burn') {
@@ -1699,9 +2112,15 @@ function drawFlameCh() {
       ctx.beginPath(); ctx.arc(bx + Math.sin(FL.time * 3 + i * 2) * 18, by - 80 - yy, 2, 0, 7); ctx.fill();
     }
   }
-  // 铂丝
+  // 铂丝（陶瓷握柄曲线放样 + 细丝）
   const wx = FL.phase === 'dip' ? 560 - 40 * FL.t : bx + (FL.phase === 'burn' ? 6 : 120);
   const wy = FL.phase === 'dip' ? 620 - 30 * FL.t : by - 130;
+  ctx.strokeStyle = 'rgba(216,226,240,0.5)';
+  ctx.lineWidth = 6;
+  ctx.lineCap = 'round';
+  traceCR([[842, 294], [820, 308], [796, 322], [760, 330]], 12);
+  ctx.stroke();
+  ctx.lineCap = 'butt';
   ctx.strokeStyle = '#c8ccd6';
   ctx.lineWidth = 3;
   ctx.beginPath(); ctx.moveTo(760, 330); ctx.lineTo(wx, wy); ctx.stroke();
@@ -1709,8 +2128,10 @@ function drawFlameCh() {
   ctx.lineWidth = 2;
   ctx.beginPath(); ctx.arc(wx, wy, 7, 0, 7); ctx.stroke();
   txt('铂丝', 760, 312, { size: 11, color: '#9fb0c2' });
-  // 待测液瓶
+  // 待测液瓶 + 洗涤用稀盐酸瓶（场景道具）
+  contactShadow(560, 642, 26, 5.5, 0.3);
   drawBottle(560, 640, { w: 40, h: 50, fill: 'rgba(150,200,255,0.35)', label: '待测液', sel: FL.phase === 'dip' });
+  drawReagentBottle(668, 640, { w: 30, h: 46, fill: 'rgba(200,225,250,0.30)', fillH: 0.42, label: ['稀盐酸'] });
   // 步骤卡
   card(60, 60, 250, 190);
   txt('操作四步', 80, 90, { size: 14, bold: true, align: 'left', color: '#e8eef6', halo: null });
@@ -1765,14 +2186,14 @@ function drawFlameCh() {
   }
 }
 
-/* ================= 章节 8：鉴定一种未知的盐 ================= */
+/* ================= 章节 8：鉴别一份未知的盐 ================= */
 
 const SALTS = [
   { id: 'NaCl', name: 'NaCl', cat: 'Na', an: 'Cl', scheme: '取样溶解 → ① 焰色反应呈黄色（Na⁺）→ ② 加 AgNO₃：白色沉淀，加稀硝酸不溶解（Cl⁻）⇒ NaCl' },
   { id: 'KCl', name: 'KCl', cat: 'K', an: 'Cl', scheme: '取样溶解 → ① 焰色反应：直接看被黄光掩盖，透过蓝色钴玻璃呈紫色（K⁺）→ ② 加 AgNO₃：白色沉淀不溶于稀硝酸（Cl⁻）⇒ KCl' },
   { id: 'Na2SO4', name: 'Na₂SO₄', cat: 'Na', an: 'SO4', scheme: '取样溶解 → ① 焰色呈黄色（Na⁺）→ ② 先加稀盐酸：无沉淀（排除 CO₃²⁻ 干扰）→ ③ 加 BaCl₂：白色沉淀（SO₄²⁻）⇒ Na₂SO₄' },
-  { id: 'NH42SO4', name: '(NH₄)₂SO₄', cat: 'NH4', an: 'SO4', scheme: '取样溶解 → ① 先加稀盐酸无沉淀，再加 BaCl₂：白色沉淀（SO₄²⁻）→ ② 加 NaOH 共热，湿润红色石蕊试纸变蓝（NH₄⁺）⇒ (NH₄)₂SO₄' },
-  { id: 'Na2CO3', name: 'Na₂CO₃', cat: 'Na', an: 'CO3', scheme: '取样溶解 → ① 焰色呈黄色（Na⁺）→ ② 加稀盐酸：冒气泡，气体使石灰水变浑浊（CO₃²⁻）→ ③ 与 NaHCO₃ 区分：加 BaCl₂ 出白色沉淀（NaHCO₃ 无沉淀）⇒ Na₂CO₃' },
+  { id: 'NH42SO4', name: '(NH₄)₂SO₄', cat: 'NH4', an: 'SO4', scheme: '取样溶解 → ① 先加稀盐酸无沉淀，再加 BaCl₂：白色沉淀（SO₄²⁻）→ ② 加 NaOH 共热，湿润红色石蕊试纸转蓝（NH₄⁺）⇒ (NH₄)₂SO₄' },
+  { id: 'Na2CO3', name: 'Na₂CO₃', cat: 'Na', an: 'CO3', scheme: '取样溶解 → ① 焰色呈黄色（Na⁺）→ ② 加稀盐酸：冒气泡，放出的气体让石灰水变浑浊（CO₃²⁻）→ ③ 与 NaHCO₃ 区分：加 BaCl₂ 出白色沉淀（NaHCO₃ 无沉淀）⇒ Na₂CO₃' },
   { id: 'NaHCO3', name: 'NaHCO₃', cat: 'Na', an: 'HCO3', scheme: '① 加稀盐酸：冒气泡，石灰水变浑浊（HCO₃⁻）→ ② 加 BaCl₂：无沉淀（区别于 Na₂CO₃ 的 BaCO₃ 沉淀）→ ③ 焰色呈黄色（Na⁺）⇒ NaHCO₃' },
 ];
 const SHELF = [
@@ -1877,7 +2298,9 @@ function draw8() {
   bench(690);
   hits = hits.filter((h) => !h.id || (!h.id.startsWith('b') && !h.id.startsWith('a')));
   // 样品瓶 + 试管
+  contactShadow(170, 624, 32, 6.5, 0.3);
   drawBottle(170, 620, { w: 44, h: 56, fill: 'rgba(232,230,222,0.9)', fillH: 0.32, label: '未知白色固体 X' });
+  contactShadow(320, 632, 30, 6, 0.3);
   drawTube(320, 470, {
     w: 44, len: 150, liquid: st8.dissolved ? 'rgba(196,218,238,0.25)' : null,
     ppt: st8.fx.ppt, bubbles: st8.fx.bubbles,
@@ -1924,7 +2347,7 @@ function draw8() {
   pill(st8.msg, 420, 34);
 }
 const secSalt = {
-  id: 'salt', title: '鉴定一种未知的盐',
+  id: 'salt', title: '鉴别一份未知的盐',
   html: `<p>随机给出一种<b>白色固体</b>：NaCl / Na₂SO₄ / Na₂CO₃ / KCl / (NH₄)₂SO₄ / NaHCO₃ 之一。</p>
 <p>自主规划检验顺序：<b>溶解 → 阴离子 → 阳离子</b>。点击试剂架即「滴加 / 操作」，系统只反馈<b>真实现象</b>：</p>
 <p>• 稀盐酸冒气泡 ⇒ 碳酸盐 / 碳酸氢盐（BaCl₂ 沉淀区分二者）<br>
@@ -1996,7 +2419,7 @@ const QUIZ = [
     ex: '钴玻璃吸收黄光：试剂和铂丝难免带入微量 Na，其黄色火焰会掩盖 K 的紫色，滤去黄光才能看清。',
   },
   {
-    q: '向某溶液中逐滴加入 NaOH 溶液至过量，先产生白色沉淀、后沉淀溶解；另取一份改用浓氨水，产生白色沉淀且不溶解。该溶液中含有？',
+    q: '往一份待检溶液里逐滴滴入 NaOH 溶液至过量，先出现白色沉淀、随后沉淀溶解；另取一份改用浓氨水，白色沉淀出现但不溶解。该溶液中含有？',
     opts: ['Mg²⁺', 'Al³⁺', 'Fe²⁺', 'Cu²⁺'],
     a: 1,
     ex: 'Al(OH)₃ 是两性氢氧化物：溶于强碱 NaOH、不溶于弱碱氨水；Mg(OH)₂ 在过量 NaOH 中不溶解。白色沉淀加过量 NaOH 溶解 ⇒ Al³⁺。',
@@ -2098,6 +2521,7 @@ const secQuiz = {
     bench();
     drawStand(340, 690, 160, [{ y: 200, x: 420 }]);
     drawBurette(420, 120, { style: 'base', level: 0.08, liquid: 'rgba(150,200,255,0.22)' });
+    contactShadow(420, 642, 42, 7, 0.3);
     drawFlask(420, 640, { s: 0.85, liquidH: 50, color: 'rgba(238,110,160,0.35)' });
     txt('c(HCl) = c(NaOH)·V(NaOH)/V(HCl)', 900, 620, { size: 15, color: 'rgba(255,233,176,0.5)' });
     showQuiz();
@@ -2278,6 +2702,7 @@ function appLoop(ts) {
   requestAnimationFrame(appLoop);
   const dt = Math.min((ts - lastTs) / 1000 || 0.016, 0.1);
   lastTs = ts;
+  uiClock += dt;
   if (chapterTick) chapterTick(dt);
 }
 requestAnimationFrame(appLoop);

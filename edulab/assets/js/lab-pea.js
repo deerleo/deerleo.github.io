@@ -1,7 +1,7 @@
-/* EduLab · 孟德尔豌豆杂交实验（pea）— Micro 级深改
+/* EduLab · 孟德尔的豌豆杂交实验（pea）— Micro 级深改
  * =====================================================================
- * 章节：为什么选豌豆 / 人工异花授粉 / 一对相对性状的杂交 / 测交：验证分离 /
- *       两对相对性状的杂交 / 七对性状自由探究 / 假说—演绎法 / 随堂检测
+ * 章节：为什么选豌豆 / 人工异花授粉 / 一对相对性状杂交 / 测交：验证分离 /
+ *       两对相对性状杂交 / 七对性状开放式探究 / 假说—演绎法 / 随堂检测
  *
  * 遗传引擎（7 对相对性状 · 等位基因 · 配子抽样）：
  *   - 7 座位点：茎高 H / 花位 P / 花色 C（种皮联锁）/ 荚形 K / 荚色 L / 种形 R / 子叶 Y
@@ -9,7 +9,7 @@
  *     种皮颜色随母本（C 座位）；豆荚的形状与颜色是母本组织（结荚植株的 K/L 座位）；
  *     花色 / 花位 / 茎高按植株本体基因型表达
  *   - 配子抽样：每座位杂合 50/50，纯合恒定；自由组合 = 座位间独立抽样
- *   - 检验统计：卡方 + p 值（不完全伽马函数实现，df 1..7 通用），亲本基因型不唯一时报「无确定理论比」
+ *   - 检验统计：卡方 + p 值（不完全伽马函数实现，df 1..7 通用），亲本基因型不止一种时报「无确定理论比」
  *
  * 场景叙事（修道院豆园）：
  *   - 六行豆畦（Ⅰ~Ⅵ）：木框畦埂 + 畦土 + 品系木牌（CanvasTexture 动态重绘）；
@@ -2061,7 +2061,7 @@ function drawMendelBoard() {
   ctx.textAlign = 'center';
   ctx.fillStyle = '#2e281e';
   ctx.font = '700 30px "PingFang SC", sans-serif';
-  ctx.fillText('孟德尔的原始数据', W / 2, 56);
+  ctx.fillText('孟德尔的论文数据', W / 2, 56);
   ctx.font = '400 17px "PingFang SC", sans-serif';
   ctx.fillStyle = '#6a6048';
   ctx.fillText('摘自 1865 年《植物杂交实验》 · 七对性状 F₂ 全部接近 3 : 1', W / 2, 88);
@@ -2230,7 +2230,7 @@ function setStats(stats) {
   html += `<tr><td>合计</td><td>${obsSum}</td><td>${Math.round(exp.reduce((s, v) => s + v, 0) * 10) / 10}</td><td>100%</td><td>${ratio || '—'}</td></tr></table>`;
   if (note) html += `<p class="ledger-verdict na">${note}</p>`;
   else if (verdict === 'good') html += `<p class="ledger-verdict good">χ²=${chiV.toFixed(2)}（df=${df}）p=${p.toFixed(3)} &gt; 0.05 —— 与理论比例不存在显著差异。</p>`;
-  else if (verdict === 'bad') html += `<p class="ledger-verdict bad">χ²=${chiV.toFixed(2)}（df=${df}）p=${p.toFixed(3)} ≤ 0.05 —— 与理论比例差异显著，检查操作或样本。</p>`;
+  else if (verdict === 'bad') html += `<p class="ledger-verdict bad">χ²=${chiV.toFixed(2)}（df=${df}）p=${p.toFixed(3)} ≤ 0.05 —— 与理论比例明显不符，检查操作或样本。</p>`;
   box.innerHTML = html;
 }
 
@@ -2868,7 +2868,7 @@ function buildCrossControls() {
     crossApplyStep();
   });
   stepBtn(7, '⑦ 授粉', () => {
-    if (!CROSS.pollen) { CROSS.msg('毛笔上还没有花粉——先去父本采集'); return; }
+    if (!CROSS.pollen) { CROSS.msg('毛笔上尚未沾到花粉——先去父本采集'); return; }
     CROSS.step = 7;
     fsTools.brush.position.set(0.06, 0.96, 0.12);
     fsTools.brush.rotation.z = 1.2;
@@ -2923,7 +2923,7 @@ function buildCrossControls() {
   crossApplyStep();
 }
 
-/* ---- 第 3 章 一对相对性状的杂交（四季脚本） ---- */
+/* ---- 第 3 章 一对相对性状杂交（四季脚本） ---- */
 function sowF2Plants(n) {
   clearPlants((p) => p.bed === 2 || p.bed === 3);
   const desc = `高 : 矮 ≈ 3 : 1（${n} 株显示 6 株）`;
@@ -2972,7 +2972,7 @@ function buildMonoControls() {
       msg.update(`F₁ 收获 ${r.seeds.length} 粒——全是圆粒。皱粒作父本只提供 r。`);
       hud.set('a', `F₁ 种子 ${r.seeds.length} 粒`);
       hud.set('b', '圆粒 100% · 皱粒 0%');
-      hud.set('c', '种子的性状早一代显现');
+      hud.set('c', '种子的性状在子一代显现');
       step = 1;
     },
   });
@@ -3187,7 +3187,7 @@ function buildTestControls() {
   }
 }
 
-/* ---- 第 5 章 两对相对性状的杂交（9:3:3:1 + 1:1:1:1） ---- */
+/* ---- 第 5 章 两对相对性状杂交（9:3:3:1 + 1:1:1:1） ---- */
 function buildDiControls() {
   ctl.clear();
   sowRow(0, 'std', garden.day - 36);
@@ -3394,7 +3394,7 @@ function buildWhyControls() {
     label: '种子样品架（四种组合）',
     onClick: () => {
       flyCam('benchSample');
-      msg.update('圆 / 皱 × 黄 / 绿四种样豆。灰种皮随母本，挡住了子叶颜色——要剥开种皮才看得到子叶。');
+      msg.update('圆 / 皱 × 黄 / 绿四种样豆。灰种皮随母本，挡住了子叶颜色——需剥去种皮才能看到子叶。');
     },
   });
   ctl.button({
@@ -3414,13 +3414,13 @@ function buildWhyControls() {
     label: '翻季：清园重播',
     onClick: () => {
       nextSeason(false);
-      msg.update('新的一季开始：六行豆畦全部清空了。想任意播种品系，去「七对性状自由探究」章。');
+      msg.update('新的一季开始：六行豆畦全部清空了。想任意播种品系，去「七对性状开放式探究」章。');
     },
   });
   hud.show(false);
 }
 
-/* ---- 第 6 章 七对性状自由探究（六行操作台 · 基因型 · 大样本 · 棋盘格） ---- */
+/* ---- 第 6 章 七对性状开放式探究（六行操作台 · 基因型 · 大样本 · 棋盘格） ---- */
 
 function buildFreeControls() {
   ctl.clear();
@@ -3513,7 +3513,7 @@ function buildFreeControls() {
   ctlSelect({ label: '性状 A', options: traitOpts, value: tA, onChange: (v) => { tA = v; } });
   ctlSelect({ label: '性状 B', options: traitOpts, value: tB, onChange: (v) => { tB = v; } });
   ctl.button({
-    label: '两对性状的棋盘格（4×4）',
+    label: '双性状棋盘格（4×4）',
     onClick: () => {
       if (tA === tB) { msg.update('最多选两对，且要选不同的性状。'); return; }
       drawFreePunnett([tA, tB]);
@@ -3522,7 +3522,7 @@ function buildFreeControls() {
     },
   });
   ctl.button({
-    label: '比对孟德尔的原始数据',
+    label: '对照孟德尔当年的记录',
     onClick: () => {
       flyCam('mendel');
       msg.update('数据出处：孟德尔 1865 年发表的《植物杂交实验》（Versuche über Pflanzenhybriden）——七对性状的 F₂ 比例全部逼近 3 : 1。');
@@ -3568,7 +3568,7 @@ function buildFreeControls() {
       tints.push(rowT);
     }
     drawPunnett({
-      title: `两对性状的棋盘格：${LOCI[k1].name} × ${LOCI[k2].name}`,
+      title: `双性状棋盘格：${LOCI[k1].name} × ${LOCI[k2].name}`,
       rows: gams, cols: gams, cells, tints,
       note: 'F₁ 双杂合自交：数格子 → 9 : 3 : 3 : 1\n每对单独看仍是 3 : 1——(3:1)² = 9:3:3:1',
     });
@@ -3760,7 +3760,7 @@ const SECTIONS = [
     title: '为什么选豌豆',
     home: 'garden',
     usesHud: false,
-    html: `<p>孟德尔在<b>布尔诺圣托马斯修道院的后院豆畦</b>里种下豌豆，一测就是八年。选它做材料有两个理由：</p>
+    html: `<p>孟德尔在<b>布尔诺圣托马斯修道院后院豆畦</b>里种下豌豆，一测就是八年。选它做材料有两个理由：</p>
 <p>① <b>严格自花受粉</b>——花是蝶形：一枚旗瓣居上、两枚翼瓣分列左右，龙骨瓣裹住 10 枚雄蕊与中央 1 枚雌蕊；开花之前花粉就已落在自家柱头完成受粉，即<span class="hl">闭花受粉</span>。自然状态下每一行都是稳定遗传的<b>纯系</b>；人工去雄后授粉，杂交才可控。</p>
 <p>② 七对<b>界限分明</b>的相对性状，非此即彼、便于统计：</p>
 <table><tr><th>性状</th><th>显性</th><th>隐性</th></tr>${TRAIT_ORDER.map((k) => `<tr><td>${LOCI[k].name}</td><td>${LOCI[k].dom}</td><td>${LOCI[k].rec}</td></tr>`).join('')}</table>
@@ -3772,13 +3772,13 @@ const SECTIONS = [
     title: '人工异花授粉',
     home: 'station',
     html: `<p>豌豆自花受粉，要让它在人工控制下「异花」，必须抢在<b>花蕾期</b>完成全套操作：</p>
-<p><span class="hl">① 去雄</span>：在花蕾期掰开龙骨瓣，以镊子逐一摘除 10 枚花药（免得自花花粉掺进来）→ <span class="hl">② 套袋</span>：立即罩上纸袋（防外来花粉）→ <span class="hl">③ 等 1 天</span>：雌蕊（柱头）成熟 → <span class="hl">④ 采粉</span>：从父本花取花粉 → <span class="hl">⑤ 授粉</span>：把花粉涂在柱头上 → <span class="hl">⑥ 再套袋 + 挂标签</span>：记录父母本。</p>
+<p><span class="hl">① 去雄</span>：在花蕾期掰开龙骨瓣，以镊子逐一摘除 10 枚花药（免得自花花粉掺进来）→ <span class="hl">② 套袋</span>：立即罩上纸袋（防外来花粉）→ <span class="hl">③ 等 1 天</span>：雌蕊（柱头）成熟 → <span class="hl">④ 采粉</span>：从父本花取花粉 → <span class="hl">⑤ 授粉</span>：把花粉抹在柱头上 → <span class="hl">⑥ 再套袋 + 挂标签</span>：记录父母本。</p>
 <p>时机错了会有代价：<b>去雄太晚</b>（花已开）＝可能已自花受粉；<b>授粉过早</b>＝柱头未熟结籽少；<b>去雄后不套袋</b>＝外来花粉混入——这些都会在收获数据里现出原形。</p>`,
     enter() { buildCrossControls(); },
   },
   {
     id: 'mono',
-    title: '一对相对性状的杂交',
+    title: '一对相对性状杂交',
     home: 'garden',
     html: `<p>以<b>圆粒 × 皱粒</b>为例，跟孟德尔一起走完三个季：</p>
 <p><b>第 1 季</b>：去雄授粉 → 收获 F₁ 种子——<span class="hl">全是圆粒</span>（种子的形状是种子自己的基因型，当代表达）。</p>
@@ -3797,7 +3797,7 @@ const SECTIONS = [
   },
   {
     id: 'di',
-    title: '两对相对性状的杂交',
+    title: '两对相对性状杂交',
     home: 'garden',
     html: `<p>一对性状分完，孟德尔追问：<b>两对性状一起传，会不会互相干扰？</b></p>
 <p>黄圆（YYRR）× 绿皱（yyrr）→ F₁ 全是黄圆（YyRr）→ F₁ 自交，F₂ 出现<span class="hl">四种组合</span>：黄圆 9 · 黄皱 3 · 绿圆 3 · 绿皱 1。<b>黄皱、绿圆是新组合</b>——亲本没有的搭配。</p>
@@ -3806,13 +3806,13 @@ const SECTIONS = [
   },
   {
     id: 'free',
-    title: '七对性状自由探究',
+    title: '七对性状开放式探究',
     home: 'garden',
     html: `<p>这一章是<b>沙盘</b>：豆园六行随你安排——</p>
 <p>· 每行右侧<b>播种</b>：十个纯系品系（含七对全是隐性的<b>全隐性品系</b>），也可播上一季收获的种子；可勾「大样本」一季种 400 株。</p>
 <p>· <span class="hl">显示基因型</span>开关：每株头顶标出 7 座位点基因型，表型与基因型当场对照。</p>
 <p>· 收获后在工作台分拣计数，台账给观测 / 期望 / <span class="hl">χ²</span> 判定；两对性状可上<b>棋盘格</b>数 9:3:3:1。</p>
-<p>· 西墙挂着<b>孟德尔的原始数据</b>（出自其 1865 年论文）——七对性状的 F₂ 比例全部逼近 3 : 1。</p>`,
+<p>· 西墙挂着<b>孟德尔的论文数据</b>（出自其 1865 年论文）——七对性状的 F₂ 比例全部逼近 3 : 1。</p>`,
     enter() { buildFreeControls(); },
   },
   {
@@ -3820,7 +3820,7 @@ const SECTIONS = [
     title: '假说—演绎法',
     home: 'methodArc',
     html: `<p>孟德尔的伟大不止于数据，更在于方法——<span class="hl">假说—演绎法</span>，五步闭环（东弧五块立牌）：</p>
-<p><b>① 观察现象</b>：F₁ 显性整齐、F₂ 隐性重现且比近 3 : 1。<b>② 提出假说</b>：生物性状由成对的遗传因子控制；体细胞里因子成对，形成配子时彼此分开，受精时随机组合。<b>③ 演绎推理</b>：若假说成立，F₁ × 隐性纯合子后代应 1 : 1。<b>④ 实验验证</b>：测交实测 106 : 101 ≈ 1 : 1。<b>⑤ 得出结论</b>：分离定律成立；两对性状同理推出自由组合定律。</p>
+<p><b>① 观察现象</b>：F₁ 显性整齐、F₂ 隐性重现且比近 3 : 1。<b>② 提出假说</b>：生物性状由成对的遗传因子控制；体细胞里因子成对，形成配子时相互分开，受精时随机组合。<b>③ 演绎推理</b>：若假说成立，F₁ × 隐性纯合子后代应 1 : 1。<b>④ 实验验证</b>：测交实测 106 : 101 ≈ 1 : 1。<b>⑤ 得出结论</b>：分离定律成立；两对性状同理推出自由组合定律。</p>
 <p>提出问题 → 假说 → 演绎 → 验证 → 结论，这套范式后来成了现代科学研究的通行证。</p>`,
     enter() { buildHypoControls(); },
   },

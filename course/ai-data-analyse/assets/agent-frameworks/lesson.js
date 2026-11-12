@@ -6,7 +6,7 @@ const sources = {
   dsh:['DSH 官方仓库','https://github.com/deepseek-ai/deepseek-harness'],
   dshWeb:['DSH Web 使用与模型配置','https://github.com/deepseek-ai/deepseek-harness/blob/master/docs/user/guide/index.md'],
   dshDeploy:['DSH 反向代理部署','https://github.com/deepseek-ai/deepseek-harness/blob/master/docs/user/guide/public-deployments.md'],
-  labProject:['DSH Research Lab 项目介绍','https://milulab.com/project/dsh-research-lab'],
+  labProject:['DSH Research Lab 项目介绍','/project/dsh-research-lab'],
   lab:['Research Lab 源码与操作手册','https://github.com/milulab/dsh-research-lab'],
   dify:['Dify Docker Compose 部署','https://docs.dify.ai/en/self-host/deploy/quick-start/docker-compose'],
   difyCode:['Dify 代码节点','https://docs.dify.ai/en/cloud/use-dify/nodes/code'],

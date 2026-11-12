@@ -2433,7 +2433,7 @@ function fricCtl() {
   setHudRows([['st', '状态'], ['N', '压力 N'], ['F', '测力计示数'], ['fmax', '最大静摩擦'], ['f', '滑动摩擦 f'], ['mu', '动摩擦因数']]);
   logSetCols('fric', ['接触面', 'N/N', 'f max/N', 'f 滑/N', 'μ']);
   const noteEl = document.getElementById('chartNote');
-  if (noteEl) noteEl.textContent = 'f–N 分组散点与拟合：不同接触面的直线斜率即各自的 μ。';
+  if (noteEl) noteEl.textContent = 'f–N 分组散点与拟合：每种接触面各成一条直线，斜率即该面的 μ。';
   frReset();
 }
 
@@ -2630,7 +2630,7 @@ function inclineCtl() {
   ctl.slider({ label: '接触面静摩擦因数 μ', min: 0.1, max: 0.8, step: 0.02, value: IN.mu, fmt: (v) => v.toFixed(2), onInput: (v) => { IN.mu = v; if (IN.slidT < 0) inPlace(); } });
   ctl.sep();
   ctl.button({ label: '↺ 木块放回', onClick: () => { IN.slidT = -1; IN.sliding = false; IN.slidX = 0; inPlace(); setStatus('ready'); } });
-  hintEl('拖动红色摇柄改变倾角 · 观察 G∥ 与静摩擦变化 · 找到恰好下滑的临界角 · 加砝码再找一次（角度不变！）');
+  hintEl('拖动红色摇柄改变倾角 · 观察 G∥ 与静摩擦变化 · 找到刚要下滑的临界角 · 加砝码再找一次（角度不变！）');
   setHudRows([['st', '状态'], ['th', '倾角 θ'], ['g1', 'G∥ = G·sinθ'], ['g2', 'G⊥ = G·cosθ'], ['st2', '滑/静'], ['crit', '临界角']]);
   logSetCols('incline', ['总重', 'μ', '临界角 θ（实测）', 'arctanμ（理论）']);
   inPlace();
@@ -3265,7 +3265,7 @@ function collideCtl() {
   });
   paintK();
   ctl.sep();
-  hintEl('选缓冲器 按 空格 让 A 撞向 B · 对比碰前碰后动量与动能 · 也可直接拖住滑块甩出去');
+  hintEl('选缓冲器 按 空格 让 A 撞向 B · 对比碰前碰后动量与动能 · 也可以捏住滑块甩出去');
   setHudRows([['st', '状态'], ['p0', '碰前总动量'], ['p1', '碰后总动量'], ['ek', '总动能 前→后'], ['loss', '动能损失'], ['kind', '缓冲器'], ['v', '碰后速度']]);
   logSetCols('collide', ['类型', 'p 前', 'p 后', 'Ek 前/J', 'Ek 后/J', '损失']);
   clReset();
@@ -3571,7 +3571,7 @@ function camTo(pos, target) { app.setCamera(pos, target); }
 
 const secTape = {
   id: 'tape', title: '纸带与 v-t 图',
-  html: `<p>打点计时器每隔 <b>0.02 s</b> 在纸带上打一个点，每 5 个间隔取一个<b>计数点</b>（T = 0.1 s）。小车拖纸带做匀加速时，相邻计数点的间距越来越大。</p>
+  html: `<p>打点计时器每隔 <b>0.02 s</b> 在纸带上打一个点，每 5 个间隔取一个<b>计数点</b>（T = 0.1 s）。小车拖纸带做匀加速时，相邻计数点的间隔越来越宽。</p>
 <p>两条路算加速度：① 量出间距用 <span class="hl">逐差法 a = [(s₄+s₅+s₆)−(s₁+s₂+s₃)] / 9T²</span>；② 算出各点速度画 <span class="hl">v–t 图</span>，过原点直线，<b>斜率即 a</b>。系统整体满足 <span class="hl">a = m<sub>钩</sub>g / (M<sub>车</sub>+m<sub>钩</sub>)</span>。</p>
 <p>空格释放小车：数据坞里会同时出现「纸带页」（点迹与间距）和 v-t 图线。改变钩码质量再跑一次，比较斜率。</p>`,
   enter() {
@@ -3652,7 +3652,7 @@ const secNewton = {
 };
 const secFric = {
   id: 'fric', title: '滑动摩擦力',
-  html: `<p>电机经力传感器匀速拉木块：示数从 0 爬升——<b>静摩擦</b>随外力增大；到<b>最大静摩擦</b>峰值瞬间木块被拉动，示数回落并保持稳定——<b>滑动摩擦力</b>。</p>
+  html: `<p>电机经力传感器匀速拉木块：示数从 0 爬升——<b>静摩擦</b>随外力增大；到<b>最大静摩擦</b>峰值瞬间木块被拉动，示数随即回落并稳定下来——<b>滑动摩擦力</b>。</p>
 <p><span class="hl">f = μN</span>（水平面 N = G）。在 F–t 图上读峰值；给木块<b>加砝码</b>（每片 100 g）再拉一轮，看 N 变大后 f 怎么变；换<b>四种接触面</b>（木板/毛巾/橡胶/毛毡），每面记几组 (N, f)——f–N 分组直线的<b>斜率就是各自的 μ</b>。</p>`,
   enter() {
     useScene('fric', buildFric);
@@ -3714,7 +3714,7 @@ const secLift = {
 };
 const secPend = {
   id: 'pend', title: '机械能守恒',
-  html: `<p>气垫摆摆动中，动能与重力势能相互转化，总和不变（只有重力/支持力做功）：<span class="hl">Ek + Ep = 恒量</span>。最低点势能最小、动能最大；最高点动能为零。以最低点为势能零点，能量柱实时显示三段：Ep / Ek / <b>Q 内能</b>。</p>
+  html: `<p>气垫摆摆动中，动能与重力势能相互转化，总和不变（只有重力/支持力做功）：<span class="hl">Ek + Ep = 恒量</span>。最低点势能最小、动能最大；最高点动能为零。把最低点取作零势能点，能量柱实时显示三段：Ep / Ek / <b>Q 内能</b>。</p>
 <p><b>关掉气垫泵</b>：枢轴摩擦开始耗散——振幅一圈圈变小，能量柱里的红色 Q 段一格格长高。机械能没消失，变成了内能。再开泵、重置摆角，回到守恒线。</p>`,
   enter() {
     useScene('pend', buildPend);
