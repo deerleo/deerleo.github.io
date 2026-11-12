@@ -435,9 +435,10 @@
   .wp-contact b { min-width: 76px; }
   .wp-post-date { min-width: 64px; }
 
-  /* 表格内边距微收 */
-  .wp-table th { padding: 2.2mm 2.5mm; }
-  .wp-table td { padding: 2mm 2.5mm; }
+  /* 表格内边距微收 + 字号微降 + 短表头/末列链接不折行 */
+  .wp-table th { padding: 2.2mm 2.5mm; font-size: 8.5pt; white-space: nowrap; }
+  .wp-table td { padding: 2mm 2.5mm; font-size: 8.5pt; }
+  .wp-table td:last-child { white-space: nowrap; }
 }
 
 /* ---------------- 打印覆盖 ---------------- */
