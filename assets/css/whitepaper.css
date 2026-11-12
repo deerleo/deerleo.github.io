@@ -364,6 +364,82 @@
 .wp-contact b { display: inline-block; min-width: 26mm; color: var(--wp-forest); font-weight: 800; }
 .wp-closing { margin-top: 12mm; padding-top: 4mm; border-top: .6pt solid var(--wp-line); color: var(--wp-muted); font-size: 9pt; }
 
+/* ---------------- 移动端适配（工单 AT-084，2026-11-12） ----------------
+   仅屏幕端窄视口生效：@media screen 双保险——print 上下文（WeasyPrint PDF）
+   永不命中本节，@media print / @page 不受影响。桌面 ≥1024px 零变化。 */
+
+@media screen and (max-width: 768px) {
+
+  /* 文档纸卡：内边距收窄 */
+  .wp-doc {
+    margin: 14px 12px 48px;
+    padding: 40px 32px;
+  }
+
+  /* 工具条：收窄内边距与间距 */
+  .wp-toolbar { padding: 10px 14px; gap: 10px; }
+  .wp-toolbar-actions { gap: 10px; }
+  .wp-btn { padding: 8px 13px; }
+
+  /* 封面：mm 固定尺寸换算成手机尺度，高度随内容 */
+  .wp-cover { min-height: 560px; padding: 56px 40px 40px; }
+  .wp-cover-mid h1 { font-size: clamp(30px, 5.5vw, 40px); }
+  .wp-cover-mid .wp-cover-sub { font-size: 15px; letter-spacing: .14em; }
+  .wp-cover-mid p { max-width: 100%; }
+
+  /* 章节头节奏收紧 */
+  .wp-sec-head { margin-bottom: 24px; }
+  .wp-section h3 { margin: 24px 0 10px; }
+
+  /* 02 三卡并排 → 纵向堆叠 */
+  .wp-card { display: block; width: 100%; margin: 0 0 12px; }
+  .wp-card:last-child { margin-bottom: 0; }
+
+  /* 03/04 右浮时间与元信息 → 块级堆叠（日期在上） */
+  .wp-xp-time { float: none; display: block; margin-bottom: 2px; }
+  .wp-course-meta { float: none; display: block; margin-bottom: 3px; }
+
+  /* 表格：窄屏允许换行，杜绝横向溢出 */
+  .wp-table th,
+  .wp-table td.wp-td-title,
+  .wp-table td.wp-td-tag,
+  .wp-table td:last-child { white-space: normal; }
+  .wp-table td { word-break: break-word; }
+
+  /* 04 课程小节两列 → 单列（margin 一并清零） */
+  .wp-episodes li { display: block; width: 100%; margin: 0 0 6px; }
+
+  /* 05 技能两列 → 单列 */
+  .wp-skill-col { display: block; width: 100%; margin: 0 0 16px; }
+  .wp-skill-col:last-child { margin-bottom: 0; }
+
+  /* 07 精选文章：描述缩进取消 */
+  .wp-post-desc { margin-left: 0; }
+}
+
+@media screen and (max-width: 480px) {
+
+  .wp-doc { margin: 10px 10px 40px; padding: 28px 18px 40px; }
+
+  /* 工具条极窄屏：隐藏品牌副标防换行 */
+  .wp-toolbar-brand small { display: none; }
+  .wp-btn { padding: 8px 12px; }
+
+  /* 封面再收一档 */
+  .wp-cover { min-height: 480px; padding: 40px 22px 30px; }
+  .wp-cover-mid .wp-cover-sub { font-size: 13px; letter-spacing: .1em; }
+  .wp-cover-top span { letter-spacing: .08em; }
+  .wp-cover-bottom { flex-direction: column; align-items: flex-start; gap: 10px; }
+
+  /* 联系方式标签与文章日期固定宽收紧 */
+  .wp-contact b { min-width: 76px; }
+  .wp-post-date { min-width: 64px; }
+
+  /* 表格内边距微收 */
+  .wp-table th { padding: 2.2mm 2.5mm; }
+  .wp-table td { padding: 2mm 2.5mm; }
+}
+
 /* ---------------- 打印覆盖 ---------------- */
 
 @media print {
