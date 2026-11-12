@@ -7,6 +7,10 @@ series: "哟哟鹿鸣"
 
 ![SpaceX 加州 Hawthorne 总部办公楼与室外陈列的猎鹰 9 号一级火箭（资料图）。SpaceXSI——SpaceX 与 xAI 合并后的主体——的 grok.me 平台门就开在这类楼里，其中 24 扇还是自家员工忘关的](/assets/images/2026-11-13-grok-build-ghostshares/final_01_spacexsi.jpg)
 
+<video controls preload="metadata" style="display:block;max-width:100%;width:720px;margin:0 auto;" poster="/assets/videos/2026-11-13-grok-build-ghostshares-cover.jpg" src="/assets/videos/2026-11-13-grok-build-ghostshares.mp4"></video>
+
+*同一件事的视频版，四万三千条幽灵链接对账*
+
 做锁的人，自己家不会不装锁。开保险柜行的，也不会开着柜门过夜。这不用学，是本分。
 
 11 月 10 日，安全公司 Claroc 发布报告：Grok Build 这个"几分钟造一个 app"的平台上，三万五千多个 app 不用登录、拿着链接就能打开。其中 24 个，是 SpaceXSI（SpaceX 与 xAI 合并后的主体）自己员工建的。里面有标着 confidential 的企业销售新人入职计划，有盖着 594 个客户账户的销售区域地图，还有一份发给美国联邦机构的广告提案——文件上同样印着 confidential。研究员开进那份入职计划时的原话是："We were shocked."（我们惊了。）
