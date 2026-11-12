@@ -1,0 +1,99 @@
+---
+layout: null
+---
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#f1f2ec">
+  {% include theme-init.html %}
+  <link rel="stylesheet" href="{{ '/assets/css/theme.css' | relative_url }}?v=20261027">
+  <script src="{{ '/assets/js/theme.js' | relative_url }}" defer></script>
+  <meta name="description" content="北京 CBD 数字可交互沙盘提示词条目：完整提示词原文、要点拆解、实战效果与踩坑经验。">
+  <meta name="robots" content="index,follow">
+  <title>P01 · 北京 CBD 数字沙盘 · 提示词库</title>
+  <style>
+    *{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:var(--page-glow),var(--bg);color:var(--ink);font:16px/1.7 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
+    a{color:inherit}.wrap{max-width:820px;margin:auto;padding:48px 24px 88px}
+    .eyebrow{color:var(--cyan);font-size:12px;font-weight:800;letter-spacing:.16em;text-transform:uppercase}
+    h1{margin:10px 0 8px;font-size:clamp(30px,5vw,44px);line-height:1.12;letter-spacing:-.04em}
+    .meta-line{color:var(--muted);font-size:13px;margin-bottom:30px}
+    .meta-line a{color:var(--mint);font-weight:700;text-decoration:none}
+    .prompt-box{position:relative;padding:26px 28px;border:1px solid var(--line-strong);border-radius:16px;background:var(--code-bg);margin:22px 0}
+    .prompt-box .label{position:absolute;top:-10px;left:20px;background:var(--lime);color:var(--on-lime);font-size:11px;font-weight:900;letter-spacing:.12em;padding:3px 12px;border-radius:999px}
+    .prompt-box p{margin:0;font-size:16px;line-height:2;font-weight:550}
+    h2{margin:40px 0 14px;font-size:22px;letter-spacing:-.02em}
+    ul.points{padding-left:0;list-style:none}
+    ul.points li{padding:10px 0 10px 26px;position:relative;border-bottom:1px dashed var(--line)}
+    ul.points li:before{content:"→";position:absolute;left:2px;color:var(--mint);font-weight:900}
+    .shot{margin:26px 0}
+    .shot img{display:block;width:100%;border-radius:14px;border:1px solid var(--line)}
+    .shot figcaption{color:var(--ink-3);font-size:12.5px;margin-top:8px;text-align:center}
+    .cta{display:flex;gap:14px;flex-wrap:wrap;margin:30px 0 10px}
+    .cta a{display:inline-block;padding:13px 26px;border-radius:999px;font-size:15px;font-weight:800;text-decoration:none;transition:opacity .15s}
+    .cta a:hover{opacity:.85}
+    .cta .primary{background:var(--accent);color:var(--on-accent)}
+    .cta .ghost{border:1.5px solid var(--line-strong);color:var(--ink)}
+    .tips{padding:22px 24px;border:1px solid var(--line);border-radius:16px;background:var(--panel-soft);margin-top:34px}
+    .tips h2{margin:0 0 12px;font-size:18px}
+    .tips ul{margin:0;padding-left:20px;color:var(--muted);font-size:14.5px}
+    .tips li{margin-bottom:8px}
+    .footer{display:flex;justify-content:space-between;gap:16px;margin-top:60px;padding-top:18px;border-top:1px solid var(--line);color:var(--ink-3);font-size:12px}
+    .footer a{color:var(--mint);font-weight:700;text-decoration:none}
+    @media (max-width:680px){.wrap{padding-top:36px}.prompt-box{padding:20px}.cta a{width:100%;text-align:center}}
+  </style>
+  <link rel="stylesheet" href="{{ '/assets/css/subpage-shell.css?v=20261027' | relative_url }}">
+</head>
+<body id="top">
+  <main class="wrap">
+    <p class="eyebrow">Prompt Library · P01</p>
+    <h1>北京 CBD 数字可交互沙盘</h1>
+    <p class="meta-line">三维可视化 / 网页 · 验证于 2026-11-12 · <a href="{{ '/blog/2026-11-12-beijing-cbd-sandbox-prompt/' | relative_url }}">完整实战复盘博文 ↗</a></p>
+
+    <div class="prompt-box">
+      <span class="label">提示词原文</span>
+      <p>生成一个网页城市数字可交互沙盘，城市是北京 CBD，根据网络地图数据和图片识别地形和城市建筑道路交通等，建模写实精细可以旋转缩放平移。可以拖动 24 小时的时间条呈现白天黑夜，点击地标能呈现信息，可以第一人称视角城市漫游。</p>
+    </div>
+
+    <h2>要点拆解</h2>
+    <ul class="points">
+      <li><strong>「网页」定载体</strong>：说网页而非三维模型，产出直接是可运行代码（单文件 HTML + Three.js），不是 OBJ/FBX 文件。</li>
+      <li><strong>「北京 CBD」自带知识包</strong>：地标清单（中国尊、国贸三期、央视大楼、银泰中心…）不用逐个列，模型的知识里自带几何特征与背景信息。</li>
+      <li><strong>四条「可以」= 四个验收标准</strong>：旋转缩放平移、24 小时时间条、点击地标信息、第一人称漫游——每一条都会变成一套交互系统，一条都不能省。</li>
+      <li><strong>「白天黑夜」是隐藏大需求</strong>：背后是完整天光系统（天空色插值、日月位置、窗灯路灯夜间点亮、星空），好在这句提示词就够触发。</li>
+      <li><strong>「根据网络地图数据建模」是误写</strong>：AI 实际做的是程序化示意重建（凭知识摆布局与高度），不是真的爬地图数据。效果看博文里的诚实评估。</li>
+    </ul>
+
+    <h2>实战效果</h2>
+    <figure class="shot">
+      <img src="{{ '/assets/images/2026-11-12-beijing-cbd-sandbox/aerial-day.png' | relative_url }}" alt="白天俯瞰：北京 CBD 天际线" loading="lazy">
+      <figcaption>白天俯瞰 · 中国尊领跑的天际线</figcaption>
+    </figure>
+    <figure class="shot">
+      <img src="{{ '/assets/images/2026-11-12-beijing-cbd-sandbox/aerial-night.png' | relative_url }}" alt="夜景：窗灯、路灯与星空" loading="lazy">
+      <figcaption>夜景 · 窗灯、路灯光晕、星空同步点亮</figcaption>
+    </figure>
+
+    <div class="cta">
+      <a class="primary" href="{{ '/prompts/beijing-cbd-sandbox/sandbox/' | relative_url }}">直接玩沙盘 ↗</a>
+      <a class="ghost" href="{{ '/blog/2026-11-12-beijing-cbd-sandbox-prompt/' | relative_url }}">读实战复盘博文</a>
+    </div>
+
+    <aside class="tips">
+      <h2>使用建议</h2>
+      <ul>
+        <li>光照与机位参数 AI 默认值偏保守，生成后需人工目检微调（太阳强度、曝光、相机高度）。</li>
+        <li>想批量截图/录屏，补一句：「加一个 URL 参数驱动的确定性截图模式，支持指定时间与机位」。</li>
+        <li>Three.js 依赖建议本地化，别走 CDN——离线可跑，录制不被网络抖动坑。</li>
+        <li>合理预期：程序化示意沙盘，轮廓与天际线可辨认，布局非测绘精度。</li>
+      </ul>
+    </aside>
+
+    <footer class="footer">
+      <span>P01 · 北京 CBD 数字沙盘</span>
+      <span><a href="{{ '/prompts/' | relative_url }}">← 返回提示词库</a></span>
+    </footer>
+  </main>
+</body>
+</html>

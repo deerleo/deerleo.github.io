@@ -1,0 +1,84 @@
+---
+layout: null
+---
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#f1f2ec">
+  {% include theme-init.html %}
+  <link rel="stylesheet" href="{{ '/assets/css/theme.css' | relative_url }}?v=20261027">
+  <script src="{{ '/assets/js/theme.js' | relative_url }}" defer></script>
+  <meta name="description" content="迷鹿 MiLu 提示词库：经过真实项目验证的 AI 提示词合集，含完整提示词原文、要点拆解与实战效果演示。">
+  <meta name="robots" content="index,follow">
+  <title>提示词库 · 迷鹿 MiLu</title>
+  <style>
+    *{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:var(--page-glow),var(--bg);color:var(--ink);font:16px/1.7 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
+    a{color:inherit}.wrap{max-width:1100px;margin:auto;padding:48px 24px 88px}
+    .hero{max-width:760px;margin-bottom:44px}.eyebrow{color:var(--cyan);font-size:12px;font-weight:800;letter-spacing:.16em;text-transform:uppercase}
+    .hero h1{margin:10px 0 16px;font-size:clamp(36px,6vw,60px);line-height:1.08;letter-spacing:-.05em}.hero h1 em{color:var(--mint);font-style:normal}
+    .hero p{max-width:700px;color:var(--muted);font-size:17px}
+    .list{display:grid;gap:15px}
+    .prompt-card{display:flex;flex-direction:column;gap:10px;padding:26px;border:1px solid var(--line);border-radius:18px;background:var(--card-grad);text-decoration:none;transition:border-color .15s ease}
+    .prompt-card:hover{border-color:var(--line-strong)}
+    .prompt-top{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;color:var(--cyan);font-size:11px;font-weight:850;letter-spacing:.08em}
+    .prompt-top .cat{padding:4px 10px;border:1px solid var(--line);border-radius:999px;color:var(--ink-2);font-size:11px;font-weight:700;letter-spacing:.04em}
+    .prompt-card h2{margin:2px 0 0;font-size:23px;line-height:1.3;letter-spacing:-.02em}
+    .prompt-card p{margin:0;color:var(--muted);font-size:14px;line-height:1.7}
+    .prompt-foot{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap;margin-top:8px}
+    .prompt-meta{color:var(--ink-3);font-size:12px;font-weight:650;letter-spacing:.04em}
+    .prompt-card .go{color:var(--mint);font-size:13px;font-weight:800}
+    .contact-line{margin-top:34px;padding:22px 24px;border:1px solid var(--line);border-radius:18px;background:var(--panel-soft);color:var(--muted);font-size:14px}
+    .contact-line a{color:var(--mint);font-weight:800;text-decoration:none;border-bottom:1px solid rgba(195,237,89,.5);padding-bottom:2px}
+    .footer{display:flex;justify-content:space-between;gap:16px;margin-top:60px;padding-top:18px;border-top:1px solid var(--line);color:var(--ink-3);font-size:12px}
+    @media (max-width:680px){.wrap{padding-top:38px}.prompt-card{padding:20px}.prompt-card h2{font-size:20px}.footer{display:block}.footer span{display:block;margin:5px 0}}
+  </style>
+  <link rel="stylesheet" href="{{ '/assets/css/subpage-shell.css?v=20261027' | relative_url }}">
+</head>
+<body id="top">
+  <main class="wrap">
+    <header class="hero">
+      <p class="eyebrow">Prompt Library</p>
+      <h1>提示词库：<br><em>每一条都在真实项目里跑过。</em></h1>
+      <p>不收藏看不懂的咒语。这里只收验证过的提示词：原文照抄可用，附要点拆解与实战效果演示，持续补充。</p>
+    </header>
+
+    <section class="list" aria-label="提示词列表">
+
+      <a class="prompt-card" href="{{ '/prompts/beijing-cbd-sandbox/' | relative_url }}">
+        <div class="prompt-top"><span>P01 · 三维可视化</span><span class="cat">网页 / Three.js</span></div>
+        <h2>北京 CBD 数字可交互沙盘</h2>
+        <p>一条提示词生成网页版城市数字沙盘：程序化重建北京 CBD 天际线，可旋转缩放平移，拖动 24 小时时间条切换昼夜光照，点击地标看信息，还能切第一人称在城市里漫游。</p>
+        <div class="prompt-foot"><span class="prompt-meta">单文件网页 · 零依赖运行 · 附实战复盘</span><span class="go">查看提示词 ↗</span></div>
+      </a>
+
+    </section>
+
+    <aside class="contact-line" aria-label="交流">
+      有想看到的城市或场景？发邮件到 <a href="mailto:dearsuley@gmail.com">dearsuley@gmail.com</a>，下次更新可能就是它。
+    </aside>
+
+    <footer class="footer">
+      <span>迷鹿 MiLu · 提示词库</span>
+      <span><a href="{{ '/tutorials/' | relative_url }}" style="color:var(--mint);font-weight:700;text-decoration:none">← 返回教程与课程</a></span>
+    </footer>
+  </main>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "CollectionPage",
+    "name": "提示词库",
+    "url": "{{ site.url }}/prompts/",
+    "inLanguage": "zh-CN",
+    "description": "迷鹿 MiLu 提示词库：经过真实项目验证的 AI 提示词合集，含完整提示词原文、要点拆解与实战效果演示。",
+    "author": {
+      "@type": "Person",
+      "name": "Leo Lu",
+      "alternateName": "迷鹿 MiLu",
+      "url": "{{ site.url }}/"
+    }
+  }
+  </script>
+</body>
+</html>
