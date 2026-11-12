@@ -230,10 +230,13 @@ html[data-theme="dark"] .cta-chunk a:hover { border-bottom-color: var(--lime); }
   .portrait-caption span:first-child { font-size: clamp(47px, 12vw, 74px); }
   .portrait-caption span:last-child { max-width: 130px; margin: 0 0 1px 12px; }
   .portrait-index { display: none; }
-  .site-nav { position: relative; justify-content: space-between; padding: 17px 20px 12px; }
-  /* 导航链接横向滚动，切换器固定不动 */
+  /* 移动端：切换器脱离导航行，固定在视口右上角（与头像图左上角 logo 对称），
+     导航行整行横向滚动。.site-nav 需去掉 backdrop-filter，
+     否则它会把 fixed 后代的定位基准从视口改成本身。 */
+  .site-nav { position: relative; justify-content: flex-start; padding: 17px 20px 12px; backdrop-filter: none; -webkit-backdrop-filter: none; }
   .nav-links { justify-content: flex-start; gap: 22px; overflow-x: auto; scrollbar-width: none; }
   .nav-links::-webkit-scrollbar { display: none; }
+  .theme-switch { position: fixed; z-index: 60; top: calc(12px + env(safe-area-inset-top, 0px)); right: calc(12px + env(safe-area-inset-right, 0px)); }
   .nav-links a { font-size: 13px; }
   .intro, .work-section, .approach-section, .contact { padding-inline: 22px; }
   .intro { padding-top: 34px; padding-bottom: 55px; }
