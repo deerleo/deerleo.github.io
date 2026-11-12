@@ -50,6 +50,6 @@ safe: false
 exclude:
   - dsh-research-lab
   - private-workflows
-  - vendor
+  - vendor/bundle
   - Gemfile
   - Gemfile.lock

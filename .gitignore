@@ -8,7 +8,7 @@ _site/
 .DS_Store
 
 # Bundler
-vendor/
+/vendor/bundle/
 
 # 本地克隆的框架仓库（独立维护，不入网站库）
 /dsh-research-lab/
