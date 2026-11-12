@@ -1,32 +1,47 @@
 /* Shared shell for course and project pages. See docs/subpage-visual-standard.md.
-   Colors come from the global tokens in assets/css/theme.css (dual theme). */
+   Colors come from the global tokens in assets/css/theme.css (dual theme).
+   Every var() carries a literal fallback so pages that load this stylesheet
+   without theme.css (static lab pages) still render the shell correctly. */
 .subpage-shell {
   position: sticky; top: 0; z-index: 50; min-height: 58px;
   display: flex; align-items: center; justify-content: space-between; gap: 18px;
   padding: 10px max(20px, calc((100vw - 1180px) / 2));
-  color: var(--ink); background: var(--header-bg);
-  border-bottom: 1px solid var(--line);
+  color: var(--ink, #1a2921); background: var(--header-bg, rgba(241, 242, 236, .86));
+  border-bottom: 1px solid var(--line, rgba(23, 59, 44, .15));
   backdrop-filter: blur(16px);
 }
 .subpage-shell__left { display: flex; align-items: center; gap: 12px; min-width: 0; }
 .subpage-shell__identity { min-width: 0; color: inherit; text-decoration: none; font-size: 14px; font-weight: 800; letter-spacing: -.01em; }
-.subpage-shell__identity small { display: block; color: var(--ink-3); font-size: 10px; font-weight: 650; letter-spacing: .1em; text-transform: uppercase; }
+.subpage-shell__identity small { display: block; color: var(--ink-3, #6a786e); font-size: 10px; font-weight: 650; letter-spacing: .1em; text-transform: uppercase; }
 .subpage-shell__actions { display: flex; align-items: center; gap: 10px; flex: 0 0 auto; }
+/* Auxiliary in-page/course links beside the identity (course index pages). */
+.subpage-shell__aux { display: flex; align-items: center; gap: 6px; min-width: 0; flex-wrap: wrap; }
+.subpage-shell__aux a {
+  color: var(--ink-3, #6a786e); padding: 7px 10px; border-radius: 999px;
+  font-size: 12.5px; font-weight: 700; text-decoration: none; white-space: nowrap;
+}
+.subpage-shell__aux a:hover, .subpage-shell__aux a:focus-visible { color: var(--ink, #1a2921); background: var(--accent-soft, rgba(60, 118, 87, .08)); }
+/* Low-emphasis back-to-course link on static lab pages (no theme system wired). */
+.subpage-shell__back {
+  color: var(--ink-3, #6a786e); border: 1px solid var(--line, rgba(23, 59, 44, .15)); border-radius: 999px;
+  padding: 6px 12px; text-decoration: none; font-size: 12px; font-weight: 650; white-space: nowrap;
+}
+.subpage-shell__back:hover, .subpage-shell__back:focus-visible { color: var(--ink, #1a2921); border-color: var(--line-strong, rgba(23, 59, 44, .28)); }
 /* Deer badge = home entry, same visual language as the homepage brand mark (lime round + dark deer). */
 .subpage-shell__home {
   position: relative; flex: 0 0 auto; display: grid; place-items: center;
-  width: 34px; height: 34px; color: var(--on-lime); background: var(--lime);
+  width: 34px; height: 34px; color: var(--on-lime, #14231a); background: var(--lime, #c3ed59);
   border-radius: 50%; text-decoration: none;
 }
 .subpage-shell__home-icon { width: 20px; height: 20px; transition: transform .18s ease; }
 .subpage-shell__home:hover .subpage-shell__home-icon,
 .subpage-shell__home:focus-visible .subpage-shell__home-icon { transform: scale(1.08); }
-.subpage-shell__home:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.subpage-shell__home:focus-visible { outline: 2px solid var(--accent, #3c7657); outline-offset: 2px; }
 /* Tooltip on hover/focus, below the badge so the sticky bar layout is never affected. */
 .subpage-shell__home-tip {
   position: absolute; top: calc(100% + 8px); left: 0; z-index: 60;
-  padding: 4px 9px; color: var(--ink); background: var(--panel);
-  border: 1px solid var(--line); border-radius: 8px; box-shadow: var(--shadow);
+  padding: 4px 9px; color: var(--ink, #1a2921); background: var(--panel, #fffefa);
+  border: 1px solid var(--line, rgba(23, 59, 44, .15)); border-radius: 8px; box-shadow: var(--shadow, 0 10px 34px rgba(23, 59, 44, .10));
   font-size: 11px; font-weight: 700; letter-spacing: .02em; white-space: nowrap;
   opacity: 0; transform: translateY(-3px); pointer-events: none;
   transition: opacity .15s ease, transform .15s ease;
@@ -34,13 +49,23 @@
 .subpage-shell__home:hover .subpage-shell__home-tip,
 .subpage-shell__home:focus-visible .subpage-shell__home-tip { opacity: 1; transform: translateY(0); }
 @media (hover: none) { .subpage-shell__home-tip { display: none; } }
+/* Compact variant for immersive lab apps with dark custom top bars (own controls kept). */
+.subpage-shell__home--compact {
+  width: 30px; height: 30px; margin-right: 2px;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, .18), 0 2px 10px rgba(0, 0, 0, .35);
+}
+.subpage-shell__home--compact .subpage-shell__home-icon { width: 17px; height: 17px; }
+.subpage-shell__home--compact .subpage-shell__home-tip { left: 50%; transform: translate(-50%, -3px); }
+.subpage-shell__home--compact:hover .subpage-shell__home-tip,
+.subpage-shell__home--compact:focus-visible .subpage-shell__home-tip { transform: translate(-50%, 0); }
+@media (max-width: 600px) { .subpage-shell__home--compact { width: 28px; height: 28px; margin-right: 0; } .subpage-shell__home--compact .subpage-shell__home-icon { width: 16px; height: 16px; } }
 /* Some course indexes retain local section links inside the shared header shell. */
 .subpage-page-header .brand,
 .subpage-page-header .brand:visited { color: var(--ink); text-decoration: none; }
 .subpage-page-header .brand:hover,
 .subpage-page-header .brand:focus-visible { color: var(--ink); }
-.subpage-page-header .brand small { color: var(--ink-3); }
-.subpage-footer { max-width: 1180px; margin: 46px auto 0; padding: 18px 22px 30px; color: var(--ink-3); border-top: 1px solid var(--line); font-size: 12px; }
+.subpage-page-header .brand small { color: var(--ink-3, #6a786e); }
+.subpage-footer { max-width: 1180px; margin: 46px auto 0; padding: 18px 22px 30px; color: var(--ink-3, #6a786e); border-top: 1px solid var(--line, rgba(23, 59, 44, .15)); font-size: 12px; }
 .subpage-footer a { color: inherit; }
 @media (max-width: 600px) {
   .subpage-shell { min-height: 54px; padding: 8px 16px; }
@@ -50,4 +75,9 @@
   .subpage-shell__actions { gap: 8px; }
   .subpage-shell__home { width: 30px; height: 30px; }
   .subpage-shell__home-icon { width: 18px; height: 18px; }
+}
+/* Course index: auxiliary links give way to content width on narrow screens. */
+@media (max-width: 900px) {
+  .subpage-shell { flex-wrap: wrap; }
+  .subpage-shell__aux { display: none; }
 }

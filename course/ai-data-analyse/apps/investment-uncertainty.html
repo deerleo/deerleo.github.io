@@ -39,9 +39,10 @@ body.focus #app{grid-template-columns:minmax(0,1fr);grid-template-rows:58px minm
   .controls{grid-template-columns:1fr!important}
   .info{padding:14px 12px}
 }
-</style></head>
+</style><link rel="stylesheet" href="/assets/css/subpage-shell.css?v=20261112">
+</head>
 <body><div id="app">
-<header class="top"><div class="brand"><small>FINANCE / MONTE CARLO</small><b>投资不确定性案例</b></div><div class="bar"><i id="progress"></i></div><button class="chip" id="focus">🎯 聚焦图面</button><button class="chip" id="reset">⟲ 重置</button></header>
+<header class="top"><a class="subpage-shell__home subpage-shell__home--compact" href="/" aria-label="返回首页" title="返回首页"><svg class="subpage-shell__home-icon" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M11 25c-3-3-3-8 1-11"/><path d="M21 25c3-3 3-8-1-11"/><path d="M10 14c-3-1-4-4-3-7"/><path d="M22 14c3-1 4-4 3-7"/><path d="M16 25v-6"/><circle cx="16" cy="22" r="3"/></svg><span class="subpage-shell__home-tip" role="tooltip">返回首页</span></a><div class="brand"><small>FINANCE / MONTE CARLO</small><b>投资不确定性案例</b></div><div class="bar"><i id="progress"></i></div><button class="chip" id="focus">🎯 聚焦图面</button><button class="chip" id="reset">⟲ 重置</button></header>
 <nav class="nav"><p class="label">CHAPTERS · 章节</p><div id="nav"></div></nav>
 <main class="stage"><svg id="canvas" viewBox="0 0 940 500" preserveAspectRatio="xMidYMid meet"></svg><div class="overlay title"><div class="kicker" id="kicker"></div><h1 id="heading"></h1><p id="subtitle"></p></div><div class="overlay hud" id="hud"></div><div class="overlay callout" id="callout"><h4>CHAPTER ACTION</h4><p></p></div><div class="overlay readout" id="readout"></div></main>
 <section class="bottom"><div class="module" id="miniModule"><div class="mhead"><span>MINI QUANTILES · 分位数</span><button data-collapse="miniBody">−</button></div><div id="miniBody"><p class='mapnote'>中央图为路径分位带；右侧读取关键分位数。</p></div></div><div class="module" id="controlModule"><div class="mhead"><span>VIEW SETTINGS · 显示设置</span><button data-collapse="controlBody">−</button></div><div id="controlBody"><div class="controls">

@@ -147,20 +147,30 @@
   <link rel="stylesheet" href="{{ '/assets/css/subpage-shell.css?v=20261112' | relative_url }}">
 </head>
 <body>
-<header class="subpage-page-header">
-  <div class="nav">
-    <a class="brand" href="../../">
-      <span class="mark">🦌</span>
-      <span>AI 数据分析互动课堂<small>AI DATA ANALYSE</small></span>
+<header class="subpage-shell">
+  <div class="subpage-shell__left">
+    <a class="subpage-shell__home" href="{{ '/' | relative_url }}" aria-label="返回首页" title="返回首页">
+      <svg class="subpage-shell__home-icon" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+        <path d="M11 25c-3-3-3-8 1-11"/>
+        <path d="M21 25c3-3 3-8-1-11"/>
+        <path d="M10 14c-3-1-4-4-3-7"/>
+        <path d="M22 14c3-1 4-4 3-7"/>
+        <path d="M16 25v-6"/>
+        <circle cx="16" cy="22" r="3"/>
+      </svg>
+      <span class="subpage-shell__home-tip" role="tooltip">返回首页</span>
     </a>
-    <nav class="nav-links" aria-label="页面导航">
+    <span class="subpage-shell__identity">AI 数据分析互动课堂<small>AI DATA ANALYSE</small></span>
+    <nav class="subpage-shell__aux" aria-label="页面导航">
       <a href="../ai-foundations/">AI 与数学基础</a>
       <a href="#apps">互动应用</a>
       <a href="./method-mindmap.html" target="_blank" rel="noopener">方法思维导图</a>
       <a href="./agent-frameworks.html" target="_blank" rel="noopener">智能体搭建</a>
       <a href="#guide">学习路径</a>
-      <span class="nav-theme">{% include theme-toggle.html %}</span>
     </nav>
+  </div>
+  <div class="subpage-shell__actions">
+    {% include theme-toggle.html %}
   </div>
 </header>
 
