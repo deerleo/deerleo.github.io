@@ -1,14 +1,26 @@
 {% comment %}
-  二级/三级页共用顶栏：左侧身份，右侧 theme-toggle + 首页入口。
+  二级/三级页共用顶栏：左侧鹿形首页徽标（回站点首页）+ 页面身份，右侧 theme-toggle。
   视觉规范见 docs/subpage-visual-standard.md，样式见 assets/css/subpage-shell.css。
 {% endcomment %}
 <header class="subpage-shell">
-  <a class="subpage-shell__identity" href="{% if include.link %}{{ include.link | relative_url }}{% else %}#top{% endif %}" aria-label="{% if include.link %}返回{{ include.identity | escape }}{% else %}{{ include.identity | escape }}{% endif %}">
-    {{ include.identity | escape }}
-    {% if include.descriptor %}<small>{{ include.descriptor | escape }}</small>{% endif %}
-  </a>
+  <div class="subpage-shell__left">
+    <a class="subpage-shell__home" href="{{ '/' | relative_url }}" aria-label="返回首页" title="返回首页">
+      <svg class="subpage-shell__home-icon" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+        <path d="M11 25c-3-3-3-8 1-11"/>
+        <path d="M21 25c3-3 3-8-1-11"/>
+        <path d="M10 14c-3-1-4-4-3-7"/>
+        <path d="M22 14c3-1 4-4 3-7"/>
+        <path d="M16 25v-6"/>
+        <circle cx="16" cy="22" r="3"/>
+      </svg>
+      <span class="subpage-shell__home-tip" role="tooltip">返回首页</span>
+    </a>
+    <a class="subpage-shell__identity" href="{% if include.link %}{{ include.link | relative_url }}{% else %}#top{% endif %}" aria-label="{% if include.link %}返回{{ include.identity | escape }}{% else %}{{ include.identity | escape }}{% endif %}">
+      {{ include.identity | escape }}
+      {% if include.descriptor %}<small>{{ include.descriptor | escape }}</small>{% endif %}
+    </a>
+  </div>
   <div class="subpage-shell__actions">
     {% include theme-toggle.html %}
-    <a class="subpage-shell__home" href="{{ '/' | relative_url }}" aria-label="返回首页">⌂ 首页</a>
   </div>
 </header>

@@ -141,14 +141,27 @@
       border-top: 1px solid var(--line); margin-top: 40px; }
     footer a { color: var(--cyan); text-decoration: none; }
   </style>
-  <link rel="stylesheet" href="{{ '/assets/css/subpage-shell.css?v=20261026' | relative_url }}">
+  <link rel="stylesheet" href="{{ '/assets/css/subpage-shell.css?v=20261112' | relative_url }}">
 </head>
 <body>
 <header class="subpage-shell">
   <div class="nav">
-    <div class="brand">
-      <div class="mark">🧪</div>
-      <div>DSH Research Lab<small>开源高校科研智能体框架 · v0.3.1</small></div>
+    <div class="subpage-shell__left">
+      <a class="subpage-shell__home" href="{{ '/' | relative_url }}" aria-label="返回首页" title="返回首页">
+        <svg class="subpage-shell__home-icon" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+          <path d="M11 25c-3-3-3-8 1-11"/>
+          <path d="M21 25c3-3 3-8-1-11"/>
+          <path d="M10 14c-3-1-4-4-3-7"/>
+          <path d="M22 14c3-1 4-4 3-7"/>
+          <path d="M16 25v-6"/>
+          <circle cx="16" cy="22" r="3"/>
+        </svg>
+        <span class="subpage-shell__home-tip" role="tooltip">返回首页</span>
+      </a>
+      <div class="brand">
+        <div class="mark">🧪</div>
+        <div>DSH Research Lab<small>开源高校科研智能体框架 · v0.3.1</small></div>
+      </div>
     </div>
     <nav class="nav-links">
       <a href="#download">下载</a>
