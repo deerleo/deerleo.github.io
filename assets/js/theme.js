@@ -32,7 +32,7 @@
       m.name = 'theme-color';
       (document.head || root).appendChild(m);
     }
-    m.setAttribute('content', theme === 'dark' ? '#0b1611' : '#f1f2ec');
+    m.setAttribute('content', theme === 'dark' ? '#0B1F18' : '#F7F5EE');
   }
 
   function updateButtons(pref) {

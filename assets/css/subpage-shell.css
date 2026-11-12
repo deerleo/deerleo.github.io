@@ -6,42 +6,42 @@
   position: sticky; top: 0; z-index: 50; min-height: 58px;
   display: flex; align-items: center; justify-content: space-between; gap: 18px;
   padding: 10px max(20px, calc((100vw - 1180px) / 2));
-  color: var(--ink, #1a2921); background: var(--header-bg, rgba(241, 242, 236, .86));
-  border-bottom: 1px solid var(--line, rgba(23, 59, 44, .15));
+  color: var(--ink, #0E2A1F); background: var(--header-bg, rgba(247, 245, 238, .86));
+  border-bottom: 1px solid var(--line, rgba(6, 75, 53, .15));
   backdrop-filter: blur(16px);
 }
 .subpage-shell__left { display: flex; align-items: center; gap: 12px; min-width: 0; }
 .subpage-shell__identity { min-width: 0; color: inherit; text-decoration: none; font-size: 14px; font-weight: 800; letter-spacing: -.01em; }
-.subpage-shell__identity small { display: block; color: var(--ink-3, #6a786e); font-size: 10px; font-weight: 650; letter-spacing: .1em; text-transform: uppercase; }
+.subpage-shell__identity small { display: block; color: var(--ink-3, #55685E); font-size: 10px; font-weight: 650; letter-spacing: .1em; text-transform: uppercase; }
 .subpage-shell__actions { display: flex; align-items: center; gap: 10px; flex: 0 0 auto; }
 /* Auxiliary in-page/course links beside the identity (course index pages). */
 .subpage-shell__aux { display: flex; align-items: center; gap: 6px; min-width: 0; flex-wrap: wrap; }
 .subpage-shell__aux a {
-  color: var(--ink-3, #6a786e); padding: 7px 10px; border-radius: 999px;
+  color: var(--ink-3, #55685E); padding: 7px 10px; border-radius: 999px;
   font-size: 12.5px; font-weight: 700; text-decoration: none; white-space: nowrap;
 }
-.subpage-shell__aux a:hover, .subpage-shell__aux a:focus-visible { color: var(--ink, #1a2921); background: var(--accent-soft, rgba(60, 118, 87, .08)); }
+.subpage-shell__aux a:hover, .subpage-shell__aux a:focus-visible { color: var(--ink, #0E2A1F); background: var(--accent-soft, rgba(6, 75, 53, .08)); }
 /* Low-emphasis back-to-course link on static lab pages (no theme system wired). */
 .subpage-shell__back {
-  color: var(--ink-3, #6a786e); border: 1px solid var(--line, rgba(23, 59, 44, .15)); border-radius: 999px;
+  color: var(--ink-3, #55685E); border: 1px solid var(--line, rgba(6, 75, 53, .15)); border-radius: 999px;
   padding: 6px 12px; text-decoration: none; font-size: 12px; font-weight: 650; white-space: nowrap;
 }
-.subpage-shell__back:hover, .subpage-shell__back:focus-visible { color: var(--ink, #1a2921); border-color: var(--line-strong, rgba(23, 59, 44, .28)); }
-/* Deer badge = home entry, same visual language as the homepage brand mark (lime round + dark deer). */
+.subpage-shell__back:hover, .subpage-shell__back:focus-visible { color: var(--ink, #0E2A1F); border-color: var(--line-strong, rgba(6, 75, 53, .30)); }
+/* Deer badge = home entry, same visual language as the homepage brand mark (pixel-orange round + ivory deer, VI 2026-11-12). */
 .subpage-shell__home {
   position: relative; flex: 0 0 auto; display: grid; place-items: center;
-  width: 34px; height: 34px; color: var(--on-lime, #14231a); background: var(--lime, #c3ed59);
+  width: 34px; height: 34px; color: var(--ivory-vi, #F7F5EE); background: var(--lime, #F59A0B);
   border-radius: 50%; text-decoration: none;
 }
 .subpage-shell__home-icon { width: 20px; height: 20px; transition: transform .18s ease; }
 .subpage-shell__home:hover .subpage-shell__home-icon,
 .subpage-shell__home:focus-visible .subpage-shell__home-icon { transform: scale(1.08); }
-.subpage-shell__home:focus-visible { outline: 2px solid var(--accent, #3c7657); outline-offset: 2px; }
+.subpage-shell__home:focus-visible { outline: 2px solid var(--accent, #064B35); outline-offset: 2px; }
 /* Tooltip on hover/focus, below the badge so the sticky bar layout is never affected. */
 .subpage-shell__home-tip {
   position: absolute; top: calc(100% + 8px); left: 0; z-index: 60;
-  padding: 4px 9px; color: var(--ink, #1a2921); background: var(--panel, #fffefa);
-  border: 1px solid var(--line, rgba(23, 59, 44, .15)); border-radius: 8px; box-shadow: var(--shadow, 0 10px 34px rgba(23, 59, 44, .10));
+  padding: 4px 9px; color: var(--ink, #0E2A1F); background: var(--panel, #FFFDF6);
+  border: 1px solid var(--line, rgba(6, 75, 53, .15)); border-radius: 8px; box-shadow: var(--shadow, 0 10px 34px rgba(6, 75, 53, .10));
   font-size: 11px; font-weight: 700; letter-spacing: .02em; white-space: nowrap;
   opacity: 0; transform: translateY(-3px); pointer-events: none;
   transition: opacity .15s ease, transform .15s ease;
@@ -64,8 +64,8 @@
 .subpage-page-header .brand:visited { color: var(--ink); text-decoration: none; }
 .subpage-page-header .brand:hover,
 .subpage-page-header .brand:focus-visible { color: var(--ink); }
-.subpage-page-header .brand small { color: var(--ink-3, #6a786e); }
-.subpage-footer { max-width: 1180px; margin: 46px auto 0; padding: 18px 22px 30px; color: var(--ink-3, #6a786e); border-top: 1px solid var(--line, rgba(23, 59, 44, .15)); font-size: 12px; }
+.subpage-page-header .brand small { color: var(--ink-3, #55685E); }
+.subpage-footer { max-width: 1180px; margin: 46px auto 0; padding: 18px 22px 30px; color: var(--ink-3, #55685E); border-top: 1px solid var(--line, rgba(6, 75, 53, .15)); font-size: 12px; }
 .subpage-footer a { color: inherit; }
 @media (max-width: 600px) {
   .subpage-shell { min-height: 54px; padding: 8px 16px; }

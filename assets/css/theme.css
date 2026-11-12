@@ -1,6 +1,8 @@
 /* ============================================================
    theme.css — milulab.com 全站主题 token 唯一真源
    工单 THEME-20261027（浅色 / 深色 / 自动 三态主题）
+   2026-11-12 色板对齐迷鹿 VI：森林绿 #064B35 / 像素橙 #F59A0B /
+   暖米白 #F7F5EE / 深绿 #163F2F；禁蓝紫渐变。
    所有页面在自有 <style>/<link> 之前先加载本文件。
 
    结构：
@@ -18,145 +20,145 @@
   color-scheme: light;
 
   /* 基底 */
-  --bg: #f1f2ec;
-  --panel: #fffefa;
+  --bg: #F7F5EE;
+  --panel: #FFFDF6;
   --panel-soft: rgba(255, 254, 250, .86);
-  --panel-2: #f6f7f1;
-  --card-grad: linear-gradient(145deg, #ffffff, #fbfcf7);
-  --page-glow: radial-gradient(ellipse at 80% 0, rgba(60, 118, 87, .10) 0, transparent 42%);
+  --panel-2: #F1EFE4;
+  --card-grad: linear-gradient(145deg, #fffef9, #fbf9f0);
+  --page-glow: radial-gradient(ellipse at 80% 0, rgba(6, 75, 53, .10) 0, transparent 42%);
 
   /* 线与文字 */
-  --line: rgba(23, 59, 44, .15);
-  --line-strong: rgba(23, 59, 44, .28);
-  --ink: #1a2921;
-  --ink-2: #2c3d33;
-  --ink-3: #6a786e;
-  --muted: #56645a;
+  --line: rgba(6, 75, 53, .15);
+  --line-strong: rgba(6, 75, 53, .30);
+  --ink: #0E2A1F;
+  --ink-2: #24473A;
+  --ink-3: #55685E;
+  --muted: #4E635A;
 
   /* 品牌彩（旧变量名，浅色取可读值） */
-  --mint: #2f6b4f;
-  --lime: #c3ed59;
-  --cyan: #1f6f7f;
+  --mint: #064B35;
+  --lime: #F59A0B;
+  --cyan: #2E7D5B;
   --pink: #a34a7a;
   --amber: #8a5a18;
 
   /* 强调与功能 */
-  --accent: #3c7657;
-  --accent-2: #1f6f7f;
-  --accent-soft: rgba(60, 118, 87, .08);
-  --accent2-soft: rgba(31, 111, 127, .07);
-  --on-lime: #14231a;
+  --accent: #064B35;
+  --accent-2: #2E7D5B;
+  --accent-soft: rgba(6, 75, 53, .08);
+  --accent2-soft: rgba(46, 125, 91, .07);
+  --on-lime: #163F2F;
   --on-accent: #ffffff;
-  --code-bg: #f4f6ef;
-  --header-bg: rgba(241, 242, 236, .86);
-  --shadow: 0 10px 34px rgba(23, 59, 44, .10);
-  --theme-color: #f1f2ec;
+  --code-bg: #EFEDE2;
+  --header-bg: rgba(247, 245, 238, .86);
+  --shadow: 0 10px 34px rgba(6, 75, 53, .10);
+  --theme-color: #F7F5EE;
 }
 
 html[data-theme="light"] {
   color-scheme: light;
 
-  --bg: #f1f2ec;
-  --panel: #fffefa;
+  --bg: #F7F5EE;
+  --panel: #FFFDF6;
   --panel-soft: rgba(255, 254, 250, .86);
-  --panel-2: #f6f7f1;
-  --card-grad: linear-gradient(145deg, #ffffff, #fbfcf7);
-  --page-glow: radial-gradient(ellipse at 80% 0, rgba(60, 118, 87, .10) 0, transparent 42%);
+  --panel-2: #F1EFE4;
+  --card-grad: linear-gradient(145deg, #fffef9, #fbf9f0);
+  --page-glow: radial-gradient(ellipse at 80% 0, rgba(6, 75, 53, .10) 0, transparent 42%);
 
-  --line: rgba(23, 59, 44, .15);
-  --line-strong: rgba(23, 59, 44, .28);
-  --ink: #1a2921;
-  --ink-2: #2c3d33;
-  --ink-3: #6a786e;
-  --muted: #56645a;
+  --line: rgba(6, 75, 53, .15);
+  --line-strong: rgba(6, 75, 53, .30);
+  --ink: #0E2A1F;
+  --ink-2: #24473A;
+  --ink-3: #55685E;
+  --muted: #4E635A;
 
-  --mint: #2f6b4f;
-  --lime: #c3ed59;
-  --cyan: #1f6f7f;
+  --mint: #064B35;
+  --lime: #F59A0B;
+  --cyan: #2E7D5B;
   --pink: #a34a7a;
   --amber: #8a5a18;
 
-  --accent: #3c7657;
-  --accent-2: #1f6f7f;
-  --accent-soft: rgba(60, 118, 87, .08);
-  --accent2-soft: rgba(31, 111, 127, .07);
-  --on-lime: #14231a;
+  --accent: #064B35;
+  --accent-2: #2E7D5B;
+  --accent-soft: rgba(6, 75, 53, .08);
+  --accent2-soft: rgba(46, 125, 91, .07);
+  --on-lime: #163F2F;
   --on-accent: #ffffff;
-  --code-bg: #f4f6ef;
-  --header-bg: rgba(241, 242, 236, .86);
-  --shadow: 0 10px 34px rgba(23, 59, 44, .10);
-  --theme-color: #f1f2ec;
+  --code-bg: #EFEDE2;
+  --header-bg: rgba(247, 245, 238, .86);
+  --shadow: 0 10px 34px rgba(6, 75, 53, .10);
+  --theme-color: #F7F5EE;
 }
 
 html[data-theme="dark"] {
   color-scheme: dark;
 
-  --bg: #0b1611;
-  --panel: #13261d;
-  --panel-soft: rgba(19, 38, 29, .74);
-  --panel-2: #0f1e17;
-  --card-grad: linear-gradient(145deg, rgba(23, 46, 35, .95), rgba(14, 28, 21, .96));
-  --page-glow: radial-gradient(ellipse at 80% 0, rgba(23, 59, 44, .85) 0, transparent 42%);
+  --bg: #0B1F18;
+  --panel: #12352A;
+  --panel-soft: rgba(18, 53, 42, .78);
+  --panel-2: #0E2A21;
+  --card-grad: linear-gradient(145deg, rgba(16, 46, 35, .95), rgba(11, 31, 24, .96));
+  --page-glow: radial-gradient(ellipse at 80% 0, rgba(6, 75, 53, .85) 0, transparent 42%);
 
-  --line: rgba(155, 228, 191, .16);
-  --line-strong: rgba(155, 228, 191, .30);
-  --ink: #eef4ec;
-  --ink-2: #d5e2d6;
-  --ink-3: #8fa396;
-  --muted: #a3b7a8;
+  --line: rgba(183, 222, 196, .16);
+  --line-strong: rgba(183, 222, 196, .30);
+  --ink: #F0F3EA;
+  --ink-2: #D9E4DA;
+  --ink-3: #8CA396;
+  --muted: #A6B9AC;
 
   --mint: #9be4bf;
-  --lime: #c3ed59;
-  --cyan: #75d7e8;
+  --lime: #F59A0B;
+  --cyan: #7FD6A8;
   --pink: #f3a8d5;
   --amber: #f1bd73;
 
-  --accent: #c3ed59;
+  --accent: #F59A0B;
   --accent-2: #9be4bf;
-  --accent-soft: rgba(195, 237, 89, .08);
-  --accent2-soft: rgba(155, 228, 191, .07);
-  --on-lime: #14231a;
-  --on-accent: #14231a;
-  --code-bg: rgba(8, 18, 13, .92);
-  --header-bg: rgba(10, 22, 16, .82);
+  --accent-soft: rgba(245, 154, 11, .10);
+  --accent2-soft: rgba(127, 214, 168, .07);
+  --on-lime: #163F2F;
+  --on-accent: #163F2F;
+  --code-bg: rgba(7, 22, 17, .92);
+  --header-bg: rgba(9, 26, 20, .84);
   --shadow: 0 10px 34px rgba(0, 0, 0, .40);
-  --theme-color: #0b1611;
+  --theme-color: #0B1F18;
 }
 
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme]) {
     color-scheme: dark;
 
-    --bg: #0b1611;
-    --panel: #13261d;
-    --panel-soft: rgba(19, 38, 29, .74);
-    --panel-2: #0f1e17;
-    --card-grad: linear-gradient(145deg, rgba(23, 46, 35, .95), rgba(14, 28, 21, .96));
-    --page-glow: radial-gradient(ellipse at 80% 0, rgba(23, 59, 44, .85) 0, transparent 42%);
+    --bg: #0B1F18;
+    --panel: #12352A;
+    --panel-soft: rgba(18, 53, 42, .78);
+    --panel-2: #0E2A21;
+    --card-grad: linear-gradient(145deg, rgba(16, 46, 35, .95), rgba(11, 31, 24, .96));
+    --page-glow: radial-gradient(ellipse at 80% 0, rgba(6, 75, 53, .85) 0, transparent 42%);
 
-    --line: rgba(155, 228, 191, .16);
-    --line-strong: rgba(155, 228, 191, .30);
-    --ink: #eef4ec;
-    --ink-2: #d5e2d6;
-    --ink-3: #8fa396;
-    --muted: #a3b7a8;
+    --line: rgba(183, 222, 196, .16);
+    --line-strong: rgba(183, 222, 196, .30);
+    --ink: #F0F3EA;
+    --ink-2: #D9E4DA;
+    --ink-3: #8CA396;
+    --muted: #A6B9AC;
 
     --mint: #9be4bf;
-    --lime: #c3ed59;
-    --cyan: #75d7e8;
+    --lime: #F59A0B;
+    --cyan: #7FD6A8;
     --pink: #f3a8d5;
     --amber: #f1bd73;
 
-    --accent: #c3ed59;
+    --accent: #F59A0B;
     --accent-2: #9be4bf;
-    --accent-soft: rgba(195, 237, 89, .08);
-    --accent2-soft: rgba(155, 228, 191, .07);
-    --on-lime: #14231a;
-    --on-accent: #14231a;
-    --code-bg: rgba(8, 18, 13, .92);
-    --header-bg: rgba(10, 22, 16, .82);
+    --accent-soft: rgba(245, 154, 11, .10);
+    --accent2-soft: rgba(127, 214, 168, .07);
+    --on-lime: #163F2F;
+    --on-accent: #163F2F;
+    --code-bg: rgba(7, 22, 17, .92);
+    --header-bg: rgba(9, 26, 20, .84);
     --shadow: 0 10px 34px rgba(0, 0, 0, .40);
-    --theme-color: #0b1611;
+    --theme-color: #0B1F18;
   }
 }
 
@@ -218,4 +220,16 @@ html.theme-switching *::after {
 }
 .theme-switch svg {
   display: block;
+}
+
+/* ------------------------------------------------------------
+   VI 品牌常量（2026-11-12 对齐迷鹿 VI 手册，双主题恒定）
+   --pixel: 像素橙（唯一强调色）  --forest-vi: 森林绿
+   --ivory-vi: 暖米白             --green-deep-vi: 深绿
+   ------------------------------------------------------------ */
+:root, html[data-theme="light"], html[data-theme="dark"] {
+  --pixel: #F59A0B;
+  --forest-vi: #064B35;
+  --ivory-vi: #F7F5EE;
+  --green-deep-vi: #163F2F;
 }

@@ -22,7 +22,7 @@ a{color:inherit}
 .cover-stage{perspective:1400px}
 .book{position:relative;margin:0 12px 16px 4px;transform:rotateY(-9deg);transition:transform .25s ease}
 .book:hover{transform:rotateY(-9deg) translateY(-7px)}
-.book-face{position:relative;z-index:2;width:100%;aspect-ratio:3/4.2;border-radius:3px 12px 12px 3px;overflow:hidden;background:linear-gradient(160deg,#10271d 0%,#173b2c 58%,#1f4a36 100%);color:#f1f2ec;box-shadow:0 26px 50px rgba(16,39,29,.30),0 8px 16px rgba(16,39,29,.20);padding:26px 26px 22px}
+.book-face{position:relative;z-index:2;width:100%;aspect-ratio:3/4.2;border-radius:3px 12px 12px 3px;overflow:hidden;background:linear-gradient(160deg,#163F2F 0%,#064B35 58%,#0E5A42 100%);color:#F7F5EE;box-shadow:0 26px 50px rgba(6,43,32,.30),0 8px 16px rgba(6,43,32,.20);padding:26px 26px 22px}
 /* 书脊：左缘明暗渐变 */
 .book-face::before{content:"";position:absolute;left:0;top:0;bottom:0;width:14px;z-index:4;pointer-events:none;background:linear-gradient(90deg,rgba(0,0,0,.42) 0,rgba(0,0,0,.16) 32%,rgba(255,255,255,.13) 62%,rgba(0,0,0,.14) 100%)}
 /* 书页：右缘纸边 */
@@ -31,10 +31,10 @@ a{color:inherit}
 /* CSS 占位封面排版（真图就绪后此块随页面替换删除） */
 .cover-css{position:relative;z-index:3;display:flex;flex-direction:column;justify-content:space-between;height:100%}
 .cover-css .series{font-size:11px;letter-spacing:.22em;color:rgba(241,242,236,.72)}
-.cover-css .series b{color:#c3ed59;font-weight:800}
+.cover-css .series b{color:#F5B04C;font-weight:800}
 .cover-css h2{margin:0;font-size:26px;line-height:1.42;letter-spacing:.02em;font-weight:800}
 .cover-css h2 small{display:block;margin-top:12px;font-size:13px;font-weight:400;opacity:.85;letter-spacing:.03em;line-height:1.6}
-.cover-css .lime{color:#c3ed59}
+.cover-css .lime{color:#F5B04C}
 .cover-css .author{display:block;font-size:12px;color:rgba(241,242,236,.88);letter-spacing:.06em}
 .cover-css .site{display:block;margin-top:8px;padding-top:10px;border-top:1px solid rgba(241,242,236,.28);font-size:10px;letter-spacing:.2em;color:rgba(241,242,236,.6);text-transform:uppercase}
 
@@ -49,7 +49,7 @@ a{color:inherit}
 .info-cell b{font-size:13px;font-weight:750;color:var(--ink);letter-spacing:.01em}
 .cta{display:flex;gap:12px;flex-wrap:wrap;margin-top:24px}
 .btn{display:inline-flex;align-items:center;gap:8px;padding:11px 18px;border-radius:11px;font-size:13px;font-weight:800;text-decoration:none}
-.btn-primary{background:#c3ed59;color:#14231a}
+.btn-primary{background:#F59A0B;color:#163F2F}
 .btn-ghost{border:1px solid var(--line-strong);color:var(--mint)}
 .btn:hover{filter:brightness(1.04)}
 .btn-disabled{border:1px dashed var(--line-strong);color:var(--ink-3);cursor:not-allowed}
@@ -69,7 +69,7 @@ section>h2{margin:0 0 22px;font-size:clamp(22px,3vw,30px);letter-spacing:-.03em}
 .aud{padding:24px;border:1px solid var(--line);border-radius:16px;background:var(--card-grad)}
 .aud h3{margin:0 0 10px;font-size:16px;display:flex;align-items:center;gap:10px}
 .aud .tag{padding:3px 10px;border-radius:999px;font-size:11px;font-weight:800;letter-spacing:.05em}
-.aud-main .tag{background:#c3ed59;color:#14231a}
+.aud-main .tag{background:#F59A0B;color:#163F2F}
 .aud-sub .tag{border:1px solid var(--line-strong);color:var(--mint)}
 .aud p{margin:0;color:var(--muted);font-size:14px;line-height:1.8}
 
@@ -80,7 +80,7 @@ ol.toc li::before{content:counter(ch,decimal-leading-zero);flex:0 0 auto;color:v
 
 /* 作者简介 */
 .author-card{display:flex;gap:20px;padding:26px 28px;border:1px solid var(--line);border-radius:16px;background:var(--card-grad);max-width:840px}
-.author-card .monogram{flex:0 0 auto;width:54px;height:54px;border-radius:12px;background:linear-gradient(160deg,#173b2c,#1f4a36);color:#c3ed59;display:grid;place-items:center;font-size:22px;font-weight:800}
+.author-card .monogram{flex:0 0 auto;width:54px;height:54px;border-radius:12px;background:linear-gradient(160deg,#064B35,#0E5A42);color:#F5B04C;display:grid;place-items:center;font-size:22px;font-weight:800}
 .author-card p{margin:0;color:var(--muted);font-size:14px;line-height:1.9}
 .author-card b{color:var(--ink)}
 

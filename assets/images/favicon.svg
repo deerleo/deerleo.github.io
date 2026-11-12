@@ -1,11 +1,21 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
-  <rect width="32" height="32" rx="9" fill="#0d241a"/>
-  <g fill="none" stroke="#68e0b0" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round">
-    <path d="M8.5 27c-4.5-4-4.5-11 1-15"/>
-    <path d="M23.5 27c4.5-4 4.5-11-1-15"/>
-    <path d="M8 13C4.5 12 2.5 9 3.5 5"/>
-    <path d="M24 13c3.5-1 5.5-4 4.5-8"/>
-    <path d="M16 27v-8"/>
-    <circle cx="16" cy="20.5" r="3.8" fill="#68e0b0" stroke="none"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <style>
+    .bg { fill: #F7F5EE; }
+    .deer { color: #064B35; }
+    @media (prefers-color-scheme: dark) {
+      .bg { fill: #163F2F; }
+      .deer { color: #F7F5EE; }
+    }
+  </style>
+  <rect class="bg" width="64" height="64" rx="14"/>
+  <g class="deer">
+    <g transform="translate(12.0, 9.0) scale(0.17358)">
+    <path d="M 147,68 L 146,69 L 146,79 L 148,80 L 155,80 L 157,79 L 157,69 L 156,68 Z" fill="currentColor"/>
+    <path d="M 82,67 L 82,79 L 84,80 L 95,79 L 95,68 L 94,67 Z" fill="currentColor"/>
+    <path d="M 208,61 L 193,61 L 192,62 L 192,76 L 187,80 L 177,80 L 174,84 L 174,94 L 171,97 L 154,98 L 152,99 L 149,103 L 148,108 L 146,111 L 146,114 L 138,126 L 134,127 L 130,126 L 119,127 L 116,125 L 109,116 L 103,104 L 98,100 L 71,100 L 68,99 L 64,95 L 63,81 L 61,80 L 45,80 L 40,75 L 40,58 L 38,55 L 20,55 L 18,58 L 18,74 L 19,76 L 28,76 L 29,77 L 35,76 L 40,79 L 42,86 L 42,98 L 44,103 L 50,109 L 57,112 L 63,112 L 80,116 L 90,122 L 100,131 L 99,134 L 93,137 L 91,137 L 62,151 L 51,155 L 51,158 L 61,171 L 69,174 L 74,174 L 82,176 L 89,179 L 94,183 L 99,193 L 99,252 L 98,253 L 99,257 L 159,205 L 159,202 L 155,195 L 151,182 L 151,168 L 152,165 L 160,154 L 163,152 L 171,150 L 177,146 L 188,130 L 187,126 L 159,126 L 158,125 L 159,119 L 161,115 L 166,110 L 174,107 L 183,106 L 190,101 L 192,97 L 192,84 L 196,79 L 207,79 L 209,77 L 209,63 Z" fill="currentColor"/>
+    <path d="M 162,42 L 160,45 L 161,47 L 160,49 L 161,50 L 161,56 L 162,57 L 174,57 L 175,56 L 175,43 L 173,42 Z" fill="currentColor"/>
+    <path d="M 60,32 L 58,34 L 58,51 L 59,52 L 75,52 L 77,49 L 77,36 L 74,32 Z" fill="currentColor"/>
+    <path d="M 197,12 L 195,14 L 195,39 L 197,41 L 222,41 L 224,39 L 224,14 L 222,12 Z" fill="#F59A0B"/>
+    </g>
   </g>
 </svg>

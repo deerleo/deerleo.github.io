@@ -14,18 +14,18 @@
    ============================================================ */
 
 :root {
-  --wp-forest: #173b2c;        /* 品牌墨绿（milu.css --forest） */
-  --wp-forest-deep: #10271d;   /* 墨林绿（--forest-deep） */
-  --wp-lime: #c3ed59;          /* 青柠重点色 */
-  --wp-on-lime: #14231a;       /* 青柠底上的文字色 */
-  --wp-accent: #3c7657;        /* 苔绿强调（theme.css --accent） */
-  --wp-ink: #1a2921;
-  --wp-ink-2: #2c3d33;
-  --wp-muted: #56645a;
-  --wp-line: rgba(23, 59, 44, .16);
-  --wp-line-strong: rgba(23, 59, 44, .32);
+  --wp-forest: #064B35;        /* VI 森林绿（milu.css --forest） */
+  --wp-forest-deep: #163F2F;   /* VI 深绿（--forest-deep） */
+  --wp-lime: #F59A0B;          /* VI 像素橙（唯一强调色） */
+  --wp-on-lime: #163F2F;       /* 橙底上的文字色 */
+  --wp-accent: #064B35;        /* VI 森林绿强调（theme.css --accent） */
+  --wp-ink: #0E2A1F;
+  --wp-ink-2: #24473A;
+  --wp-muted: #4E635A;
+  --wp-line: rgba(6, 75, 53, .16);
+  --wp-line-strong: rgba(6, 75, 53, .32);
   --wp-paper: #ffffff;
-  --wp-soft: #f4f6ef;          /* 浅苔底（--code-bg 同源） */
+  --wp-soft: #EFEDE2;          /* 暖米浅底（--code-bg 同源） */
   --wp-font: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Source Han Sans SC", sans-serif;
 }
 
