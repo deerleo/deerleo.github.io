@@ -3,6 +3,7 @@ title: "默认公开，不是失误"
 description: "安全公司 Claroc 枚举出四万三千多条 Grok Build 分享链接，三万五千多个 app 不用登录就能打开，其中 24 个是 SpaceXSI 自己员工建的。Cursor 说默认私密，Claroc 实测发布面板默认 Anyone with the link。这不是失误，是设计选择。"
 tags: [AI安全, Grok, xAI, vibe coding]
 series: "哟哟鹿鸣"
+podcast: /assets/audio/2026-11-13-grok-build-ghostshares.mp3
 ---
 
 ![SpaceX 加州 Hawthorne 总部办公楼与室外陈列的猎鹰 9 号一级火箭（资料图）。SpaceXSI——SpaceX 与 xAI 合并后的主体——的 grok.me 平台门就开在这类楼里，其中 24 扇还是自家员工忘关的](/assets/images/2026-11-13-grok-build-ghostshares/final_01_spacexsi.jpg)
