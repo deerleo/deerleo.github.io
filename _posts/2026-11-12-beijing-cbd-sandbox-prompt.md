@@ -3,6 +3,7 @@ title: "我用一条提示词，生成了北京 CBD 的数字沙盘"
 description: "昼夜交替、点地标看信息、第一人称漫游——把一条提示词变成网页三维沙盘的完整过程，以及哪些活交给 AI、哪些活还得人干的经验。"
 tags: [AI, 提示词, Three.js, 数字沙盘, Claude, AIGC]
 series: "AI 实战"
+podcast: /assets/audio/2026-11-12-beijing-cbd-sandbox-prompt.mp3
 ---
 
 ![北京 CBD 数字沙盘白天俯瞰：中国尊领跑的天际线](/assets/images/2026-11-12-beijing-cbd-sandbox/aerial-day.png)
