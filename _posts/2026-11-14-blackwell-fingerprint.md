@@ -3,6 +3,7 @@ title: "说要擦掉的指纹，原样留着"
 description: "OpenAI 研究员 Will DePue 用 6 万亿次种子搜索，从六个开源模型的权重文件里读出了 Blackwell GPU 的初始化指纹。白宫官员放风了一年的「据称」，第一次变成了数学。但连这份最硬的证据，自己也只敢说证明了硬件接触。"
 tags: [AI芯片, 出口管制, 模型安全, DeepSeek]
 series: "哟哟鹿鸣"
+podcast: /assets/audio/2026-11-14-blackwell-fingerprint.mp3
 ---
 
 ![NVIDIA GeForce 显卡官方产品图（资料图）。本文的主角 Blackwell 是数据中心级芯片，但指纹原理相同：初始化那一刻留下的数字痕迹，留在每一份公开权重里](/assets/images/2026-11-14-blackwell-fingerprint/final_01_gpu.jpg)
