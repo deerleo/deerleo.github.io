@@ -1,0 +1,87 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 810" font-family="'Songti SC','STSong','Noto Serif CJK SC',serif">
+<defs>
+  <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#e6e5e2"/>
+    <stop offset="0.62" stop-color="#efeeeb"/>
+    <stop offset="1" stop-color="#f4f3f0"/>
+  </linearGradient>
+  <linearGradient id="river" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#9dbcc9"/>
+    <stop offset="0.5" stop-color="#89a9b9"/>
+    <stop offset="1" stop-color="#75979f"/>
+  </linearGradient>
+  <linearGradient id="fogA" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#d9dbd9" stop-opacity="0.52"/>
+    <stop offset="0.45" stop-color="#d4d6d4" stop-opacity="0.9"/>
+    <stop offset="1" stop-color="#e2e1de" stop-opacity="0.97"/>
+  </linearGradient>
+  <filter id="soft" x="-8%" y="-40%" width="116%" height="180%">
+    <feGaussianBlur stdDeviation="16"/>
+  </filter>
+</defs>
+<rect x="0" y="0" width="1440" height="810" fill="url(#sky)"/>
+<rect x="20" y="352" width="55" height="210" fill="#c6c5c2" opacity="0.55"/>
+<rect x="352" y="330" width="48" height="232" fill="#c6c5c2" opacity="0.55"/>
+<rect x="598" y="300" width="60" height="262" fill="#c6c5c2" opacity="0.55"/>
+<rect x="905" y="342" width="50" height="220" fill="#c6c5c2" opacity="0.55"/>
+<rect x="1355" y="318" width="62" height="244" fill="#c6c5c2" opacity="0.55"/>
+<rect x="60" y="430" width="90" height="132" fill="#b3b2af"/>
+<rect x="170" y="380" width="70" height="182" fill="#a5a4a1"/>
+<rect x="265" y="300" width="105" height="262" fill="#989795"/>
+<rect x="395" y="350" width="65" height="212" fill="#aaa9a6"/>
+<rect x="480" y="250" width="120" height="312" fill="#8f8e8b"/>
+<rect x="625" y="330" width="80" height="232" fill="#a19f9c"/>
+<rect x="730" y="220" width="140" height="342" fill="#84837f"/>
+<rect x="895" y="360" width="75" height="202" fill="#acaba9"/>
+<rect x="990" y="285" width="110" height="277" fill="#95948f"/>
+<rect x="1125" y="400" width="85" height="162" fill="#a8a7a3"/>
+<rect x="1230" y="315" width="120" height="247" fill="#8d8c88"/>
+<line x1="71" y1="448" x2="71" y2="540" stroke="#ffffff" stroke-opacity="0.14" stroke-width="6"/>
+<line x1="94" y1="448" x2="94" y2="540" stroke="#ffffff" stroke-opacity="0.14" stroke-width="6"/>
+<line x1="116" y1="448" x2="116" y2="540" stroke="#ffffff" stroke-opacity="0.14" stroke-width="6"/>
+<line x1="139" y1="448" x2="139" y2="540" stroke="#ffffff" stroke-opacity="0.14" stroke-width="6"/>
+<line x1="278" y1="318" x2="278" y2="540" stroke="#ffffff" stroke-opacity="0.14" stroke-width="6"/>
+<line x1="304" y1="318" x2="304" y2="540" stroke="#ffffff" stroke-opacity="0.14" stroke-width="6"/>
+<line x1="331" y1="318" x2="331" y2="540" stroke="#ffffff" stroke-opacity="0.14" stroke-width="6"/>
+<line x1="357" y1="318" x2="357" y2="540" stroke="#ffffff" stroke-opacity="0.14" stroke-width="6"/>
+<line x1="492" y1="268" x2="492" y2="540" stroke="#ffffff" stroke-opacity="0.14" stroke-width="6"/>
+<line x1="516" y1="268" x2="516" y2="540" stroke="#ffffff" stroke-opacity="0.14" stroke-width="6"/>
+<line x1="540" y1="268" x2="540" y2="540" stroke="#ffffff" stroke-opacity="0.14" stroke-width="6"/>
+<line x1="564" y1="268" x2="564" y2="540" stroke="#ffffff" stroke-opacity="0.14" stroke-width="6"/>
+<line x1="588" y1="268" x2="588" y2="540" stroke="#ffffff" stroke-opacity="0.14" stroke-width="6"/>
+<line x1="742" y1="238" x2="742" y2="540" stroke="#ffffff" stroke-opacity="0.14" stroke-width="6"/>
+<line x1="765" y1="238" x2="765" y2="540" stroke="#ffffff" stroke-opacity="0.14" stroke-width="6"/>
+<line x1="788" y1="238" x2="788" y2="540" stroke="#ffffff" stroke-opacity="0.14" stroke-width="6"/>
+<line x1="812" y1="238" x2="812" y2="540" stroke="#ffffff" stroke-opacity="0.14" stroke-width="6"/>
+<line x1="835" y1="238" x2="835" y2="540" stroke="#ffffff" stroke-opacity="0.14" stroke-width="6"/>
+<line x1="858" y1="238" x2="858" y2="540" stroke="#ffffff" stroke-opacity="0.14" stroke-width="6"/>
+<line x1="1001" y1="303" x2="1001" y2="540" stroke="#ffffff" stroke-opacity="0.14" stroke-width="6"/>
+<line x1="1023" y1="303" x2="1023" y2="540" stroke="#ffffff" stroke-opacity="0.14" stroke-width="6"/>
+<line x1="1045" y1="303" x2="1045" y2="540" stroke="#ffffff" stroke-opacity="0.14" stroke-width="6"/>
+<line x1="1067" y1="303" x2="1067" y2="540" stroke="#ffffff" stroke-opacity="0.14" stroke-width="6"/>
+<line x1="1089" y1="303" x2="1089" y2="540" stroke="#ffffff" stroke-opacity="0.14" stroke-width="6"/>
+<line x1="1242" y1="333" x2="1242" y2="540" stroke="#ffffff" stroke-opacity="0.14" stroke-width="6"/>
+<line x1="1266" y1="333" x2="1266" y2="540" stroke="#ffffff" stroke-opacity="0.14" stroke-width="6"/>
+<line x1="1290" y1="333" x2="1290" y2="540" stroke="#ffffff" stroke-opacity="0.14" stroke-width="6"/>
+<line x1="1314" y1="333" x2="1314" y2="540" stroke="#ffffff" stroke-opacity="0.14" stroke-width="6"/>
+<line x1="1338" y1="333" x2="1338" y2="540" stroke="#ffffff" stroke-opacity="0.14" stroke-width="6"/>
+<rect x="0" y="150" width="1440" height="230" fill="url(#fogA)" filter="url(#soft)"/>
+<rect x="0" y="392" width="1440" height="70" fill="#d8d9d6" opacity="0.42" filter="url(#soft)"/>
+<rect x="0" y="558" width="1440" height="8" fill="#5f6360" opacity="0.75"/>
+<path d="M 1025 516 L 1070.0 487 L 1115 516 Z" fill="#2f2f2d"/>
+<rect x="1035" y="516" width="70" height="46" fill="#f2f1ee"/>
+<path d="M 1107 524 L 1144.0 498 L 1181 524 Z" fill="#2f2f2d"/>
+<rect x="1115" y="524" width="58" height="38" fill="#f2f1ee"/>
+<path d="M 1171 510 L 1225.0 477 L 1279 510 Z" fill="#2f2f2d"/>
+<rect x="1183" y="510" width="84" height="52" fill="#f2f1ee"/>
+<path d="M 1271 522 L 1311.0 495 L 1351 522 Z" fill="#2f2f2d"/>
+<rect x="1280" y="522" width="62" height="40" fill="#f2f1ee"/>
+<rect x="0" y="566" width="1440" height="244" fill="url(#river)"/>
+<path d="M -20 620 C 180 606, 360 632, 560 618 S 960 604, 1180 622 S 1380 630, 1470 616" fill="none" stroke="#dbe9ee" stroke-opacity="0.85" stroke-width="3" stroke-linecap="round"/>
+<path d="M -20 668 C 200 652, 420 680, 640 664 S 1020 650, 1240 670 S 1400 676, 1470 662" fill="none" stroke="#eef5f7" stroke-opacity="0.9" stroke-width="2.5" stroke-linecap="round"/>
+<path d="M -20 716 C 240 700, 460 726, 700 710 S 1080 700, 1300 718 S 1420 724, 1470 712" fill="none" stroke="#cfdfe6" stroke-opacity="0.7" stroke-width="3" stroke-linecap="round"/>
+<path d="M -20 645 C 260 636, 520 656, 780 642 S 1160 634, 1470 650" fill="none" stroke="#6d94a6" stroke-opacity="0.4" stroke-width="2" stroke-linecap="round"/>
+<path d="M -20 745 C 220 732, 480 754, 740 740 S 1120 730, 1470 748" fill="none" stroke="#7fa2b1" stroke-opacity="0.45" stroke-width="2.5" stroke-linecap="round"/>
+<text x="64" y="96" font-size="34" letter-spacing="8" fill="#3a3937">甬江雾记</text>
+<text x="64" y="132" font-size="16" letter-spacing="3" fill="#6c6b68">十一月十四日 · 甬江天地</text>
+</svg>
