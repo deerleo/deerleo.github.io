@@ -7,6 +7,10 @@ series: "哟哟鹿鸣"
 
 ![NVIDIA GeForce 显卡官方产品图（资料图）。本文的主角 Blackwell 是数据中心级芯片，但指纹原理相同：初始化那一刻留下的数字痕迹，留在每一份公开权重里](/assets/images/2026-11-14-blackwell-fingerprint/final_01_gpu.jpg)
 
+<video controls preload="metadata" style="display:block;max-width:100%;width:720px;margin:0 auto;" poster="/assets/videos/2026-11-14-blackwell-fingerprint-cover.jpg" src="/assets/videos/2026-11-14-blackwell-fingerprint.mp4"></video>
+
+*同一件事的视频版：六万亿次搜索，拓下六份指纹*
+
 去年起，华盛顿流传一个说法：DeepSeek 打算「清除技术指纹」。「据称」，匿名官员说的，媒体转述，国会调查跟着立项。一年过去，指纹清除没有等来，等来的是另一种东西——11 月 12 日，一个叫 Will DePue 的研究员（在 OpenAI 做过 Sora 与 GPT-5 后期训练）把六个开源权重模型逐个拆开，从初始化参数里读出了 Blackwell GPU 的数学痕迹。要擦的指纹没擦，倒被人用放大镜一个个拓了下来。六个模型：DeepSeek 两代、Kimi 两代、MiniMax、蚂蚁 Ling，报告的标题起得毫不客气——「顶级中国前沿模型带有被出口管制的 Nvidia Blackwell GPU 指纹」。
 
 我的判词很简单：这件事最大的看点不是指纹，是证据。吵了一整年的指控，全是「据称」；第一份硬证据，是一个人用数学算出来的。证据生态脆弱到这个地步，才是真正该记下来的事。
