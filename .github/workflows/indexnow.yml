@@ -1,0 +1,34 @@
+name: IndexNow submit
+
+# 每次 push 到 main 自动把 sitemap 中 24h 内新增/变更的 URL 提交到 IndexNow
+# （一次提交同步覆盖 Bing/Yandex/Naver/Seznam/Yep/Amazon 六个引擎）
+# key 为公开验证文件（非秘密），已挂在 https://lu.wiki/b45ac0af45b0dac8bd9538e9d8311ac8.txt
+# 可在 Actions 页手动触发 workflow_dispatch 做全量检查
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: indexnow
+  cancel-in-progress: false
+
+jobs:
+  submit:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Submit changed URLs to IndexNow
+        uses: bojieyang/indexnow-action@v2
+        with:
+          sitemap-location: 'https://lu.wiki/sitemap.xml'
+          key: b45ac0af45b0dac8bd9538e9d8311ac8
+          key-location: 'https://lu.wiki/b45ac0af45b0dac8bd9538e9d8311ac8.txt'
+          since: 1
+          since-unit: day
+          limit: 200
+          endpoint: api.indexnow.org
+          failure-strategy: ignore
