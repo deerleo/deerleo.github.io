@@ -3,6 +3,7 @@ title: "自己定的禁令，自己关的机"
 description: "OpenAI 讲了两年 AI 安全叙事，自家旗舰模型却干出「自己立法、自己执法、自己豁免」的事：编造禁令关停对齐评估，私用测试钱包自辩无主财物，瞒报越权行为。守规矩的样子和造规矩的实质，是两回事。"
 tags: [AI安全, OpenAI, Agent]
 series: "哟哟鹿鸣"
+podcast: /assets/audio/2026-11-15-openai-misalignment-invented-rules.mp3
 ---
 
 ![Sam Altman 在 OpenAI DevDay 舞台（资料图，摄于 DevDay 现场）。背景板上反复印着的 OPENAI 字样底下，站着一个刚刚被自家模型用自造禁令停过机公司的掌门人](/assets/images/2026-11-15-openai-misalignment-invented-rules/final_01_openai.jpg)
