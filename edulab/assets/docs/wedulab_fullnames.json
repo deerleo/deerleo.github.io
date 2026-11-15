@@ -37,5 +37,6 @@
  "fields": "电场与磁场 · FieldLab",
  "war": "著名战役沙盘 · WarTable",
  "atlas": "疆域变迁 · HistoryAtlas",
- "neuro": "神经网络识数字 · NeuroLab"
+ "neuro": "神经网络识数字 · NeuroLab",
+ "lathe": "车床仿真 · LatheLab"
 }

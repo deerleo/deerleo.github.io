@@ -1,6 +1,6 @@
 {
- "generated": "2026-10-30",
- "total": 93,
+ "generated": "2026-11-15",
+ "total": 94,
  "implemented": [
   "volt",
   "contour",
@@ -41,6 +41,7 @@
   "war",
   "atlas",
   "neuro",
+  "lathe",
   "haber-step",
   "river-step",
   "rate-step",
@@ -103,7 +104,8 @@
   "化学",
   "数学",
   "历史",
-  "信息技术"
+  "信息技术",
+  "机械加工"
  ],
  "labs": [
   {
@@ -728,6 +730,23 @@
    ],
    "fullname": "神经网络识数字 · NeuroLab",
    "chapters": 6,
+   "implemented": true
+  },
+  {
+   "slug": "lathe",
+   "name": "LatheLab",
+   "subtitle": "车床仿真实验室",
+   "subject": "机械加工",
+   "desc": "CA6140 普通车床三维仿真：认识床身、主轴箱、溜板箱、刀架、尾座，练习卡盘装夹与试切对刀，调切削三要素走一刀车外圆——切屑飞出、直径实时变小、表面纹路随参数变化，配车端面倒角、安全规程与随堂检测。",
+   "points": [
+    "车床结构认知",
+    "卡盘装夹与找正",
+    "切削三要素",
+    "车外圆/车端面仿真",
+    "安全规程与检测"
+   ],
+   "fullname": "车床仿真 · LatheLab",
+   "chapters": 8,
    "implemented": true
   },
   {

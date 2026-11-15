@@ -1,0 +1,814 @@
+/* EduLab · lathe 车床仿真布局（真·三栏：左章节大纲 / 中 3D 车间舞台 / 右详解+控件+读数）
+   依赖 edu.css 的主题变量与 lab.css 的通用控件（ctl/quiz/hud 视觉）。
+   本文件只管 lathe 页面骨架与本章专属部件（材料档位条 / 对刀步骤 / 走刀评价 / 走刀记录 / 部件标注 / 安全清单），
+   骨架组织与 machine 页同构，样式为本页自写，不动共享布局。 */
+
+html, body { height: 100%; }
+
+body.lab.lathe {
+  display: block;
+  overflow: hidden;
+}
+
+/* ---------- 三栏骨架（顶栏细条 + 左大纲 / 中舞台 / 右详解） ---------- */
+
+.lathe-shell {
+  display: grid;
+  grid-template-columns: 246px minmax(0, 1fr) 352px;
+  grid-template-rows: auto minmax(0, 1fr);
+  grid-template-areas:
+    "top      top   top"
+    "chapters stage detail";
+  height: 100dvh;
+}
+
+/* ---------- 顶栏细条 ---------- */
+
+.lathe-toprow {
+  grid-area: top;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 9px 16px;
+  border-bottom: 1px solid var(--card-border);
+  background: color-mix(in srgb, var(--card) 60%, transparent);
+}
+.lathe-toprow .edu-logo { flex: none; }
+.lathe-toprow .lab-title {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  min-width: 0;
+  color: var(--text);
+}
+.lathe-toprow .lab-title b { font-size: 16px; white-space: nowrap; }
+.lathe-toprow .lab-title span {
+  font-size: 12.5px;
+  color: var(--text-faint);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.lathe-toprow .spacer { flex: 1; }
+.lathe-toprow .edu-header-btn { white-space: nowrap; }
+
+/* ---------- 左栏：章节大纲 ---------- */
+
+.lab-chapters {
+  grid-area: chapters;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  background: var(--bg-soft);
+  border-right: 1px solid var(--card-border);
+}
+.chap-head {
+  flex: none;
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  padding: 13px 14px 7px;
+}
+.chap-head .chap-title {
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  color: var(--text-faint);
+}
+.chap-list {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 2px 8px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.chap-list .chap-btn.on {
+  color: var(--accent);
+  background: var(--accent-soft);
+  border-color: color-mix(in srgb, var(--accent) 35%, transparent);
+  font-weight: 600;
+}
+.chap-list .chap-btn.on .chap-n { color: var(--accent); }
+.chap-list .chap-btn .chap-t { white-space: normal; line-height: 1.4; }
+
+/* ---------- 中栏：3D 车间舞台 ---------- */
+
+.lab-stage3d {
+  grid-area: stage;
+  position: relative;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  background: var(--bg);
+}
+.lathe-stage { position: absolute; inset: 0; }
+.lathe-stage canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; outline: none; touch-action: none; }
+.lathe-stage .lab-loader { position: absolute; }
+.lathe-stage canvas.grab { cursor: crosshair; }
+.lathe-stage .quiz-panel { z-index: 28; }   /* 随堂检测时全覆盖中栏 */
+
+/* 部件标注（HTML 投影标签，ch 认知章节使用，可通过「模型标签」开关） */
+.lathe-labels {
+  position: absolute;
+  inset: 0;
+  z-index: 8;
+  pointer-events: none;
+  overflow: hidden;
+}
+.lathe-label {
+  position: absolute;
+  transform: translate(-50%, -130%);
+  white-space: nowrap;
+  font-size: 11.5px;
+  line-height: 1;
+  padding: 4px 9px;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--accent) 40%, var(--card-border));
+  background: color-mix(in srgb, var(--card) 86%, transparent);
+  color: var(--text-dim);
+  font-variant-numeric: tabular-nums;
+}
+.lathe-label b { color: var(--text); font-weight: 600; margin-right: 4px; }
+.lathe-label.picked {
+  color: var(--accent);
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent-soft, var(--card)) 80%, var(--card));
+}
+.lathe-label .lb-dot {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent);
+  margin-right: 5px;
+  vertical-align: 1px;
+}
+
+/* 专注模式按钮（中栏左下角） */
+.stage-focus-btn {
+  position: absolute;
+  left: 14px;
+  bottom: 14px;
+  z-index: 24;
+  appearance: none;
+  font-family: inherit;
+  font-size: 12px;
+  line-height: 1;
+  padding: 7px 13px;
+  border-radius: 999px;
+  border: 1px solid var(--card-border);
+  background: color-mix(in srgb, var(--card) 74%, transparent);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  color: var(--text-dim);
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s;
+}
+.stage-focus-btn:hover { color: var(--accent); border-color: var(--accent); }
+
+.stage-foot {
+  position: absolute;
+  right: 16px;
+  bottom: 14px;
+  z-index: 24;
+  font-size: 11.5px;
+  color: var(--text-faint);
+}
+.stage-foot a { color: var(--text-faint); text-decoration: underline; text-underline-offset: 2px; }
+
+/* ---------- 栏折叠（左右独立 28px 竖条）与专注模式（双栏同折） ---------- */
+
+.lathe-shell { transition: grid-template-columns 0.3s ease; }
+.lathe-shell.fold-l { grid-template-columns: 28px minmax(0, 1fr) 352px; }
+.lathe-shell.fold-r { grid-template-columns: 246px minmax(0, 1fr) 28px; }
+.lathe-shell.fold-l.fold-r,
+.lathe-shell.focus-mode { grid-template-columns: 28px minmax(0, 1fr) 28px; }
+
+.chap-head, .chap-list { min-width: 246px; }
+.detail-head, .detail-body { min-width: 352px; }
+.chap-head, .chap-list, .detail-head, .detail-body { transition: opacity 0.16s ease; }
+.lathe-shell.fold-l .chap-head,
+.lathe-shell.fold-l .chap-list,
+.lathe-shell.focus-mode .chap-head,
+.lathe-shell.focus-mode .chap-list { opacity: 0; pointer-events: none; }
+.lathe-shell.fold-r .detail-head,
+.lathe-shell.fold-r .detail-body,
+.lathe-shell.focus-mode .detail-head,
+.lathe-shell.focus-mode .detail-body { opacity: 0; pointer-events: none; }
+
+.fold-btn {
+  flex: none;
+  appearance: none;
+  font-family: inherit;
+  width: 22px;
+  height: 22px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  line-height: 1;
+  border-radius: 7px;
+  border: 1px solid var(--card-border);
+  background: var(--chip-bg);
+  color: var(--text-faint);
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s, background 0.15s;
+}
+.fold-btn:hover {
+  color: var(--accent);
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+.detail-head .fold-btn { margin-left: auto; align-self: center; }
+
+.fold-rail {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 0 12px;
+  background: var(--bg-soft);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.2s ease, visibility 0s linear 0.2s;
+}
+.lathe-shell.fold-l .lab-chapters .fold-rail,
+.lathe-shell.fold-r .lab-detail .fold-rail,
+.lathe-shell.focus-mode .lab-chapters .fold-rail,
+.lathe-shell.focus-mode .lab-detail .fold-rail {
+  opacity: 1;
+  visibility: visible;
+  transition: opacity 0.2s ease 0.1s;
+}
+.rail-no {
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--accent);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.04em;
+}
+.rail-title {
+  writing-mode: vertical-rl;
+  max-height: 210px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 12px;
+  color: var(--text-faint);
+  letter-spacing: 0.14em;
+}
+
+/* ---------- 右栏：详解 + 控件 + 读数 ---------- */
+
+.lab-detail {
+  grid-area: detail;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  background: var(--bg-soft);
+  border-left: 1px solid var(--card-border);
+}
+.detail-head {
+  flex: none;
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  padding: 14px 16px 11px;
+  border-bottom: 1px solid var(--card-border);
+}
+.detail-no {
+  flex: none;
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--accent);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.02em;
+}
+.detail-title {
+  margin: 0;
+  font-size: 16px;
+  color: var(--text);
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.detail-body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 14px 16px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* 知识点正文 */
+.lc-lesson { font-size: 13.5px; line-height: 1.7; color: var(--text-dim); }
+.lc-lesson p { margin: 0 0 8px; }
+.lc-lesson p:last-child { margin-bottom: 0; }
+.lc-lesson b { color: var(--text); }
+.lc-lesson .hl { color: var(--accent); font-weight: 600; }
+.lc-lesson .eq {
+  font-family: ui-monospace, monospace;
+  text-align: center;
+  color: var(--text);
+  margin: 6px 0;
+  letter-spacing: 0.02em;
+}
+.lc-lesson ol, .lc-lesson ul { margin: 4px 0 8px; padding-left: 20px; }
+.lc-lesson li { margin: 3px 0; }
+
+/* 课堂模式（大屏）：讲解文字与读数放大 */
+body.lathe-big .lc-lesson { font-size: 15.5px; line-height: 1.75; }
+body.lathe-big .lc-data .hud-card { font-size: 14px; }
+body.lathe-big .hud-row { font-size: 14px; }
+body.lathe-big .hud-row b { font-size: 15px; }
+body.lathe-big .acc-title { font-size: 13px; }
+body.lathe-big .lathe-hint { font-size: 13px; }
+body.lathe-big .lathe-log table { font-size: 12px; }
+
+/* 本章控件（复用 lab.css 的 ctl 组件，纵向排列） */
+.lc-controls { display: flex; flex-flow: row wrap; gap: 8px 10px; align-items: center; }
+.lc-controls .ctl, .lc-controls .ctl-toggle { flex: 1 1 100%; }
+.lc-controls .ctl input[type="range"] { flex: 1; width: auto; }
+.lc-controls .ctl-sep { flex: 1 1 100%; width: auto; height: 1px; background: var(--card-border); }
+.lc-controls .ctl-btn { flex: 0 0 auto; }
+.lc-controls .ctl-btn.wide { flex: 1 1 100%; text-align: center; }
+.lc-controls:empty { display: none; }
+
+/* 数据读数卡收纳进栏内 */
+.lc-data .hud-card {
+  background: var(--chip-bg);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  border: 1px solid var(--card-border);
+  box-shadow: none;
+  min-width: 0;
+  width: 100%;
+}
+.lc-data .hud-card:empty { display: none; }
+.lc-data .hud-card + .hud-card { margin-top: 8px; }
+
+/* ---------- 右栏三块手风琴 ---------- */
+
+.acc {
+  flex: none;
+  border: 1px solid var(--card-border);
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--card) 42%, transparent);
+  overflow: hidden;
+}
+.acc.acc-empty { display: none; }
+.acc-head {
+  appearance: none;
+  font-family: inherit;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 9px 12px;
+  border: none;
+  background: transparent;
+  color: var(--text-faint);
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-align: left;
+  cursor: pointer;
+  transition: color 0.15s;
+}
+.acc-head:hover { color: var(--accent); }
+.acc-arrow {
+  margin-left: auto;
+  font-style: normal;
+  font-size: 10px;
+  line-height: 1;
+  transition: transform 0.25s ease;
+}
+.acc.closed .acc-arrow { transform: rotate(-90deg); }
+.acc-fold-wrap {
+  display: grid;
+  grid-template-rows: 1fr;
+  transition: grid-template-rows 0.25s ease;
+}
+.acc.closed .acc-fold-wrap { grid-template-rows: 0fr; }
+.acc-fold-body { min-height: 0; overflow: hidden; }
+.acc-fold-inner { padding: 2px 12px 12px; }
+
+/* ---------- 本章专属：操作提示条（每章步骤提示） ---------- */
+
+.lathe-hint {
+  flex: 1 1 100%;
+  display: flex;
+  align-items: baseline;
+  gap: 7px;
+  padding: 7px 10px;
+  border-radius: 9px;
+  border: 1px dashed color-mix(in srgb, var(--accent) 34%, transparent);
+  background: color-mix(in srgb, var(--accent-soft, var(--card)) 55%, transparent);
+  font-size: 12px;
+  line-height: 1.55;
+  color: var(--text-dim);
+}
+.lathe-hint i {
+  flex: none;
+  font-style: normal;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: var(--accent);
+}
+.lathe-hint.warn {
+  border-style: solid;
+  border-color: color-mix(in srgb, #d9534f 55%, transparent);
+  background: color-mix(in srgb, #d9534f 10%, var(--card));
+  color: #b8423e;
+}
+.lathe-hint:empty { display: none; }
+
+/* ---------- 本章专属：材料档位条（切削参数基准） ---------- */
+
+.mat-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.mat-chip {
+  appearance: none;
+  font-family: inherit;
+  font-size: 12px;
+  line-height: 1.3;
+  padding: 5px 11px;
+  border-radius: 999px;
+  border: 1px solid var(--card-border);
+  background: var(--card);
+  color: var(--text-dim);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.mat-chip:hover { border-color: var(--accent); color: var(--text); }
+.mat-chip.on {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+  font-weight: 600;
+}
+.mat-chip small { opacity: 0.78; font-weight: 400; margin-left: 3px; }
+.mat-range {
+  flex: 1 1 100%;
+  font-size: 11.5px;
+  line-height: 1.6;
+  color: var(--text-faint);
+  padding: 6px 10px;
+  border-radius: 8px;
+  background: var(--chip-bg);
+}
+.mat-range b { color: var(--text-dim); font-weight: 600; }
+
+/* ---------- 本章专属：对刀步骤条 ---------- */
+
+.lathe-steps { display: flex; flex-wrap: wrap; gap: 6px; }
+.lathe-step {
+  appearance: none;
+  font-family: inherit;
+  font-size: 12px;
+  line-height: 1.35;
+  padding: 6px 11px;
+  border-radius: 10px;
+  border: 1px solid var(--card-border);
+  background: var(--card);
+  color: var(--text-dim);
+  cursor: pointer;
+  transition: all 0.15s;
+  text-align: left;
+}
+.lathe-step:hover { border-color: var(--accent); }
+.lathe-step.done { border-color: color-mix(in srgb, #3fa96f 55%, transparent); color: #2c8455; }
+.lathe-step.cur {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-weight: 600;
+}
+.lathe-step:disabled { cursor: default; opacity: 0.55; }
+.lathe-step-cap {
+  flex: 1 1 100%;
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--text-dim);
+  padding: 7px 10px;
+  border-radius: 8px;
+  background: var(--chip-bg);
+  min-height: 34px;
+}
+
+/* ---------- 本章专属：走刀评价卡 ---------- */
+
+.lathe-eval {
+  border: 1px solid var(--card-border);
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--card) 42%, transparent);
+  padding: 10px 12px;
+  font-size: 12.5px;
+  line-height: 1.65;
+  color: var(--text-dim);
+}
+.lathe-eval .ev-title {
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  color: var(--text-faint);
+  margin-bottom: 6px;
+}
+.lathe-eval .ev-row { display: flex; justify-content: space-between; gap: 12px; }
+.lathe-eval .ev-row b { color: var(--text); font-variant-numeric: tabular-nums; }
+.lathe-eval .ev-good { color: #2c8455; font-weight: 600; }
+.lathe-eval .ev-bad { color: #b8423e; font-weight: 600; }
+.lathe-eval .ev-note {
+  margin-top: 6px;
+  padding-top: 6px;
+  border-top: 1px dashed color-mix(in srgb, var(--card-border) 72%, transparent);
+  color: var(--text-faint);
+  font-size: 11.5px;
+}
+
+/* ---------- 本章专属：走刀记录表 ---------- */
+
+.lathe-log {
+  margin-top: 2px;
+  border: 1px solid var(--card-border);
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--card) 42%, transparent);
+  overflow: hidden;
+}
+.lathe-log-head {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  padding: 8px 12px 6px;
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  color: var(--text-faint);
+}
+.lathe-log-head .log-clear {
+  margin-left: auto;
+  appearance: none;
+  font-family: inherit;
+  font-size: 10.5px;
+  border: none;
+  background: transparent;
+  color: var(--text-faint);
+  cursor: pointer;
+  padding: 0;
+}
+.lathe-log-head .log-clear:hover { color: var(--accent); }
+.lathe-log .log-scroll { max-height: 190px; overflow: auto; }
+.lathe-log table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.5;
+}
+.lathe-log th, .lathe-log td {
+  padding: 3px 8px;
+  text-align: right;
+  white-space: nowrap;
+  border-top: 1px dashed color-mix(in srgb, var(--card-border) 72%, transparent);
+}
+.lathe-log th {
+  position: sticky;
+  top: 0;
+  background: color-mix(in srgb, var(--card) 88%, transparent);
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--text-faint);
+  border-top: none;
+}
+.lathe-log th:first-child, .lathe-log td:first-child { text-align: left; }
+.lathe-log td { color: var(--text-dim); }
+.lathe-log tr.bad td { color: #c96b62; }
+.lathe-log .log-empty { padding: 4px 12px 10px; font-size: 12px; color: var(--text-faint); }
+
+/* ---------- 本章专属：安全清单（第 8 章） ---------- */
+
+.lathe-safe {
+  border: 1px solid var(--card-border);
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--card) 42%, transparent);
+  padding: 10px 12px 10px 0;
+  font-size: 12.5px;
+  line-height: 1.6;
+  color: var(--text-dim);
+  counter-reset: saf;
+}
+.lathe-safe div {
+  counter-increment: saf;
+  position: relative;
+  padding: 3px 0 3px 34px;
+}
+.lathe-safe div::before {
+  content: counter(saf, decimal-leading-zero);
+  position: absolute;
+  left: 12px;
+  top: 4px;
+  font-size: 10.5px;
+  font-weight: 700;
+  color: var(--accent);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------- 提示条（浮于中栏顶部） ---------- */
+
+.lathe-toast {
+  position: absolute; top: 14px; left: 50%; transform: translate(-50%, -8px);
+  z-index: 26; max-width: min(460px, calc(100% - 28px));
+  padding: 9px 16px; border-radius: 12px; font-size: 13.5px; line-height: 1.55;
+  background: color-mix(in srgb, var(--card) 92%, transparent);
+  border: 1px solid var(--card-border); box-shadow: var(--shadow);
+  color: var(--text); opacity: 0; pointer-events: none;
+  transition: opacity .25s, transform .25s;
+}
+.lathe-toast.show { opacity: 1; transform: translate(-50%, 0); }
+.lathe-toast.ok { border-color: color-mix(in srgb, #3fa96f 55%, transparent); }
+.lathe-toast.warn {
+  border-color: color-mix(in srgb, #d9534f 60%, transparent);
+  color: #c96b62;
+}
+
+/* ---------- 舞台工具排 / 上一·下一章节 ---------- */
+
+.chap-pn {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 1px;
+}
+.pn-btn {
+  appearance: none;
+  font-family: inherit;
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  line-height: 1;
+  border-radius: 6px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--text-faint);
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s, background 0.15s;
+}
+.pn-btn:hover {
+  color: var(--accent);
+  border-color: var(--card-border);
+  background: var(--card);
+}
+.stage-tools {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 30;   /* 高于 quiz 覆盖层（28）：工具在随堂检测时仍可用 */
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  max-width: calc(100% - 24px);
+}
+.stage-tool-btn {
+  appearance: none;
+  font-family: inherit;
+  font-size: 12px;
+  line-height: 1;
+  padding: 7px 13px;
+  border-radius: 999px;
+  border: 1px solid var(--card-border);
+  background: color-mix(in srgb, var(--card) 74%, transparent);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  color: var(--text-dim);
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s;
+}
+.stage-tool-btn:hover { color: var(--accent); border-color: var(--accent); }
+.stage-tool-btn.on {
+  color: var(--accent);
+  border-color: color-mix(in srgb, var(--accent) 45%, transparent);
+}
+
+/* ---------- still 截图模式：隐藏顶栏与左右两栏，只留 3D 舞台 ---------- */
+
+html.still .lathe-toprow,
+html.still .lab-chapters,
+html.still .lab-detail,
+html.still .lathe-toast,
+html.still .stage-tools,
+html.still .stage-focus-btn,
+html.still .stage-foot { display: none; }
+html.still .lathe-shell {
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: minmax(0, 1fr);
+  grid-template-areas: "stage";
+}
+html.still .lathe-labels { display: none; }
+
+/* ---------- 窄屏（≤1100px）：顶栏收窄 ---------- */
+
+@media (max-width: 1100px) {
+  .lathe-toprow { padding: 8px 12px; gap: 8px; }
+  .lathe-toprow .lab-title span { display: none; }
+  .lathe-toprow .lab-title b { font-size: 15px; }
+  .lathe-toprow a.edu-header-btn[href='../'] { display: none; }
+
+  .detail-body { padding: 10px 12px 14px; gap: 10px; }
+  .acc-head { padding: 8px 10px; }
+  .acc-fold-inner { padding: 2px 10px 10px; }
+
+  .stage-tools { gap: 5px; }
+  .stage-tool-btn { padding: 6px 10px; font-size: 11px; }
+}
+
+/* ---------- 移动端（≤860px）：纵向堆叠（章节横滚条 / 3D / 讲解在下） ---------- */
+
+@media (max-width: 860px) {
+  .lathe-shell {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto auto minmax(230px, 42dvh) minmax(0, 1fr);
+    grid-template-areas:
+      "top"
+      "chapters"
+      "stage"
+      "detail";
+  }
+
+  /* 折叠 / 专注模式为桌面端专属：移动端压回纵向堆叠并隐藏折叠控件 */
+  .lathe-shell { transition: none; }
+  .lathe-shell.fold-l,
+  .lathe-shell.fold-r,
+  .lathe-shell.fold-l.fold-r,
+  .lathe-shell.focus-mode { grid-template-columns: minmax(0, 1fr); }
+  .fold-btn, .fold-rail { display: none; }
+  .lathe-shell.fold-l .chap-head,
+  .lathe-shell.fold-l .chap-list,
+  .lathe-shell.fold-r .detail-head,
+  .lathe-shell.fold-r .detail-body { opacity: 1; pointer-events: auto; }
+
+  .lathe-toprow { padding: 8px 10px; gap: 8px; }
+  .lathe-toprow .lab-title span { display: none; }
+  .lathe-toprow .lab-title b { font-size: 14.5px; }
+  .lathe-toprow a.edu-header-btn[href='../'] { display: none; }
+
+  .lab-chapters { border-right: none; border-bottom: 1px solid var(--card-border); }
+  .chap-head { padding: 8px 12px 2px; }
+  .chap-list {
+    flex-direction: row;
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding: 5px 8px 8px;
+    gap: 4px;
+    scrollbar-width: none;
+  }
+  .chap-list::-webkit-scrollbar { display: none; }
+  .chap-list .chap-btn { flex: none; padding: 6px 10px; font-size: 12.5px; white-space: nowrap; }
+  .chap-list .chap-btn .chap-n { width: auto; margin-right: 4px; }
+  .chap-list .chap-btn .chap-t { white-space: nowrap; }
+
+  .lab-detail { border-left: none; border-top: 1px solid var(--card-border); }
+  .detail-head { padding: 10px 12px 8px; }
+  .detail-no { font-size: 18px; }
+  .detail-title { font-size: 14.5px; }
+  .detail-body { padding: 10px 12px 14px; }
+  .lc-lesson { font-size: 12.5px; }
+  .acc-head { padding: 8px 10px; }
+  .acc-fold-inner { padding: 2px 10px 10px; }
+
+  .stage-focus-btn { left: 8px; bottom: 8px; }
+  .stage-foot { display: none; }
+}
+
+/* 小屏 quiz 卡片高于 42dvh 舞台时可滚动 */
+@media (max-width: 860px) {
+  .lathe-stage .quiz-panel {
+    align-items: flex-start;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .lathe-stage .quiz-card { margin: auto 0; }
+}
+
+/* 小屏舞台工具：右下角紧凑排布 */
+@media (max-width: 860px) {
+  .stage-tools { top: auto; bottom: 8px; right: 8px; left: auto; gap: 4px; }
+  .stage-tool-btn { padding: 5px 7px; font-size: 10.5px; letter-spacing: -0.01em; }
+}
