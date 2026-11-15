@@ -23,16 +23,16 @@
   <meta property="og:title" content="{{ page.title }}">
   <meta property="og:description" content="{{ page.description | default: page.excerpt | strip_html }}">
   <meta property="og:url" content="{{ site.url }}{{ page.url }}">
-  <meta property="og:image" content="{{ '/assets/images/profile.jpg' | absolute_url }}">
-  <meta property="og:image:width" content="1170">
-  <meta property="og:image:height" content="1170">
+  <meta property="og:image" content="{{ '/assets/images/profile-share.jpg' | absolute_url }}">
+  <meta property="og:image:width" content="600">
+  <meta property="og:image:height" content="600">
   <meta property="og:image:alt" content="Leo Lu（迷鹿 MiLu）头像">
   <meta property="article:published_time" content="{{ page.date | date_to_xmlschema }}">
   <meta property="article:author" content="Leo Lu">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="{{ page.title }}">
   <meta name="twitter:description" content="{{ page.description | default: page.excerpt | strip_html }}">
-  <meta name="twitter:image" content="{{ '/assets/images/profile.jpg' | absolute_url }}">
+  <meta name="twitter:image" content="{{ '/assets/images/profile-share.jpg' | absolute_url }}">
   <meta name="twitter:image:alt" content="Leo Lu（迷鹿 MiLu）头像">
   <script type="application/ld+json">
   {
@@ -66,7 +66,7 @@
     "publisher": { "@id": "{{ site.url }}/#person" },
     "mainEntityOfPage": "{{ site.url }}{{ page.url }}",
     {% if page.tags %}"keywords": "{{ page.tags | join: ', ' | json_escape }}",{% endif %}
-    "image": "{{ '/assets/images/profile.jpg' | absolute_url }}"
+    "image": "{{ '/assets/images/profile-share.jpg' | absolute_url }}"
   }
   </script>
   <script type="application/ld+json">
