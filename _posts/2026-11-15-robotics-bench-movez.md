@@ -29,7 +29,7 @@ Robotics Bench 把这道门槛清零了。这是 Movez 做的浏览器 3D 电子
 
 原站在 vercel.app 上，境内直连困难。我把页面原样镜像了一份放在本站，仅供学习交流，**版权归原作者 Movez 所有**，页面内的作者署名与原站链接原样保留：
 
-- 镜像学习版（本站）：[/robotics-bench/](/robotics-bench/)
+- 镜像学习版（本站）：[/apps/robotics-bench/](/apps/robotics-bench/)
 - 原站：[robotics-engineer.vercel.app](https://robotics-engineer.vercel.app)
 
 想真上手焊东西，套件还是得买。但在掏钱之前，先在这张网页里把该犯的错犯完，钱和时间都省下来了。
