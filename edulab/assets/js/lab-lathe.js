@@ -251,6 +251,38 @@ function arcPlateX(rIn, rOut, theta, width, seg = 20) {
   return g;
 }
 
+/* 爪体一体轮廓（AT-097-R3）：侧视楼梯形，外露棱全部 45° 倒角；挤出前后缘再以 bevel 倒角。
+   bevelOffset 取负补偿轮廓外扩，壁面精确落在设计坐标上。消灭近景「积木感」直角硬块。 */
+function jawBodyGeo() {
+  const p = [
+    [-3.82, 0.61], [-3.10, 0.61], [-3.06, 0.65],    // 底面（闭合夹持基准 y0.61）+ 前下倒角
+    [-3.06, 0.95], [-3.075, 0.965],                 // 前脸 + 上台前缘倒角
+    [-3.125, 0.965], [-3.14, 0.98], [-3.14, 1.21],  // 上台阶 + 凹角倒角 + 后脸
+    [-3.18, 1.25], [-3.82, 1.25], [-3.86, 1.21],    // 顶面两端倒角（爪体顶部外缘）
+    [-3.86, 0.65],                                  // 后下倒角
+  ];
+  const s = new THREE.Shape();
+  s.moveTo(p[0][0], p[0][1]);
+  for (let i = 1; i < p.length; i++) s.lineTo(p[i][0], p[i][1]);
+  s.closePath();
+  const g = new THREE.ExtrudeGeometry(s, { depth: 0.43, bevelEnabled: true, bevelThickness: 0.015, bevelSize: 0.015, bevelOffset: -0.015, bevelSegments: 1 });
+  g.translate(0, 0, -0.215); // 含前后 bevel 共厚 0.46，居中
+  return g;
+}
+
+/* 爪牙细齿（AT-097-R3）：密集连续齿排单齿——齿宽 0.028 > 齿距间隙 0.014，等距等深，棱边倒角 */
+function jawFinGeo() {
+  const w = 0.028, h = 0.34, c = 0.006;
+  const s = new THREE.Shape();
+  s.moveTo(-w / 2 + c, 0); s.lineTo(w / 2 - c, 0); s.lineTo(w / 2, c);
+  s.lineTo(w / 2, h - c); s.lineTo(w / 2 - c, h); s.lineTo(-w / 2 + c, h);
+  s.lineTo(-w / 2, h - c); s.lineTo(-w / 2, c);
+  s.closePath();
+  const g = new THREE.ExtrudeGeometry(s, { depth: 0.012, bevelEnabled: true, bevelThickness: 0.003, bevelSize: 0.003, bevelOffset: -0.003, bevelSegments: 1 });
+  g.translate(0, 0, -0.006); // 含前后 bevel 共厚 0.018，居中
+  return g;
+}
+
 /* ============================== 整机建模（CA6140 式卧式车床，程序化） ============================== */
 
 const machine = new THREE.Group();
@@ -263,6 +295,7 @@ let lampShade, lampBulb;
 
 // 工件几何基准（mm）：毛坯 φ60×220，卡盘端面 x=-3.8u，爪外留出长度可调
 const CHUCK_FACE_X = -3.8;      // 卡盘端面（工件坐标 Z0 可建在此处）
+const CHUCK_BODY_R = 1.3;       // 卡盘体外圆半径（壳体/爪背弧板/滚花同源曲率，禁各写独立半径）
 const STOCK_R = 30;             // 毛坯半径 mm
 const STOCK_LEN = 220;          // 毛坯总长 mm
 const N_ST = 111;               // 轮廓站位数（每 2 mm 一站）
@@ -390,7 +423,7 @@ function spindleBuild() {
   add(mesh(cylinderX(0.55, 1.3, 48), CM.spindle(), { p: [-4.85, 0, 0], cast: true }));      // 主轴端外露
   add(mesh(cylinderX(0.62, 0.16, 48), CM.spindle(), { p: [-4.16, 0, 0] }));                 // 法兰
   // 三爪卡盘 K11250：壳体 + 前端台阶环
-  chuckBody = mesh(cylinderX(1.3, 0.95, 48), CM.chuck(), { p: [-4.4, 0, 0], cast: true }); chuckBody.name = 'chuck';
+  chuckBody = mesh(cylinderX(CHUCK_BODY_R, 0.95, 48), CM.chuck(), { p: [-4.4, 0, 0], cast: true }); chuckBody.name = 'chuck';
   chuckFaceRing = mesh(cylinderX(1.05, 0.28, 48), CM.chuck(), { p: [-3.86, 0, 0], cast: true });
   chuckFaceRing.name = 'chuck';
   add(chuckBody, chuckFaceRing);
@@ -399,7 +432,7 @@ function spindleBuild() {
     const knurl = [];
     for (let i = 0; i < 64; i++) {
       const a = (i / 64) * Math.PI * 2;
-      knurl.push([box(0.2, 0.028, 0.028), -4.4, 1.3 * Math.cos(a), 1.3 * Math.sin(a), a, 0, 0]);
+      knurl.push([box(0.2, 0.028, 0.028), -4.4, CHUCK_BODY_R * Math.cos(a), CHUCK_BODY_R * Math.sin(a), a, 0, 0]);
     }
     add(bakedMesh(knurl, CM.chuckWear(), 'chuck'));
   }
@@ -416,31 +449,33 @@ function spindleBuild() {
     hub.name = 'chuck';
     add(ring, hub);
   }
-  // 三个卡爪（120° 分布，径向开合）：爪背弧板贴卡盘外圆 + 滑座 + 前伸爪体 + 阶梯爪牙 + 齿纹 + 压紧螺钉
-  for (let i = 0; i < 3; i++) {
-    const piv = new THREE.Group();
-    piv.rotation.x = (i * 2 * Math.PI) / 3;
-    const jw = mesh(arcPlateX(1.3, 1.6, 0.42, 0.42), CM.jaw(), { p: [-4.3, 0, 0], cast: true }); // 爪背弧板（曲率贴卡盘体）
-    jw.name = 'chuck';
-    const seat = mesh(box(0.3, 0.85, 0.5), CM.jaw(), { p: [-3.8, 1.0, 0], cast: true });        // 滑座（骑前端面 T 形槽）
-    seat.name = 'chuck';
-    const jb = mesh(box(0.72, 0.6, 0.46), CM.jaw(), { p: [-3.5, 0.95, 0], cast: true });        // 前伸爪体
-    jb.name = 'chuck';
-    const jt1 = mesh(box(0.46, 0.3, 0.4), CM.jaw(), { p: [-3.3, 0.76, 0], cast: true });        // 爪牙主阶（内缘基准 y0.61）
-    jt1.name = 'chuck';
-    const jt2 = mesh(box(0.22, 0.13, 0.4), CM.jaw(), { p: [-3.17, 0.9, 0], cast: true });       // 爪牙二阶（叠出斜边）
-    jt2.name = 'chuck';
-    const teeth = [];
-    for (let k = 0; k < 6; k++) {
-      teeth.push([box(0.055, 0.5, 0.02), -3.6 + k * 0.07, 0.95, 0.245]);
-      teeth.push([box(0.055, 0.5, 0.02), -3.6 + k * 0.07, 0.95, -0.245]);
+  // 三个卡爪（120° 分布，径向开合）：爪背弧板贴卡盘外圆 + 滑座 + 一体轮廓爪体（全棱倒角）+ 密集齿纹 + 沉头内六角压紧螺钉
+  {
+    const jawGeo = jawBodyGeo(), finGeo = jawFinGeo();
+    for (let i = 0; i < 3; i++) {
+      const piv = new THREE.Group();
+      piv.rotation.x = (i * 2 * Math.PI) / 3;
+      const jw = mesh(arcPlateX(CHUCK_BODY_R - 0.02, 1.6, 0.42, 0.42), CM.jaw(), { p: [-4.3, 0, 0], cast: true }); // 爪背弧板（曲率同源卡盘体外圆，内缘微沉 0.02 消缝隙台阶）
+      jw.name = 'chuck';
+      const seat = mesh(box(0.3, 0.85, 0.5), CM.jaw(), { p: [-3.8, 1.03, 0], cast: true });       // 滑座（骑前端面 T 形槽；抬高 0.03 防闭合态蹭工件）
+      seat.name = 'chuck';
+      const jb = mesh(jawGeo, CM.jaw(), { cast: true });                                          // 前伸爪体+爪牙一体轮廓（外露棱全倒角，无直角硬块）
+      jb.name = 'chuck';
+      const fins = [];
+      for (let k = 0; k < 11; k++) {
+        const fx = -3.53 + k * 0.0418;
+        fins.push([finGeo, fx, 0.62, 0.2355]);
+        fins.push([finGeo, fx, 0.62, -0.2355]);
+      }
+      const finsMesh = bakedMesh(fins, CM.recess(), 'chuck');                                     // 密集齿排（每侧 11 条合并单 mesh）
+      const screw = mesh(cyl(0.075, 0.085, 0.05, 20), CM.dial(), { p: [-3.145, 1.1, 0], r: [0, 0, -Math.PI / 2], cast: true }); // 压紧螺钉沉头（同刀架内六角款式）
+      screw.name = 'chuck';
+      const hexHole = mesh(cyl(0.038, 0.038, 0.054, 6), CM.seam(), { p: [-3.137, 1.1, 0], r: [0, 0, -Math.PI / 2] });           // 内六角孔
+      hexHole.name = 'chuck';
+      piv.add(jw, seat, jb, finsMesh, screw, hexHole);
+      jawPivots.push(piv);
+      add(piv);
     }
-    const teethMesh = bakedMesh(teeth, CM.seam(), 'chuck');
-    const screw = mesh(cyl(0.055, 0.055, 0.07, 16), CM.chuckWear(), { p: [-3.14, 0.95, 0], r: [0, 0, -Math.PI / 2] }); // 压紧螺钉
-    screw.name = 'chuck';
-    piv.add(jw, seat, jb, jt1, jt2, teethMesh, screw);
-    jawPivots.push(piv);
-    add(piv);
   }
   // 卡盘钥匙（L 形，动画时显示）
   chuckKey = new THREE.Group();

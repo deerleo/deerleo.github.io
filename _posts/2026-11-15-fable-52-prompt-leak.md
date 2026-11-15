@@ -7,7 +7,7 @@ series: "哟哟鹿鸣"
 
 ![越狱研究者的深夜桌面：屏幕上是无尽滚动的提示词文本，手边摊着两部长篇小说厚的巨书（AI 生成示意图）](/assets/images/2026-11-15-fable-52-prompt-leak/final_01_leak.jpg)
 
-Anthropic 的旗舰模型 Claude Fable 5.2 上线约两个小时，家底就被人扒了。
+Anthropic 的旗舰模型 Claude Fable 5.2（11 月 9 日正式发布）上线约两个小时，家底就被人扒了。
 
 动手的是圈内名人 Pliny the Liberator，越狱研究者，今年 6 月刚在上一代 Fable 5 身上露过一手。这次他把 Claude Code 环境的完整系统提示词连同工具定义，整包甩上了 GitHub 仓库 CL4R1T4S：953,659 个字符，7,832 行，体量堪比两部长篇小说。中文科技媒体 11 月 13 日率先报道，英文圈随后跟进。截至发稿，Anthropic 没有公开回应，文件也还挂在仓库里——这家正在 IPO 路演上的公司，家底被人当着投资人的面翻了个底朝天。
 
