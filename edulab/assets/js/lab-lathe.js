@@ -296,6 +296,7 @@ let lampShade, lampBulb;
 // 工件几何基准（mm）：毛坯 φ60×220，卡盘端面 x=-3.8u，爪外留出长度可调
 const CHUCK_FACE_X = -3.8;      // 卡盘端面（工件坐标 Z0 可建在此处）
 const CHUCK_BODY_R = 1.3;       // 卡盘体外圆半径（壳体/爪背弧板/滚花同源曲率，禁各写独立半径）
+const JAW_TRAVEL = 0.3;         // 爪径向开合全行程（setJaws 位移与爪背弧板基准同源共用）
 const STOCK_R = 30;             // 毛坯半径 mm
 const STOCK_LEN = 220;          // 毛坯总长 mm
 const N_ST = 111;               // 轮廓站位数（每 2 mm 一站）
@@ -455,7 +456,7 @@ function spindleBuild() {
     for (let i = 0; i < 3; i++) {
       const piv = new THREE.Group();
       piv.rotation.x = (i * 2 * Math.PI) / 3;
-      const jw = mesh(arcPlateX(CHUCK_BODY_R - 0.02, 1.6, 0.42, 0.42), CM.jaw(), { p: [-4.3, 0, 0], cast: true }); // 爪背弧板（曲率同源卡盘体外圆，内缘微沉 0.02 消缝隙台阶）
+      const jw = mesh(arcPlateX(CHUCK_BODY_R + JAW_TRAVEL - 0.02, 1.6 + JAW_TRAVEL, 0.42, 0.42), CM.jaw(), { p: [-4.3, 0, 0], cast: true }); // 爪背弧板（曲率同源卡盘体外圆；基准抬 JAW_TRAVEL，闭合态内缘贴体微沉 0.02，消缝隙台阶）
       jw.name = 'chuck';
       const seat = mesh(box(0.3, 0.85, 0.5), CM.jaw(), { p: [-3.8, 1.03, 0], cast: true });       // 滑座（骑前端面 T 形槽；抬高 0.03 防闭合态蹭工件）
       seat.name = 'chuck';
@@ -470,7 +471,7 @@ function spindleBuild() {
       const finsMesh = bakedMesh(fins, CM.recess(), 'chuck');                                     // 密集齿排（每侧 11 条合并单 mesh）
       const screw = mesh(cyl(0.075, 0.085, 0.05, 20), CM.dial(), { p: [-3.145, 1.1, 0], r: [0, 0, -Math.PI / 2], cast: true }); // 压紧螺钉沉头（同刀架内六角款式）
       screw.name = 'chuck';
-      const hexHole = mesh(cyl(0.038, 0.038, 0.054, 6), CM.seam(), { p: [-3.137, 1.1, 0], r: [0, 0, -Math.PI / 2] });           // 内六角孔
+      const hexHole = mesh(cyl(0.038, 0.038, 0.04, 6), CM.seam(), { p: [-3.152, 1.1, 0], r: [0, 0, -Math.PI / 2] });            // 内六角孔（沉入头面 0.012，侧视不露绿边）
       hexHole.name = 'chuck';
       piv.add(jw, seat, jb, finsMesh, screw, hexHole);
       jawPivots.push(piv);
@@ -1241,9 +1242,8 @@ function finishPass(stopped) {
 
 const chuck = { jawPos: 1, target: 1, keyShown: false, keyT: 0, anim: null }; // jawPos: 0 闭合(夹 φ60) ↔ 1 张开
 function setJaws(pos) {
-  const r = 0.86 + (pos - 1) * 0.32; // 闭合 0.86 → 张开 1.18（爪中心半径）
   for (const piv of jawPivots) {
-    for (const ch of piv.children) ch.position.y = ch.userData.baseY || (ch.userData.baseY = ch.position.y), ch.position.y = ch.userData.baseY + (pos - 1) * 0.30;
+    for (const ch of piv.children) ch.position.y = ch.userData.baseY || (ch.userData.baseY = ch.position.y), ch.position.y = ch.userData.baseY + (pos - 1) * JAW_TRAVEL;
   }
   chuck.jawPos = pos;
 }
