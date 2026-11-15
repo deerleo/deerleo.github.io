@@ -65,7 +65,7 @@ async function ready(p, url, tag, timeout = 25000) {
 
 if (!SMOKE) {
   // ============ 截图模式 ============
-  const views = ['front', 'side', 'left', 'right', 'top', 'near', 'far', ...Array.from({ length: 8 }, (_, i) => `ch${i + 1}`)];
+  const views = ['front', 'side', 'left', 'right', 'top', 'near', 'far', 'headstock-near', 'chuck-jaw-near', 'tailstock-near', 'carriage-near', 'dynamics-near', ...Array.from({ length: 8 }, (_, i) => `ch${i + 1}`)];
   for (const v of views) {
     const p = await newPage();
     await ready(p, `${BASE}?still=1&shot=${v}`, v);

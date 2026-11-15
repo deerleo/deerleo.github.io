@@ -166,22 +166,30 @@ function watchTheme() {
 
 /* ============================== 材质工厂（每件独立实例，便于点选高亮） ============================== */
 
-const matPaint = (c, r = 0.62, m = 0.16) => new THREE.MeshStandardMaterial({ color: c, roughness: r, metalness: m });
+const matPaint = (c, r = 0.72, m = 0.16) => new THREE.MeshStandardMaterial({ color: c, roughness: r, metalness: m });
 const CM = {
-  green: () => matPaint(0x4a7a62),                  // 铸铁绿（床头箱/溜板/尾座）
-  greenDark: () => matPaint(0x3e6752, 0.58),
-  cream: () => matPaint(0xc3c8c2, 0.6),             // 米灰（床身腿/底座）
-  bedIron: () => matPaint(0x55746b, 0.66),          // 床身铸件
-  way: () => new THREE.MeshStandardMaterial({ color: 0xc9ced4, roughness: 0.22, metalness: 0.9 }),   // 导轨亮金属
-  chuck: () => new THREE.MeshStandardMaterial({ color: 0x3c4046, roughness: 0.42, metalness: 0.82 }),// 卡盘淬火钢
-  jaw: () => new THREE.MeshStandardMaterial({ color: 0x565b62, roughness: 0.4, metalness: 0.78 }),
-  spindle: () => new THREE.MeshStandardMaterial({ color: 0xb8bec4, roughness: 0.3, metalness: 0.85 }),
+  green: () => matPaint(0x4a7a62, 0.72),            // 铸铁绿（床头箱/溜板/尾座）——粗糙度上调去塑料感
+  greenDark: () => matPaint(0x3e6752, 0.68),
+  cream: () => matPaint(0xc3c8c2, 0.68),            // 米灰（床身腿/底座）
+  bedIron: () => matPaint(0x55746b, 0.74),          // 床身铸件
+  way: () => new THREE.MeshStandardMaterial({ color: 0xc9ced4, roughness: 0.28, metalness: 0.88 }),   // 导轨亮金属
+  chuck: () => new THREE.MeshStandardMaterial({ color: 0x3c4046, roughness: 0.5, metalness: 0.82 }), // 卡盘淬火钢（外圆带磨损哑光）
+  chuckWear: () => new THREE.MeshStandardMaterial({ color: 0x5a6068, roughness: 0.3, metalness: 0.86 }), // 卡盘磨损亮环
+  jaw: () => new THREE.MeshStandardMaterial({ color: 0x565b62, roughness: 0.42, metalness: 0.8 }),
+  spindle: () => new THREE.MeshStandardMaterial({ color: 0xb8bec4, roughness: 0.32, metalness: 0.85 }),
   toolShank: () => matPaint(0x44484e, 0.5, 0.6),
   carbide: () => matPaint(0xc9a24a, 0.35, 0.5),
   dial: () => matPaint(0x2e3338, 0.45, 0.5),
   handle: () => matPaint(0xb04a3a, 0.5, 0.3),       // 手轮红棕
   rubber: () => matPaint(0x2a2e33, 0.9, 0),
   cable: () => matPaint(0x3a3f45, 0.8, 0.1),
+  seam: () => matPaint(0x2b3a32, 0.66, 0.2),        // 箱体分缝暗线（深绿近黑）
+  recess: () => matPaint(0x30353a, 0.62, 0.4),      // 铸造工艺孔/内凹暗示
+  bronze: () => matPaint(0xa8793e, 0.42, 0.7),      // 油标窗铜圈
+  plate: () => new THREE.MeshStandardMaterial({ color: 0x9aa2a8, roughness: 0.38, metalness: 0.62 }), // 铭牌金属
+  oilGlass: () => new THREE.MeshStandardMaterial({ color: 0x6b4a1e, roughness: 0.12, metalness: 0.2, transparent: true, opacity: 0.72 }), // 油标窗玻璃
+  lampGreen: () => new THREE.MeshStandardMaterial({ color: 0x1d3a28, emissive: 0x2fae5e, emissiveIntensity: 1.6, roughness: 0.4 }),
+  lampRed: () => new THREE.MeshStandardMaterial({ color: 0x3a1d1d, emissive: 0xd9483a, emissiveIntensity: 1.6, roughness: 0.4 }),
 };
 
 function mesh(geo, mat, opts = {}) {
@@ -197,6 +205,51 @@ function mesh(geo, mat, opts = {}) {
 const box = (w, h, d) => new THREE.BoxGeometry(w, h, d);
 const cyl = (rt, rb, h, seg = 32, open = false) => new THREE.CylinderGeometry(rt, rb, h, seg, 1, open);
 const cylinderX = (r, len, seg = 32) => { const g = cyl(r, r, len, seg); g.rotateZ(-Math.PI / 2); return g; }; // 轴向 X
+
+/* 极简几何合并（本仓 three addons 无 BufferGeometryUtils，自写够用版）：
+   全部转 non-indexed 后拼接 position/normal/uv。用于同类小细节合并成一个 mesh 控 draw call。 */
+function mergeGeos(list) {
+  const geos = list.map((g) => (g.index ? g.toNonIndexed() : g));
+  let total = 0;
+  for (const g of geos) total += g.attributes.position.count;
+  const pos = new Float32Array(total * 3), nor = new Float32Array(total * 3), uv = new Float32Array(total * 2);
+  let off = 0;
+  for (const g of geos) {
+    pos.set(g.attributes.position.array, off * 3);
+    nor.set(g.attributes.normal.array, off * 3);
+    if (g.attributes.uv) uv.set(g.attributes.uv.array, off * 2);
+    off += g.attributes.position.count;
+    g.dispose();
+  }
+  const out = new THREE.BufferGeometry();
+  out.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+  out.setAttribute('normal', new THREE.BufferAttribute(nor, 3));
+  out.setAttribute('uv', new THREE.BufferAttribute(uv, 2));
+  return out;
+}
+/* 批量小件烘焙：items = [geo, x?, y?, z?, rx?, ry?, rz?] → 单 mesh（共享一份材质，便于整组点选高亮） */
+function bakedMesh(items, mat, name) {
+  const parts = items.map(([g, x = 0, y = 0, z = 0, rx = 0, ry = 0, rz = 0]) => {
+    const m = new THREE.Matrix4().makeRotationFromEuler(new THREE.Euler(rx, ry, rz));
+    m.setPosition(x, y, z);
+    return g.clone().applyMatrix4(m);
+  });
+  const o = new THREE.Mesh(mergeGeos(parts), mat);
+  o.castShadow = true;
+  if (name) o.name = name;
+  return o;
+}
+/* 弧形板（绕 X 轴的部分圆环壳，曲率贴主轴外圆）：Rin→Rout，弧角 rad，挤出宽 width(轴向 X)
+   返回 geometry 已旋转：圆心在原点、弧面法向径向、宽沿 X 居中。作爪背/卡盘导轨槽等。 */
+function arcPlateX(rIn, rOut, theta, width, seg = 20) {
+  const s = new THREE.Shape();
+  s.absarc(0, 0, rOut, -theta / 2, theta / 2, false);
+  s.absarc(0, 0, rIn, theta / 2, -theta / 2, true);
+  const g = new THREE.ExtrudeGeometry(s, { depth: width, bevelEnabled: false, curveSegments: seg });
+  g.translate(0, 0, -width / 2); // 挤出方向居中（截面圆心保持在原点，不整体 center）
+  g.rotateY(Math.PI / 2); // Z→X：宽沿轴向 X，弧面圆心在原点（径向即 Y/Z）
+  return g;
+}
 
 /* ============================== 整机建模（CA6140 式卧式车床，程序化） ============================== */
 
@@ -243,8 +296,31 @@ function bedBuild() {
   // 两端床腿/底座箱（中段悬空，方便排屑）
   bed.add(mesh(box(6.6, 6.45, 3.6), CM.cream(), { p: [-7.7, 3.22, 0], cast: true, recv: true }));
   bed.add(mesh(box(5.6, 6.45, 3.6), CM.cream(), { p: [8.2, 3.22, 0], cast: true, recv: true }));
-  // 床身铭牌
-  bed.add(mesh(box(1.5, 0.5, 0.06), CM.cream(), { p: [1.2, 7.0, 2.22] }));
+  // 床腿顶与床身底交界：深色分缝线（消灭「一整块」感）
+  bed.add(bakedMesh([
+    [box(6.7, 0.07, 3.66), -7.7, 6.44, 0],
+    [box(5.7, 0.07, 3.66), 8.2, 6.44, 0],
+    [box(6.7, 0.05, 0.05), -7.7, 3.2, 1.82],   // 床腿竖向分段缝
+    [box(6.7, 0.05, 0.05), -7.7, 1.8, 1.82],
+    [box(5.7, 0.05, 0.05), 8.2, 3.2, 1.82],
+    [box(5.7, 0.05, 0.05), 8.2, 1.8, 1.82],
+    [box(0.05, 6.4, 0.05), -6.2, 3.2, 1.82],   // 床腿竖缝
+    [box(0.05, 6.4, 0.05), 9.7, 3.2, 1.82],
+  ], CM.seam()));
+  // 床身侧壁铸造工艺孔暗示（深色内凹矩形贴面，前后侧错布）+ 内层亮边层次
+  bed.add(bakedMesh([
+    [box(1.0, 0.6, 0.05), -3.2, 7.25, 2.21],
+    [box(1.0, 0.6, 0.05), 2.6, 7.25, 2.21],
+    [box(1.0, 0.6, 0.05), -0.4, 7.25, -2.21],
+    [box(1.0, 0.6, 0.05), 4.8, 7.25, -2.21],
+    [box(0.6, 0.38, 0.07), -3.2, 7.25, 2.215],
+    [box(0.6, 0.38, 0.07), 2.6, 7.25, 2.215],
+    [box(0.6, 0.38, 0.07), -0.4, 7.25, -2.215],
+    [box(0.6, 0.38, 0.07), 4.8, 7.25, -2.215],
+  ], CM.recess()));
+  // 床身铭牌（两层叠层浅浮雕）
+  bed.add(mesh(box(1.5, 0.5, 0.05), CM.plate(), { p: [1.2, 7.0, 2.24] }));
+  bed.add(mesh(box(1.32, 0.36, 0.055), CM.cream(), { p: [1.2, 7.0, 2.26] }));
   machine.add(bed);
   return bed;
 }
@@ -253,14 +329,53 @@ function headstockBuild() {
   const hs = new THREE.Group(); hs.name = 'headstock';
   hs.add(mesh(box(5.6, 4.6, 5.0), CM.green(), { p: [-8.2, 10.3, 0], cast: true, recv: true }));
   hs.add(mesh(box(5.7, 0.5, 5.1), CM.greenDark(), { p: [-8.2, 12.6, 0], cast: true }));   // 顶盖
-  // 前面板（操作面 z+）：变速手柄两根 + 油窗 + 铭牌
-  for (const [lx, ly] of [[-9.4, 10.6], [-7.0, 10.9]]) {
-    hs.add(mesh(cyl(0.05, 0.05, 0.7, 12), CM.dial(), { p: [lx, ly, 2.62], r: [Math.PI / 2.4, 0, 0] }));
-    hs.add(mesh(new THREE.SphereGeometry(0.13, 12, 10), CM.handle(), { p: [lx, ly + 0.28, 2.78] }));
+  // —— 前面板分缝：左右两块凸面板 + 中缝 + 上下横缝（打破「纯平面绿盒」）
+  hs.add(mesh(box(2.42, 3.7, 0.12), CM.greenDark(), { p: [-9.42, 10.3, 2.5], cast: true }));
+  hs.add(mesh(box(2.42, 3.7, 0.12), CM.greenDark(), { p: [-6.98, 10.3, 2.5], cast: true }));
+  hs.add(bakedMesh([
+    [box(0.12, 4.42, 0.1), -8.2, 10.35, 2.49],   // 中央竖缝
+    [box(5.62, 0.07, 0.1), -8.2, 12.08, 2.49],   // 顶部横缝
+    [box(5.62, 0.07, 0.1), -8.2, 8.5, 2.49],     // 底部横缝
+  ], CM.seam()));
+  // —— 皮带轮罩：正面左下半圆弧罩壳 + 中心轴帽
+  {
+    const s = new THREE.Shape();
+    s.absarc(0, 0, 0.64, Math.PI, Math.PI * 2, false);
+    s.absarc(0, 0, 0.34, Math.PI * 2, Math.PI, true);
+    const g = new THREE.ExtrudeGeometry(s, { depth: 0.16, bevelEnabled: false, curveSegments: 28 });
+    hs.add(mesh(g, CM.greenDark(), { p: [-9.9, 9.5, 2.48], cast: true }));
+    hs.add(mesh(cyl(0.1, 0.12, 0.14, 24), CM.dial(), { p: [-9.9, 9.5, 2.62], r: [Math.PI / 2, 0, 0] }));
   }
-  const win = mesh(cyl(0.28, 0.28, 0.06, 24), new THREE.MeshStandardMaterial({ color: 0x1c2b30, roughness: 0.15, metalness: 0.3 }), { p: [-8.2, 11.2, 2.52], r: [Math.PI / 2, 0, 0] });
-  hs.add(win);
-  hs.add(mesh(box(1.2, 0.6, 0.05), CM.cream(), { p: [-8.2, 9.4, 2.53] }));
+  // —— 油标窗：铜圈 + 琥珀玻璃 + 深色油腔（一眼认出「油窗」）
+  hs.add(mesh(new THREE.TorusGeometry(0.3, 0.035, 12, 48), CM.bronze(), { p: [-7.9, 11.4, 2.6] }));
+  hs.add(mesh(cyl(0.27, 0.27, 0.05, 48), CM.oilGlass(), { p: [-7.9, 11.4, 2.56], r: [Math.PI / 2, 0, 0] }));
+  hs.add(mesh(cyl(0.21, 0.21, 0.06, 32), new THREE.MeshStandardMaterial({ color: 0x2b1d08, roughness: 0.3, metalness: 0.1 }), { p: [-7.9, 11.4, 2.52], r: [Math.PI / 2, 0, 0] }));
+  // —— 铭牌：两层叠层浅浮雕
+  hs.add(mesh(box(1.3, 0.62, 0.03), CM.plate(), { p: [-8.2, 9.45, 2.58] }));
+  hs.add(mesh(box(1.12, 0.44, 0.036), CM.cream(), { p: [-8.2, 9.45, 2.6] }));
+  // —— 变速手柄塔 ×3：六角底座塔 + 塔柱 + 斜杆 + 球头
+  {
+    const towers = [[-9.5, 10.6], [-8.2, 11.0], [-6.9, 10.65]];
+    hs.add(bakedMesh(towers.flatMap(([tx, ty]) => [
+      [cyl(0.16, 0.19, 0.14, 6), tx, ty, 2.62],
+      [cyl(0.07, 0.09, 0.2, 16), tx, ty + 0.14, 2.66],
+      [cyl(0.035, 0.035, 0.62, 12), tx, ty + 0.42, 2.82, 0.55, 0, 0], // 杆前倾
+    ]), CM.dial()));
+    hs.add(bakedMesh(towers.flatMap(([tx, ty]) => [
+      [new THREE.SphereGeometry(0.13, 20, 16), tx, ty + 0.66, 2.98],
+    ]), CM.handle()));
+  }
+  // —— 加油孔 ×2：顶面小凸台 + 深色圆盖 + 一字槽
+  hs.add(bakedMesh([
+    [cyl(0.13, 0.15, 0.1, 20), -9.3, 12.7, 1.1],
+    [cyl(0.13, 0.15, 0.1, 20), -9.3, 12.7, -1.1],
+  ], CM.greenDark()));
+  hs.add(bakedMesh([
+    [cyl(0.14, 0.14, 0.05, 20), -9.3, 12.77, 1.1],
+    [cyl(0.14, 0.14, 0.05, 20), -9.3, 12.77, -1.1],
+    [box(0.18, 0.025, 0.035), -9.3, 12.8, 1.1],
+    [box(0.18, 0.025, 0.035), -9.3, 12.8, -1.1],
+  ], CM.dial()));
   // 电机箱（床身尾部内嵌）
   hs.add(mesh(box(1.6, 1.6, 2.2), CM.greenDark(), { p: [-8.6, 9.2, 0], cast: true }));
   machine.add(hs);
@@ -272,22 +387,58 @@ function spindleBuild() {
   spindleGroup = new THREE.Group();
   spindleGroup.position.set(0, 10, 0);
   const add = (o) => spindleGroup.add(o);
-  add(mesh(cylinderX(0.55, 1.3, 28), CM.spindle(), { p: [-4.85, 0, 0], cast: true }));      // 主轴端外露
-  add(mesh(cylinderX(0.62, 0.16, 28), CM.spindle(), { p: [-4.16, 0, 0] }));                 // 法兰
+  add(mesh(cylinderX(0.55, 1.3, 48), CM.spindle(), { p: [-4.85, 0, 0], cast: true }));      // 主轴端外露
+  add(mesh(cylinderX(0.62, 0.16, 48), CM.spindle(), { p: [-4.16, 0, 0] }));                 // 法兰
   // 三爪卡盘 K11250：壳体 + 前端台阶环
   chuckBody = mesh(cylinderX(1.3, 0.95, 48), CM.chuck(), { p: [-4.4, 0, 0], cast: true }); chuckBody.name = 'chuck';
   chuckFaceRing = mesh(cylinderX(1.05, 0.28, 48), CM.chuck(), { p: [-3.86, 0, 0], cast: true });
   chuckFaceRing.name = 'chuck';
   add(chuckBody, chuckFaceRing);
-  // 三个卡爪（120° 分布，径向开合）
+  // 卡盘体外圆滚花环（64 条细齿合并，暗部细节）+ 前端面磨损亮环
+  {
+    const knurl = [];
+    for (let i = 0; i < 64; i++) {
+      const a = (i / 64) * Math.PI * 2;
+      knurl.push([box(0.2, 0.028, 0.028), -4.4, 1.3 * Math.cos(a), 1.3 * Math.sin(a), a, 0, 0]);
+    }
+    add(bakedMesh(knurl, CM.chuckWear(), 'chuck'));
+  }
+  // 前端面：3 个卡爪导轨槽口（扇形深色槽，与爪错开 60°）+ 中心压紧圈 + 轴端盖
+  {
+    const slots = [];
+    for (let i = 0; i < 3; i++) {
+      slots.push([arcPlateX(0.72, 1.0, 0.52, 0.035), -3.7, 0, 0, Math.PI / 3 + (i * 2 * Math.PI) / 3, 0, 0]);
+    }
+    add(bakedMesh(slots, CM.recess(), 'chuck'));
+    const ring = mesh(new THREE.TorusGeometry(0.34, 0.045, 12, 48), CM.chuckWear(), { p: [-3.7, 0, 0], r: [0, Math.PI / 2, 0] });
+    ring.name = 'chuck';
+    const hub = mesh(cyl(0.12, 0.14, 0.1, 32), CM.chuckWear(), { p: [-3.71, 0, 0], r: [0, 0, -Math.PI / 2] });
+    hub.name = 'chuck';
+    add(ring, hub);
+  }
+  // 三个卡爪（120° 分布，径向开合）：爪背弧板贴卡盘外圆 + 滑座 + 前伸爪体 + 阶梯爪牙 + 齿纹 + 压紧螺钉
   for (let i = 0; i < 3; i++) {
     const piv = new THREE.Group();
     piv.rotation.x = (i * 2 * Math.PI) / 3;
-    const jw = mesh(box(0.8, 0.55, 0.52), CM.jaw(), { p: [-4.1, 0.86, 0], cast: true });
+    const jw = mesh(arcPlateX(1.3, 1.6, 0.42, 0.42), CM.jaw(), { p: [-4.3, 0, 0], cast: true }); // 爪背弧板（曲率贴卡盘体）
     jw.name = 'chuck';
-    const jt = mesh(box(0.5, 0.34, 0.4), CM.jaw(), { p: [-3.68, 0.72, 0], cast: true });   // 爪牙台阶
-    jt.name = 'chuck';
-    piv.add(jw, jt);
+    const seat = mesh(box(0.3, 0.85, 0.5), CM.jaw(), { p: [-3.8, 1.0, 0], cast: true });        // 滑座（骑前端面 T 形槽）
+    seat.name = 'chuck';
+    const jb = mesh(box(0.72, 0.6, 0.46), CM.jaw(), { p: [-3.5, 0.95, 0], cast: true });        // 前伸爪体
+    jb.name = 'chuck';
+    const jt1 = mesh(box(0.46, 0.3, 0.4), CM.jaw(), { p: [-3.3, 0.76, 0], cast: true });        // 爪牙主阶（内缘基准 y0.61）
+    jt1.name = 'chuck';
+    const jt2 = mesh(box(0.22, 0.13, 0.4), CM.jaw(), { p: [-3.17, 0.9, 0], cast: true });       // 爪牙二阶（叠出斜边）
+    jt2.name = 'chuck';
+    const teeth = [];
+    for (let k = 0; k < 6; k++) {
+      teeth.push([box(0.055, 0.5, 0.02), -3.6 + k * 0.07, 0.95, 0.245]);
+      teeth.push([box(0.055, 0.5, 0.02), -3.6 + k * 0.07, 0.95, -0.245]);
+    }
+    const teethMesh = bakedMesh(teeth, CM.seam(), 'chuck');
+    const screw = mesh(cyl(0.055, 0.055, 0.07, 16), CM.chuckWear(), { p: [-3.14, 0.95, 0], r: [0, 0, -Math.PI / 2] }); // 压紧螺钉
+    screw.name = 'chuck';
+    piv.add(jw, seat, jb, jt1, jt2, teethMesh, screw);
     jawPivots.push(piv);
     add(piv);
   }
@@ -295,7 +446,7 @@ function spindleBuild() {
   chuckKey = new THREE.Group();
   const ks = mesh(cylinderX(0.07, 0.55, 12), CM.toolShank(), { p: [-3.55, 0, 0] });
   const kh = mesh(cyl(0.055, 0.055, 1.1, 12), CM.toolShank(), { p: [-3.28, 0.55, 0] });
-  const kb = mesh(new THREE.SphereGeometry(0.09, 10, 8), CM.handle(), { p: [-3.28, 1.1, 0] });
+  const kb = mesh(new THREE.SphereGeometry(0.09, 16, 12), CM.handle(), { p: [-3.28, 1.1, 0] });
   chuckKey.add(ks, kh, kb);
   chuckKey.visible = false;
   add(chuckKey);
@@ -321,9 +472,22 @@ function carriageBuild() {
   // 溜板箱（挂在床鞍前下方，正面有手轮与刻度）
   apron = new THREE.Group(); apron.name = 'apron';
   apron.add(mesh(box(2.2, 2.5, 0.75), CM.greenDark(), { p: [0, 7.4, 2.42], cast: true }));
-  const hw1 = mesh(new THREE.TorusGeometry(0.42, 0.07, 10, 28), CM.handle(), { p: [-0.55, 7.3, 2.95] });
+  // 溜板箱正面：竖分缝 + 铭牌两层 + 旋钮 ×2（旋钮座+旋钮帽）
+  apron.add(bakedMesh([
+    [box(0.05, 2.3, 0.03), -0.62, 7.4, 2.81],
+    [box(0.05, 2.3, 0.03), 0.62, 7.4, 2.81],
+  ], CM.seam(), 'apron'));
+  apron.add(mesh(box(0.62, 0.3, 0.03), CM.plate(), { p: [0.55, 7.95, 2.81] }));
+  apron.add(mesh(box(0.5, 0.2, 0.034), CM.cream(), { p: [0.55, 7.95, 2.83] }));
+  apron.add(bakedMesh([
+    [cyl(0.08, 0.1, 0.14, 16), -0.85, 6.6, 2.84, Math.PI / 2, 0, 0],
+    [cyl(0.055, 0.055, 0.05, 16), -0.85, 6.6, 2.93, Math.PI / 2, 0, 0],
+    [cyl(0.08, 0.1, 0.14, 16), 0.85, 8.2, 2.84, Math.PI / 2, 0, 0],
+    [cyl(0.055, 0.055, 0.05, 16), 0.85, 8.2, 2.93, Math.PI / 2, 0, 0],
+  ], CM.dial(), 'apron'));
+  const hw1 = mesh(new THREE.TorusGeometry(0.42, 0.07, 10, 40), CM.handle(), { p: [-0.55, 7.3, 2.95] });
   hw1.rotation.x = Math.PI / 2 - 0.35;
-  const hw2 = mesh(new THREE.TorusGeometry(0.3, 0.055, 10, 24), CM.handle(), { p: [0.62, 7.0, 2.9] });
+  const hw2 = mesh(new THREE.TorusGeometry(0.3, 0.055, 10, 32), CM.handle(), { p: [0.62, 7.0, 2.9] });
   hw2.rotation.x = Math.PI / 2 - 0.35;
   const spoke = (r) => mesh(box(0.05, r * 2, 0.05), CM.handle());
   apron.add(hw1, hw2);
@@ -335,25 +499,62 @@ function carriageBuild() {
       apron.add(s);
     }
   }
+  // 丝杠/光杠中段吊架：溜板箱下垂吊板 + 双环抱圈（随溜板在杆上滑动，消灭「杆悬空横穿」）
+  apron.add(bakedMesh([
+    [box(0.18, 0.55, 0.44), 0.3, 5.95, 2.45],
+    [new THREE.TorusGeometry(0.115, 0.024, 10, 24), 0.3, 5.85, 2.32, 0, Math.PI / 2, 0],
+    [new THREE.TorusGeometry(0.115, 0.024, 10, 24), 0.3, 5.85, 2.58, 0, Math.PI / 2, 0],
+  ], CM.dial(), 'apron'));
   cg.add(apron);
-  // 中滑板 + 横向刻度盘手柄
+  // 纵/横溜板分缝（床鞍-中滑板、转盘-小滑板交界暗线）
+  cg.add(bakedMesh([
+    [box(1.95, 0.035, 2.55), 0, 8.77, 0.25],
+    [box(1.1, 0.03, 1.1), 0, 9.27, 0.35],
+  ], CM.seam(), 'carriage'));
+  // 中滑板 + 横向刻度盘手柄（盘缘细刻度 + 中心毂 + 杆根护套）
   cg.add(mesh(box(1.9, 0.34, 2.5), CM.green(), { p: [0, 8.94, 0.25], cast: true }));
-  crossDial = mesh(cyl(0.3, 0.3, 0.14, 24), CM.dial(), { p: [0, 8.94, 1.85], r: [Math.PI / 2, 0, 0] });
+  crossDial = mesh(cyl(0.3, 0.3, 0.14, 48), CM.dial(), { p: [0, 8.94, 1.85], r: [Math.PI / 2, 0, 0] });
   crossDial.name = 'carriage';
   cg.add(crossDial);
-  cg.add(mesh(cyl(0.05, 0.05, 0.5, 10), CM.dial(), { p: [0, 8.94, 2.15], r: [Math.PI / 2, 0, 0] }));
-  cg.add(mesh(new THREE.SphereGeometry(0.1, 10, 8), CM.handle(), { p: [0, 8.94, 2.45] }));
+  {
+    const ticks = [];
+    for (let i = 0; i < 12; i++) {
+      const a = (i / 12) * Math.PI * 2;
+      ticks.push([box(0.02, 0.055, 0.02), 0.31 * Math.cos(a), 8.94 + 0.31 * Math.sin(a), 1.92, 0, 0, a]);
+    }
+    const t = bakedMesh(ticks, CM.cream(), 'carriage');
+    cg.add(t);
+    const hub = mesh(cyl(0.09, 0.09, 0.05, 24), CM.cream(), { p: [0, 8.94, 1.94], r: [Math.PI / 2, 0, 0] });
+    hub.name = 'carriage';
+    cg.add(hub);
+  }
+  cg.add(mesh(cyl(0.05, 0.05, 0.5, 12), CM.dial(), { p: [0, 8.94, 2.15], r: [Math.PI / 2, 0, 0] }));
+  cg.add(mesh(cyl(0.068, 0.078, 0.14, 16), CM.dial(), { p: [0, 8.94, 2.02], r: [Math.PI / 2, 0, 0] })); // 杆根护套
+  cg.add(mesh(new THREE.SphereGeometry(0.1, 20, 16), CM.handle(), { p: [0, 8.94, 2.45] }));
   // 小滑板转盘 + 四方刀架
-  compRest = mesh(cyl(0.72, 0.72, 0.16, 36), CM.greenDark(), { p: [0, 9.19, 0.35], cast: true });
+  compRest = mesh(cyl(0.72, 0.72, 0.16, 48), CM.greenDark(), { p: [0, 9.19, 0.35], cast: true });
   cg.add(compRest);
   cg.add(mesh(box(1.05, 0.3, 1.05), CM.green(), { p: [0, 9.42, 0.35], cast: true }));      // 小滑板
   const tp = mesh(box(0.66, 0.52, 0.66), CM.greenDark(), { p: [0, 9.83, 0.35], cast: true }); // 四方刀架
   tp.name = 'toolpost';
   cg.add(tp);
-  for (let i = 0; i < 4; i++) {
-    const bolt = mesh(cyl(0.05, 0.05, 0.1, 8), CM.dial(), { p: [0, 10.12, 0.35] });
-    bolt.position.x = Math.sin((i * Math.PI) / 2) * 0.24; bolt.position.z = 0.35 + Math.cos((i * Math.PI) / 2) * 0.24;
-    cg.add(bolt);
+  // 刀架四棱小倒角暗示（45° 细条嵌棱）
+  cg.add(bakedMesh([
+    [box(0.13, 0.52, 0.13), -0.33, 9.83, 0.35 + -0.33, 0, Math.PI / 4, 0],
+    [box(0.13, 0.52, 0.13), 0.33, 9.83, 0.35 + -0.33, 0, Math.PI / 4, 0],
+    [box(0.13, 0.52, 0.13), -0.33, 9.83, 0.35 + 0.33, 0, Math.PI / 4, 0],
+    [box(0.13, 0.52, 0.13), 0.33, 9.83, 0.35 + 0.33, 0, Math.PI / 4, 0],
+  ], CM.greenDark(), 'toolpost'));
+  // 4 个沉头内六角螺栓（座 + 深色六角孔）
+  {
+    const heads = [], holes = [];
+    for (let i = 0; i < 4; i++) {
+      const bx = Math.sin((i * Math.PI) / 2) * 0.24, bz = 0.35 + Math.cos((i * Math.PI) / 2) * 0.24;
+      heads.push([cyl(0.075, 0.085, 0.05, 20), bx, 10.12, bz]);
+      holes.push([cyl(0.038, 0.038, 0.054, 6), bx, 10.13, bz]);
+    }
+    cg.add(bakedMesh(heads, CM.dial(), 'toolpost'));
+    cg.add(bakedMesh(holes, CM.seam(), 'toolpost'));
   }
   // 外圆车刀：刀杆 + 硬质合金刀片，刀尖为工具组原点
   toolGroup = new THREE.Group();
@@ -380,61 +581,189 @@ function setTool(x, rz) {
 function tailstockBuild() {
   const ts = new THREE.Group(); ts.name = 'tailstock';
   ts.position.set(7.5, 0, 0);
-  ts.add(mesh(box(1.5, 0.36, 3.0), CM.cream(), { p: [0, 8.5, 0], cast: true }));           // 底座
-  ts.add(mesh(box(1.15, 2.2, 1.7), CM.green(), { p: [0, 9.8, 0], cast: true }));           // 尾座体
-  ts.add(mesh(box(1.2, 0.5, 1.2), CM.greenDark(), { p: [0, 11.1, 0], cast: true }));       // 顶盖
-  const lever = mesh(cyl(0.045, 0.045, 0.7, 10), CM.dial(), { p: [0.3, 11.3, 0.5], r: [0.6, 0, 0.9] });
-  const knob = mesh(new THREE.SphereGeometry(0.09, 10, 8), CM.handle());
+  // 下部底座 + 压板（贴导轨两侧）+ 六角锁紧螺母 ×4
+  ts.add(mesh(box(1.5, 0.36, 3.0), CM.cream(), { p: [0, 8.5, 0], cast: true }));
+  ts.add(bakedMesh([
+    [box(0.34, 0.2, 2.6), -0.72, 8.28, 0],
+    [box(0.34, 0.2, 2.6), 0.72, 8.28, 0],
+    [cyl(0.13, 0.14, 0.12, 6), -0.72, 8.44, 0.9],
+    [cyl(0.13, 0.14, 0.12, 6), -0.72, 8.44, -0.9],
+    [cyl(0.13, 0.14, 0.12, 6), 0.72, 8.44, 0.9],
+    [cyl(0.13, 0.14, 0.12, 6), 0.72, 8.44, -0.9],
+  ], CM.dial(), 'tailstock'));
+  // 上部两层：下半方体 + 过渡块 + 回转套筒座（圆柱）+ 顶板（不再是一个盒子）
+  ts.add(mesh(box(1.15, 1.0, 1.7), CM.green(), { p: [0, 9.2, 0], cast: true }));
+  ts.add(mesh(box(1.15, 0.35, 1.6), CM.green(), { p: [0, 9.55, 0], cast: true }));
+  ts.add(mesh(cylinderX(0.62, 1.15, 48), CM.green(), { p: [0, 10, 0], cast: true }));      // 回转套筒座
+  ts.add(mesh(box(1.05, 0.24, 1.15), CM.greenDark(), { p: [0, 10.78, 0], cast: true }));   // 顶板
+  // 体/底座分缝
+  ts.add(mesh(box(1.2, 0.05, 1.75), CM.seam(), { p: [0, 8.7, 0] }));
+  // 套筒锁紧手柄（侧面斜下长杆 + 球头）
+  const lever = mesh(cyl(0.045, 0.045, 0.7, 12), CM.dial(), { p: [0.3, 9.55, 0.9], r: [1.15, 0, 0.45] });
+  const knob = mesh(new THREE.SphereGeometry(0.09, 20, 16), CM.handle());
   knob.position.set(0, 0.38, 0);
   lever.add(knob);
   ts.add(lever);
-  // 套筒 + 顶尖（指向 -X 卡盘方向）
+  // 套筒 + 顶尖（指向 -X 卡盘方向）；quill 子件全部用 userData.qx(tailQuillLen) 计算轴向位置
   quill = new THREE.Group(); quill.name = 'quill';
-  quill.add(mesh(cylinderX(0.26, 1.0, 24), CM.spindle(), { p: [-0.5 - tailQuillLen / 2, 0, 0] }));
-  tailCenter = mesh(new THREE.ConeGeometry(0.1, 0.42, 16), CM.chuck(), { p: [-1.02 - tailQuillLen, 0, 0], r: [0, 0, Math.PI / 2] });
-  quill.add(tailCenter);
+  {
+    const sleeve = mesh(cylinderX(0.26, 1.0, 48), CM.spindle(), { p: [-0.5 - tailQuillLen / 2, 0, 0] });
+    sleeve.userData.qx = (L) => -0.5 - L / 2;
+    tailCenter = mesh(new THREE.ConeGeometry(0.1, 0.42, 24), CM.chuck(), { p: [-1.02 - tailQuillLen, 0, 0], r: [0, 0, Math.PI / 2] });
+    tailCenter.userData.qx = (L) => -1.02 - L;
+    // 套筒前端刻度环盘（细齿圈观感）+ 中心锥孔暗圈
+    const dial = bakedMesh([
+      [cyl(0.3, 0.3, 0.1, 48), 0, 0, 0, 0, 0, -Math.PI / 2],
+      ...Array.from({ length: 20 }, (_, k) => {
+        const a = (k / 20) * Math.PI * 2;
+        return [box(0.018, 0.05, 0.03), 0, 0.31 * Math.cos(a), 0.31 * Math.sin(a), a - Math.PI / 2, 0, 0];
+      }),
+    ], CM.dial());
+    dial.userData.qx = (L) => -1.05 - L;
+    const bore = mesh(cyl(0.12, 0.1, 0.06, 32), CM.seam(), { p: [-1.12 - tailQuillLen, 0, 0], r: [0, 0, -Math.PI / 2] });
+    bore.userData.qx = (L) => -1.12 - L;
+    quill.add(sleeve, tailCenter, dial, bore);
+  }
   quill.position.set(0.55, 10, 0);
   ts.add(quill);
-  // 手轮与刻度（尾端）
-  tailWheel = mesh(new THREE.TorusGeometry(0.4, 0.06, 10, 28), CM.handle(), { p: [1.15, 10, 0] });
+  // 手轮与刻度（尾端）+ 轮缘 3 把手球头 + 轮毂盖
+  tailWheel = mesh(new THREE.TorusGeometry(0.4, 0.06, 12, 48), CM.handle(), { p: [1.15, 10, 0] });
   tailWheel.rotation.y = Math.PI / 2;
   ts.add(tailWheel);
-  ts.add(mesh(cyl(0.12, 0.12, 0.3, 16), CM.dial(), { p: [0.9, 10, 0], r: [0, 0, Math.PI / 2] }));
-  for (let i = 0; i < 3; i++) {
-    const sp = mesh(box(0.05, 0.76, 0.05), CM.handle(), { p: [1.16, 10, 0] });
-    sp.rotation.x = (i * Math.PI) / 3;
-    ts.add(sp);
-  }
+  ts.add(mesh(cyl(0.13, 0.13, 0.3, 32), CM.dial(), { p: [0.9, 10, 0], r: [0, 0, Math.PI / 2] }));
+  ts.add(bakedMesh([
+    [cyl(0.14, 0.14, 0.06, 24), 1.19, 10, 0, 0, 0, Math.PI / 2],
+    [new THREE.SphereGeometry(0.055, 16, 12), 1.16, 10.4, 0],
+    [new THREE.SphereGeometry(0.055, 16, 12), 1.16, 9.6, 0],
+    [new THREE.SphereGeometry(0.055, 16, 12), 1.16, 10, 0.4],
+    [new THREE.SphereGeometry(0.055, 16, 12), 1.16, 10, -0.4],
+  ], CM.handle(), 'tailstock'));
   machine.add(ts);
   tailstock = ts;
   return ts;
 }
 
 function auxBuild() {
-  // 进给箱（挂床身左前）
+  // 进给箱（挂床身左前）：正面分缝 + 油窗 + 铭牌
   const fb = new THREE.Group(); fb.name = 'feedbox';
   fb.add(mesh(box(1.7, 1.6, 4.2), CM.greenDark(), { p: [-4.05, 7.2, 0], cast: true }));
+  fb.add(bakedMesh([
+    [box(0.04, 1.5, 0.06), -4.05, 7.2, 2.11],
+    [box(1.6, 0.04, 0.06), -4.05, 7.55, 2.11],
+    [cyl(0.14, 0.14, 0.05, 32), -4.5, 7.75, 2.12, Math.PI / 2, 0, 0],
+  ], CM.seam(), 'feedbox'));
+  fb.add(mesh(box(0.7, 0.3, 0.03), CM.plate(), { p: [-3.7, 6.8, 2.12] }));
   for (const [ly, lz] of [[7.6, 1.4], [7.0, 1.8]]) {
-    fb.add(mesh(cyl(0.04, 0.04, 0.5, 10), CM.dial(), { p: [-3.5, ly, lz], r: [Math.PI / 3, 0, 0] }));
-    fb.add(mesh(new THREE.SphereGeometry(0.08, 10, 8), CM.handle(), { p: [-3.5, ly + 0.18, lz + 0.12] }));
+    fb.add(mesh(cyl(0.04, 0.04, 0.5, 12), CM.dial(), { p: [-3.5, ly, lz], r: [Math.PI / 3, 0, 0] }));
+    fb.add(mesh(new THREE.SphereGeometry(0.08, 20, 16), CM.handle(), { p: [-3.5, ly + 0.18, lz + 0.12] }));
   }
   machine.add(fb);
-  // 丝杠 + 光杠（床身前下方，进给时旋转）
-  leadscrew = mesh(cylinderX(0.085, 17.6, 20), CM.spindle(), { p: [3.2, 5.85, 2.32] });
+  // 丝杠 + 光杠（床身前下方，进给时旋转）——两端支撑 + 杆端止推凸缘，消灭「悬空横穿」
+  leadscrew = mesh(cylinderX(0.085, 16.2, 24), CM.spindle(), { p: [3.35, 5.85, 2.32] });
   leadscrew.name = 'leadscrew';
-  feedRod = mesh(cylinderX(0.07, 17.6, 20), CM.spindle(), { p: [3.2, 5.85, 2.58] });
+  feedRod = mesh(cylinderX(0.07, 16.2, 24), CM.spindle(), { p: [3.35, 5.85, 2.58] });
   feedRod.name = 'leadscrew';
   machine.add(leadscrew, feedRod);
-  // 冷却液箱（右前地面）
+  machine.add(bakedMesh([
+    // 左端：进给箱右壁穿出衬套座 ×2 + 环抱圈
+    [box(0.3, 0.6, 0.6), -3.15, 5.85, 2.32],
+    [box(0.3, 0.6, 0.6), -3.15, 5.85, 2.58],
+    [new THREE.TorusGeometry(0.1, 0.024, 10, 24), -3.0, 5.85, 2.32, 0, Math.PI / 2, 0],
+    [new THREE.TorusGeometry(0.1, 0.024, 10, 24), -3.0, 5.85, 2.58, 0, Math.PI / 2, 0],
+    // 杆端止推凸缘（左端头）
+    [cyl(0.13, 0.13, 0.08, 24), -4.78, 5.85, 2.32, 0, 0, -Math.PI / 2],
+    [cyl(0.11, 0.11, 0.08, 24), -4.78, 5.85, 2.58, 0, 0, -Math.PI / 2],
+  ], CM.dial(), 'leadscrew'));
+  // 右端：落地轴承座立柱 + 顶座 + 双环抱圈 + 杆端盖
+  machine.add(bakedMesh([
+    [box(0.45, 5.85, 0.6), 11.2, 2.92, 2.45],
+    [box(0.7, 0.4, 1.15), 11.2, 6.05, 2.45],
+  ], CM.greenDark(), 'leadscrew'));
+  machine.add(bakedMesh([
+    [new THREE.TorusGeometry(0.1, 0.024, 10, 24), 11.2, 5.85, 2.32, 0, Math.PI / 2, 0],
+    [new THREE.TorusGeometry(0.1, 0.024, 10, 24), 11.2, 5.85, 2.58, 0, Math.PI / 2, 0],
+    [cyl(0.12, 0.12, 0.07, 24), 11.47, 5.85, 2.32, 0, 0, -Math.PI / 2],
+    [cyl(0.11, 0.11, 0.07, 24), 11.47, 5.85, 2.58, 0, 0, -Math.PI / 2],
+  ], CM.dial(), 'leadscrew'));
+  // 冷却液箱（右前地面）：支脚 + 顶面电机凸包（散热筋×3 + 接线盒）+ 冷却管走向切削区
   const tank = new THREE.Group(); tank.name = 'coolant';
-  tank.add(mesh(box(2.2, 1.5, 1.4), CM.greenDark(), { p: [6.0, 0.75, 3.6], cast: true, recv: true }));
-  tank.add(mesh(box(0.5, 0.16, 0.5), CM.dial(), { p: [6.6, 1.55, 3.6] }));
+  tank.add(mesh(box(2.2, 1.5, 1.4), CM.greenDark(), { p: [6.0, 0.87, 3.6], cast: true, recv: true }));
+  tank.add(bakedMesh([
+    [box(0.18, 0.14, 0.18), 5.15, 0.07, 3.05],
+    [box(0.18, 0.14, 0.18), 6.85, 0.07, 3.05],
+    [box(0.18, 0.14, 0.18), 5.15, 0.07, 4.15],
+    [box(0.18, 0.14, 0.18), 6.85, 0.07, 4.15],
+    [cyl(0.26, 0.28, 0.4, 24), 5.6, 1.77, 3.6],
+    [cyl(0.31, 0.31, 0.025, 24), 5.6, 1.72, 3.6],
+    [cyl(0.31, 0.31, 0.025, 24), 5.6, 1.8, 3.6],
+    [cyl(0.31, 0.31, 0.025, 24), 5.6, 1.88, 3.6],
+    [box(0.24, 0.14, 0.2), 5.6, 2.05, 3.6],
+  ], CM.dial(), 'coolant'));
+  tank.add(mesh(box(0.5, 0.16, 0.5), CM.dial(), { p: [6.6, 1.67, 3.6] }));
+  {
+    const curve = new THREE.CatmullRomCurve3([
+      new THREE.Vector3(6.3, 1.5, 4.05),
+      new THREE.Vector3(5.2, 1.9, 4.2),
+      new THREE.Vector3(2.5, 2.6, 3.2),
+      new THREE.Vector3(-1.0, 4.4, 2.6),
+      new THREE.Vector3(-3.3, 6.6, 2.0),
+      new THREE.Vector3(-3.6, 8.3, 1.5),
+    ]);
+    const tube = mesh(new THREE.TubeGeometry(curve, 36, 0.045, 10), CM.cable(), { cast: true });
+    tube.name = 'coolant';
+    tank.add(tube);
+    const nozzle = mesh(cyl(0.05, 0.07, 0.2, 16), CM.dial(), { p: [-3.6, 8.42, 1.48], r: [0.4, 0, 0] });
+    nozzle.name = 'coolant';
+    tank.add(nozzle);
+  }
   machine.add(tank);
+  // 主电机电柜（右床腿右侧，落地，门朝操作者 +z）：门缝 + 把手 + 指示灯 + 百叶 + 电缆爬床腿
+  const cab = new THREE.Group(); cab.name = 'cabinet';
+  cab.add(mesh(box(2.0, 3.2, 1.4), CM.greenDark(), { p: [12.0, 1.74, 0.5], cast: true, recv: true }));
+  cab.add(bakedMesh([
+    [box(0.16, 0.14, 0.16), 11.2, 0.07, 0.3],
+    [box(0.16, 0.14, 0.16), 12.8, 0.07, 0.3],
+    [box(0.16, 0.14, 0.16), 11.2, 0.07, 0.7],
+    [box(0.16, 0.14, 0.16), 12.8, 0.07, 0.7],
+    [box(0.05, 2.9, 0.06), 11.25, 1.8, 1.22],   // 门缝（竖）
+    [box(1.7, 0.04, 0.06), 12.0, 3.22, 1.22],   // 门缝（顶横）
+  ], CM.seam(), 'cabinet'));
+  cab.add(bakedMesh([
+    [cyl(0.028, 0.028, 0.34, 12), 11.48, 1.95, 1.25, 0, 0, 0],
+    [box(0.1, 0.03, 0.05), 11.48, 2.1, 1.25],
+    [box(0.1, 0.03, 0.05), 11.48, 1.8, 1.25],
+  ], CM.dial(), 'cabinet'));
+  cab.add(bakedMesh([
+    [new THREE.SphereGeometry(0.05, 16, 12), 12.55, 2.95, 1.23],
+    [new THREE.SphereGeometry(0.05, 16, 12), 12.3, 2.95, 1.23],
+    [new THREE.SphereGeometry(0.05, 16, 12), 12.05, 2.95, 1.23],
+  ], CM.lampGreen(), 'cabinet'));
+  cab.add(mesh(new THREE.SphereGeometry(0.05, 16, 12), CM.lampRed(), { p: [12.55, 2.7, 1.23] }));
+  cab.add(bakedMesh([
+    [box(0.8, 0.03, 0.04), 12.0, 0.7, 1.21],
+    [box(0.8, 0.03, 0.04), 12.0, 0.92, 1.21],
+    [box(0.8, 0.03, 0.04), 12.0, 1.14, 1.21],
+  ], CM.seam(), 'cabinet'));
+  {
+    const curve = new THREE.CatmullRomCurve3([
+      new THREE.Vector3(12.5, 0.7, 0.95),
+      new THREE.Vector3(12.6, 0.35, 1.6),
+      new THREE.Vector3(11.4, 0.3, 2.4),
+      new THREE.Vector3(9.6, 0.4, 2.2),
+      new THREE.Vector3(8.5, 0.8, 1.4),
+      new THREE.Vector3(8.2, 1.9, 0.6),
+      new THREE.Vector3(8.2, 2.6, 0.2),
+    ]);
+    const cable = mesh(new THREE.TubeGeometry(curve, 36, 0.055, 10), CM.cable(), { cast: true });
+    cable.name = 'cabinet';
+    cab.add(cable);
+  }
+  machine.add(cab);
   // 机床工作灯（床头箱顶部悬臂）
   const lamp = new THREE.Group(); lamp.name = 'lamp';
-  lamp.add(mesh(cyl(0.05, 0.05, 1.1, 10), CM.dial(), { p: [-6.0, 12.9, 0.9], r: [0, 0, 1.1] }));
-  lampShade = mesh(new THREE.ConeGeometry(0.34, 0.5, 20, 1, true), CM.cream(), { p: [-5.35, 12.62, 1.9], r: [0, 0, 2.2] });
-  lampBulb = mesh(new THREE.SphereGeometry(0.1, 12, 10), new THREE.MeshStandardMaterial({ color: 0xfff2cf, emissive: 0xffd98a, emissiveIntensity: 2.2, roughness: 0.4 }), { p: [-5.3, 12.55, 2.0] });
+  lamp.add(mesh(cyl(0.05, 0.05, 1.1, 12), CM.dial(), { p: [-6.0, 12.9, 0.9], r: [0, 0, 1.1] }));
+  lampShade = mesh(new THREE.ConeGeometry(0.34, 0.5, 24, 1, true), CM.cream(), { p: [-5.35, 12.62, 1.9], r: [0, 0, 2.2] });
+  lampBulb = mesh(new THREE.SphereGeometry(0.1, 16, 12), new THREE.MeshStandardMaterial({ color: 0xfff2cf, emissive: 0xffd98a, emissiveIntensity: 2.2, roughness: 0.4 }), { p: [-5.3, 12.55, 2.0] });
   lamp.add(lampShade, lampBulb);
   machine.add(lamp);
 }
@@ -451,6 +780,7 @@ const PARTS = [
   { key: 'apron',     name: '溜板箱',   desc: '把丝杠/光杠运动变为床鞍的纵横向进给，正面有操作手轮', anchor: [-1.2, 7.4, 3.2] },
   { key: 'leadscrew', name: '丝杠·光杠',desc: '丝杠车螺纹用，光杠一般进给用，贯通床身前方', anchor: [1.5, 5.9, 2.6] },
   { key: 'coolant',   name: '冷却液箱', desc: '储存切削液，泵送至切削区降温排屑', anchor: [6.0, 2.0, 4.0] },
+  { key: 'cabinet',   name: '主电机电柜', desc: '主电机电气控制柜，电缆沿床腿接入床身；开机前检查门已关好', anchor: [12.0, 3.5, 0.8] },
   { key: 'lamp',      name: '工作灯',   desc: '局部照明切削区，便于观察切屑与表面', anchor: [-5.3, 13.2, 2.2] },
 ];
 const partByKey = {};
@@ -458,12 +788,12 @@ function bindParts(root) {
   const map = {
     bed: 'bed', headstock: 'headstock', chuck: 'chuck', workpiece: 'workGroup',
     carriage: 'carriage', tailstock: 'tailstock', feedbox: 'feedbox',
-    apron: 'apron', leadscrew: 'leadscrew', coolant: 'coolant', lamp: 'lamp',
+    apron: 'apron', leadscrew: 'leadscrew', coolant: 'coolant', lamp: 'lamp', cabinet: 'cabinet',
   };
   const groups = {
     bed: ['bed'], headstock: ['headstock'], chuck: ['chuck'], workpiece: ['workpiece'],
     carriage: ['carriage'], tailstock: ['tailstock'], feedbox: ['feedbox'],
-    apron: ['apron'], leadscrew: ['leadscrew'], coolant: ['coolant'], lamp: ['lamp'],
+    apron: ['apron'], leadscrew: ['leadscrew'], coolant: ['coolant'], lamp: ['lamp'], cabinet: ['cabinet'],
   };
   for (const p of PARTS) {
     const g = groups[p.key] || [p.key];
@@ -915,7 +1245,7 @@ function tailstockFollow() {
     tailQuillLen = THREE.MathUtils.lerp(tailQuillLen, 0.2, 0.1);
   }
   quill.position.x = 0.55;
-  quill.children.forEach((c) => { c.position.x = (c === tailCenter ? -1.02 - tailQuillLen : -0.5 - tailQuillLen / 2); });
+  quill.children.forEach((c) => { if (c.userData.qx) c.position.x = c.userData.qx(tailQuillLen); });
 }
 
 /* ============================== 相机系统（章节机位 + 缓动过渡） ============================== */
@@ -928,6 +1258,12 @@ const CAMS = {
   top:   { pos: [0, 30, 0.001], tgt: [0, 8, 0] },
   near:  { pos: [-2.2, 11.2, 6.5], tgt: [-3.9, 10, 0] },
   far:   { pos: [0, 15, 46],    tgt: [0, 8, 0] },
+  // —— R2 精细度 QC 近景特写机位（4 倍裁切放大逐项目检用）
+  'headstock-near': { pos: [-8.2, 11.2, 8.6], tgt: [-8.2, 10.3, 0] },
+  'chuck-jaw-near': { pos: [-3.3, 11.3, 3.0], tgt: [-4.0, 10.55, 0] },
+  'tailstock-near': { pos: [6.1, 11.8, 3.8], tgt: [7.3, 9.4, 0] },
+  'carriage-near':  { pos: [0.8, 10.0, 5.6], tgt: [-1.3, 8.9, 0.7] },
+  'dynamics-near':  { pos: [15.0, 7.2, 5.2], tgt: [11.0, 4.2, 1.0] },
 };
 const camTween = { on: false, t: 0, dur: 1, p0: null, p1: null, g0: null, g1: null };
 /* 章节机位调校基准：主体占画面 40%~60%（2026-11-15 目检校准） */
@@ -1348,7 +1684,7 @@ CHAPTERS.push({
   cam: { pos: [-4, 13.5, 24], tgt: [-1, 9, 0] },
   lesson: `<p>车床是<b>工件旋转、刀具进给</b>的回转体加工机床：主轴带动卡盘和工件转起来，车刀沿导轨移动「削」出外圆、端面、螺纹等表面。木工旋木、擀面杖削皮都是同款原理。</p>
 <p>这台仿真机床按 <span class="hl">CA6140 普通车床</span>公开样本数据建模（床身最大回转直径 φ400mm）。<b>点选</b>任意部件试试——高亮部件并弹出名称，右下可查看它的功能；或用上方「模型标签」一键标出全部。</p>
-<p>认全这 11 个部件，就完成了车工入门第一课。</p>`,
+<p>认全这 12 个部件，就完成了车工入门第一课。</p>`,
   mount(c) {
     c.appendChild(mkHint('点击 3D 中的部件：高亮 + 认识它。切换「模型标签」可看全部名称'));
     c.appendChild(mkBtn('逐个浏览部件 ▸', () => {
@@ -1770,7 +2106,7 @@ function initTools() {
 
 function applyStill() {
   if (!STILL) return;
-  const valid = ['front', 'side', 'left', 'right', 'top', 'near', 'far'];
+  const valid = ['front', 'side', 'left', 'right', 'top', 'near', 'far', 'headstock-near', 'chuck-jaw-near', 'tailstock-near', 'carriage-near', 'dynamics-near'];
   const chM = SHOT.match(/^ch([1-8])$/);
   controls.enabled = false;
   sim.spinAngle = 0.65; // 固定主轴相位，保证可复现
@@ -1785,6 +2121,10 @@ function applyStill() {
     controls.target.set(...cam.tgt);
   } else if (valid.includes(SHOT)) {
     gotoChapter(0, true);
+    if (SHOT === 'tailstock-near') { // 特写展示：套筒伸出，露出刻度环与锥孔口
+      tailQuillLen = 0.45;
+      quill.children.forEach((c) => { if (c.userData.qx) c.position.x = c.userData.qx(tailQuillLen); });
+    }
     const c = CAMS[SHOT];
     camera.position.set(...c.pos);
     controls.target.set(...c.tgt);
