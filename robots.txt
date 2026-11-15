@@ -38,4 +38,13 @@ Allow: /
 User-agent: Amazonbot
 Allow: /
 
-Sitemap: https://milulab.com/sitemap.xml
+User-agent: Meta-ExternalAgent
+Allow: /
+
+User-agent: MistralAI-User
+Allow: /
+
+User-agent: omgili
+Allow: /
+
+Sitemap: https://lu.wiki/sitemap.xml

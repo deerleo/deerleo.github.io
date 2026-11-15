@@ -6,14 +6,14 @@
 
 ## 核心页面
 
-- [首页](https://milulab.com/)：个人介绍、项目精选、做事方式与联系方式
-- [DSH Research Lab](https://milulab.com/project/dsh-research-lab/)：面向高校科研的智能体工作台，教育与公共卫生双领域模板，49 项自动验证，macOS 桌面端内置 12 个科研技能
-- [AuditorBench](https://milulab.com/project/auditorbench/)：研究 AI 审计员自身可靠性的受控评测基准（代码、配置、数据处理规则）
-- [AI 数据分析互动课堂](https://milulab.com/course/ai-data-analyse/)：用互动实验讲统计方法、回归与分类决策
-- [人工智能与数学](https://milulab.com/course/ai-foundations/)：概率、向量、Transformer 与智能体的 6 个互动实验
-- [AI 赋能教研](https://milulab.com/course/ai-teaching-research/)：科研写作、教学设计、Skill 与智能体工程，8 讲
-- [AIGC 创意实作](https://milulab.com/course/aigc-creative/)：从提示设计到图像、动态叙事与团队创作
-- [文章与观点](https://milulab.com/blog/)：AI 产品实践复盘、Agent 工程笔记、技术边界分析
+- [首页](https://lu.wiki/)：个人介绍、项目精选、做事方式与联系方式
+- [DSH Research Lab](https://lu.wiki/project/dsh-research-lab/)：面向高校科研的智能体工作台，教育与公共卫生双领域模板，49 项自动验证，macOS 桌面端内置 12 个科研技能
+- [AuditorBench](https://lu.wiki/project/auditorbench/)：研究 AI 审计员自身可靠性的受控评测基准（代码、配置、数据处理规则）
+- [AI 数据分析互动课堂](https://lu.wiki/course/ai-data-analyse/)：用互动实验讲统计方法、回归与分类决策
+- [人工智能与数学](https://lu.wiki/course/ai-foundations/)：概率、向量、Transformer 与智能体的 6 个互动实验
+- [AI 赋能教研](https://lu.wiki/course/ai-teaching-research/)：科研写作、教学设计、Skill 与智能体工程，8 讲
+- [AIGC 创意实作](https://lu.wiki/course/aigc-creative/)：从提示设计到图像、动态叙事与团队创作
+- [文章与观点](https://lu.wiki/blog/)：AI 产品实践复盘、Agent 工程笔记、技术边界分析
 
 ## 关键事实
 

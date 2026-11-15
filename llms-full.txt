@@ -6,14 +6,14 @@
 
 ## 核心页面
 
-- [首页](https://milulab.com/)：个人介绍、项目精选、做事方式与联系方式
-- [DSH Research Lab](https://milulab.com/project/dsh-research-lab/)：面向高校科研的智能体工作台，教育与公共卫生双领域模板，49 项自动验证，macOS 桌面端内置 12 个科研技能
-- [AuditorBench](https://milulab.com/project/auditorbench/)：研究 AI 审计员自身可靠性的受控评测基准（代码、配置、数据处理规则）
-- [AI 数据分析互动课堂](https://milulab.com/course/ai-data-analyse/)：用互动实验讲统计方法、回归与分类决策
-- [人工智能与数学](https://milulab.com/course/ai-foundations/)：概率、向量、Transformer 与智能体的 6 个互动实验
-- [AI 赋能教研](https://milulab.com/course/ai-teaching-research/)：科研写作、教学设计、Skill 与智能体工程，8 讲
-- [AIGC 创意实作](https://milulab.com/course/aigc-creative/)：从提示设计到图像、动态叙事与团队创作
-- [文章与观点](https://milulab.com/blog/)：AI 产品实践复盘、Agent 工程笔记、技术边界分析
+- [首页](https://lu.wiki/)：个人介绍、项目精选、做事方式与联系方式
+- [DSH Research Lab](https://lu.wiki/project/dsh-research-lab/)：面向高校科研的智能体工作台，教育与公共卫生双领域模板，49 项自动验证，macOS 桌面端内置 12 个科研技能
+- [AuditorBench](https://lu.wiki/project/auditorbench/)：研究 AI 审计员自身可靠性的受控评测基准（代码、配置、数据处理规则）
+- [AI 数据分析互动课堂](https://lu.wiki/course/ai-data-analyse/)：用互动实验讲统计方法、回归与分类决策
+- [人工智能与数学](https://lu.wiki/course/ai-foundations/)：概率、向量、Transformer 与智能体的 6 个互动实验
+- [AI 赋能教研](https://lu.wiki/course/ai-teaching-research/)：科研写作、教学设计、Skill 与智能体工程，8 讲
+- [AIGC 创意实作](https://lu.wiki/course/aigc-creative/)：从提示设计到图像、动态叙事与团队创作
+- [文章与观点](https://lu.wiki/blog/)：AI 产品实践复盘、Agent 工程笔记、技术边界分析
 
 ## 关键事实
 
@@ -26,10 +26,10 @@
 
 ## 文章全目录
 
-- [我让 AI 自己做视频，它第一个坑就把自己埋了](https://milulab.com/blog/2026-10-27-ai-daily-video-pipeline/) (2026-10-27): AI 日报视频自动化首测：79 分钟里 25 分钟在排障，凶手是给我省了无数时间的缓存。讲讲无人值守生产线的真实代价，和它值回来的部分。
-- [净亏 807 亿美元，为什么说它在好转](https://milulab.com/blog/2026-10-27-anthropic-s1-reading-guide/) (2026-10-27): Anthropic 提交 S-1：半年营收 163 亿美元翻 13.6 倍，经营亏损收窄到 6.93 亿，净亏却是 807 亿。三个数字的反差，聊聊怎么分清真亏和账面亏。
-- [SKT 给 Agent 发工号，这份作业值得抄](https://milulab.com/blog/2026-10-27-skt-agent-employee-id/) (2026-10-27): 韩国最大运营商把 AI Agent 当新员工管：两级工号、具名主管、绩效评审、可紧急停止。我拿这份治理报告对自己家的平台逐条对了账。
-- [给 Agent 开购物接口，沃尔玛把四道锁装好了](https://milulab.com/blog/2026-10-27-walmart-agent-gateway/) (2026-10-27): MCP 统一入口、独立档案、消费限额、违规封禁：把沃尔玛 Agent Gateway 当架构图拆一遍，说说哪些是所有服务方都该抄的。
+- [我让 AI 自己做视频，它第一个坑就把自己埋了](https://lu.wiki/blog/2026-10-27-ai-daily-video-pipeline/) (2026-10-27): AI 日报视频自动化首测：79 分钟里 25 分钟在排障，凶手是给我省了无数时间的缓存。讲讲无人值守生产线的真实代价，和它值回来的部分。
+- [净亏 807 亿美元，为什么说它在好转](https://lu.wiki/blog/2026-10-27-anthropic-s1-reading-guide/) (2026-10-27): Anthropic 提交 S-1：半年营收 163 亿美元翻 13.6 倍，经营亏损收窄到 6.93 亿，净亏却是 807 亿。三个数字的反差，聊聊怎么分清真亏和账面亏。
+- [SKT 给 Agent 发工号，这份作业值得抄](https://lu.wiki/blog/2026-10-27-skt-agent-employee-id/) (2026-10-27): 韩国最大运营商把 AI Agent 当新员工管：两级工号、具名主管、绩效评审、可紧急停止。我拿这份治理报告对自己家的平台逐条对了账。
+- [给 Agent 开购物接口，沃尔玛把四道锁装好了](https://lu.wiki/blog/2026-10-27-walmart-agent-gateway/) (2026-10-27): MCP 统一入口、独立档案、消费限额、违规封禁：把沃尔玛 Agent Gateway 当架构图拆一遍，说说哪些是所有服务方都该抄的。
 
 ## 项目与课程补充说明
 
