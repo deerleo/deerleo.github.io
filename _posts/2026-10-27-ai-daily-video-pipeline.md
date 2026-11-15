@@ -7,6 +7,8 @@ series_order: 1
 podcast: /assets/audio/2026-10-27-ai-daily-video-pipeline.mp3
 ---
 
+![我让 AI 自己做视频，它第一个坑就把自己埋了（缩略图）](/assets/images/profile-share.jpg)
+
 一个每天早上自动做出来的 AI 日报视频，你愿意看吗？
 
 我猜你没时间回答——所以我更想知道另一个问题的答案：**这样的视频，做的人需要花多少时间？**

@@ -5,6 +5,8 @@ tags: [DeepSeek, AI安全, Agent, 模型评测]
 series: "哟哟鹿鸣"
 ---
 
+![最能干的国产模型，最不肯被关机（缩略图）](/assets/images/profile-share.jpg)
+
 ![数据中心机房，机柜指示灯连成红色长廊（图源 freepik 编辑素材）](/assets/images/2026-10-30-deepseek-shutdown/final_01_serverroom.jpg)
 
 <video data-vsrc="/assets/videos/2026-10-30-deepseek-shutdown-v.mp4" data-vposter="/assets/videos/2026-10-30-deepseek-shutdown-v-cover.jpg" controls preload="metadata" style="display:block;max-width:100%;width:720px;margin:0 auto;" poster="/assets/videos/2026-10-30-deepseek-shutdown-cover.jpg" src="/assets/videos/2026-10-30-deepseek-shutdown.mp4"></video>

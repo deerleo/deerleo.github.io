@@ -5,6 +5,8 @@ tags: [AI Agent, Agent 治理, 企业服务]
 podcast: /assets/audio/2026-10-27-skt-agent-employee-id.mp3
 ---
 
+![SKT 给 Agent 发工号，这份作业值得抄（缩略图）](/assets/images/profile-share.jpg)
+
 "Agent 出了事算谁的？"做企业级 Agent 平台这两年，这是我被问得最多的问题，比"用哪个模型"多得多。
 
 <video data-vsrc="/assets/videos/2026-10-27-skt-agent-employee-id-v.mp4" data-vposter="/assets/videos/2026-10-27-skt-agent-employee-id-v-cover.jpg" controls preload="metadata" style="display:block;max-width:100%;width:720px;margin:0 auto;" poster="/assets/videos/2026-10-27-skt-agent-employee-id-cover.jpg" src="/assets/videos/2026-10-27-skt-agent-employee-id.mp4"></video>

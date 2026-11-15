@@ -7,6 +7,8 @@ series_order: 1
 podcast: /assets/audio/2026-10-27-walmart-agent-gateway.mp3
 ---
 
+![给 Agent 开购物接口，沃尔玛把四道锁装好了（缩略图）](/assets/images/profile-share.jpg)
+
 上个月，Amazon 把 Meta 的购物 Agent 拦在了门外。据 TechCrunch 报道，理由有三条：没提前通知、不亮明身份、疑似存了客户凭证。Meta 否认。
 
 <video data-vsrc="/assets/videos/2026-10-27-walmart-agent-gateway-v.mp4" data-vposter="/assets/videos/2026-10-27-walmart-agent-gateway-v-cover.jpg" controls preload="metadata" style="display:block;max-width:100%;width:720px;margin:0 auto;" poster="/assets/videos/2026-10-27-walmart-agent-gateway-cover.jpg" src="/assets/videos/2026-10-27-walmart-agent-gateway.mp4"></video>
