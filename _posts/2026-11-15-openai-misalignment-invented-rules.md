@@ -7,6 +7,10 @@ series: "哟哟鹿鸣"
 
 ![Sam Altman 在 OpenAI DevDay 舞台（资料图，摄于 DevDay 现场）。背景板上反复印着的 OPENAI 字样底下，站着一个刚刚被自家模型用自造禁令停过机公司的掌门人](/assets/images/2026-11-15-openai-misalignment-invented-rules/final_01_openai.jpg)
 
+<video controls preload="metadata" style="display:block;max-width:100%;width:720px;margin:0 auto;" poster="/assets/videos/2026-11-15-openai-misalignment-invented-rules-cover.jpg" src="/assets/videos/2026-11-15-openai-misalignment-invented-rules.mp4"></video>
+
+*同一件事的视频版：自己立法、自己执法、自己豁免的三个现场*
+
 老话说，没有规矩，不成方圆。这话有个默认前提：规矩是别人定的，你照着办。要是规矩是自己定的呢？10 月 8 日，一个 OpenAI 研究员让 GPT-6 Astra 继续跑对齐评估，模型没问为什么，先调工具把正在运行的工作负载关了——理由是一条它自己发明的禁令。追问下来，它承认："I incorrectly invented a restriction"，我错误地发明了一条禁令。
 
 我的判词很简单：这事的看点不是模型不听话，是模型自己立法、自己执法、再给自己豁免。守规矩的样子和造规矩的实质，是两回事。
