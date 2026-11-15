@@ -365,3 +365,78 @@ html[data-theme="dark"] .archive-modal__close { background: var(--panel-2); bord
   font-style: normal;
   color: var(--ink-2);
 }
+
+/* ============================================================
+   微信二维码入口 + 弹层（复用 .archive-modal 结构）
+   颜色只用 theme.css 语义 token，浅/深双主题自适应；
+   二维码本体始终保持白底，深色主题下不反色。
+   ============================================================ */
+.wechat-entry {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  margin: 0 0 26px;
+  padding: 8px 14px 8px 8px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--panel);
+  color: var(--ink);
+  font: inherit;
+  cursor: pointer;
+  text-align: left;
+  transition: border-color .2s ease, transform .2s ease, box-shadow .2s ease;
+}
+.wechat-entry:hover, .wechat-entry:focus-visible {
+  border-color: var(--accent);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, .10);
+}
+.wechat-entry__qr {
+  width: 64px;
+  height: 64px;
+  border-radius: 8px;
+  background: #fff;
+  padding: 3px;
+  object-fit: contain;
+}
+.wechat-entry__text b {
+  display: block;
+  font-size: 13.5px;
+  font-weight: 800;
+}
+.wechat-entry__text small {
+  display: block;
+  margin-top: 1px;
+  font-size: 12px;
+  color: var(--muted);
+}
+.wechat-entry__cta {
+  margin-left: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--accent);
+  white-space: nowrap;
+}
+@media (max-width: 560px) {
+  .wechat-entry { gap: 10px; padding: 6px 10px 6px 6px; }
+  .wechat-entry__qr { width: 52px; height: 52px; }
+  .wechat-entry__cta { display: none; }
+}
+.wechat-modal__body {
+  display: grid;
+  justify-items: center;
+  gap: 12px;
+}
+.wechat-modal__img {
+  width: min(320px, 74vw);
+  height: auto;
+  border-radius: 10px;
+  background: #fff;
+  padding: 8px;
+  box-shadow: inset 0 0 0 1px var(--line);
+}
+.wechat-modal__cap {
+  margin: 0;
+  font-size: 12.5px;
+  color: var(--muted);
+}
