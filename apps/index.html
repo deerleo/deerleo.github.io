@@ -1,0 +1,161 @@
+---
+layout: null
+---
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#f1f2ec">
+  {% include theme-init.html %}
+  <link rel="stylesheet" href="{{ '/assets/css/theme.css' | relative_url }}?v=20261027">
+  <script src="{{ '/assets/js/theme.js' | relative_url }}" defer></script>
+  <meta name="description" content="迷鹿 MiLu 交互应用总览：Edulab 3D 教学实验、独立应用、Fable 5.2 镜像游戏、互动实验与专题页，共 150+ 个可直接在浏览器里玩的交互作品，支持按学科与类别筛选。">
+  <meta name="robots" content="index,follow">
+  <title>交互应用 · 迷鹿 MiLu</title>
+  <link rel="stylesheet" href="{{ '/assets/css/subpage-shell.css?v=20261112' | relative_url }}">
+  <link rel="canonical" href="https://milulab.com/apps/">
+  <style>
+    *{box-sizing:border-box}html{scroll-behavior:smooth}
+    body{margin:0;background:var(--page-glow),var(--bg);color:var(--ink);font:16px/1.7 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
+    a{color:inherit}
+    /* ---- showcase 作用域：所有选择器加 .showcase-scope 前缀，避免污染其他页面 ---- */
+    .showcase-scope .wrap{max-width:1180px;margin:auto;padding:44px 24px 72px}
+    .showcase-scope .hero{margin-bottom:30px}
+    .showcase-scope .eyebrow{color:var(--cyan);font-size:12px;font-weight:800;letter-spacing:.16em;text-transform:uppercase}
+    .showcase-scope .hero h1{margin:10px 0 14px;font-size:clamp(32px,5vw,52px);line-height:1.1;letter-spacing:-.04em}
+    .showcase-scope .hero h1 em{color:var(--mint);font-style:normal}
+    .showcase-scope .hero p{max-width:720px;color:var(--muted);font-size:16px;margin:0}
+    .showcase-scope .statline{display:flex;gap:18px;flex-wrap:wrap;margin-top:14px;color:var(--ink-3);font-size:13px;font-weight:650}
+    .showcase-scope .statline b{color:var(--cyan);font-size:15px;font-weight:850}
+    /* 筛选条 */
+    .showcase-scope .filters{display:flex;gap:8px;flex-wrap:wrap;margin:26px 0 8px}
+    .showcase-scope .filters button{appearance:none;border:1px solid var(--line);background:var(--panel-soft);color:var(--ink-2);border-radius:999px;padding:7px 15px;font:inherit;font-size:13px;font-weight:700;cursor:pointer;transition:border-color .15s ease,background .15s ease,color .15s ease}
+    .showcase-scope .filters button:hover{border-color:var(--line-strong)}
+    .showcase-scope .filters button[aria-pressed="true"]{background:var(--mint);border-color:var(--mint);color:#fff}
+    .showcase-scope .filters .fsep{width:1px;background:var(--line);margin:4px 6px}
+    .showcase-scope .shown-count{color:var(--ink-3);font-size:12.5px;margin:6px 2px 18px}
+    /* 卡片网格 */
+    .showcase-scope .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+    @media (max-width:1020px){.showcase-scope .grid{grid-template-columns:repeat(3,1fr)}}
+    @media (max-width:760px){.showcase-scope .grid{grid-template-columns:repeat(2,1fr)}}
+    @media (max-width:460px){.showcase-scope .grid{grid-template-columns:1fr}}
+    .showcase-scope .app-card{display:flex;flex-direction:column;overflow:hidden;border:1px solid var(--line);border-radius:16px;background:var(--card-grad);text-decoration:none;transition:border-color .15s ease,transform .15s ease,box-shadow .15s ease}
+    .showcase-scope .app-card:hover{border-color:var(--line-strong);transform:translateY(-2px);box-shadow:var(--shadow)}
+    .showcase-scope .thumb{position:relative;aspect-ratio:16/10;overflow:hidden;background:var(--panel-2)}
+    .showcase-scope .thumb img{width:100%;height:100%;object-fit:cover;display:block}
+    .showcase-scope .thumb .open-hint{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;gap:6px;background:rgba(6,75,53,.55);color:#fff;font-size:13px;font-weight:800;letter-spacing:.04em;opacity:0;transition:opacity .15s ease}
+    .showcase-scope .app-card:hover .open-hint,.showcase-scope .app-card:focus-visible .open-hint{opacity:1}
+    /* shot=false 品牌风 fallback */
+    .showcase-scope .thumb-fallback{width:100%;height:100%;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:8px;background:linear-gradient(145deg,#eef3e2,#e3edd6 55%,#d8e7cc)}
+    .showcase-scope .thumb-fallback svg{width:34px;height:34px;color:var(--mint);opacity:.75}
+    .showcase-scope .thumb-fallback span{font-size:12px;font-weight:700;color:var(--ink-3)}
+    .showcase-scope .card-body{display:flex;flex-direction:column;gap:6px;padding:14px 16px 16px}
+    .showcase-scope .card-body h2{margin:0;font-size:16.5px;line-height:1.35;letter-spacing:-.01em}
+    .showcase-scope .card-body .sub{margin:0;color:var(--cyan);font-size:12px;font-weight:700}
+    .showcase-scope .card-body p{margin:0;color:var(--muted);font-size:13px;line-height:1.6;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+    .showcase-scope .chip-row{display:flex;gap:6px;flex-wrap:wrap;margin-top:2px}
+    .showcase-scope .chip{padding:3px 10px;border:1px solid var(--line);border-radius:999px;color:var(--ink-2);font-size:11px;font-weight:700;letter-spacing:.02em}
+    .showcase-scope .credit{color:var(--ink-3);font-size:11px}
+    /* 空态 */
+    .showcase-scope .empty{padding:48px 0;text-align:center;color:var(--ink-3);font-size:14px}
+    .showcase-scope .footer{margin-top:56px;padding-top:18px}
+    @media (prefers-reduced-motion:reduce){.showcase-scope .app-card,.showcase-scope .thumb .open-hint{transition:none}}
+  </style>
+</head>
+<body id="top" class="showcase-scope">
+  {% include subpage-shell.html identity="交互应用" descriptor="Edulab 实验与独立作品总览" %}
+  <main class="wrap">
+    <div class="hero">
+      <div class="eyebrow">Interactive Apps</div>
+      <h1>交互应用<em>总览</em></h1>
+      <p>这里是本站全部可直接在浏览器里打开的交互作品：Edulab 3D 教学实验、独立应用、Fable 5.2 社区镜像游戏、互动实验与专题页。点击卡片即可在新标签页游玩。</p>
+      <div class="statline" id="statline" hidden><span><b id="stat-total">–</b> 个应用</span><span>覆盖 <b id="stat-subjects">–</b> 大学科</span><span><b id="stat-cats">–</b> 类内容</span></div>
+    </div>
+    <nav class="filters" id="filters" aria-label="按标签筛选"></nav>
+    <div class="shown-count" id="shown-count"></div>
+    <div class="grid" id="grid"></div>
+    <div class="empty" id="empty" hidden>该标签下暂无应用</div>
+    <footer class="subpage-footer">
+      <span>数据来自站内各应用档案 · 缩略图为真实渲染截图</span>
+      <span>镜像作品版权归原作者所有，仅作学习交流展示；镜像游戏均为 Claude Fable 5.2 社区作品，已获原作者授权署名转载</span>
+    </footer>
+  </main>
+  <script>
+  (function(){
+    const flask = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 2v6L4.5 18a2 2 0 0 0 1.8 3h11.4a2 2 0 0 0 1.8-3L14 8V2"/><path d="M8.5 2h7"/><path d="M7 15h10"/></svg>';
+    const grid = document.getElementById('grid');
+    const filtersEl = document.getElementById('filters');
+    const countEl = document.getElementById('shown-count');
+    const emptyEl = document.getElementById('empty');
+    const CATS = ['镜像游戏','3D 教学实验','独立应用','互动实验','专题页'];
+    const ORDER = ['物理','地理','生物','化学','数学','历史','信息技术','机械加工'];
+    let items = [];
+    let current = '全部';
+
+    function cardHTML(it){
+      const thumbInner = it.shot
+        ? '<img loading="lazy" src="'+it.thumb+'" alt="'+it.title+' 截图">'
+        : '<div class="thumb-fallback">'+flask+'<span>截图生成中</span></div>';
+      const chips = (it.tags||[]).map(t=>'<span class="chip">'+t+'</span>').join('');
+      const credit = it.credit ? '<div class="credit">'+it.credit+'</div>' : '';
+      return '<a class="app-card" href="'+it.url+'" target="_blank" rel="noopener" data-tags="'+(it.tags||[]).join('|')+'">'
+        + '<div class="thumb">'+thumbInner+'<div class="open-hint">打开 →</div></div>'
+        + '<div class="card-body"><h2>'+it.title+'</h2>'+(it.subtitle?'<div class="sub">'+it.subtitle+'</div>':'')
+        + '<p>'+it.desc+'</p><div class="chip-row">'+chips+'</div>'+credit+'</div></a>';
+    }
+    function match(it, tag){
+      return it.category===tag || (it.tags||[]).includes(tag);
+    }
+    function render(){
+      const list = current==='全部' ? items : items.filter(it=>match(it, current));
+      grid.innerHTML = list.map(cardHTML).join('');
+      emptyEl.hidden = list.length>0;
+      countEl.textContent = current==='全部' ? '显示全部 '+items.length+' 个应用' : '「'+current+'」下 '+list.length+' / '+items.length+' 个应用';
+      document.querySelectorAll('#filters button').forEach(b=>b.setAttribute('aria-pressed', String(b.dataset.tag===current)));
+    }
+    function setTag(tag, updateHash){
+      current = tag;
+      if(updateHash) history.replaceState(null,'','#tag='+encodeURIComponent(tag));
+      render();
+    }
+    function buildFilters(){
+      const tags = new Set();
+      items.forEach(it=>(it.tags||[]).forEach(t=>tags.add(t)));
+      const cats = CATS.filter(c=>items.some(it=>it.category===c));
+      const subjects = ORDER.filter(s=>tags.has(s));
+      const extras = [...tags].filter(t=>!ORDER.includes(t) && !CATS.includes(t) && t!=='Fable 5.2');
+      const btn = (t,cls)=>'<button type="button" data-tag="'+t+'" aria-pressed="false">'+t+'</button>';
+      const fsep = '<div class="fsep" role="separator"></div>';
+      let html = btn('全部');
+      cats.forEach(c=>html += btn(c));
+      if(extras.length || subjects.length) html += fsep;
+      subjects.forEach(s=>html += btn(s));
+      if(extras.length){ html += fsep + btn('Fable 5.2'); extras.forEach(t=>html += btn(t)); }
+      filtersEl.innerHTML = html;
+      filtersEl.addEventListener('click', e=>{
+        const b = e.target.closest('button[data-tag]');
+        if(b) setTag(b.dataset.tag, true);
+      });
+      window.addEventListener('hashchange', ()=>{
+        const mm = location.hash.match(/^#tag=(.+)$/);
+        if(mm){ const tag = decodeURIComponent(mm[1]); if(tag!==current) setTag(tag, false); }
+      });
+    }
+    const m = location.hash.match(/^#tag=(.+)$/);
+    fetch('/assets/showcase/apps.json').then(r=>r.json()).then(data=>{
+      items = data;
+      document.getElementById('stat-total').textContent = items.length;
+      const subjects = new Set(); const cats = new Set();
+      items.forEach(it=>{ if(it.category==='3D 教学实验')(it.tags||[]).forEach(t=>subjects.add(t)); cats.add(it.category); });
+      document.getElementById('stat-subjects').textContent = subjects.size;
+      document.getElementById('stat-cats').textContent = cats.size;
+      document.getElementById('statline').hidden = false;
+      buildFilters();
+      if(m) { const tag = decodeURIComponent(m[1]); if(tag!=='全部') current = tag; }
+      render();
+    });
+  })();
+  </script>
+</body>
+</html>

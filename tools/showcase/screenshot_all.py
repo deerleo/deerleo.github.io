@@ -3,7 +3,7 @@
 
 用法:
   python3 screenshot_all.py [--site-dir /tmp/at103-site] [--only slug1,slug2]
-  python3 screenshot_all.py --retry-failed
+  （失败重试用 --only <失败 slug 列表> 重跑即可；报告增量合并）
 
 - 起本地 http.server 指向构建后的站点目录
 - chromium headless 1280x800 @2x 截图 → PIL 转 JPEG q80 宽 640
@@ -29,12 +29,23 @@ JPEG_Q = 80
 # 特殊等待：第三方镜像应用资产多，加载慢
 SLOW_WAIT_MS = {"saltline": 6000, "what-the-water-keeps": 6000}
 DEFAULT_WAIT_MS = 2500
+# AT-104 R2：apps/ 镜像游戏自动扫描。排除已收录三款；大体积款（构建类/大资产）放宽等待
+EXCLUDED_APP_SLUGS = {"robotics-bench", "saltline", "what-the-water-keeps"}
+BIG_APP_BYTES = 8 * 1024 * 1024
+BIG_WAIT_MS = 6000
+# 已知损坏（截图前直接判失败并说明原因；镜像修复后从此处移除即可恢复截图）
+# saltline-online 曾因 index.html 根绝对路径子路径 404 在列，2026-11-16 AT-103 补修（改相对路径）后移出
+KNOWN_BROKEN = {}
 
 from PIL import Image, ImageStat  # noqa: E402
 
 
+def _dir_bytes(p: Path) -> int:
+    return sum(f.stat().st_size for f in p.rglob("*") if f.is_file())
+
+
 def load_targets(site_dir: Path):
-    """汇总 102 个截图目标: (slug, path)。"""
+    """汇总全部截图目标: (slug, path)。edulab + 手工清单 + apps/ 镜像游戏自动扫描。"""
     targets = []
     cards = json.loads((REPO / "edulab" / "assets" / "data" / "cards.json").read_text())
     for lab in cards["labs"]:
@@ -50,6 +61,20 @@ def load_targets(site_dir: Path):
         ("beaker-mixer", "/beaker-mixer.html"),
     ]:
         targets.append({"slug": slug, "url_path": url_path, "wait": SLOW_WAIT_MS.get(slug, DEFAULT_WAIT_MS)})
+    # apps/ 镜像游戏（AT-104 R2）：逐目录扫描，含 index.html 才可截；体积 >8M 等待放宽
+    for child in sorted((REPO / "apps").iterdir()):
+        if not child.is_dir() or child.name in EXCLUDED_APP_SLUGS:
+            continue
+        item = {
+            "slug": child.name,
+            "url_path": f"/apps/{child.name}/",
+            "wait": BIG_WAIT_MS if _dir_bytes(child) > BIG_APP_BYTES else DEFAULT_WAIT_MS,
+        }
+        if not (child / "index.html").exists():
+            item["pre_fail"] = "目录缺 index.html"
+        elif child.name in KNOWN_BROKEN:
+            item["pre_fail"] = KNOWN_BROKEN[child.name]
+        targets.append(item)
     # 目录不存在的目标直接标失败
     for t in targets:
         if not (site_dir / t["url_path"].lstrip("/").rstrip("/") ).exists() and not (site_dir / t["url_path"].lstrip("/")).exists():

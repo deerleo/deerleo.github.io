@@ -605,5 +605,285 @@
   "stddev": null,
   "attempt": 1,
   "note": "全量批次产出，报告以磁盘产物补录"
+ },
+ "becario-del-universo": {
+  "ok": true,
+  "stddev": 69.2,
+  "attempt": 1
+ },
+ "boondocks-woodcrest-files": {
+  "ok": true,
+  "stddev": 54.8,
+  "attempt": 1
+ },
+ "blameless": {
+  "ok": true,
+  "stddev": 14.5,
+  "attempt": 1
+ },
+ "aquila": {
+  "ok": true,
+  "stddev": 38.7,
+  "attempt": 1
+ },
+ "circular-tic-tac-toe": {
+  "ok": true,
+  "stddev": 41.1,
+  "attempt": 1
+ },
+ "bayhaven": {
+  "ok": true,
+  "stddev": 67.0,
+  "attempt": 1
+ },
+ "duel-knights": {
+  "ok": true,
+  "stddev": 10.9,
+  "attempt": 1
+ },
+ "boring-game": {
+  "ok": true,
+  "stddev": 75.4,
+  "attempt": 1
+ },
+ "dawnward": {
+  "ok": true,
+  "stddev": 38.4,
+  "attempt": 1
+ },
+ "earthfm": {
+  "ok": true,
+  "stddev": 41.0,
+  "attempt": 1
+ },
+ "dustline-outpost": {
+  "ok": true,
+  "stddev": 38.5,
+  "attempt": 1
+ },
+ "dustfall": {
+  "ok": true,
+  "stddev": 56.8,
+  "attempt": 1
+ },
+ "daedalus": {
+  "ok": true,
+  "stddev": 8.7,
+  "attempt": 1
+ },
+ "escape-the-fable": {
+  "ok": true,
+  "stddev": 56.8,
+  "attempt": 1
+ },
+ "gifts-for-the-tall-one": {
+  "ok": true,
+  "stddev": 34.7,
+  "attempt": 1
+ },
+ "graveyard-shift": {
+  "ok": true,
+  "stddev": 43.7,
+  "attempt": 1
+ },
+ "emberdeep": {
+  "ok": true,
+  "stddev": 34.9,
+  "attempt": 2
+ },
+ "hanford-reach": {
+  "ok": true,
+  "stddev": 22.8,
+  "attempt": 1
+ },
+ "jester": {
+  "ok": true,
+  "stddev": 41.7,
+  "attempt": 1
+ },
+ "harvest-standoff": {
+  "ok": true,
+  "stddev": 59.2,
+  "attempt": 1
+ },
+ "last-return": {
+  "ok": true,
+  "stddev": 18.3,
+  "attempt": 1
+ },
+ "makinamon-pulso": {
+  "ok": true,
+  "stddev": 51.0,
+  "attempt": 1
+ },
+ "liquid-labyrinth": {
+  "ok": true,
+  "stddev": 58.0,
+  "attempt": 1
+ },
+ "mini-rpg": {
+  "ok": true,
+  "stddev": 41.8,
+  "attempt": 1
+ },
+ "ironvale": {
+  "ok": true,
+  "stddev": 27.2,
+  "attempt": 1
+ },
+ "maple-run": {
+  "ok": true,
+  "stddev": 11.2,
+  "attempt": 1
+ },
+ "neon-runner": {
+  "ok": true,
+  "stddev": 37.6,
+  "attempt": 1
+ },
+ "fog-city": {
+  "ok": true,
+  "stddev": 67.0,
+  "attempt": 2
+ },
+ "one-prompt-worlds-2": {
+  "ok": true,
+  "stddev": 30.4,
+  "attempt": 1
+ },
+ "one-prompt-worlds-1": {
+  "ok": true,
+  "stddev": 39.4,
+  "attempt": 1
+ },
+ "misremember": {
+  "ok": true,
+  "stddev": 26.4,
+  "attempt": 1
+ },
+ "one-prompt-worlds-3": {
+  "ok": true,
+  "stddev": 46.4,
+  "attempt": 1
+ },
+ "one-prompt-worlds-4": {
+  "ok": true,
+  "stddev": 42.5,
+  "attempt": 1
+ },
+ "mothlight-vesper-9": {
+  "ok": true,
+  "stddev": 28.4,
+  "attempt": 1
+ },
+ "one-prompt-worlds-5": {
+  "ok": true,
+  "stddev": 36.9,
+  "attempt": 1
+ },
+ "one-prompt-worlds-6": {
+  "ok": true,
+  "stddev": 25.8,
+  "attempt": 1
+ },
+ "one-prompt-worlds-7": {
+  "ok": true,
+  "stddev": 79.3,
+  "attempt": 1
+ },
+ "one-prompt-worlds-8": {
+  "ok": true,
+  "stddev": 55.3,
+  "attempt": 1
+ },
+ "power-the-spire": {
+  "ok": true,
+  "stddev": 6.4,
+  "attempt": 1
+ },
+ "retro-sisters": {
+  "ok": true,
+  "stddev": 43.1,
+  "attempt": 1
+ },
+ "qingyun-sword-flight": {
+  "ok": true,
+  "stddev": 57.7,
+  "attempt": 1
+ },
+ "saltline-online": {
+  "ok": true,
+  "stddev": 62.9,
+  "attempt": 1
+ },
+ "rufus-crush": {
+  "ok": true,
+  "stddev": 27.0,
+  "attempt": 1
+ },
+ "riftline": {
+  "ok": true,
+  "stddev": 32.2,
+  "attempt": 1
+ },
+ "rawza-ring": {
+  "ok": true,
+  "stddev": 30.4,
+  "attempt": 1
+ },
+ "sternenjaeger": {
+  "ok": true,
+  "stddev": 23.5,
+  "attempt": 1
+ },
+ "shutterpine": {
+  "ok": true,
+  "stddev": 24.5,
+  "attempt": 1
+ },
+ "sublevel-07": {
+  "ok": true,
+  "stddev": 102.6,
+  "attempt": 1
+ },
+ "soccer-3d": {
+  "ok": true,
+  "stddev": 44.8,
+  "attempt": 1
+ },
+ "t-minus": {
+  "ok": true,
+  "stddev": 54.6,
+  "attempt": 1
+ },
+ "shuttle-strike": {
+  "ok": true,
+  "stddev": 37.8,
+  "attempt": 1
+ },
+ "tidemark": {
+  "ok": true,
+  "stddev": 65.6,
+  "attempt": 1
+ },
+ "the-long-climb": {
+  "ok": true,
+  "stddev": 33.4,
+  "attempt": 1
+ },
+ "tidebell": {
+  "ok": true,
+  "stddev": 32.8,
+  "attempt": 1
+ },
+ "tuktuk": {
+  "ok": true,
+  "stddev": 35.2,
+  "attempt": 1
+ },
+ "the-county": {
+  "ok": true,
+  "stddev": 60.8,
+  "attempt": 2
  }
 }

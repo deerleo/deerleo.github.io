@@ -1438,5 +1438,845 @@
   "credit": "",
   "thumb": "/assets/showcase/thumbs/beaker-mixer.jpg",
   "shot": true
+ },
+ {
+  "slug": "fog-city",
+  "title": "FOG CITY",
+  "subtitle": "Fable 5.2 社区作品镜像",
+  "url": "/apps/fog-city/",
+  "thumb": "/assets/showcase/thumbs/fog-city.jpg",
+  "category": "镜像游戏",
+  "tags": [
+   "开放世界",
+   "Fable 5.2"
+  ],
+  "desc": "雾都题材的 3D 开放世界：穿行雾街探索，含大规模 glb/hdr 场景资产。",
+  "credit": "原作者 Rikinshah787 · Claude Fable 5.2 生成 · 已获授权署名转载",
+  "shot": true
+ },
+ {
+  "slug": "dustfall",
+  "title": "Dustfall",
+  "subtitle": "Fable 5.2 社区作品镜像",
+  "url": "/apps/dustfall/",
+  "thumb": "/assets/showcase/thumbs/dustfall.jpg",
+  "category": "镜像游戏",
+  "tags": [
+   "开放世界",
+   "Fable 5.2"
+  ],
+  "desc": "尘暴废土题材的 three.js 开放世界，浏览器直接进入探索。",
+  "credit": "原作者 webKing021 · Claude Fable 5.2 生成 · 已获授权署名转载",
+  "shot": true
+ },
+ {
+  "slug": "bayhaven",
+  "title": "Bayhaven",
+  "subtitle": "Fable 5.2 社区作品镜像",
+  "url": "/apps/bayhaven/",
+  "thumb": "/assets/showcase/thumbs/bayhaven.jpg",
+  "category": "镜像游戏",
+  "tags": [
+   "开放世界",
+   "Fable 5.2"
+  ],
+  "desc": "海滨湾镇 Bayhaven 的 three.js 开放世界，自由漫游式探索。",
+  "credit": "原作者 fablestar · Claude Fable 5.2 生成 · 已获授权署名转载",
+  "shot": true
+ },
+ {
+  "slug": "aquila",
+  "title": "Aquila",
+  "subtitle": "Fable 5.2 社区作品镜像",
+  "url": "/apps/aquila/",
+  "thumb": "/assets/showcase/thumbs/aquila.jpg",
+  "category": "镜像游戏",
+  "tags": [
+   "开放世界",
+   "Fable 5.2"
+  ],
+  "desc": "Aquila：3D 开放世界探索小品，与 Dawnward 同仓（作者连作）。",
+  "credit": "原作者 GavinLOrio · Claude Fable 5.2 生成 · 已获授权署名转载",
+  "shot": true
+ },
+ {
+  "slug": "dawnward",
+  "title": "Dawnward",
+  "subtitle": "Fable 5.2 社区作品镜像",
+  "url": "/apps/dawnward/",
+  "thumb": "/assets/showcase/thumbs/dawnward.jpg",
+  "category": "镜像游戏",
+  "tags": [
+   "开放世界",
+   "Fable 5.2"
+  ],
+  "desc": "低多边形风格的短篇 3D 冒险，作者连作之一。",
+  "credit": "原作者 GavinLOrio · Claude Fable 5.2 生成 · 已获授权署名转载",
+  "shot": true
+ },
+ {
+  "slug": "ironvale",
+  "title": "Ironvale",
+  "subtitle": "Fable 5.2 社区作品镜像",
+  "url": "/apps/ironvale/",
+  "thumb": "/assets/showcase/thumbs/ironvale.jpg",
+  "category": "镜像游戏",
+  "tags": [
+   "RTS",
+   "Fable 5.2"
+  ],
+  "desc": "Ironvale 铁谷 RTS：浏览器上的采集、建设与军团对阵。",
+  "credit": "原作者 SharpWizard · Claude Fable 5.2 生成 · 已获授权署名转载",
+  "shot": true
+ },
+ {
+  "slug": "the-long-climb",
+  "title": "The Long Climb",
+  "subtitle": "Fable 5.2 社区作品镜像",
+  "url": "/apps/the-long-climb/",
+  "thumb": "/assets/showcase/thumbs/the-long-climb.jpg",
+  "category": "镜像游戏",
+  "tags": [
+   "开放世界叙事",
+   "Fable 5.2"
+  ],
+  "desc": "The Long Climb（Thirty Days）：三十天攀登长路的开放世界叙事。",
+  "credit": "原作者 HILAYTRIVEDI · Claude Fable 5.2 生成 · 已获授权署名转载",
+  "shot": true
+ },
+ {
+  "slug": "boondocks-woodcrest-files",
+  "title": "The Boondocks: The Woodcrest Files",
+  "subtitle": "Fable 5.2 社区作品镜像",
+  "url": "/apps/boondocks-woodcrest-files/",
+  "thumb": "/assets/showcase/thumbs/boondocks-woodcrest-files.jpg",
+  "category": "镜像游戏",
+  "tags": [
+   "2D 动作",
+   "Fable 5.2"
+  ],
+  "desc": "《The Boondocks》同人 2D 动作游戏：Woodcrest 街区冒险（fan game）。",
+  "credit": "原作者 Achraf921 · Claude Fable 5.2 生成 · 已获授权署名转载",
+  "shot": true
+ },
+ {
+  "slug": "duel-knights",
+  "title": "Duel Knights",
+  "subtitle": "Fable 5.2 社区作品镜像",
+  "url": "/apps/duel-knights/",
+  "thumb": "/assets/showcase/thumbs/duel-knights.jpg",
+  "category": "镜像游戏",
+  "tags": [
+   "3D 动作",
+   "Fable 5.2"
+  ],
+  "desc": "Duel Knights：中世纪骑士一对一 3D 对决，格挡闪避见招拆招。",
+  "credit": "原作者 bitofastickler · Claude Fable 5.2 生成 · 已获授权署名转载",
+  "shot": true
+ },
+ {
+  "slug": "saltline-online",
+  "title": "盐线行动 Online",
+  "subtitle": "Fable 5.2 社区作品镜像",
+  "url": "/apps/saltline-online/",
+  "thumb": "/assets/showcase/thumbs/saltline-online.jpg",
+  "category": "镜像游戏",
+  "tags": [
+   "FPS",
+   "Fable 5.2"
+  ],
+  "desc": "盐线行动 Online：多人港口 FPS 的单机前端镜像，联机模式需自建服务端。",
+  "credit": "原作者 wenzhengshi · Claude Fable 5.2 生成 · 已获授权署名转载",
+  "shot": true
+ },
+ {
+  "slug": "sublevel-07",
+  "title": "SUBLEVEL 07",
+  "subtitle": "Fable 5.2 社区作品镜像",
+  "url": "/apps/sublevel-07/",
+  "thumb": "/assets/showcase/thumbs/sublevel-07.jpg",
+  "category": "镜像游戏",
+  "tags": [
+   "FPS",
+   "Fable 5.2"
+  ],
+  "desc": "SUBLEVEL 07：地下设施 FPS，首页为作者的复现说明页，点入即玩。",
+  "credit": "原作者 wquguru · Claude Fable 5.2 生成 · 已获授权署名转载",
+  "shot": true
+ },
+ {
+  "slug": "blameless",
+  "title": "BLAMELESS",
+  "subtitle": "Fable 5.2 社区作品镜像",
+  "url": "/apps/blameless/",
+  "thumb": "/assets/showcase/thumbs/blameless.jpg",
+  "category": "镜像游戏",
+  "tags": [
+   "FPS",
+   "Fable 5.2"
+  ],
+  "desc": "WebGL FPS 射击游戏，加载即战；原仓库另带可选成绩榜单服务。",
+  "credit": "原作者 Petyok · Claude Fable 5.2 生成 · 已获授权署名转载",
+  "shot": true
+ },
+ {
+  "slug": "dustline-outpost",
+  "title": "Dustline Outpost",
+  "subtitle": "Fable 5.2 社区作品镜像",
+  "url": "/apps/dustline-outpost/",
+  "thumb": "/assets/showcase/thumbs/dustline-outpost.jpg",
+  "category": "镜像游戏",
+  "tags": [
+   "FPS",
+   "Fable 5.2"
+  ],
+  "desc": "边哨据点防守射击：在沙尘哨站抵御一波波进攻。",
+  "credit": "原作者 systemsluke · Claude Fable 5.2 生成 · 已获授权署名转载",
+  "shot": true
+ },
+ {
+  "slug": "last-return",
+  "title": "Last Return（原 No Return）",
+  "subtitle": "Fable 5.2 社区作品镜像",
+  "url": "/apps/last-return/",
+  "thumb": "/assets/showcase/thumbs/last-return.jpg",
+  "category": "镜像游戏",
+  "tags": [
+   "FPS",
+   "Fable 5.2"
+  ],
+  "desc": "Last Return：单文件构建产物的 WebGL FPS，加载即玩。",
+  "credit": "原作者 StefanKnol · Claude Fable 5.2 生成 · 已获授权署名转载",
+  "shot": true
+ },
+ {
+  "slug": "riftline",
+  "title": "Riftline",
+  "subtitle": "Fable 5.2 社区作品镜像",
+  "url": "/apps/riftline/",
+  "thumb": "/assets/showcase/thumbs/riftline.jpg",
+  "category": "镜像游戏",
+  "tags": [
+   "FPS",
+   "Fable 5.2"
+  ],
+  "desc": "Riftline FPS：PeerJS 浏览器联机对战，单人也可直接开玩。",
+  "credit": "原作者 wongh26 · Claude Fable 5.2 生成 · 已获授权署名转载",
+  "shot": true
+ },
+ {
+  "slug": "graveyard-shift",
+  "title": "Graveyard Shift",
+  "subtitle": "Fable 5.2 社区作品镜像",
+  "url": "/apps/graveyard-shift/",
+  "thumb": "/assets/showcase/thumbs/graveyard-shift.jpg",
+  "category": "镜像游戏",
+  "tags": [
+   "FPS",
+   "Fable 5.2"
+  ],
+  "desc": "丧尸夜班守卫射击：WebGL 画面里撑过一波波夜袭。",
+  "credit": "原作者 ethanplusai · Claude Fable 5.2 生成 · 已获授权署名转载",
+  "shot": true
+ },
+ {
+  "slug": "tidebell",
+  "title": "Tidebell 潮钟",
+  "subtitle": "Fable 5.2 社区作品镜像",
+  "url": "/apps/tidebell/",
+  "thumb": "/assets/showcase/thumbs/tidebell.jpg",
+  "category": "镜像游戏",
+  "tags": [
+   "探索",
+   "Fable 5.2"
+  ],
+  "desc": "潮钟 Tidebell：海边题材的 three.js 探索小品。",
+  "credit": "原作者 hahaliu1029 · Claude Fable 5.2 生成 · 已获授权署名转载",
+  "shot": true
+ },
+ {
+  "slug": "mothlight-vesper-9",
+  "title": "MOTHLIGHT // Vesper-9",
+  "subtitle": "Fable 5.2 社区作品镜像",
+  "url": "/apps/mothlight-vesper-9/",
+  "thumb": "/assets/showcase/thumbs/mothlight-vesper-9.jpg",
+  "category": "镜像游戏",
+  "tags": [
+   "驾驶",
+   "Fable 5.2"
+  ],
+  "desc": "MOTHLIGHT // Vesper-9：驾驶飞行器夜航穿行的驾驶类小品。",
+  "credit": "原作者 hahaliu1029 · Claude Fable 5.2 生成 · 已获授权署名转载",
+  "shot": true
+ },
+ {
+  "slug": "qingyun-sword-flight",
+  "title": "青云宗 · 御剑采灵",
+  "subtitle": "Fable 5.2 社区作品镜像",
+  "url": "/apps/qingyun-sword-flight/",
+  "thumb": "/assets/showcase/thumbs/qingyun-sword-flight.jpg",
+  "category": "镜像游戏",
+  "tags": [
+   "仙侠",
+   "Fable 5.2"
+  ],
+  "desc": "青云宗 · 御剑采灵：中文仙侠题材，御剑飞行采集灵韵。",
+  "credit": "原作者 hahaliu1029 · Claude Fable 5.2 生成 · 已获授权署名转载",
+  "shot": true
+ },
+ {
+  "slug": "misremember",
+  "title": "MISREMEMBER",
+  "subtitle": "Fable 5.2 社区作品镜像",
+  "url": "/apps/misremember/",
+  "thumb": "/assets/showcase/thumbs/misremember.jpg",
+  "category": "镜像游戏",
+  "tags": [
+   "恐怖",
+   "Fable 5.2"
+  ],
+  "desc": "MISREMEMBER：心理恐怖题材的第一人称短篇。",
+  "credit": "原作者 hahaliu1029 · Claude Fable 5.2 生成 · 已获授权署名转载",
+  "shot": true
+ },
+ {
+  "slug": "hanford-reach",
+  "title": "Hanford Reach",
+  "subtitle": "Fable 5.2 社区作品镜像",
+  "url": "/apps/hanford-reach/",
+  "thumb": "/assets/showcase/thumbs/hanford-reach.jpg",
+  "category": "镜像游戏",
+  "tags": [
+   "建造",
+   "Fable 5.2"
+  ],
+  "desc": "崖地聚落建造：在 Hanford Reach 河岸选址、规划并扩建定居点。",
+  "credit": "原作者 chzbloom123 · Claude Fable 5.2 生成 · 已获授权署名转载",
+  "shot": true
+ },
+ {
+  "slug": "boring-game",
+  "title": "Boring Game",
+  "subtitle": "Fable 5.2 社区作品镜像",
+  "url": "/apps/boring-game/",
+  "thumb": "/assets/showcase/thumbs/boring-game.jpg",
+  "category": "镜像游戏",
+  "tags": [
+   "建造",
+   "Fable 5.2"
+  ],
+  "desc": "旧金山湾区公共交通线路规划模拟：让城市通勤运转起来。",
+  "credit": "原作者 jakozaur · Claude Fable 5.2 生成 · 已获授权署名转载",
+  "shot": true
+ },
+ {
+  "slug": "shutterpine",
+  "title": "SHUTTERPINE",
+  "subtitle": "Fable 5.2 社区作品镜像",
+  "url": "/apps/shutterpine/",
+  "thumb": "/assets/showcase/thumbs/shutterpine.jpg",
+  "category": "镜像游戏",
+  "tags": [
+   "叙事恐怖",
+   "Fable 5.2"
+  ],
+  "desc": "SHUTTERPINE：松林小镇题材的叙事恐怖短篇。",
+  "credit": "原作者 DQuanBui · Claude Fable 5.2 生成 · 已获授权署名转载",
+  "shot": true
+ },
+ {
+  "slug": "power-the-spire",
+  "title": "Power the Spire",
+  "subtitle": "Fable 5.2 社区作品镜像",
+  "url": "/apps/power-the-spire/",
+  "thumb": "/assets/showcase/thumbs/power-the-spire.jpg",
+  "category": "镜像游戏",
+  "tags": [
+   "3D 收集探索",
+   "Fable 5.2"
+  ],
+  "desc": "3D 高塔收集探索：逐层向上、边走边收集的小品。",
+  "credit": "原作者 cdurgun · Claude Fable 5.2 生成 · 已获授权署名转载",
+  "shot": true
+ },
+ {
+  "slug": "one-prompt-worlds-6",
+  "title": "うしろのハニワ",
+  "subtitle": "Fable 5.2 社区作品镜像",
+  "url": "/apps/one-prompt-worlds-6/",
+  "thumb": "/assets/showcase/thumbs/one-prompt-worlds-6.jpg",
+  "category": "镜像游戏",
+  "tags": [
+   "第一人称解谜",
+   "Fable 5.2"
+  ],
+  "desc": "One Prompt Worlds 系列：身后的埴轮——第一人称日式解谜。",
+  "credit": "原作者 shioa2006-game · Claude Fable 5.2 生成 · 已获授权署名转载",
+  "shot": true
+ },
+ {
+  "slug": "soccer-3d",
+  "title": "Soccer 3D",
+  "subtitle": "Fable 5.2 社区作品镜像",
+  "url": "/apps/soccer-3d/",
+  "thumb": "/assets/showcase/thumbs/soccer-3d.jpg",
+  "category": "镜像游戏",
+  "tags": [
+   "体育",
+   "Fable 5.2"
+  ],
+  "desc": "Pocket Soccer 3D：自绘 3D 渲染的足球对抗，支持 PWA 安装。",
+  "credit": "原作者 ShaunPrice · Claude Fable 5.2 生成 · 已获授权署名转载",
+  "shot": true
+ },
+ {
+  "slug": "tuktuk",
+  "title": "TukTuk",
+  "subtitle": "Fable 5.2 社区作品镜像",
+  "url": "/apps/tuktuk/",
+  "thumb": "/assets/showcase/thumbs/tuktuk.jpg",
+  "category": "镜像游戏",
+  "tags": [
+   "驾驶",
+   "Fable 5.2"
+  ],
+  "desc": "开嘟嘟车街头载客的驾驶小品（阿拉伯语界面）。",
+  "credit": "原作者 basemazab · Claude Fable 5.2 生成 · 已获授权署名转载",
+  "shot": true
+ },
+ {
+  "slug": "emberdeep",
+  "title": "Emberdeep",
+  "subtitle": "Fable 5.2 社区作品镜像",
+  "url": "/apps/emberdeep/",
+  "thumb": "/assets/showcase/thumbs/emberdeep.jpg",
+  "category": "镜像游戏",
+  "tags": [
+   "冒险",
+   "Fable 5.2"
+  ],
+  "desc": "Emberdeep 余烬深坑：地底矿道冒险。",
+  "credit": "原作者 DNDNoob · Claude Fable 5.2 生成 · 已获授权署名转载",
+  "shot": true
+ },
+ {
+  "slug": "daedalus",
+  "title": "Daedalus",
+  "subtitle": "Fable 5.2 社区作品镜像",
+  "url": "/apps/daedalus/",
+  "thumb": "/assets/showcase/thumbs/daedalus.jpg",
+  "category": "镜像游戏",
+  "tags": [
+   "解谜",
+   "Fable 5.2"
+  ],
+  "desc": "DAEDALUS：迷宫逃脱解谜，单文件 121KB 轻量开玩。",
+  "credit": "原作者 S77FFY · Claude Fable 5.2 生成 · 已获授权署名转载",
+  "shot": true
+ },
+ {
+  "slug": "sternenjaeger",
+  "title": "Sternenjäger",
+  "subtitle": "Fable 5.2 社区作品镜像",
+  "url": "/apps/sternenjaeger/",
+  "thumb": "/assets/showcase/thumbs/sternenjaeger.jpg",
+  "category": "镜像游戏",
+  "tags": [
+   "射击",
+   "Fable 5.2"
+  ],
+  "desc": "Sternenjäger（星猎手）：德语界面的太空射击。",
+  "credit": "原作者 oldzitterhand · Claude Fable 5.2 生成 · 已获授权署名转载",
+  "shot": true
+ },
+ {
+  "slug": "shuttle-strike",
+  "title": "Shuttle Strike",
+  "subtitle": "Fable 5.2 社区作品镜像",
+  "url": "/apps/shuttle-strike/",
+  "thumb": "/assets/showcase/thumbs/shuttle-strike.jpg",
+  "category": "镜像游戏",
+  "tags": [
+   "体育",
+   "Fable 5.2"
+  ],
+  "desc": "Shuttle Strike：摄像头手势追踪的羽毛球体感游戏。",
+  "credit": "原作者 fedifianto · Claude Fable 5.2 生成 · 已获授权署名转载",
+  "shot": true
+ },
+ {
+  "slug": "neon-runner",
+  "title": "NEON RUNNER",
+  "subtitle": "Fable 5.2 社区作品镜像",
+  "url": "/apps/neon-runner/",
+  "thumb": "/assets/showcase/thumbs/neon-runner.jpg",
+  "category": "镜像游戏",
+  "tags": [
+   "跑酷",
+   "Fable 5.2"
+  ],
+  "desc": "NEON RUNNER：霓虹赛博风的 Canvas 2D 跑酷。",
+  "credit": "原作者 Ilias-AK · Claude Fable 5.2 生成 · 已获授权署名转载",
+  "shot": true
+ },
+ {
+  "slug": "becario-del-universo",
+  "title": "Becario del Universo",
+  "subtitle": "Fable 5.2 社区作品镜像",
+  "url": "/apps/becario-del-universo/",
+  "thumb": "/assets/showcase/thumbs/becario-del-universo.jpg",
+  "category": "镜像游戏",
+  "tags": [
+   "休闲",
+   "Fable 5.2"
+  ],
+  "desc": "Becario del Universo（宇宙实习生）：西语休闲五分钟小品。",
+  "credit": "原作者 masugus · Claude Fable 5.2 生成 · 已获授权署名转载",
+  "shot": true
+ },
+ {
+  "slug": "harvest-standoff",
+  "title": "Harvest Standoff",
+  "subtitle": "Fable 5.2 社区作品镜像",
+  "url": "/apps/harvest-standoff/",
+  "thumb": "/assets/showcase/thumbs/harvest-standoff.jpg",
+  "category": "镜像游戏",
+  "tags": [
+   "竞技",
+   "Fable 5.2"
+  ],
+  "desc": "Harvest Standoff：农场丰收季的竞技对抗。",
+  "credit": "原作者 andreteow · Claude Fable 5.2 生成 · 已获授权署名转载",
+  "shot": true
+ },
+ {
+  "slug": "tidemark",
+  "title": "潮汐战线（Tidemark）",
+  "subtitle": "Fable 5.2 社区作品镜像",
+  "url": "/apps/tidemark/",
+  "thumb": "/assets/showcase/thumbs/tidemark.jpg",
+  "category": "镜像游戏",
+  "tags": [
+   "战棋",
+   "Fable 5.2"
+  ],
+  "desc": "潮汐战线（Tidemark）：中文原创战棋游戏，回合制策略对阵。",
+  "credit": "原作者 CocoSgt · Claude Fable 5.2 生成 · 已获授权署名转载",
+  "shot": true
+ },
+ {
+  "slug": "the-county",
+  "title": "The County",
+  "subtitle": "Fable 5.2 社区作品镜像",
+  "url": "/apps/the-county/",
+  "thumb": "/assets/showcase/thumbs/the-county.jpg",
+  "category": "镜像游戏",
+  "tags": [
+   "经营",
+   "Fable 5.2"
+  ],
+  "desc": "县镇经营：从马铃薯田开始的模拟经营小品。",
+  "credit": "原作者 TheMizeGuy · Claude Fable 5.2 生成 · 已获授权署名转载",
+  "shot": true
+ },
+ {
+  "slug": "makinamon-pulso",
+  "title": "MAKINAMON · Versión Pulso",
+  "subtitle": "Fable 5.2 社区作品镜像",
+  "url": "/apps/makinamon-pulso/",
+  "thumb": "/assets/showcase/thumbs/makinamon-pulso.jpg",
+  "category": "镜像游戏",
+  "tags": [
+   "RPG",
+   "Fable 5.2"
+  ],
+  "desc": "MAKINAMON · Versión Pulso：西语界面的 Canvas 2D 复古 RPG。",
+  "credit": "原作者 gavilanbe · Claude Fable 5.2 生成 · 已获授权署名转载",
+  "shot": true
+ },
+ {
+  "slug": "liquid-labyrinth",
+  "title": "Liquid Labyrinth",
+  "subtitle": "Fable 5.2 社区作品镜像",
+  "url": "/apps/liquid-labyrinth/",
+  "thumb": "/assets/showcase/thumbs/liquid-labyrinth.jpg",
+  "category": "镜像游戏",
+  "tags": [
+   "物理解谜",
+   "Fable 5.2"
+  ],
+  "desc": "Liquid Labyrinth：液体物理解谜，引导流体找到迷宫出口。",
+  "credit": "原作者 tuki0918 · Claude Fable 5.2 生成 · 已获授权署名转载",
+  "shot": true
+ },
+ {
+  "slug": "mini-rpg",
+  "title": "Mini RPG",
+  "subtitle": "Fable 5.2 社区作品镜像",
+  "url": "/apps/mini-rpg/",
+  "thumb": "/assets/showcase/thumbs/mini-rpg.jpg",
+  "category": "镜像游戏",
+  "tags": [
+   "RPG",
+   "Fable 5.2"
+  ],
+  "desc": "Mini RPG：自带原声音乐的复古 RPG，内容量远超「迷你」之名。",
+  "credit": "原作者 ertertwert · Claude Fable 5.2 生成 · 已获授权署名转载",
+  "shot": true
+ },
+ {
+  "slug": "rufus-crush",
+  "title": "Rufus Crush",
+  "subtitle": "Fable 5.2 社区作品镜像",
+  "url": "/apps/rufus-crush/",
+  "thumb": "/assets/showcase/thumbs/rufus-crush.jpg",
+  "category": "镜像游戏",
+  "tags": [
+   "三消",
+   "Fable 5.2"
+  ],
+  "desc": "Rufus Crush：Rust→WASM 的小狗三消，手机端友好。",
+  "credit": "原作者 bhoult · Claude Fable 5.2 生成 · 已获授权署名转载",
+  "shot": true
+ },
+ {
+  "slug": "one-prompt-worlds-1",
+  "title": "ぽん、と森は灯る",
+  "subtitle": "Fable 5.2 社区作品镜像",
+  "url": "/apps/one-prompt-worlds-1/",
+  "thumb": "/assets/showcase/thumbs/one-prompt-worlds-1.jpg",
+  "category": "镜像游戏",
+  "tags": [
+   "物理探索",
+   "Fable 5.2"
+  ],
+  "desc": "One Prompt Worlds 系列：拨动光点点亮森林的物理探索小品。",
+  "credit": "原作者 shioa2006-game · Claude Fable 5.2 生成 · 已获授权署名转载",
+  "shot": true
+ },
+ {
+  "slug": "one-prompt-worlds-2",
+  "title": "ひとつぶ庭園",
+  "subtitle": "Fable 5.2 社区作品镜像",
+  "url": "/apps/one-prompt-worlds-2/",
+  "thumb": "/assets/showcase/thumbs/one-prompt-worlds-2.jpg",
+  "category": "镜像游戏",
+  "tags": [
+   "粒子解谜",
+   "Fable 5.2"
+  ],
+  "desc": "One Prompt Worlds 系列：一粒种子造就的粒子庭园解谜。",
+  "credit": "原作者 shioa2006-game · Claude Fable 5.2 生成 · 已获授权署名转载",
+  "shot": true
+ },
+ {
+  "slug": "one-prompt-worlds-3",
+  "title": "EMBERDEEP ― 燈守りの坑道",
+  "subtitle": "Fable 5.2 社区作品镜像",
+  "url": "/apps/one-prompt-worlds-3/",
+  "thumb": "/assets/showcase/thumbs/one-prompt-worlds-3.jpg",
+  "category": "镜像游戏",
+  "tags": [
+   "动作 RPG",
+   "Fable 5.2"
+  ],
+  "desc": "One Prompt Worlds 系列：灯守坑道的动作 RPG 探险。",
+  "credit": "原作者 shioa2006-game · Claude Fable 5.2 生成 · 已获授权署名转载",
+  "shot": true
+ },
+ {
+  "slug": "one-prompt-worlds-4",
+  "title": "LUMEN REEL ― まわる灯台と三つの海路",
+  "subtitle": "Fable 5.2 社区作品镜像",
+  "url": "/apps/one-prompt-worlds-4/",
+  "thumb": "/assets/showcase/thumbs/one-prompt-worlds-4.jpg",
+  "category": "镜像游戏",
+  "tags": [
+   "转轮解谜",
+   "Fable 5.2"
+  ],
+  "desc": "One Prompt Worlds 系列：转动灯台开启三条海路的解谜。",
+  "credit": "原作者 shioa2006-game · Claude Fable 5.2 生成 · 已获授权署名转载",
+  "shot": true
+ },
+ {
+  "slug": "one-prompt-worlds-5",
+  "title": "REEL DELVE ― まわる迷宮と三人の旅",
+  "subtitle": "Fable 5.2 社区作品镜像",
+  "url": "/apps/one-prompt-worlds-5/",
+  "thumb": "/assets/showcase/thumbs/one-prompt-worlds-5.jpg",
+  "category": "镜像游戏",
+  "tags": [
+   "地牢解谜",
+   "Fable 5.2"
+  ],
+  "desc": "One Prompt Worlds 系列：回转迷宫三人旅的地牢解谜。",
+  "credit": "原作者 shioa2006-game · Claude Fable 5.2 生成 · 已获授权署名转载",
+  "shot": true
+ },
+ {
+  "slug": "one-prompt-worlds-7",
+  "title": "切りもどし ― 鋏と春の小さな鉢",
+  "subtitle": "Fable 5.2 社区作品镜像",
+  "url": "/apps/one-prompt-worlds-7/",
+  "thumb": "/assets/showcase/thumbs/one-prompt-worlds-7.jpg",
+  "category": "镜像游戏",
+  "tags": [
+   "盆栽解谜",
+   "Fable 5.2"
+  ],
+  "desc": "One Prompt Worlds 系列：以剪刀修剪春日盆栽的解谜。",
+  "credit": "原作者 shioa2006-game · Claude Fable 5.2 生成 · 已获授权署名转载",
+  "shot": true
+ },
+ {
+  "slug": "one-prompt-worlds-8",
+  "title": "ひつじが いっぴき ― 牧羊犬コロの一日",
+  "subtitle": "Fable 5.2 社区作品镜像",
+  "url": "/apps/one-prompt-worlds-8/",
+  "thumb": "/assets/showcase/thumbs/one-prompt-worlds-8.jpg",
+  "category": "镜像游戏",
+  "tags": [
+   "牧羊动作",
+   "Fable 5.2"
+  ],
+  "desc": "One Prompt Worlds 系列：牧羊犬コロ的一天，赶羊入圈的动作小品。",
+  "credit": "原作者 shioa2006-game · Claude Fable 5.2 生成 · 已获授权署名转载",
+  "shot": true
+ },
+ {
+  "slug": "maple-run",
+  "title": "MAPLE RUN",
+  "subtitle": "Fable 5.2 社区作品镜像",
+  "url": "/apps/maple-run/",
+  "thumb": "/assets/showcase/thumbs/maple-run.jpg",
+  "category": "镜像游戏",
+  "tags": [
+   "3D 跑酷",
+   "Fable 5.2"
+  ],
+  "desc": "MAPLE RUN · 紅葉ラン：WebGPU 渲染的 3D 枫叶跑酷。",
+  "credit": "原作者 nanha0130 · Claude Fable 5.2 生成 · 已获授权署名转载",
+  "shot": true
+ },
+ {
+  "slug": "escape-the-fable",
+  "title": "Escape the Fable",
+  "subtitle": "Fable 5.2 社区作品镜像",
+  "url": "/apps/escape-the-fable/",
+  "thumb": "/assets/showcase/thumbs/escape-the-fable.jpg",
+  "category": "镜像游戏",
+  "tags": [
+   "密室解谜",
+   "Fable 5.2"
+  ],
+  "desc": "Escape the Fable：密室线索解谜逃脱。",
+  "credit": "原作者 ai-gamez-r-funz · Claude Fable 5.2 生成 · 已获授权署名转载",
+  "shot": true
+ },
+ {
+  "slug": "circular-tic-tac-toe",
+  "title": "Circular Tic Tac Toe",
+  "subtitle": "Fable 5.2 社区作品镜像",
+  "url": "/apps/circular-tic-tac-toe/",
+  "thumb": "/assets/showcase/thumbs/circular-tic-tac-toe.jpg",
+  "category": "镜像游戏",
+  "tags": [
+   "棋盘",
+   "Fable 5.2"
+  ],
+  "desc": "环形棋盘井字棋：首尾相连的四连棋，可挑战 AI 或双人对弈。",
+  "credit": "原作者 muhammad-sayed-mahdy · Claude Fable 5.2 生成 · 已获授权署名转载",
+  "shot": true
+ },
+ {
+  "slug": "earthfm",
+  "title": "EarthFM · Listening Game",
+  "subtitle": "Fable 5.2 社区作品镜像",
+  "url": "/apps/earthfm/",
+  "thumb": "/assets/showcase/thumbs/earthfm.jpg",
+  "category": "镜像游戏",
+  "tags": [
+   "听音辨识",
+   "Fable 5.2"
+  ],
+  "desc": "EarthFM 听音辨识：收听各地电台实况音频，猜猜这是哪里（NASA Space Apps 作品）。",
+  "credit": "原作者 Aarosunn · Claude Fable 5.2 生成 · 已获授权署名转载",
+  "shot": true
+ },
+ {
+  "slug": "t-minus",
+  "title": "T-Minus",
+  "subtitle": "Fable 5.2 社区作品镜像",
+  "url": "/apps/t-minus/",
+  "thumb": "/assets/showcase/thumbs/t-minus.jpg",
+  "category": "镜像游戏",
+  "tags": [
+   "多人任务规划",
+   "Fable 5.2"
+  ],
+  "desc": "T-Minus 多人任务规划：WebRTC 实时协作的发射倒计时推演（NASA Space Apps 作品）。",
+  "credit": "原作者 XDracam · Claude Fable 5.2 生成 · 已获授权署名转载",
+  "shot": true
+ },
+ {
+  "slug": "jester",
+  "title": "Jester",
+  "subtitle": "Fable 5.2 社区作品镜像",
+  "url": "/apps/jester/",
+  "thumb": "/assets/showcase/thumbs/jester.jpg",
+  "category": "镜像游戏",
+  "tags": [
+   "摄像头派对",
+   "Fable 5.2"
+  ],
+  "desc": "摄像头派对游戏：MediaPipe 体感识别，跟随节奏做出搞怪动作。",
+  "credit": "原作者 aaron-sulbaran · Claude Fable 5.2 生成 · 已获授权署名转载",
+  "shot": true
+ },
+ {
+  "slug": "retro-sisters",
+  "title": "Retro Sisters",
+  "subtitle": "Fable 5.2 社区作品镜像",
+  "url": "/apps/retro-sisters/",
+  "thumb": "/assets/showcase/thumbs/retro-sisters.jpg",
+  "category": "镜像游戏",
+  "tags": [
+   "2D 平台跳跃",
+   "Fable 5.2"
+  ],
+  "desc": "复古 2D 平台跳跃：SID 芯片音效的姊妹冒险。",
+  "credit": "原作者 rob0511-777 · Claude Fable 5.2 生成 · 已获授权署名转载",
+  "shot": true
+ },
+ {
+  "slug": "rawza-ring",
+  "title": "Rawza Ring",
+  "subtitle": "Fable 5.2 社区作品镜像",
+  "url": "/apps/rawza-ring/",
+  "thumb": "/assets/showcase/thumbs/rawza-ring.jpg",
+  "category": "镜像游戏",
+  "tags": [
+   "3D 竞速",
+   "Fable 5.2"
+  ],
+  "desc": "Rawza Ring：绕蓝色清真寺街区的 3D 街头竞速。",
+  "credit": "原作者 Hashmatullahzaher · Claude Fable 5.2 生成 · 已获授权署名转载",
+  "shot": true
+ },
+ {
+  "slug": "gifts-for-the-tall-one",
+  "title": "Gifts for the Tall One",
+  "subtitle": "Fable 5.2 社区作品镜像",
+  "url": "/apps/gifts-for-the-tall-one/",
+  "thumb": "/assets/showcase/thumbs/gifts-for-the-tall-one.jpg",
+  "category": "镜像游戏",
+  "tags": [
+   "猫咪收集探索",
+   "Fable 5.2"
+  ],
+  "desc": "给高个子的礼物：猫咪题材的收集探索小游戏。",
+  "credit": "原作者 eyeb0l · Claude Fable 5.2 生成 · 已获授权署名转载",
+  "shot": true
  }
 ]
