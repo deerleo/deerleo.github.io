@@ -68,7 +68,7 @@ theme_freeze: light
     <p class="wp-positioning-text">{{ wp.positioning }}</p>
     <div class="wp-factline">
       <b>关键词</b>　AI Agent 与企业级落地 · 舆情大数据与融媒体 · 教育与科研工具 · 产品创业与团队管理<br>
-      <b>现状</b>　青矩技术研究院 AI 总监 ｜ 摩豆智能创始人 ｜ 十余年主导上线 30 余款产品 ｜ 四门 AI 实战课
+      <b>现状</b>　上市公司 AI 总监 ｜ 摩豆智能创始人 ｜ 十余年主导上线 30 余款产品 ｜ 系列 AI 实战课
     </div>
   </section>
 
@@ -160,7 +160,7 @@ theme_freeze: light
     <header class="wp-sec-head">
       <span class="wp-sec-no">04</span>
       <h2>课程体系</h2>
-      <p class="wp-sec-lead">面向高校与企业的四门实战课，全部内容来自真实项目，先建立直觉，再当堂动手实验。</p>
+      <p class="wp-sec-lead">面向高校与企业的系列实战课，全部内容来自真实项目，先建立直觉，再当堂动手实验；课程持续更新，部分已在线开放。</p>
     </header>
     {% for t in milu.tutorials %}
     <div class="wp-course wp-avoid">
