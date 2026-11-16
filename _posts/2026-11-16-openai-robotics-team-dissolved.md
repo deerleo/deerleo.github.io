@@ -3,6 +3,7 @@ title: "愿景没变，团队没了"
 description: "OpenAI 拆散成立仅 166 天的独立机器人团队，官方说这是承诺不是撤退。看一家公司信不信自己的话，别读愿景文档，去看组织架构图和招聘页。"
 tags: [OpenAI, 机器人, Agent]
 series: "哟哟鹿鸣"
+podcast: /assets/audio/2026-11-16-openai-robotics-team-dissolved.mp3
 ---
 
 ![CoRL 2026（机器人学习年会）主视觉：2026 年 11 月 9 日至 12 日，得州奥斯汀](/assets/images/2026-11-16-openai-robotics-team-dissolved/corl2026_austin.jpg)
