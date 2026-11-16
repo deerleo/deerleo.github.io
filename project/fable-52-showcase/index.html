@@ -96,7 +96,7 @@
         <div class="stat"><b>12</b><span>一周内代表性作品（本页收录）</span></div>
         <div class="stat"><b>8h / ~$550</b><span>Saltline：一次提示词的完整成本</span></div>
         <div class="stat"><b>2 件</b><span>已获授权本站镜像，可在线游玩</span></div>
-        <div class="stat"><b>95 万字</b><span>泄漏系统提示词，站内有逐行解剖图</span></div>
+        <div class="stat"><b>64 款</b><span>社区清单收录作品，51 个开源仓库</span></div>
       </div>
       <div class="legend">
         <span><b>源代码可得性图例</b></span>
@@ -306,13 +306,44 @@ cd What-the-Water-Keeps && python3 -m http.server 8732
       <div class="note">授权说明：以上两件作品经站主与原作者沟通获得转载授权，条件为署原作者名；镜像文件内已带署名注释。Saltline 社区仓库的 MIT 声明仅适用于整理者新增内容；What the Water Keeps 原作发布形态为闭源构建，本站镜像基于社区逆向重建版本，版权归原作者 Kevin Ngo 所有。</div>
     </section>
 
+    <section class="section" id="more">
+      <h2>四、更多开源作品：社区清单里的 64 款</h2>
+      <p class="section-intro">本站镜像的两件只是起点。截至 2026-11-16，社区清单 <a href="https://github.com/ygx2378/awesome-fable-5-2-games" target="_blank" rel="noopener">awesome-fable-5-2-games</a> 已收录 <strong>64 款作品、51 个开源仓库、45 款附浏览器试玩</strong>——GTA 风开放世界、帝国时代式 RTS、回合制战棋、Rust 飞行模拟、甚至一台 SNES ROM。下表是其中 18 款亮点，全量清单与提示词原文见该仓库（另有 MiaAI-Lab 收录的 76 个 HTML 小作品含全部提示词）。</p>
+      <div class="showtable">
+        <table>
+          <thead><tr><th>作品</th><th>类型</th><th>亮点</th><th>技术栈</th><th>链接</th></tr></thead>
+          <tbody>
+            <tr><td class="w">SUBLEVEL 07</td><td>科幻地下 FPS</td><td>一句提示词、73 轮无人干预、41 分钟，131KB 单文件含后处理与 18 种合成音效，公开逐轮 token 账单（共 $15.96）</td><td>three.js 单文件</td><td><a href="https://github.com/wquguru/fable52-fps-repro" target="_blank" rel="noopener">源码 ↗</a> · <a href="https://wquguru.github.io/fable52-fps-repro/" target="_blank" rel="noopener">试玩 ↗</a></td></tr>
+            <tr><td class="w">Ironvale</td><td>帝国时代式 RTS</td><td>21 句大白话写成：采集建城、三时代科技树、战争迷雾、会投降的 AI 对手，附三部原创战役</td><td>three.js r128</td><td><a href="https://github.com/SharpWizard/ironvale" target="_blank" rel="noopener">源码 ↗</a> · <a href="https://sharpwizard.github.io/ironvale/" target="_blank" rel="noopener">试玩 ↗</a></td></tr>
+            <tr><td class="w">青云宗 · 御剑采灵</td><td>3D 仙侠</td><td>第三人称御剑飞行，体积云海与真实反射湖面，支持触屏，自驾驶脚本可完整通关</td><td>three.js r170 单文件</td><td><a href="https://github.com/hahaliu1029/fable5.2demo" target="_blank" rel="noopener">源码 ↗</a></td></tr>
+            <tr><td class="w">潮汐战线 Tidemark</td><td>回合制战棋</td><td>《高级战争》式：陆海空 33 兵种、29 指挥官、27 关战役，纯前端免构建</td><td>HTML Canvas</td><td><a href="https://github.com/CocoSgt/dsh-game-tidemark" target="_blank" rel="noopener">源码 ↗</a> · <a href="https://dsh-game-store.com/games/tidemark/" target="_blank" rel="noopener">试玩 ↗</a></td></tr>
+            <tr><td class="w">Tidebell 潮钟</td><td>水下探索</td><td>潜水器从珊瑚礁下潜到深渊唤醒七口潮钟；48 个模型全由 Blender Python 脚本生成，手写水下光照衰减</td><td>three.js r170 单文件</td><td><a href="https://github.com/hahaliu1029/fable5.2demo" target="_blank" rel="noopener">源码 ↗</a></td></tr>
+            <tr><td class="w">MOTHLIGHT // Vesper-9</td><td>赛博朋克驾驶</td><td>雨夜霓虹城穿 12 道光门，694 栋楼一次实例化绘制，窗户画出带纵深的房间</td><td>three.js r170 单文件</td><td><a href="https://github.com/hahaliu1029/fable5.2demo" target="_blank" rel="noopener">源码 ↗</a></td></tr>
+            <tr><td class="w">MISREMEMBER</td><td>心理恐怖</td><td>「盯着的不变，变化只发生在身后」：房间靠门洞遮罩拼接，同一扇门下次打开通向别处</td><td>three.js 单文件</td><td><a href="https://github.com/hahaliu1029/fable5.2demo" target="_blank" rel="noopener">源码 ↗</a></td></tr>
+            <tr><td class="w">Dustfall</td><td>西部开放世界</td><td>驯马、打猎、酒馆黑杰克，六章节主线；犯罪需要目击者，荣誉值影响物价与结局</td><td>three.js 0.187 + Vite 8</td><td><a href="https://github.com/webKing021/dustfall" target="_blank" rel="noopener">源码 ↗</a> · <a href="https://dustfalls.netlify.app/" target="_blank" rel="noopener">试玩 ↗</a></td></tr>
+            <tr><td class="w">FOG CITY</td><td>GTA 风开放世界</td><td>7×7 街区带跨海大桥，红绿灯车流、会躲子弹的行人、可劫车，五星通缉警车追捕</td><td>three.js ES modules</td><td><a href="https://github.com/Rikinshah787/Game-Fable-5.2" target="_blank" rel="noopener">源码 ↗</a></td></tr>
+            <tr><td class="w">Bayhaven</td><td>犯罪开放世界</td><td>不是「AI 辅助」而是 Fable 5.2 在公开直播里逐 commit 写完全部代码，自己维护 ROADMAP 与 BUGS</td><td>three.js + Vite</td><td><a href="https://github.com/fablestar/bayhaven" target="_blank" rel="noopener">源码 ↗</a></td></tr>
+            <tr><td class="w">Boring Game</td><td>体素交通模拟</td><td>用真实地图数据重建旧金山湾区，挖隧道建车站开列车；15 条提示词 15 小时、66,000 行、约 $700</td><td>TypeScript + Vite</td><td><a href="https://github.com/jakozaur/sf_bay_area_transit_fable_5_2_game" target="_blank" rel="noopener">源码 ↗</a></td></tr>
+            <tr><td class="w">FableFlight</td><td>飞行模拟（原生）</td><td>Rust + wgpu 开放世界飞行模拟：实时天气、真实空中交通、燃油配重与无线电导航，社区最高星</td><td>Rust 原生桌面</td><td><a href="https://github.com/Rolandjg/fableflight" target="_blank" rel="noopener">源码 ↗</a></td></tr>
+            <tr><td class="w">Soccer 3D</td><td>7 人制足球</td><td>有裁判、越位、红黄牌、点球大战与战术档位；PWA 可装手机离线玩，解说由 ElevenLabs 生成</td><td>单文件 + PWA</td><td><a href="https://github.com/ShaunPrice/soccer-3d" target="_blank" rel="noopener">源码 ↗</a> · <a href="https://shaunprice.github.io/soccer-3d/" target="_blank" rel="noopener">试玩 ↗</a></td></tr>
+            <tr><td class="w">TukTuk</td><td>开罗街头驾驶</td><td>三轮出租钻缝拉客；所有形状材质音效全代码生成，仓库里没有一张图片一个音频</td><td>three.js 两文件</td><td><a href="https://github.com/basemazab/tuktuk" target="_blank" rel="noopener">源码 ↗</a></td></tr>
+            <tr><td class="w">Harvest Standoff</td><td>农场 5v5 竞技</td><td>动物对农场工人的回合制团战；十名角色全由 Blender 脚本雕刻，语音配乐脚本批量产出</td><td>three.js + 自建构建</td><td><a href="https://github.com/andreteow/farm-ca" target="_blank" rel="noopener">源码 ↗</a> · <a href="https://harvest-standoff.vercel.app" target="_blank" rel="noopener">试玩 ↗</a></td></tr>
+            <tr><td class="w">Dawnward</td><td>3D 奇幻开放世界</td><td>永夜之岛点亮六座古灯塔，提灯自动攻击，单文件离线可玩自动存档，支持手机触屏</td><td>three.js + esbuild 单文件</td><td><a href="https://github.com/GavinLOrio/Fable-5.2-random-game" target="_blank" rel="noopener">源码 ↗</a></td></tr>
+            <tr><td class="w">SUPERFORGE GT</td><td>SNES 赛车</td><td>买车跑 12 场赛事，8 车 6 赛道 9 对手——最终构建为 4MB SNES ROM（65C816 汇编）</td><td>汇编 + Python</td><td><a href="https://github.com/jreinach-alt/sf-gt" target="_blank" rel="noopener">源码 ↗</a></td></tr>
+            <tr><td class="w">ONE PROMPT WORLDS</td><td>8 连作小品合集</td><td>一句提示词一款：盆栽修剪、牧羊犬赶羊、粒子夜庭、地牢解谜……全部原生 JS 免构建</td><td>原生 JavaScript</td><td><a href="https://github.com/shioa2006-game/ONE_PROMPT_WORLDS" target="_blank" rel="noopener">源码 ↗</a> · <a href="https://shioa2006-game.github.io/ONE_PROMPT_WORLDS/game/index.html" target="_blank" rel="noopener">试玩 ↗</a></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="section-intro" style="margin-top:12px">收录说明：以上均为作者公开的开源仓库，本节只做外链索引、不复制文件；若需像 Saltline / What the Water Keeps 一样镜像到本站在线游玩，需逐一向原作者取得授权后进行。完整 64 款清单、技术栈横向对比与提示词原文见 <a href="https://github.com/ygx2378/awesome-fable-5-2-games" target="_blank" rel="noopener">awesome-fable-5-2-games</a>（含 CSV 数据）与 <a href="https://github.com/MiaAI-Lab/Claude-Fable-5.2-HTML-Files" target="_blank" rel="noopener">MiaAI-Lab 的 76 个 HTML 作品集</a>。</p>
+    </section>
+
     <section class="section" id="legal">
-      <h2>四、合规与出处</h2>
-      <p class="section-intro">本页为公开资料盘点，立场上中立、数据上注明来源；以下四条适用于全页。</p>
+      <h2>五、合规与出处</h2>
+      <p class="section-intro">本页为公开资料盘点，立场上中立、数据上注明来源；以下五条适用于全页。</p>
       <div class="legal">
         <div>
           <b>版权与授权</b>
-          所有作品版权归原作者 / 平台所有。其中 Saltline 与 What the Water Keeps 两件经站主与原作者沟通获得转载授权（条件：署原作者名，镜像文件头部已附署名注释）；其余作品本页仅做外链指引。Saltline 社区镜像仓库的 MIT 声明仅适用于整理者新增内容；原 artifact 的授权条款以 Anthropic 平台为准。
+          所有作品版权归原作者 / 平台所有。其中 Saltline 与 What the Water Keeps 两件经站主与原作者沟通获得转载授权（条件：署原作者名，镜像文件头部已附署名注释）；第四节更多作品仅做外链索引、不复制文件。Saltline 社区镜像仓库的 MIT 声明仅适用于整理者新增内容；原 artifact 的授权条款以 Anthropic 平台为准。
         </div>
         <div>
           <b>「几猫」说明</b>
@@ -320,7 +351,7 @@ cd What-the-Water-Keeps && python3 -m http.server 8732
         </div>
         <div>
           <b>数据来源</b>
-          Felix Rieseberg 于 2026-11-09/10 在 X 的原帖（成本 / token 数据为作者自述，未经独立核实）；pagepop.ai、geeky-gadgets.com、hellobro.ai 等汇编报道。
+          Felix Rieseberg 于 2026-11-09/10 在 X 的原帖（成本 / token 数据为作者自述，未经独立核实）；pagepop.ai、geeky-gadgets.com、hellobro.ai 等汇编报道；第四节 64 款清单数据来自 ygx2378/awesome-fable-5-2-games（2026-11-16 更新版）。
         </div>
         <div>
           <b>站内延伸</b>
@@ -328,6 +359,8 @@ cd What-the-Water-Keeps && python3 -m http.server 8732
         </div>
       </div>
       <div class="related">
+        <a href="/apps/saltline/">Saltline 本站试玩 →</a>
+        <a href="/apps/what-the-water-keeps/">What the Water Keeps 本站试玩 →</a>
         <a href="/project/fable-52-prompt-map/">Fable 5.2 提示词解剖图 →</a>
         <a href="/blog/2026-11-15-fable-52-prompt-leak/">博文：《95万字家底被扒，扒出来的其实是产品》 →</a>
       </div>
