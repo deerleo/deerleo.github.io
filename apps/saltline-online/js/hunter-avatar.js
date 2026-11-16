@@ -1,6 +1,6 @@
-import { GLTFLoader } from '/vendor/GLTFLoader.js';
-import { MeshoptDecoder } from '/vendor/meshopt_decoder.module.js';
-import { clone as cloneSkinned } from '/vendor/SkeletonUtils.js';
+import { GLTFLoader } from '../vendor/GLTFLoader.js';
+import { MeshoptDecoder } from '../vendor/meshopt_decoder.module.js';
+import { clone as cloneSkinned } from '../vendor/SkeletonUtils.js';
 
 (() => {
   'use strict';
@@ -14,14 +14,14 @@ import { clone as cloneSkinned } from '/vendor/SkeletonUtils.js';
   const SOLDIERS = {
     male: {
       id: 'male',
-      url: '/models/hunter.glb',
+      url: '../models/hunter.glb',
       height: 1.88,
       yaw: Math.PI,
       tint: { hue: 0.34, sat: 1.05, light: 0.86, grey: 0.7, skin: '#c08a63', hair: '#2c2216' }
     },
     female: {
       id: 'female',
-      url: '/models/female-soldier.glb',
+      url: '../models/female-soldier.glb',
       height: 1.84,
       // The female template faces the opposite local axis to the male model.
       // Keep both characters pointing along the player's forward (-Z) axis.
@@ -515,7 +515,7 @@ import { clone as cloneSkinned } from '/vendor/SkeletonUtils.js';
   const failures = new Map();
   const loads = {};
   let pac9Template = null;
-  const weaponLoad = loader.loadAsync('/models/pac9-rifle.glb').then((gltf) => {
+  const weaponLoad = loader.loadAsync('../models/pac9-rifle.glb').then((gltf) => {
     pac9Template = gltf.scene;
     pac9Template.updateMatrixWorld(true);
     return pac9Template;

@@ -1,4 +1,4 @@
-import { clone as cloneSkinned } from '/vendor/SkeletonUtils.js';
+import { clone as cloneSkinned } from '../vendor/SkeletonUtils.js';
 
 (() => {
   'use strict';

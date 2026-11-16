@@ -13,7 +13,7 @@
 
     function load(id) {
       if (!cache.has(id)) {
-        cache.set(id, fetch('/audio/maps/' + id + '.mp3')
+        cache.set(id, fetch('audio/maps/' + id + '.mp3')
           .then(response => {
             if (!response.ok) throw new Error('Map music: ' + response.status);
             return response.arrayBuffer();

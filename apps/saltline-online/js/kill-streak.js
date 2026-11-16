@@ -25,7 +25,7 @@
   let unlockArmed = false;
 
   function sourceUrl(name, extension) {
-    return '/audio/killstreak/' + name + '.' + extension + '?v=' + ASSET_VERSION;
+    return 'audio/killstreak/' + name + '.' + extension + '?v=' + ASSET_VERSION;
   }
 
   function createTrack(level) {

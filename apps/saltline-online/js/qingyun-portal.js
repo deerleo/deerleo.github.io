@@ -2,7 +2,7 @@
   'use strict';
 
   const zone = window.SaltQingyunZone;
-  const assets = '/maps/';
+  const assets = 'maps/';
   let loading;
 
   async function fetchAsset(name, format) {

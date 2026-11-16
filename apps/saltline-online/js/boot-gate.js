@@ -167,7 +167,7 @@
     return new Promise((resolve, reject) => {
       const script = document.createElement('script');
       const suffix = version ? '?v=' + encodeURIComponent(version) : '';
-      script.src = '/js/' + file + suffix;
+      script.src = 'js/' + file + suffix;
       script.async = false;
       if (type === 'module') script.type = 'module';
       script.onload = () => resolve(script);

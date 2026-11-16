@@ -53,12 +53,12 @@
         const promise = (zone.id === 'mothlight'
           ? new Promise((resolve, reject) => {
             const script = document.createElement('script');
-            script.src = '/maps/mothlight-environment.js';
+            script.src = 'maps/mothlight-environment.js';
             script.onload = () => resolve(window.createMothlightEnvironment());
             script.onerror = () => { script.remove(); reject(new Error('Mothlight load failed')); };
             document.head.append(script);
           })
-          : import('/maps/' + zone.id + '-environment.mjs?v=2').then(module => module.createEnvironment()))
+          : import('maps/' + zone.id + '-environment.mjs?v=2').then(module => module.createEnvironment()))
           .catch(error => { loads.delete(zone.id); throw error; });
         loads.set(zone.id, promise);
       }

@@ -4,7 +4,7 @@
   const config = window.__SALT_I18N__ || {};
   const messages = config.messages || {};
   const copy = messages.community || {};
-  const QR_SRC = '/img/saltline-wechat-group.svg';
+  const QR_SRC = 'img/saltline-wechat-group.svg';
   const QR_FILE = 'saltline-wechat-group.svg';
 
   const t = (key) => (typeof copy[key] === 'string' ? copy[key] : key);
