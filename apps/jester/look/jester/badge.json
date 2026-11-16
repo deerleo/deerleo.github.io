@@ -1,0 +1,39 @@
+{
+  "size": 512,
+  "face": {
+    "cx": 256.0,
+    "cy": 292.3,
+    "rx": 127.2,
+    "ry": 127.2
+  },
+  "variants": {
+    "classic": {
+      "file": "classic-badge.webp",
+      "colors": [
+        "#6B2FB3",
+        "#D4243A"
+      ]
+    },
+    "lisa": {
+      "file": "lisa-badge.webp",
+      "colors": [
+        "#E8507A",
+        "#6B2FB3"
+      ]
+    },
+    "alex": {
+      "file": "alex-badge.webp",
+      "colors": [
+        "#3B82C4",
+        "#2E9E6B"
+      ]
+    },
+    "aaron": {
+      "file": "aaron-badge.webp",
+      "colors": [
+        "#F2C14E",
+        "#D4243A"
+      ]
+    }
+  }
+}

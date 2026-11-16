@@ -1,0 +1,9 @@
+All 3D models and animations in this folder are by Quaternius (https://quaternius.com)
+and are released under CC0 1.0 (public domain).
+- human.glb: Universal Animation Library (mannequin + animations)
+- horse.glb, cow.glb: Farm Animals pack
+- wolf.glb: Animal Pack Vol. 2
+- trees, rocks, plants: Stylized Nature MegaKit (standard edition)
+
+Textures in tex/ are from Poly Haven (https://polyhaven.com), released under CC0:
+leafy_grass, dry_ground_01, dirt, dry_ground_rocks, raw_plank_wall

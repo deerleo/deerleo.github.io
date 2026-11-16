@@ -1,0 +1,971 @@
+(function () {
+  'use strict';
+
+  const i18n = window.__SALT_I18N__ || {};
+  const COPY = (i18n.messages && i18n.messages.focus) || {};
+  const MP_COPY = (i18n.messages && i18n.messages.mp) || {};
+  const CLIENT_KEY = 'saltline.focus.clientId';
+  const UNIT_KEYS = {
+    male: 'unitMale',
+    female: 'unitFemale',
+    hound: 'unitHound',
+    drone: 'unitDrone',
+    classic: 'unitClassic'
+  };
+  const MANUAL_DURATION_MS = 30 * 60 * 1000;
+  const AUTO_DURATION_MS = 20 * 60 * 1000;
+
+  function t(key, vars) {
+    const raw = COPY[key];
+    if (typeof raw !== 'string') return key;
+    return raw.replace(/\{(\w+)\}/g, function (match, name) {
+      return vars && Object.prototype.hasOwnProperty.call(vars, name) ? String(vars[name]) : match;
+    });
+  }
+
+  function mpText(key) {
+    return typeof MP_COPY[key] === 'string' ? MP_COPY[key] : key;
+  }
+
+  function hashText(text) {
+    let h1 = 0x811c9dc5;
+    let h2 = 0x9e3779b9;
+    const value = String(text || '');
+    for (let i = 0; i < value.length; i += 1) {
+      const code = value.charCodeAt(i);
+      h1 ^= code;
+      h1 = Math.imul(h1, 0x01000193) >>> 0;
+      h2 ^= code + i;
+      h2 = Math.imul(h2, 0x85ebca6b) >>> 0;
+    }
+    return ('00000000' + h1.toString(16)).slice(-8) + ('00000000' + h2.toString(16)).slice(-8);
+  }
+
+  function createId() {
+    try {
+      if (window.crypto && typeof window.crypto.randomUUID === 'function') {
+        return 'c_' + window.crypto.randomUUID().replace(/-/g, '');
+      }
+    } catch (err) { /* ignore */ }
+    return 'c_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 14);
+  }
+
+  function loadClientId() {
+    try {
+      const saved = String(localStorage.getItem(CLIENT_KEY) || '').trim();
+      if (/^[A-Za-z0-9_-]{6,80}$/.test(saved)) return saved;
+    } catch (err) { /* storage unavailable */ }
+    const created = createId().slice(0, 80);
+    try { localStorage.setItem(CLIENT_KEY, created); } catch (err) { /* ignore */ }
+    return created;
+  }
+
+  function browserFingerprint() {
+    const nav = navigator || {};
+    const scr = window.screen || {};
+    const parts = [
+      nav.userAgent,
+      nav.language,
+      Array.isArray(nav.languages) ? nav.languages.join(',') : '',
+      nav.platform,
+      nav.hardwareConcurrency,
+      nav.deviceMemory,
+      scr.width,
+      scr.height,
+      scr.availWidth,
+      scr.availHeight,
+      scr.colorDepth,
+      window.devicePixelRatio,
+      new Date().getTimezoneOffset(),
+      Intl && Intl.DateTimeFormat ? Intl.DateTimeFormat().resolvedOptions().timeZone : ''
+    ];
+    try {
+      const canvas = document.createElement('canvas');
+      canvas.width = 160;
+      canvas.height = 44;
+      const ctx = canvas.getContext('2d');
+      if (ctx) {
+        ctx.textBaseline = 'top';
+        ctx.font = '600 16px "Arial"';
+        ctx.fillStyle = '#f4b35a';
+        ctx.fillRect(0, 0, 160, 44);
+        ctx.fillStyle = '#0b0d0f';
+        ctx.fillText('Saltline focus 30m', 4, 8);
+        parts.push(canvas.toDataURL());
+      }
+      const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+      if (gl) {
+        const ext = gl.getExtension('WEBGL_debug_renderer_info');
+        parts.push(gl.getParameter(gl.VENDOR));
+        parts.push(gl.getParameter(gl.RENDERER));
+        if (ext) {
+          parts.push(gl.getParameter(ext.UNMASKED_VENDOR_WEBGL));
+          parts.push(gl.getParameter(ext.UNMASKED_RENDERER_WEBGL));
+        }
+      }
+    } catch (err) { /* canvas privacy restrictions */ }
+    return 'fp1-' + hashText(parts.join('|'));
+  }
+
+  const identity = {
+    clientId: loadClientId(),
+    fingerprint: browserFingerprint()
+  };
+
+  const state = {
+    active: false,
+    ending: false,
+    until: 0,
+    record: null,
+    targetId: null,
+    targetSince: 0,
+    targetManual: false,
+    targetNoticeAt: 0,
+    spectatorSignature: '',
+    renderedTargetId: '',
+    game: null,
+    resumeGameplay: false,
+    preFocusState: '',
+    lateSpawnUntil: 0,
+    lastEndAt: 0,
+    finishFallbackAt: 0,
+    statusAt: 0,
+    kind: 'manual',
+    durationMs: MANUAL_DURATION_MS,
+    play: null
+  };
+
+  window.__SALT_FOCUS__ = {
+    clientId: identity.clientId,
+    fingerprint: identity.fingerprint,
+    get active() { return state.active; },
+    get until() { return state.until; },
+    get kind() { return state.kind; },
+    get targetId() { return state.targetId; },
+    get targetManual() { return state.targetManual; },
+    switchTarget(direction) { return stepTarget(Number(direction) || 1); },
+    selectTarget(id) { return selectTarget(id, true); }
+  };
+
+  function formatClock(ms) {
+    const total = Math.max(0, Math.ceil(Number(ms) / 1000));
+    const minutes = Math.floor(total / 60);
+    const seconds = total % 60;
+    return String(minutes).padStart(2, '0') + ':' + String(seconds).padStart(2, '0');
+  }
+
+  function formatMinutes(ms) {
+    return String(Math.max(0, Math.floor((Number(ms) || 0) / 60000)));
+  }
+
+  function toast(text) {
+    if (!text) return;
+    try {
+      if (window.__mp && typeof window.__mp.toast === 'function') {
+        window.__mp.toast(text);
+        return;
+      }
+    } catch (err) { /* ignore */ }
+    const node = document.getElementById('app-toast');
+    if (!node) return;
+    node.textContent = text;
+    node.hidden = false;
+    node.classList.add('on');
+    window.clearTimeout(node.__focusTimer);
+    node.__focusTimer = window.setTimeout(function () {
+      node.classList.remove('on');
+      node.hidden = true;
+    }, 2600);
+  }
+
+  const root = document.createElement('div');
+  root.id = 'focus-mode';
+  root.hidden = true;
+  root.setAttribute('role', 'status');
+  root.setAttribute('aria-live', 'polite');
+  root.innerHTML = [
+    '<div class="focus-grid" aria-hidden="true"></div>',
+    '<div class="focus-vignette" aria-hidden="true"></div>',
+    '<header class="focus-head">',
+    '  <div class="focus-brand"><span>SL</span><div><b id="focus-kicker">' + t('activeKicker') + '</b><em>' + t('locked') + '</em></div></div>',
+    '  <div class="focus-live"><i></i><span>' + t('spectating') + '</span></div>',
+    '  <div class="focus-time"><span>' + t('remaining') + '</span><b id="focus-clock">30:00</b></div>',
+    '</header>',
+    '<div class="focus-stage">',
+    '  <div class="focus-reticle" aria-hidden="true"><i></i><b></b></div>',
+    '  <div class="focus-target-card">',
+    '    <div class="focus-target-topline">',
+    '      <span class="focus-target-k">' + t('watching') + '</span>',
+    '      <button type="button" class="focus-auto-toggle is-active" id="focus-auto-toggle" data-focus-auto aria-pressed="true">',
+    '        <i aria-hidden="true"></i><span id="focus-auto-label">' + t('targetAuto') + '</span>',
+    '      </button>',
+    '    </div>',
+    '    <b id="focus-target-name">' + t('waiting') + '</b>',
+    '    <em id="focus-target-unit"></em>',
+    '    <div class="focus-target-switch">',
+    '      <button type="button" class="focus-switch-button" data-focus-step="-1" aria-label="' + t('previousTarget') + '">',
+    '        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5 8 12l7 7"/></svg>',
+    '      </button>',
+    '      <span class="focus-target-count" id="focus-target-count">' + t('targetCounter', { index: 0, total: 0 }) + '</span>',
+    '      <button type="button" class="focus-switch-button" data-focus-step="1" aria-label="' + t('nextTarget') + '">',
+    '        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 5 7 7-7 7"/></svg>',
+    '      </button>',
+    '      <span class="focus-target-hint">' + t('switchHint') + '</span>',
+    '    </div>',
+    '    <div class="focus-spectator-list" id="focus-spectator-list" role="listbox" aria-label="' + t('spectatorList') + '"></div>',
+    '  </div>',
+    '  <div class="focus-waiting" id="focus-waiting" hidden><b>' + t('waiting') + '</b><span>' + t('waitingHint') + '</span></div>',
+    '</div>',
+    '<footer class="focus-foot">',
+    '  <div class="focus-progress"><i id="focus-progress"></i></div>',
+    '  <p id="focus-footer">' + t('footer') + '</p>',
+    '  <small id="focus-record"></small>',
+    '</footer>'
+  ].join('');
+  document.getElementById('app')?.appendChild(root);
+
+  const dialog = document.createElement('div');
+  dialog.className = 'focus-dialog';
+  dialog.hidden = true;
+  dialog.innerHTML = [
+    '<div class="focus-dialog-backdrop" data-focus-cancel></div>',
+    '<section class="focus-dialog-card" role="dialog" aria-modal="true" aria-labelledby="focus-dialog-title">',
+    '  <span class="focus-dialog-kicker">' + t('activeKicker') + '</span>',
+    '  <h2 id="focus-dialog-title">' + t('dialogTitle') + '</h2>',
+    '  <p class="focus-dialog-lead">' + t('dialogLead') + '</p>',
+    '  <ul>',
+    '    <li><i>01</i>' + t('dialogBullet1') + '</li>',
+    '    <li><i>02</i>' + t('dialogBullet2') + '</li>',
+    '    <li><i>03</i>' + t('dialogBullet3') + '</li>',
+    '  </ul>',
+    '  <p class="focus-dialog-privacy">' + t('privacy') + '</p>',
+    '  <div class="focus-dialog-actions">',
+    '    <button type="button" class="btn" data-focus-cancel>' + t('cancel') + '</button>',
+    '    <button type="button" class="btn primary" data-focus-confirm><span>' + t('confirm') + '</span></button>',
+    '  </div>',
+    '</section>'
+  ].join('');
+  document.getElementById('app')?.appendChild(dialog);
+
+  const ui = {
+    clock: root.querySelector('#focus-clock'),
+    progress: root.querySelector('#focus-progress'),
+    targetName: root.querySelector('#focus-target-name'),
+    targetUnit: root.querySelector('#focus-target-unit'),
+    targetCount: root.querySelector('#focus-target-count'),
+    autoToggle: root.querySelector('#focus-auto-toggle'),
+    autoLabel: root.querySelector('#focus-auto-label'),
+    spectatorList: root.querySelector('#focus-spectator-list'),
+    waiting: root.querySelector('#focus-waiting'),
+    record: root.querySelector('#focus-record'),
+    kicker: root.querySelector('#focus-kicker'),
+    footer: root.querySelector('#focus-footer'),
+    confirm: dialog.querySelector('[data-focus-confirm]')
+  };
+
+  function apiUrl(path) {
+    const params = new URLSearchParams({
+      clientId: identity.clientId,
+      fingerprint: identity.fingerprint
+    });
+    return path + '?' + params.toString();
+  }
+
+  async function fetchStatus() {
+    try {
+      const res = await fetch(apiUrl('/api/focus/status'), {
+        cache: 'no-store',
+        headers: { accept: 'application/json' }
+      });
+      if (!res.ok) return null;
+      const data = await res.json();
+      return data && data.focus ? {
+        focus: data.focus,
+        play: data.play || null,
+        now: Number(data.now) || Date.now()
+      } : null;
+    } catch (err) {
+      return null;
+    }
+  }
+
+  function applyRecord(record) {
+    if (!record) return;
+    state.record = record;
+    state.until = Number(record.expiresAt) || state.until;
+    state.kind = record.kind === 'auto' ? 'auto' : 'manual';
+    state.durationMs = Number(record.durationMs) || (state.kind === 'auto' ? AUTO_DURATION_MS : MANUAL_DURATION_MS);
+    const parts = [];
+    if (record.id) parts.push(record.id);
+    if (record.fingerprint) parts.push(record.fingerprint);
+    if (record.ip) parts.push(record.ip);
+    ui.record.textContent = parts.length ? t('record', {
+      id: record.id || '—',
+      fingerprint: record.fingerprint || '—',
+      ip: record.ip || '—'
+    }) : '';
+  }
+
+  function muteClientMic() {
+    try {
+      const mic = document.querySelector('#vc-mic[aria-pressed="true"]');
+      if (mic) mic.click();
+    } catch (err) { /* ignore */ }
+    try {
+      if (window.__mp && typeof window.__mp.send === 'function') {
+        window.__mp.send({ type: 'voiceState', enabled: false, muted: true, speaking: false });
+      }
+    } catch (err) { /* ignore */ }
+  }
+
+  function detectResumeGameplay() {
+    const game = state.game || window.__G;
+    const value = game && game.game ? String(game.game.state || '') : '';
+    state.preFocusState = value;
+    state.resumeGameplay = value === 'playing' || value === 'paused' || value === 'dead' || value === 'respawning';
+  }
+
+  function deployFocusSpawn(message) {
+    if (!message || !message.spawn) return false;
+    try {
+      if (window.__mp && typeof window.__mp.focusDeploy === 'function') {
+        window.__mp.focusDeploy(message.spawn, message.protectedUntil);
+        state.lateSpawnUntil = 0;
+        return true;
+      }
+    } catch (err) { /* ignore */ }
+    return false;
+  }
+
+  function restorePlayableState() {
+    const game = state.game || window.__G;
+    if (!game) return;
+    const before = state.preFocusState;
+    const wasPlayable = before === 'playing' || before === 'paused' || state.resumeGameplay;
+    if (!wasPlayable) return;
+    const gameApi = game.game || {};
+    try {
+      if (gameApi.state === 'paused' && typeof gameApi.resume === 'function') gameApi.resume();
+    } catch (err) { /* ignore */ }
+    try { if (game.player) game.player.enabled = true; } catch (err) { /* ignore */ }
+    try { if (game.hud && game.hud.show) game.hud.show(true); } catch (err) { /* ignore */ }
+    try {
+      if (game.input && game.input.setGameplay) game.input.setGameplay(true);
+    } catch (err) { /* ignore */ }
+    try {
+      if (game.player && typeof game.player.syncView === 'function') game.player.syncView();
+    } catch (err) { /* ignore */ }
+  }
+
+  function activate(focus) {
+    const record = focus && focus.record ? focus.record : state.record;
+    const until = Number(focus && focus.until) || Number(record && record.expiresAt) || 0;
+    if (!until || until <= Date.now() + 500) {
+      refreshStatus();
+      return;
+    }
+    const wasActive = state.active;
+    const kind = (focus && focus.kind) || (record && record.kind) || state.kind || 'manual';
+    if (!state.active) detectResumeGameplay();
+    if (!wasActive) {
+      state.targetId = null;
+      state.targetSince = 0;
+      state.targetManual = false;
+      state.targetNoticeAt = 0;
+      state.spectatorSignature = '';
+      state.renderedTargetId = '';
+      state.lateSpawnUntil = 0;
+    }
+    state.active = true;
+    state.ending = false;
+    state.finishFallbackAt = 0;
+    state.until = until;
+    state.kind = kind === 'auto' ? 'auto' : 'manual';
+    state.durationMs = Number(focus && focus.durationMs) || Number(record && record.durationMs) ||
+      (state.kind === 'auto' ? AUTO_DURATION_MS : MANUAL_DURATION_MS);
+    if (record) applyRecord(record);
+    document.body.classList.add('focus-mode-on');
+    root.hidden = false;
+    dialog.hidden = true;
+    document.body.classList.remove('focus-dialog-open');
+    muteClientMic();
+    enforceLock();
+    renderFocus();
+    if (!wasActive && state.kind === 'auto') toast(t('autoStarted'));
+  }
+
+  function finishFocus(message) {
+    const wasActive = state.active;
+    const endedKind = state.kind;
+    state.active = false;
+    state.ending = false;
+    state.targetId = null;
+    state.targetSince = 0;
+    state.targetManual = false;
+    state.targetNoticeAt = 0;
+    state.spectatorSignature = '';
+    state.renderedTargetId = '';
+    state.until = 0;
+    state.finishFallbackAt = 0;
+    state.kind = 'manual';
+    state.durationMs = MANUAL_DURATION_MS;
+    state.record = null;
+    root.hidden = true;
+    document.body.classList.remove('focus-mode-on');
+    const canSpawn = state.resumeGameplay;
+    const deployed = !!(canSpawn && message && message.spawn && deployFocusSpawn(message));
+    restorePlayableState();
+    state.lateSpawnUntil = canSpawn && !deployed ? Date.now() + 60000 : 0;
+    state.resumeGameplay = false;
+    state.preFocusState = '';
+    updateSettingsRow();
+    if (wasActive) toast(t(endedKind === 'auto' ? 'autoEnded' : 'ended'));
+  }
+
+  function requestFocusEnd() {
+    const now = Date.now();
+    if (now - state.lastEndAt < 3000) return;
+    state.lastEndAt = now;
+    try {
+      if (window.__mp && typeof window.__mp.send === 'function') {
+        window.__mp.send({ type: 'focusEnd' });
+      }
+    } catch (err) { /* ignore */ }
+  }
+
+  async function refreshStatus() {
+    const status = await fetchStatus();
+    state.statusAt = Date.now();
+    if (!status) return;
+    state.play = status.play;
+    const focus = status.focus;
+    if (focus.active && focus.record) {
+      if (!state.active) {
+        activate(focus);
+      } else {
+        state.until = Number(focus.record.expiresAt) || state.until;
+        state.kind = focus.record.kind === 'auto' ? 'auto' : 'manual';
+        state.durationMs = Number(focus.record.durationMs) || state.durationMs;
+        applyRecord(focus.record);
+        updateSettingsRow();
+      }
+    } else if (state.active && (!focus.active || state.ending || Date.now() >= state.until)) {
+      requestFocusEnd();
+      if (!state.finishFallbackAt) state.finishFallbackAt = Date.now() + 6500;
+      if (Date.now() > state.finishFallbackAt) finishFocus(null);
+    } else if (!state.active) {
+      updateSettingsRow();
+    }
+  }
+
+  function enforceLock() {
+    if (!state.active) return;
+    const game = window.__G;
+    if (!game) return;
+    try { if (game.input && game.input.setGameplay) game.input.setGameplay(false); } catch (err) { /* ignore */ }
+    try { if (game.input && game.input.exitLock) game.input.exitLock(); } catch (err) { /* ignore */ }
+    try { if (game.player) game.player.enabled = false; } catch (err) { /* ignore */ }
+    try { if (game.hud && game.hud.show) game.hud.show(false); } catch (err) { /* ignore */ }
+    try {
+      if (game.game && game.game.menus && game.game.menus.screen !== 'none') game.game.menus.show('none');
+    } catch (err) { /* ignore */ }
+  }
+
+  function targets() {
+    const mp = window.__mp;
+    if (!mp || !Array.isArray(mp.avatarList)) return [];
+    const self = mp.id;
+    const order = new Map();
+    if (Array.isArray(mp.roster)) {
+      mp.roster.forEach(function (item, index) {
+        if (item && item.id != null) order.set(String(item.id), index);
+      });
+    }
+    return mp.avatarList.filter(function (item) {
+      return item && item.data && String(item.id) !== String(self) && item.data.alive !== false;
+    }).sort(function (a, b) {
+      const aOrder = order.has(String(a.id)) ? order.get(String(a.id)) : Number.MAX_SAFE_INTEGER;
+      const bOrder = order.has(String(b.id)) ? order.get(String(b.id)) : Number.MAX_SAFE_INTEGER;
+      if (aOrder !== bOrder) return aOrder - bOrder;
+      return String(a.data.name || '').localeCompare(String(b.data.name || ''));
+    });
+  }
+
+  function pickTarget(now) {
+    const list = targets();
+    if (!list.length) {
+      state.targetId = null;
+      state.targetManual = false;
+      return null;
+    }
+    let current = null;
+    for (const item of list) {
+      if (String(item.id) === String(state.targetId)) { current = item; break; }
+    }
+    if (state.targetManual && current) return current;
+    if (state.targetManual && !current && state.targetId) {
+      state.targetManual = false;
+      state.targetId = null;
+      if (now - state.targetNoticeAt > 2500) {
+        state.targetNoticeAt = now;
+        toast(t('targetLeft'));
+      }
+    }
+    if (current && now - state.targetSince < 9000) return current;
+    const index = list.findIndex(function (item) { return String(item.id) === String(state.targetId); });
+    const next = list[index >= 0 ? (index + 1) % list.length : 0] || list[0];
+    if (!state.targetId || String(state.targetId) !== String(next.id)) {
+      state.targetId = String(next.id);
+      state.targetSince = now;
+    }
+    return next;
+  }
+
+  function unitText(kind) {
+    return mpText(UNIT_KEYS[kind] || 'unitMale');
+  }
+
+  function renderSpectatorList(list, target) {
+    const signature = list.map(function (item) {
+      return [item.id, (item.data && item.data.name) || '', (item.data && item.data.soldier) || ''].join('|');
+    }).join('||');
+    if (signature !== state.spectatorSignature) {
+      state.spectatorSignature = signature;
+      state.renderedTargetId = '';
+      ui.spectatorList.replaceChildren();
+      if (!list.length) {
+        const empty = document.createElement('span');
+        empty.className = 'focus-spectator-empty';
+        empty.textContent = t('targetEmpty');
+        ui.spectatorList.appendChild(empty);
+      } else {
+        list.forEach(function (item) {
+          const name = (item.data && item.data.name) || t('watching');
+          const kind = (item.data && item.data.soldier) || 'male';
+          const option = document.createElement('button');
+          option.type = 'button';
+          option.className = 'focus-spectator-option';
+          option.dataset.focusTargetId = String(item.id);
+          option.setAttribute('role', 'option');
+          option.setAttribute('aria-selected', 'false');
+          option.title = name + ' · ' + unitText(kind);
+
+          const dot = document.createElement('i');
+          dot.className = 'focus-spectator-dot';
+          dot.style.background = (item.data && item.data.color) || '#ffb347';
+          dot.style.color = (item.data && item.data.color) || '#ffb347';
+          dot.setAttribute('aria-hidden', 'true');
+
+          const label = document.createElement('span');
+          label.textContent = name;
+          const unit = document.createElement('small');
+          unit.textContent = unitText(kind);
+
+          option.append(dot, label, unit);
+          ui.spectatorList.appendChild(option);
+        });
+      }
+    }
+    const activeId = target ? String(target.id) : '';
+    const selectionChanged = state.renderedTargetId !== activeId;
+    state.renderedTargetId = activeId;
+    ui.spectatorList.querySelectorAll('[data-focus-target-id]').forEach(function (option) {
+      const selected = option.dataset.focusTargetId === activeId;
+      option.classList.toggle('is-active', selected);
+      option.setAttribute('aria-selected', selected ? 'true' : 'false');
+      if (selected && selectionChanged) {
+        try { option.scrollIntoView({ block: 'nearest', inline: 'nearest' }); } catch (err) { /* ignore */ }
+      }
+    });
+  }
+
+  function renderTarget(target, list) {
+    const options = Array.isArray(list) ? list : targets();
+    if (!target) {
+      setText(ui.targetName, t('waiting'));
+      setText(ui.targetUnit, '');
+      ui.waiting.hidden = false;
+      setText(ui.targetCount, t('targetCounter', { index: 0, total: options.length }));
+      ui.autoToggle.classList.toggle('is-active', !state.targetManual);
+      ui.autoToggle.setAttribute('aria-pressed', state.targetManual ? 'false' : 'true');
+      setText(ui.autoLabel, t(state.targetManual ? 'targetAutoResume' : 'targetAuto'));
+      root.dataset.targetMode = state.targetManual ? 'manual' : 'auto';
+      renderSpectatorList(options, null);
+      return;
+    }
+    ui.waiting.hidden = true;
+    setText(ui.targetName, (target.data && target.data.name) || t('watching'));
+    const kind = (target.data && target.data.soldier) || 'male';
+    setText(ui.targetUnit, unitText(kind));
+    const index = options.findIndex(function (item) { return String(item.id) === String(target.id); });
+    setText(ui.targetCount, t('targetCounter', { index: index >= 0 ? index + 1 : 0, total: options.length }));
+    ui.autoToggle.classList.toggle('is-active', !state.targetManual);
+    ui.autoToggle.setAttribute('aria-pressed', state.targetManual ? 'false' : 'true');
+    setText(ui.autoLabel, t(state.targetManual ? 'targetAutoResume' : 'targetAuto'));
+    root.dataset.targetMode = state.targetManual ? 'manual' : 'auto';
+    renderSpectatorList(options, target);
+  }
+
+  function selectTarget(id, announce) {
+    const list = targets();
+    const target = list.find(function (item) { return String(item.id) === String(id); });
+    if (!target) {
+      if (announce !== false) toast(t('targetEmpty'));
+      return false;
+    }
+    state.targetId = String(target.id);
+    state.targetManual = true;
+    state.targetSince = Date.now();
+    renderTarget(target, list);
+    if (announce !== false) {
+      toast(t('targetSelected', { name: (target.data && target.data.name) || t('watching') }));
+    }
+    return true;
+  }
+
+  function stepTarget(direction) {
+    const list = targets();
+    if (!list.length) {
+      if (Date.now() - state.targetNoticeAt > 1800) {
+        state.targetNoticeAt = Date.now();
+        toast(t('targetEmpty'));
+      }
+      return false;
+    }
+    if (list.length === 1) {
+      selectTarget(list[0].id, false);
+      toast(t('targetSingle'));
+      return true;
+    }
+    const current = list.findIndex(function (item) { return String(item.id) === String(state.targetId); });
+    const delta = direction < 0 ? -1 : 1;
+    const next = current < 0
+      ? (delta < 0 ? list.length - 1 : 0)
+      : (current + delta + list.length) % list.length;
+    return selectTarget(list[next].id, true);
+  }
+
+  function resumeAuto(announce) {
+    state.targetManual = false;
+    state.targetId = null;
+    state.targetSince = 0;
+    renderFocus();
+    if (announce !== false) toast(t('targetAutoOn'));
+  }
+
+  function spectatorCamera(now) {
+    if (!state.active) return;
+    const game = window.__G;
+    const camera = game && game.camera;
+    if (!camera || !camera.position || typeof camera.lookAt !== 'function') return;
+    const target = pickTarget(now);
+    renderTarget(target);
+
+    const dt = Math.min(0.08, Math.max(0.008, (now - (spectatorCamera.last || now - 16)) / 1000));
+    spectatorCamera.last = now;
+    const amount = Math.min(0.18, Math.max(0.035, dt * 3.2));
+    let anchorX = 0;
+    let anchorY = 0;
+    let anchorZ = 4;
+    let kind = 'male';
+    if (target) {
+      anchorX = Number(target.x) || 0;
+      anchorY = Number(target.y) || 0;
+      anchorZ = Number(target.z) || 0;
+      kind = (target.data && target.data.soldier) || 'male';
+    }
+    const angle = now * 0.00011 + (target ? 0.8 : 0);
+    const radius = target ? (kind === 'hound' ? 7 : 9) : 16;
+    const desiredX = anchorX + Math.cos(angle) * radius;
+    const desiredY = anchorY + (kind === 'drone' ? 4.4 : kind === 'hound' ? 2.2 : 3.3);
+    const desiredZ = anchorZ + Math.sin(angle) * radius;
+    camera.position.x += (desiredX - camera.position.x) * amount;
+    camera.position.y += (desiredY - camera.position.y) * amount;
+    camera.position.z += (desiredZ - camera.position.z) * amount;
+    camera.lookAt(anchorX, anchorY + (kind === 'hound' ? 0.5 : kind === 'drone' ? 1.2 : 1.25), anchorZ);
+  }
+
+  function attachGame() {
+    const game = window.__G;
+    if (!game || !game.game || typeof game.game.update !== 'function') return;
+    state.game = game;
+    if (game.game.update.__saltFocusCamera) return;
+    const original = game.game.update;
+    const wrapped = function wrappedFocusUpdate(dt) {
+      const result = original.call(this, dt);
+      try { spectatorCamera(performance.now()); } catch (err) { /* ignore */ }
+      return result;
+    };
+    wrapped.__saltFocusCamera = true;
+    game.game.update = wrapped;
+  }
+
+  function renderModeChrome() {
+    const automatic = state.kind === 'auto';
+    setText(ui.kicker, t(automatic ? 'autoActiveKicker' : 'activeKicker'));
+    setText(ui.footer, t(automatic ? 'autoFooter' : 'footer'));
+    root.classList.toggle('focus-auto', automatic);
+  }
+
+  function renderFocus() {
+    if (!state.active) return;
+    const left = Math.max(0, state.until - Date.now());
+    const duration = Math.max(1000, Number(state.durationMs) || MANUAL_DURATION_MS);
+    renderModeChrome();
+    ui.clock.textContent = formatClock(left);
+    ui.progress.style.transform = 'scaleX(' + Math.max(0, Math.min(1, left / duration)).toFixed(4) + ')';
+    renderTarget(pickTarget(Date.now()));
+    updateSettingsRow();
+  }
+
+  function tick() {
+    attachGame();
+    if (!state.active) return;
+    enforceLock();
+    renderFocus();
+    if (Date.now() >= state.until) {
+      if (!state.ending) {
+        state.ending = true;
+        state.finishFallbackAt = Date.now() + 6500;
+        ui.clock.textContent = '00:00';
+        requestFocusEnd();
+      } else {
+        requestFocusEnd();
+      }
+      if (Date.now() - state.statusAt > 2200) refreshStatus();
+      if (state.finishFallbackAt && Date.now() > state.finishFallbackAt) finishFocus(null);
+    }
+  }
+
+  function openDialog() {
+    if (state.active) {
+      toast(t('blocked'));
+      return;
+    }
+    dialog.hidden = false;
+    document.body.classList.add('focus-dialog-open');
+    window.setTimeout(function () {
+      try { ui.confirm.focus({ preventScroll: true }); } catch (err) { ui.confirm.focus(); }
+    }, 20);
+  }
+
+  function closeDialog() {
+    dialog.hidden = true;
+    document.body.classList.remove('focus-dialog-open');
+  }
+
+  async function startFocus() {
+    if (state.active || ui.confirm.disabled) return;
+    ui.confirm.disabled = true;
+    ui.confirm.setAttribute('aria-busy', 'true');
+    const label = ui.confirm.querySelector('span');
+    const previous = label.textContent;
+    label.textContent = t('starting');
+    let failureText = '';
+    try {
+      const res = await fetch('/api/focus/start', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json', accept: 'application/json' },
+        body: JSON.stringify({ clientId: identity.clientId, fingerprint: identity.fingerprint })
+      });
+      const data = await res.json().catch(function () { return {}; });
+      if (!res.ok || !data.ok || !data.focus) {
+        failureText = typeof data.message === 'string' ? data.message : '';
+        throw new Error('focus start failed');
+      }
+      activate(data.focus);
+      closeDialog();
+      toast(data.persisted === false ? t('startedUnpersisted') : t('started'));
+    } catch (err) {
+      toast(failureText || t('startFailed'));
+    } finally {
+      ui.confirm.disabled = false;
+      ui.confirm.removeAttribute('aria-busy');
+      label.textContent = previous;
+    }
+  }
+
+  let settingRow = null;
+  let settingButton = null;
+  let settingState = null;
+  let settingMeta = null;
+
+  function createSettingsRow() {
+    const row = document.createElement('div');
+    row.className = 'row focus-setting-row';
+    row.dataset.focusSettingRow = '1';
+    row.innerHTML = [
+      '<label>' + t('settingLabel') + '</label>',
+      '<button class="focus-setting-button" type="button" data-focus-setting aria-pressed="false">',
+      '  <b data-focus-setting-state>' + t('settingOff') + '</b>',
+      '  <i data-focus-setting-meta>' + t('settingMetaOff') + '</i>',
+      '</button>'
+    ].join('');
+    return row;
+  }
+
+  function setText(node, value) {
+    if (node && node.textContent !== value) node.textContent = value;
+  }
+
+  function updateSettingsRow() {
+    const left = Math.max(0, state.until - Date.now());
+    const play = state.play;
+    const playMeta = play && play.enabled
+      ? t('settingMetaPlay', {
+        minutes: formatMinutes(play.continuousMs),
+        limit: formatMinutes(play.limitMs),
+        focus: formatMinutes(play.autoDurationMs)
+      })
+      : t('settingMetaOff');
+    if (settingRow) {
+      settingButton.setAttribute('aria-pressed', state.active ? 'true' : 'false');
+      settingButton.classList.toggle('is-active', state.active);
+      setText(settingState, state.active ? t('settingActive') : t('settingOff'));
+      setText(settingMeta, state.active ? t('settingMetaActive', { time: formatClock(left) }) : playMeta);
+    }
+  }
+
+  function installSettingsRow() {
+    const pane = document.querySelector('.panel [data-pane="settings"]');
+    if (!pane) return false;
+    const existing = pane.querySelector('[data-focus-setting-row]');
+    if (existing) {
+      settingRow = existing;
+      settingButton = existing.querySelector('[data-focus-setting]');
+      settingState = existing.querySelector('[data-focus-setting-state]');
+      settingMeta = existing.querySelector('[data-focus-setting-meta]');
+      updateSettingsRow();
+      return true;
+    }
+    settingRow = createSettingsRow();
+    settingButton = settingRow.querySelector('[data-focus-setting]');
+    settingState = settingRow.querySelector('[data-focus-setting-state]');
+    settingMeta = settingRow.querySelector('[data-focus-setting-meta]');
+    settingButton.addEventListener('click', function (event) {
+      event.preventDefault();
+      event.stopPropagation();
+      openDialog();
+    });
+    const note = pane.querySelector('.panel-note');
+    pane.insertBefore(settingRow, note || null);
+    updateSettingsRow();
+    return true;
+  }
+
+  dialog.addEventListener('click', function (event) {
+    if (event.target && event.target.closest('[data-focus-cancel]')) {
+      event.preventDefault();
+      closeDialog();
+    } else if (event.target && event.target.closest('[data-focus-confirm]')) {
+      event.preventDefault();
+      startFocus();
+    }
+  });
+
+  root.addEventListener('click', function (event) {
+    const targetNode = event.target && event.target.closest ? event.target : null;
+    if (!targetNode) return;
+    const autoButton = targetNode.closest('[data-focus-auto]');
+    if (autoButton) {
+      event.preventDefault();
+      resumeAuto(state.targetManual);
+      return;
+    }
+    const stepButton = targetNode.closest('[data-focus-step]');
+    if (stepButton) {
+      event.preventDefault();
+      stepTarget(Number(stepButton.dataset.focusStep) || 1);
+      return;
+    }
+    const playerButton = targetNode.closest('[data-focus-target-id]');
+    if (playerButton) {
+      event.preventDefault();
+      selectTarget(playerButton.dataset.focusTargetId, true);
+    }
+  });
+
+  window.addEventListener('keydown', function (event) {
+    if (!dialog.hidden) {
+      if (event.key === 'Escape') closeDialog();
+      return;
+    }
+    if (!state.active) return;
+    if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') {
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      stepTarget(event.key === 'ArrowLeft' ? -1 : 1);
+      return;
+    }
+    if (event.key === 'F5' || event.key === 'F11' || event.key === 'F12') return;
+    if ((event.ctrlKey || event.metaKey) && !['KeyR', 'KeyW', 'KeyL', 'KeyT', 'KeyN'].includes(event.code)) return;
+    event.preventDefault();
+    event.stopImmediatePropagation();
+  }, true);
+
+  ['pointerdown', 'mousedown', 'touchstart', 'wheel'].forEach(function (type) {
+    window.addEventListener(type, function (event) {
+      if (!state.active) return;
+      if (root.contains(event.target)) return;
+      event.preventDefault();
+      event.stopImmediatePropagation();
+    }, { capture: true, passive: false });
+  });
+
+  document.addEventListener('pointerlockchange', function () {
+    if (state.active && document.pointerLockElement) {
+      try { document.exitPointerLock(); } catch (err) { /* ignore */ }
+    }
+  });
+  document.addEventListener('visibilitychange', function () {
+    if (!document.hidden && state.active) enforceLock();
+  });
+
+  const observer = new MutationObserver(function () {
+    installSettingsRow();
+  });
+  observer.observe(document.getElementById('app') || document.body, { childList: true, subtree: true });
+  installSettingsRow();
+
+  let mpAttached = false;
+  function attachMp() {
+    if (mpAttached || !window.__mp || typeof window.__mp.onMessage !== 'function') return;
+    mpAttached = true;
+    window.__mp.onMessage(function (msg) {
+      if (!msg || msg.type !== 'focusState') return;
+      if (msg.active) {
+        activate({
+          active: true,
+          until: Number(msg.until) || state.until,
+          record: state.record,
+          kind: msg.kind,
+          durationMs: msg.durationMs,
+          trigger: msg.trigger
+        });
+        if (!state.record) refreshStatus();
+      } else if (state.active) {
+        if (msg.ended && msg.spawn) {
+          finishFocus(msg);
+        } else if (msg.expired) {
+          state.ending = true;
+          state.finishFallbackAt = Date.now() + 6500;
+          requestFocusEnd();
+        }
+      } else if (msg.ended && msg.spawn && state.lateSpawnUntil > Date.now()) {
+        deployFocusSpawn(msg);
+      }
+      if (msg.denied) toast(t('blocked'));
+      if ((msg.ended || msg.expired) && !state.record) refreshStatus();
+    });
+  }
+
+  window.setInterval(function () {
+    attachMp();
+    attachGame();
+  }, 400);
+  window.setInterval(tick, 1000);
+  window.setInterval(refreshStatus, 30000);
+  window.setTimeout(tick, 120);
+
+  refreshStatus();
+})();

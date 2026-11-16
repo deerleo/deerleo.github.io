@@ -1,0 +1,20 @@
+<svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+<!-- Figma "Pin pointer" rotated -30deg about the pin centre (17.5,19.625). Tip/hotspot lands at (15.5,9.3). -->
+<g transform="translate(24 24) rotate(-30) translate(-17.5 -19.625)">
+<g id="Pin pointer" filter="url(#filter0_d_0_26)">
+<path id="Vector" d="M17.5 3.125C17.5 3.125 29.875 15.125 29.875 24.125C29.875 27.4071 28.5712 30.5547 26.2504 32.8754C23.9297 35.1962 20.7821 36.5 17.5 36.5C14.2179 36.5 11.0703 35.1962 8.74955 32.8754C6.42879 30.5547 5.125 27.4071 5.125 24.125C5.125 15.125 17.5 3.125 17.5 3.125Z" fill="#D8F07A" stroke-width="2.25" stroke-linejoin="round" stroke="#17201A"/>
+<path id="Vector_2" d="M17.5 28.25C19.7782 28.25 21.625 26.4032 21.625 24.125C21.625 21.8468 19.7782 20 17.5 20C15.2218 20 13.375 21.8468 13.375 24.125C13.375 26.4032 15.2218 28.25 17.5 28.25Z" fill="#17201A"/>
+</g>
+<defs>
+<filter id="filter0_d_0_26" x="-1.5" y="-0.375" width="38" height="44" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+<feFlood flood-opacity="0" result="BackgroundImageFix"/>
+<feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+<feOffset dy="2"/>
+<feGaussianBlur stdDeviation="2"/>
+<feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.35 0"/>
+<feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_0_26"/>
+<feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_0_26" result="shape"/>
+</filter>
+</defs>
+</g>
+</svg>

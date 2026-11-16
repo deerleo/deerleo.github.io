@@ -1,0 +1,29 @@
+1:"$Sreact.fragment"
+2:"/apps/earthfm/_next/static/chunks/3qfy96eoyh-ek.js"
+3:I[39756,["$2"],"default"]
+4:I[37457,["$2"],"default"]
+b:"/apps/earthfm/_next/static/chunks/3zt_16xndew4w.js"
+c:I[22016,["$2","$b"],""]
+d:I[97367,["$2"],"OutletBoundary"]
+e:"$Sreact.suspense"
+11:"ViewportBoundary"
+12:I[97367,["$2"],"$11"]
+13:"MetadataBoundary"
+14:I[97367,["$2"],"$13"]
+15:I[27201,["$2"],"IconMark"]
+:HL["/apps/earthfm/_next/static/chunks/0d56w7ajgcu2m.css","style"]
+6:X
+9:X
+9:C
+a:[["children",{"s":"__PAGE__","h":160,"d":{"r":["$","$1","c",{"children":[["$","main",null,{"style":{"padding":32,"color":"#f4f1e8","fontFamily":"var(--sans)"},"children":[["$","h1",null,{"children":"EarthFM reference screens"}],["$","p",null,{"children":["$","$Lc",null,{"style":{"color":"#d8f07a"},"href":"/","children":"Open the app"}]}],["$","ul",null,{"children":[["$","li","main",{"children":["$","$Lc",null,{"style":{"color":"#d8f07a"},"href":"/screens/main","children":"Main · Playlist route"}]}],["$","li","menu-open",{"children":["$","$Lc",null,{"style":{"color":"#d8f07a"},"href":"/screens/menu-open","children":"State · Menu open"}]}],["$","li","mixtape-shared",{"children":["$","$Lc",null,{"style":{"color":"#d8f07a"},"href":"/screens/mixtape-shared","children":"State · Mixtape shared"}]}],["$","li","controls-hidden",{"children":["$","$Lc",null,{"style":{"color":"#d8f07a"},"href":"/screens/controls-hidden","children":"State · Controls hidden"}]}],["$","li","playlist-hidden",{"children":["$","$Lc",null,{"style":{"color":"#d8f07a"},"href":"/screens/playlist-hidden","children":"State · Playlist hidden"}]}],["$","li","flight-1",{"children":["$","$Lc",null,{"style":{"color":"#d8f07a"},"href":"/screens/flight-1","children":"Flight 1 · Song ends"}]}],["$","li","flight-2",{"children":["$","$Lc",null,{"style":{"color":"#d8f07a"},"href":"/screens/flight-2","children":"Flight 2 · In the air"}]}],["$","li","flight-3",{"children":["$","$Lc",null,{"style":{"color":"#d8f07a"},"href":"/screens/flight-3","children":"Flight 3 · Arrived"}]}],["$","li","sonification-over-time",{"children":["$","$Lc",null,{"style":{"color":"#d8f07a"},"href":"/screens/sonification-over-time","children":"Sonification over Time"}]}]]}]]}],[["$","script","script-0",{"src":"/apps/earthfm/_next/static/chunks/3zt_16xndew4w.js","async":true}]],["$","$Ld",null,{"children":["$","$e",null,{"name":"Next.MetadataOutlet","children":"$@f"}]}]]}],"p":"$@10","v":null,"s":"$6"}}]]
+7:[["children",{"s":"screens","h":96,"d":{"r":["$","$1","c",{"children":[null,["$","$L3",null,{"parallelRouterKey":"children","template":["$","$L4",null,{}]}]]}],"p":"$@8","v":"$9","s":"$6"},"c":"$Qa"}]]
+0:{"t":{"t":{"s":"","h":80,"d":{"r":["$","$1","c",{"children":[[["$","link","0",{"rel":"stylesheet","href":"/apps/earthfm/_next/static/chunks/0d56w7ajgcu2m.css","precedence":"next"}],["$","script","script-0",{"src":"/apps/earthfm/_next/static/chunks/3qfy96eoyh-ek.js","async":true}]],["$","html",null,{"lang":"en","className":"_8NX9hq_variable xwJ8La_variable","suppressHydrationWarning":true,"children":["$","body",null,{"suppressHydrationWarning":true,"children":["$","$L3",null,{"parallelRouterKey":"children","template":["$","$L4",null,{}],"notFound":[[["$","title",null,{"children":"404: This page could not be found."}],["$","div",null,{"style":{"fontFamily":"system-ui,\"Segoe UI\",Roboto,Helvetica,Arial,sans-serif,\"Apple Color Emoji\",\"Segoe UI Emoji\"","height":"100vh","textAlign":"center","display":"flex","flexDirection":"column","alignItems":"center","justifyContent":"center"},"children":["$","div",null,{"children":[["$","style",null,{"dangerouslySetInnerHTML":{"__html":"body{color:#000;background:#fff;margin:0}.next-error-h1{border-right:1px solid rgba(0,0,0,.3)}@media (prefers-color-scheme:dark){body{color:#fff;background:#000}.next-error-h1{border-right:1px solid rgba(255,255,255,.3)}}"}}],["$","h1",null,{"className":"next-error-h1","style":{"display":"inline-block","margin":"0 20px 0 0","padding":"0 23px 0 0","fontSize":24,"fontWeight":500,"verticalAlign":"top","lineHeight":"49px"},"children":404}],["$","div",null,{"style":{"display":"inline-block"},"children":["$","h2",null,{"style":{"fontSize":14,"fontWeight":400,"lineHeight":"49px","margin":0},"children":"This page could not be found."}]}]]}]}]],[]]}]}]}]]}],"p":"$@5","v":null,"s":"$6"},"c":"$Q7"},"h":{"r":["$","$1","h",{"children":[null,["$","$L12",null,{"children":[["$","meta","0",{"charSet":"utf-8"}],["$","meta","1",{"name":"viewport","content":"width=device-width, initial-scale=1"}]]}],["$","$L14",null,{"children":[["$","div",null,{"hidden":true,"children":["$","$e",null,{"name":"Next.Metadata","children":[["$","title","0",{"children":"EarthFM"}],["$","meta","1",{"name":"description","content":"Hear NASA Earth data."}],["$","link","2",{"rel":"icon","href":"/apps/earthfm/favicon.ico?favicon.117ezoe8m31dk.ico","sizes":"48x48","type":"image/x-icon"}],["$","$L15","3",{}]]}]}],null]}],["$","meta",null,{"name":"next-size-adjust","content":""}]]}],"p":"$@16","v":null,"s":"$6"}},"a":"$@17","u":"$@18","b":"lVWtUnoS0vdOpdpdX-4Aa"}
+f:null
+6:300
+18:true
+6:C
+17:0
+8:"$undefined"
+5:"$undefined"
+16:"$undefined"
+10:"$undefined"

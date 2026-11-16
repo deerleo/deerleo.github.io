@@ -1,0 +1,49 @@
+T-Minus selected audio — 2026-11-15
+
+Original game code is Apache 2.0. Audio retains the terms below; no endorsement is implied.
+
+User-selected defaults: effects 40%, music 15%. All sources/terms are recorded in selected.json and on the original linked pages.
+
+MUSIC: The Magnificent Cosmos
+Creator: Adiutorium
+License: CC0 — https://creativecommons.org/publicdomain/zero/1.0/
+Source: https://opengameart.org/content/the-magnificent-cosmos
+Edits: Full 146.13-second track; MP3 conversion, -0.2 dB gain, 0.5-second fade in and 0.8-second fade out. Looped with its complete ending.
+
+ATTENTION: Kenney Question 4
+Creator: Kenney
+License: CC0 1.0 — https://creativecommons.org/publicdomain/zero/1.0/
+Source: https://opengameart.org/content/interface-sounds
+Edits: Full sound. MP3 preview; level adjusted -9.9 dB.
+
+CONFIRMATION: Kenney Select 1
+Creator: Kenney
+License: CC0 1.0 — https://creativecommons.org/publicdomain/zero/1.0/
+Source: https://opengameart.org/content/interface-sounds
+Edits: Full sound. MP3 preview; level adjusted -1.9 dB.
+
+COMPLETION: Kenney Confirmation 2
+Creator: Kenney
+License: CC0 1.0 — https://creativecommons.org/publicdomain/zero/1.0/
+Source: https://opengameart.org/content/interface-sounds
+Edits: Full sound. MP3 preview; level adjusted -4.9 dB.
+
+LAUNCH: Artemis II — NASA pad recording
+Creator: NASA Kennedy Space Center
+License: Public domain (NASA) — https://commons.wikimedia.org/wiki/Template:PD-USGov-NASA
+Source: https://commons.wikimedia.org/wiki/File:Artemis_II_Live_Launch_Coverage_-_Pad_Camera_Site_4_(KSC-20260401-AU-LMM01-0001-Artemis_II_Live_Launch_Coverage_Pad_Camera_Site_4).wav
+Edits: Excerpt 9–17s of 32.97s. MP3 preview; level adjusted +7.5 dB; edge fades.
+
+ACHIEVEMENT: Cinematic fanfare · Victory
+Creator: cynicmusic
+License: CC0 1.0 — https://creativecommons.org/publicdomain/zero/1.0/
+Source: https://opengameart.org/content/victory-fanfare-short
+Edits: Full sound, musical ending retained. MP3 preview; level adjusted -1.8 dB. No pitch or speed changes.
+
+SETBACK: Kenney Low Down
+Creator: Kenney
+License: CC0 1.0 — https://creativecommons.org/publicdomain/zero/1.0/
+Source: https://github.com/ismetcabbar9-oss/kenney-audio-assets
+Edits: Full sound. MP3 preview; level adjusted +1.4 dB.
+
+License evidence for the selected works is retained in licenses/. The selected short effects and music/fanfare are CC0 1.0; the NASA-authored launch pad channel is marked public domain by its source.

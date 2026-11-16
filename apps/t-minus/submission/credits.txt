@@ -1,0 +1,26 @@
+T-Minus — Four players. One mission.
+NASA Space Apps 2026: Space Mission Design Game
+
+Design the spacecraft. Research the technology. Secure the hardware. Win support. Can your crew bring the weather images home?
+
+Play: https://missioncontrol.dractec.com/
+Source: https://github.com/XDracam/spaceappschallenge2026
+
+Footage: recorded from the current game. The station views (Mission Planning, Procurement, Science, Communications) are screenshots of a fresh Weather Satellite session, captured by an agent using normal game actions. The flight playback and the mission result come from the team's earlier recorded run, which used normal game actions, a seeded mission and an accelerated agency calendar, operated by one person/agent across the four station views; the flight log is transcribed from that run's playback. The trailer countdown, highlights and large captions are editorial. The final flight result is real: two main Weather Satellite goals achieved, zero of two optional goals. This is not a recording of four human players or evidence of learning outcomes.
+
+AI disclosure: The human team created the concept and designed the gameplay. All original project code was written by OpenAI Codex and Anthropic Claude. All project images were generated with ChatGPT Images. Narration was synthesized with Microsoft neural text-to-speech (voice en-US-ChristopherNeural, via the edge-tts tool). The script follows the team's video content script; captions, motion graphics, audio mix and editing automation were AI-generated with Anthropic Claude under human direction.
+
+Audio comes from the game:
+- Music: The Magnificent Cosmos by Adiutorium — CC0. https://opengameart.org/content/the-magnificent-cosmos
+- Attention/confirmation: Kenney interface sounds — CC0. https://opengameart.org/content/interface-sounds
+- Achievement: Cinematic fanfare / Victory by cynicmusic — CC0. https://opengameart.org/content/victory-fanfare-short
+- Launch: NASA Kennedy Space Center Artemis II pad recording, marked public domain by the linked source. https://commons.wikimedia.org/wiki/File:Artemis_II_Live_Launch_Coverage_-_Pad_Camera_Site_4_(KSC-20260401-AU-LMM01-0001-Artemis_II_Live_Launch_Coverage_Pad_Camera_Site_4).wav
+Audio excerpts are mixed, faded and timed to the edit. Original selected-game credits: game/public/audio/CREDITS.txt. CC0 terms: https://creativecommons.org/publicdomain/zero/1.0/
+
+Design reference: Wessen, Borden, Ziemer and Kwok, Space Mission Concept Development Using Concept Maturity Levels (JPL / California Institute of Technology).
+https://dataverse.jpl.nasa.gov/dataset.xhtml?persistentId=hdl:2014/44299
+Conceptual reference use; no claim of observational NASA data ingestion or NASA/JPL validation of the simulation.
+
+Other credits: https://github.com/XDracam/spaceappschallenge2026/blob/main/THIRD_PARTY.md
+
+Narration model/tool provenance and retained terms: https://github.com/XDracam/spaceappschallenge2026/blob/main/video/NARRATION.md

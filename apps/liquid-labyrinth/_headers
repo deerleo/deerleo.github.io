@@ -1,0 +1,6 @@
+# Cloudflare Pages: ビルドごとに名前が変わるファイルは長期キャッシュ、入口の HTML は毎回確認
+/assets/*
+  Cache-Control: public, max-age=31536000, immutable
+
+/
+  Cache-Control: no-cache

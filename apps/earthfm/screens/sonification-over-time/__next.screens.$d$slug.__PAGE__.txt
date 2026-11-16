@@ -1,0 +1,63 @@
+1:"$Sreact.fragment"
+2:"/apps/earthfm/_next/static/chunks/3qfy96eoyh-ek.js"
+3:I[39756,["$2"],"default"]
+4:I[37457,["$2"],"default"]
+24:"ViewportBoundary"
+25:I[97367,["$2"],"$24"]
+26:"MetadataBoundary"
+27:I[97367,["$2"],"$26"]
+28:"$Sreact.suspense"
+29:I[27201,["$2"],"IconMark"]
+:HL["/apps/earthfm/_next/static/chunks/0d56w7ajgcu2m.css","style"]
+:HL["/apps/earthfm/figma/map.png","image"]
+:HL["/apps/earthfm/figma/icon-caption.svg","image"]
+6:X
+9:X
+9:C
+c:[["children",{"s":"__PAGE__","h":160,"d":{"r":["$","$1","c",{"children":[["$","main",null,{"className":"n3l9Na_stage","children":[["$","img",null,{"className":"n3l9Na_map","alt":"","src":"/apps/earthfm/figma/map.png"}],[["$","div",null,{"className":"a75pJq_scrim","aria-hidden":"true"}],["$","div",null,{"className":"EGBiYa_caption","aria-live":"polite","children":[["$","span",null,{"style":{"position":"relative","display":"block","width":22,"height":22,"flexShrink":0},"children":["$","img",null,{"alt":"","src":"/apps/earthfm/figma/icon-caption.svg","style":{"position":"absolute","inset":0,"width":"100%","height":"100%"}}]}],["$","p",null,{"className":"EGBiYa_text","children":"Amazon finished. Next stop: Central Africa."}]]}],["$","div",null,{"className":"a75pJq_panel","role":"region","aria-label":"Music through the years","children":[["$","div",null,{"className":"a75pJq_timeline","children":[["$","div",null,{"className":"a75pJq_labels","children":[["$","p",null,{"className":"a75pJq_layer","children":"Wildfires"}],["$","p",null,{"className":"a75pJq_yearNow","children":2019}]]}],["$","div",null,{"className":"a75pJq_bars","role":"radiogroup","aria-label":"Year","children":[["$","div","2001",{"className":"a75pJq_bar ","style":{"height":12,"left":0,"top":22},"role":"radio","aria-checked":false,"aria-label":"2001"}],["$","div","2002",{"className":"a75pJq_bar ","style":{"height":14,"left":16.48,"top":20},"role":"radio","aria-checked":false,"aria-label":"2002"}],["$","div","2003",{"className":"a75pJq_bar ","style":{"height":12,"left":32.96,"top":22},"role":"radio","aria-checked":false,"aria-label":"2003"}],["$","div","2004",{"className":"a75pJq_bar ","style":{"height":16,"left":49.44,"top":18},"role":"radio","aria-checked":false,"aria-label":"2004"}],["$","div","2005",{"className":"a75pJq_bar ","style":{"height":14,"left":65.92,"top":20},"role":"radio","aria-checked":false,"aria-label":"2005"}],["$","div","2006",{"className":"a75pJq_bar ","style":{"height":18,"left":82.4,"top":16},"role":"radio","aria-checked":false,"aria-label":"2006"}],["$","div","2007",{"className":"a75pJq_bar ","style":{"height":16,"left":98.88,"top":18},"role":"radio","aria-checked":false,"aria-label":"2007"}],["$","div","2008",{"className":"a75pJq_bar ","style":{"height":14,"left":115.36,"top":20},"role":"radio","aria-checked":false,"aria-label":"2008"}],["$","div","2009",{"className":"a75pJq_bar ","style":{"height":18,"left":131.84,"top":16},"role":"radio","aria-checked":false,"aria-label":"2009"}],["$","div","2010",{"className":"a75pJq_bar ","style":{"height":20,"left":148.32,"top":14},"role":"radio","aria-checked":false,"aria-label":"2010"}],["$","div","2011",{"className":"a75pJq_bar ","style":{"height":16,"left":164.8,"top":18},"role":"radio","aria-checked":false,"aria-label":"2011"}],["$","div","2012",{"className":"a75pJq_bar ","style":{"height":18,"left":181.28,"top":16},"role":"radio","aria-checked":false,"aria-label":"2012"}],["$","div","2013",{"className":"a75pJq_bar ","style":{"height":22,"left":197.76,"top":12},"role":"radio","aria-checked":false,"aria-label":"2013"}],"$Ld","$Le","$Lf","$L10","$L11","$L12","$L13","$L14","$L15","$L16","$L17","$L18"]}],"$L19"]}],"$L1a","$L1b"]}],"$L1c","$L1d","$L1e"]]}],["$L1f","$L20","$L21"],"$L22"]}],"p":"$@23","v":null,"s":"$6"}}]]
+a:[["children",{"s":{"n":"slug","t":"d","k":"sonification-over-time","s":[]},"h":65632,"d":{"r":["$","$1","c",{"children":[null,["$","$L3",null,{"parallelRouterKey":"children","template":["$","$L4",null,{}]}]]}],"p":"$@b","v":"$9","s":"$6"},"c":"$Qc"}]]
+7:[["children",{"s":"screens","h":131168,"d":{"r":["$","$1","c",{"children":[null,["$","$L3",null,{"parallelRouterKey":"children","template":["$","$L4",null,{}]}]]}],"p":"$@8","v":"$9","s":"$6"},"c":"$Qa"}]]
+0:{"t":{"t":{"s":"","h":131152,"d":{"r":["$","$1","c",{"children":[[["$","link","0",{"rel":"stylesheet","href":"/apps/earthfm/_next/static/chunks/0d56w7ajgcu2m.css","precedence":"next"}],["$","script","script-0",{"src":"/apps/earthfm/_next/static/chunks/3qfy96eoyh-ek.js","async":true}]],["$","html",null,{"lang":"en","className":"_8NX9hq_variable xwJ8La_variable","suppressHydrationWarning":true,"children":["$","body",null,{"suppressHydrationWarning":true,"children":["$","$L3",null,{"parallelRouterKey":"children","template":["$","$L4",null,{}],"notFound":[[["$","title",null,{"children":"404: This page could not be found."}],["$","div",null,{"style":{"fontFamily":"system-ui,\"Segoe UI\",Roboto,Helvetica,Arial,sans-serif,\"Apple Color Emoji\",\"Segoe UI Emoji\"","height":"100vh","textAlign":"center","display":"flex","flexDirection":"column","alignItems":"center","justifyContent":"center"},"children":["$","div",null,{"children":[["$","style",null,{"dangerouslySetInnerHTML":{"__html":"body{color:#000;background:#fff;margin:0}.next-error-h1{border-right:1px solid rgba(0,0,0,.3)}@media (prefers-color-scheme:dark){body{color:#fff;background:#000}.next-error-h1{border-right:1px solid rgba(255,255,255,.3)}}"}}],["$","h1",null,{"className":"next-error-h1","style":{"display":"inline-block","margin":"0 20px 0 0","padding":"0 23px 0 0","fontSize":24,"fontWeight":500,"verticalAlign":"top","lineHeight":"49px"},"children":404}],["$","div",null,{"style":{"display":"inline-block"},"children":["$","h2",null,{"style":{"fontSize":14,"fontWeight":400,"lineHeight":"49px","margin":0},"children":"This page could not be found."}]}]]}]}]],[]]}]}]}]]}],"p":"$@5","v":null,"s":"$6"},"c":"$Q7"},"h":{"r":["$","$1","h",{"children":[null,["$","$L25",null,{"children":[["$","meta","0",{"charSet":"utf-8"}],["$","meta","1",{"name":"viewport","content":"width=device-width, initial-scale=1"}]]}],["$","$L27",null,{"children":[["$","div",null,{"hidden":true,"children":["$","$28",null,{"name":"Next.Metadata","children":[["$","title","0",{"children":"EarthFM"}],["$","meta","1",{"name":"description","content":"Hear NASA Earth data."}],["$","link","2",{"rel":"icon","href":"/apps/earthfm/favicon.ico?favicon.117ezoe8m31dk.ico","sizes":"48x48","type":"image/x-icon"}],["$","$L29","3",{}]]}]}],null]}],["$","meta",null,{"name":"next-size-adjust","content":""}]]}],"p":"$@2a","v":null,"s":"$6"}},"a":"$@2b","u":"$@2c","b":"lVWtUnoS0vdOpdpdX-4Aa"}
+2d:"/apps/earthfm/_next/static/chunks/080kjp1powd1o.js"
+2e:I[39820,["$2","$2d"],"Mixtape"]
+2f:I[77537,["$2","$2d"],"TopLeft"]
+30:I[97367,["$2"],"OutletBoundary"]
+:HL["/apps/earthfm/figma/icon-prev.svg","image"]
+:HL["/apps/earthfm/figma/icon-pause.svg","image"]
+:HL["/apps/earthfm/figma/icon-next.svg","image"]
+:HL["/apps/earthfm/figma/volume-thumb.svg","image"]
+:HL["/apps/earthfm/figma/icon-speaker.svg","image"]
+:HL["/apps/earthfm/_next/static/chunks/37sjsa01pbz2y.css","style"]
+:HL["/apps/earthfm/_next/static/chunks/1ps0pjmhu6xk2.css","style"]
+d:["$","div","2014",{"className":"a75pJq_bar ","style":{"height":20,"left":214.24,"top":14},"role":"radio","aria-checked":false,"aria-label":"2014"}]
+e:["$","div","2015",{"className":"a75pJq_bar ","style":{"height":18,"left":230.72,"top":16},"role":"radio","aria-checked":false,"aria-label":"2015"}]
+f:["$","div","2016",{"className":"a75pJq_bar ","style":{"height":24,"left":247.20000000000002,"top":10},"role":"radio","aria-checked":false,"aria-label":"2016"}]
+10:["$","div","2017",{"className":"a75pJq_bar ","style":{"height":22,"left":263.68,"top":12},"role":"radio","aria-checked":false,"aria-label":"2017"}]
+11:["$","div","2018",{"className":"a75pJq_bar ","style":{"height":26,"left":280.16,"top":8},"role":"radio","aria-checked":false,"aria-label":"2018"}]
+12:["$","div","2019",{"className":"a75pJq_bar a75pJq_now19","style":{"height":30,"left":296.64,"top":4},"role":"radio","aria-checked":true,"aria-label":"2019"}]
+13:["$","div","2020",{"className":"a75pJq_bar a75pJq_future","style":{"height":24,"left":313.12,"top":10},"role":"radio","aria-checked":false,"aria-label":"2020"}]
+14:["$","div","2021",{"className":"a75pJq_bar a75pJq_future","style":{"height":22,"left":329.6,"top":12},"role":"radio","aria-checked":false,"aria-label":"2021"}]
+15:["$","div","2022",{"className":"a75pJq_bar a75pJq_future","style":{"height":28,"left":346.08,"top":6},"role":"radio","aria-checked":false,"aria-label":"2022"}]
+16:["$","div","2023",{"className":"a75pJq_bar a75pJq_future","style":{"height":32,"left":362.56,"top":2},"role":"radio","aria-checked":false,"aria-label":"2023"}]
+17:["$","div","2024",{"className":"a75pJq_bar a75pJq_future","style":{"height":30,"left":379.04,"top":4},"role":"radio","aria-checked":false,"aria-label":"2024"}]
+18:["$","div","2025",{"className":"a75pJq_bar a75pJq_future","style":{"height":34,"left":395.52,"top":0},"role":"radio","aria-checked":false,"aria-label":"2025"}]
+19:["$","div",null,{"className":"a75pJq_years","children":[["$","p","2001",{"children":2001}],["$","p","2007",{"children":2007}],["$","p","2013",{"children":2013}],["$","p","2019",{"className":"a75pJq_hot","children":2019}],["$","p","2025",{"children":2025}]]}]
+1a:["$","div",null,{"className":"a75pJq_playback","children":[["$","div",null,{"className":"a75pJq_transport","children":[["$","button",null,{"className":"a75pJq_round a75pJq_outline","aria-label":"Previous year","children":["$","span",null,{"style":{"position":"relative","display":"block","width":18,"height":18,"flexShrink":0},"children":["$","img",null,{"alt":"","src":"/apps/earthfm/figma/icon-prev.svg","style":{"position":"absolute","inset":0,"width":"100%","height":"100%"}}]}]}],["$","button",null,{"className":"a75pJq_round a75pJq_solid","aria-label":"Pause","children":["$","span",null,{"style":{"position":"relative","display":"block","width":24,"height":24,"flexShrink":0},"children":["$","img",null,{"alt":"","src":"/apps/earthfm/figma/icon-pause.svg","style":{"position":"absolute","inset":0,"width":"100%","height":"100%"}}]}]}],["$","button",null,{"className":"a75pJq_round a75pJq_outline","aria-label":"Next year","children":["$","span",null,{"style":{"position":"relative","display":"block","width":18,"height":18,"flexShrink":0},"children":["$","img",null,{"alt":"","src":"/apps/earthfm/figma/icon-next.svg","style":{"position":"absolute","inset":0,"width":"100%","height":"100%"}}]}]}]]}],["$","p",null,{"className":"a75pJq_time","children":"0:57 / 1:15"}]]}]
+1b:["$","div",null,{"className":"a75pJq_volRow","children":[["$","p",null,{"className":"a75pJq_volLabel","children":"VOLUME"}],["$","button",null,{"className":"a75pJq_volBtn","aria-label":"Volume down","children":"−"}],["$","div",null,{"className":"a75pJq_slider","role":"slider","aria-label":"Volume","aria-valuenow":75,"aria-valuemin":0,"aria-valuemax":100,"children":[["$","div",null,{"className":"a75pJq_track"}],["$","div",null,{"className":"a75pJq_fill"}],["$","img",null,{"className":"a75pJq_thumb","alt":"","src":"/apps/earthfm/figma/volume-thumb.svg"}]]}],["$","button",null,{"className":"a75pJq_volBtn","aria-label":"Volume up","children":"+"}]]}]
+1c:["$","div",null,{"className":"a75pJq_now","children":[["$","span",null,{"style":{"position":"relative","display":"block","width":18,"height":18,"flexShrink":0},"children":["$","img",null,{"alt":"","src":"/apps/earthfm/figma/icon-speaker.svg","style":{"position":"absolute","inset":0,"width":"100%","height":"100%"}}]}],["$","p",null,{"className":"a75pJq_nowText","children":"Now listening: Amazon 2001–2025"}]]}]
+1d:["$","$L2e",null,{}]
+1e:["$","$L2f",null,{}]
+1f:["$","link","0",{"rel":"stylesheet","href":"/apps/earthfm/_next/static/chunks/37sjsa01pbz2y.css","precedence":"next"}]
+20:["$","link","1",{"rel":"stylesheet","href":"/apps/earthfm/_next/static/chunks/1ps0pjmhu6xk2.css","precedence":"next"}]
+21:["$","script","script-0",{"src":"/apps/earthfm/_next/static/chunks/080kjp1powd1o.js","async":true}]
+22:["$","$L30",null,{"children":["$","$28",null,{"name":"Next.MetadataOutlet","children":"$@31"}]}]
+6:300
+31:null
+2c:true
+6:C
+2b:0
+b:"$undefined"
+8:"$undefined"
+5:"$undefined"
+2a:"$undefined"
+23:"$undefined"

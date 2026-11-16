@@ -1,0 +1,217 @@
+<!doctype html>
+<!--
+  Liquid Labyrinth — by tuki0918 (https://github.com/tuki0918/maze-exit), created with Claude Fable 5.2.
+  Mirrored on milulab.com (lu.wiki) with the author's authorization; attribution required. All rights remain with the original author.
+-->
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"
+    />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Labyrinth" />
+    <meta name="theme-color" content="#36c6ee" />
+    <title>Liquid Labyrinth</title>
+    <meta name="description" content="Tilt a 3D maze and let gravity guide the drop to the exit. Share a seed to race friends on the same maze." />
+    <link rel="icon" href="/apps/liquid-labyrinth/favicon.svg" type="image/svg+xml" />
+    <link rel="canonical" href="https://maze.bbbit.cc/" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Liquid Labyrinth" />
+    <meta property="og:description" content="Tilt a 3D maze and let gravity guide the drop to the exit." />
+    <meta property="og:url" content="https://maze.bbbit.cc/" />
+    <script type="module" crossorigin src="/apps/liquid-labyrinth/assets/index-B_8IW_0r.js"></script>
+    <link rel="stylesheet" crossorigin href="/apps/liquid-labyrinth/assets/index-Yy2vGt09.css">
+  </head>
+  <body>
+    <!-- 重なり順: 背景 → 時間・手数の文字 → 迷路。迷路は常に文字より手前に描かれる -->
+    <canvas id="bg"></canvas>
+    <canvas id="c"></canvas>
+
+    <header id="hud">
+      <div id="timer" aria-label="Elapsed time"></div>
+    </header>
+
+    <footer id="replay" class="dock facet" hidden>
+      <button id="repPlay" class="word">Pause</button>
+      <input id="repSeek" type="range" min="0" max="1" step="1" value="0" />
+      <span id="repPos"></span>
+      <select id="repSpeed" aria-label="Playback speed">
+        <option value="0.5">0.5×</option>
+        <option value="1" selected>1×</option>
+        <option value="2">2×</option>
+        <option value="4">4×</option>
+      </select>
+      <button id="repBack" class="word">Done</button>
+    </footer>
+
+    <div id="status">
+      <div id="moves">0 moves</div>
+      <div id="info"></div>
+      <div id="hint">
+        <strong>Tilt the maze. The drop falls down the screen.</strong>
+        <span id="hintKeys">Drag to rotate · Shift+drag or Q / E to roll · Scroll to zoom</span>
+      </div>
+    </div>
+
+    <div id="side" class="facet">
+      <button id="railToggle" aria-controls="toolbar" aria-expanded="true">
+        <span class="burger"><i></i><i></i><i></i></span>
+        <span id="railLabel">Close</span>
+      </button>
+      <div id="toolbarWrap">
+      <nav id="toolbar">
+      <button id="btnRestart" title="Restart (R)">
+        <svg viewBox="0 0 24 24"><path d="M4.5 12a7.5 7.5 0 1 0 2.4-5.5" /><path d="M4.5 4.5v4.8h4.8" /></svg>
+        <span>Restart</span>
+      </button>
+      <button id="btnNew" title="New maze (N)">
+        <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" /></svg>
+        <span>New</span>
+      </button>
+      <button id="btnMenu" title="Mazes (Esc)">
+        <svg viewBox="0 0 24 24"><path d="M12 3.5 20 8v8l-8 4.5L4 16V8z" /><path d="M4 8l8 4.5L20 8M12 12.5v8" /></svg>
+        <span>Mazes</span>
+      </button>
+      <button id="btnSettings" title="Display">
+        <svg viewBox="0 0 24 24"><path d="M4 8h8M18 8h2M4 16h2M12 16h8" /><path d="M15 5.5 17.5 8 15 10.5 12.5 8zM9 13.5l2.5 2.5L9 18.5 6.5 16z" /></svg>
+        <span>Display</span>
+      </button>
+      </nav>
+      </div>
+    </div>
+
+    <div id="scrim"></div>
+
+    <section id="menu" class="panel facet">
+      <div class="menu-scroll">
+        <button id="menuClose" class="x" aria-label="Close">
+          <svg viewBox="0 0 24 24"><path d="M7 7l10 10M17 7 7 17" /></svg>
+        </button>
+        <div class="mark">
+          <svg class="drop" viewBox="0 0 40 48" aria-hidden="true">
+            <path class="f1" d="M20 2 6 25l4 13 10 8z" />
+            <path class="f2" d="M20 2l14 23-4 13-10 8z" />
+            <path class="f3" d="M20 2 6 25l14-5 14 5z" />
+          </svg>
+          <div class="wordmark"><b>Liquid</b><span>Labyrinth</span></div>
+        </div>
+        <p class="lead">Tilt the maze. Gravity pulls the drop down the screen. Reach the yellow exit.</p>
+
+        <div class="field">
+          <span class="label">Difficulty</span>
+          <div class="seg" id="difficulty">
+            <button data-value="easy">Easy</button>
+            <button data-value="normal">Normal</button>
+          </div>
+          <p class="note" id="diffNote"></p>
+        </div>
+        <div class="field">
+          <span class="label">Size</span>
+          <div class="seg" id="size">
+            <button data-value="3">3</button>
+            <button data-value="5">5</button>
+            <button data-value="7">7</button>
+            <button data-value="9">9</button>
+            <button data-value="11">11</button>
+            <button data-value="13">13</button>
+          </div>
+        </div>
+        <div class="field">
+          <span class="label">Shape</span>
+          <div class="seg" id="shape">
+            <button data-value="cube">Cube</button>
+            <button data-value="sphere">Sphere</button>
+            <button data-value="diamond">Diamond</button>
+          </div>
+        </div>
+        <div class="field">
+          <label class="label" for="seed">Seed <i>same seed, same maze</i></label>
+          <div class="seedrow">
+            <input id="seed" type="text" maxlength="32" spellcheck="false" autocomplete="off" autocapitalize="off" />
+            <button id="seedRandom" class="word">Shuffle</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="menu-actions">
+        <button id="play" class="cta facet">
+          <span>Play</span>
+          <svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
+        </button>
+        <button id="share" class="word quiet">Copy share link</button>
+      </div>
+    </section>
+
+    <aside id="settings" class="panel facet" hidden>
+      <div class="panel-head">
+        <h2>Display</h2>
+      </div>
+      <button id="closeSettings" class="x" aria-label="Close">
+        <svg viewBox="0 0 24 24"><path d="M7 7l10 10M17 7 7 17" /></svg>
+      </button>
+      <div class="field">
+        <span class="label">Maze look</span>
+        <div class="seg" id="style">
+          <button data-value="glass">Glass</button>
+          <button data-value="frost">Frosted</button>
+          <button data-value="xray">Skeleton</button>
+        </div>
+      </div>
+      <div class="field">
+        <span class="label">Trail</span>
+        <div class="seg" id="trail">
+          <button data-value="slide">Slid faces</button>
+          <button data-value="line">Center line</button>
+        </div>
+      </div>
+      <div class="field">
+        <span class="label">Graphics</span>
+        <div class="seg" id="gfx">
+          <button data-value="standard">Smooth</button>
+          <button data-value="dot">Pixel</button>
+        </div>
+      </div>
+      <div class="field">
+        <label class="label" for="recent">Highlight last <output id="recentOut"></output> moves</label>
+        <input id="recent" type="range" min="1" max="40" step="1" />
+      </div>
+      <div class="field">
+        <span class="label">Sound</span>
+        <div class="seg" id="sound">
+          <button data-value="on">On</button>
+          <button data-value="off">Off</button>
+        </div>
+      </div>
+    </aside>
+
+    <section id="result" class="panel facet" hidden>
+      <div class="result-top">
+        <span class="label">Escaped</span>
+        <span class="badge" id="record" hidden>New record</span>
+      </div>
+      <div class="big-time" id="resTime"></div>
+      <div class="stats">
+        <div><span class="label">Moves</span><b id="resMoves"></b></div>
+        <div><span class="label">Shortest</span><b id="resShortest"></b></div>
+        <div><span class="label">Best time</span><b id="resBest"></b></div>
+        <div><span class="label">Seed</span><b id="resSeed"></b></div>
+        <div class="wide"><span class="label">Maze</span><b id="resMode"></b></div>
+      </div>
+      <button id="resNext" class="cta facet">
+        <span>Next maze</span>
+        <svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
+      </button>
+      <div class="row">
+        <button id="resReplay" class="btn facet">Replay</button>
+        <button id="resRetry" class="btn facet">Retry</button>
+        <button id="resShare" class="btn facet">Share</button>
+      </div>
+    </section>
+
+    <div id="toast" class="facet" hidden></div>
+  </body>
+</html>

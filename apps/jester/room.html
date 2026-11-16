@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Jester room</title>
+  <link rel="icon" href="./favicon.svg" type="image/svg+xml" />
+  <link rel="icon" href="./favicon-32.png" sizes="32x32" type="image/png" />
+  <link rel="apple-touch-icon" href="./apple-touch-icon.png" />
+  <script type="module" crossorigin src="./assets/room-GI5LUJPS.js"></script>
+  <link rel="modulepreload" crossorigin href="./assets/composite-DfPLrIBu.js">
+  <link rel="stylesheet" crossorigin href="./assets/composite-CqMbOi7q.css">
+</head>
+<body>
+  <h1>Jester room</h1>
+  <p class="sub">Everyone copies the same clip at the same moment. Highest score wins.</p>
+  <section id="join" class="panel">
+    <div class="row">
+      <input id="name" placeholder="Your name" size="10" />
+      <input id="code" placeholder="CODE" size="6" maxlength="4" />
+      <button id="create">New room</button>
+      <button id="enter">Join</button>
+    </div>
+    <label><input id="sim" type="checkbox" /> Simulated player (no camera)</label>
+    <p id="status">Make a room, or type a code. Open this page in a second tab to join it. Two tabs share one browser; different laptops need the hosted connection (not set up yet).</p>
+  </section>
+  <section id="lobby" class="panel hidden">
+    <h2>Room <span id="roomCode"></span> <small id="role"></small></h2>
+    <ol id="roster"></ol>
+    <p id="calib" class="sub"></p>
+    <button id="start">Start round (host)</button>
+  </section>
+  <section id="stage" class="stage hidden">
+    <figure><figcaption>Clip</figcaption><canvas id="clipCanvas" width="480" height="360"></canvas></figure>
+    <figure><video id="cam" playsinline muted></video><canvas id="playerCanvas" width="480" height="360"></canvas><figcaption>You</figcaption></figure>
+  </section>
+  <div id="countdown" class="countdown hidden"></div>
+  <section id="results" class="panel hidden">
+    <h2>Standings</h2>
+    <ol id="standings"></ol>
+    <h3>Reveal</h3>
+    <canvas id="revealCanvas" width="640" height="360"></canvas>
+    <ul id="legend"></ul>
+    <button id="again">Play again (host starts)</button>
+  </section>
+</body>
+</html>

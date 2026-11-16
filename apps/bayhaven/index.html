@@ -1,0 +1,42 @@
+<!doctype html>
+<!--
+  Bayhaven — by fablestar (https://github.com/fablestar/bayhaven), created with Claude Fable 5.2.
+  Mirrored on milulab.com (lu.wiki) with the author's authorization; attribution required. All rights remain with the original author.
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+  <meta name="theme-color" content="#150f3d" />
+  <title>Bayhaven | Day 2</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><rect width='16' height='16' fill='%23150f3d'/><circle cx='8' cy='9' r='5' fill='%23ff5fa2'/></svg>" />
+  <style>html,body{background:#150f3d;height:100%;margin:0;overflow:hidden}body{color:#fff;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;touch-action:none;font-family:Trebuchet MS,Segoe UI,system-ui,-apple-system,BlinkMacSystemFont,Roboto,Noto Sans,Ubuntu,Cantarell,Helvetica Neue,sans-serif}canvas#game{width:100%;height:100%;display:block;position:fixed;top:0;bottom:0;left:0;right:0}.hud{pointer-events:none;text-shadow:0 1px 6px #140528b3;position:fixed}#title{top:calc(10px + env(safe-area-inset-top));left:calc(14px + env(safe-area-inset-left))}#title b{letter-spacing:3px;color:#fff;text-shadow:0 0 10px #ff4fa8,0 0 22px #ff4fa8;font-size:22px;font-style:italic;display:block}#title span{letter-spacing:1px;opacity:.8;font-size:11px}#clock{top:calc(12px + env(safe-area-inset-top));right:calc(14px + env(safe-area-inset-right));letter-spacing:2px;pointer-events:auto;cursor:pointer;padding:4px 6px;font-size:18px}#speed{bottom:calc(14px + env(safe-area-inset-bottom));text-align:center;white-space:nowrap;font-size:30px;font-style:italic;font-weight:700;left:50%;transform:translate(-50%)}#speed small{letter-spacing:1px;opacity:.8;margin-left:4px;font-size:11px}#gear{color:#29e6ff;vertical-align:4px;border:2px solid #29e6ff;border-radius:6px;min-width:22px;margin-right:8px;padding:1px 5px;font-size:18px;display:inline-block}#revs{background:#ffffff38;border-radius:2px;height:4px;margin-top:3px;overflow:hidden}#rev{background:#29e6ff;width:0;height:100%}#rev.hot{background:#ff3fa4}#drift{text-align:center;color:#fff;text-shadow:0 0 10px #ff3fa4,0 0 22px #ff3fa4;opacity:0;font-size:26px;font-style:italic;font-weight:700;transition:opacity .25s;top:22%;left:12px;right:12px}#drift.show{opacity:1}#drift.good{text-shadow:0 0 10px #5dff9b,0 0 22px #5dff9b}#drift.bad{text-shadow:0 0 10px #ff5a5a,0 0 22px #ff5a5a}#drop{top:calc(58px + env(safe-area-inset-top));left:calc(14px + env(safe-area-inset-left));background:#150f3d8c;border-radius:12px;max-width:60vw;padding:4px 10px;font-size:12px}#hint{box-sizing:border-box;text-align:center;background:#150f3d8c;border-radius:20px;width:-moz-fit-content;width:fit-content;max-width:600px;margin:0 auto;padding:8px 14px;font-size:13px;line-height:1.5;transition:opacity .8s;bottom:76px;left:12px;right:12px}#hint .touch,body.clip #hint,body.clip #touch,body.clip #drop,#touch{display:none}.pad{bottom:calc(18px + env(safe-area-inset-bottom));grid-template-columns:72px 72px;gap:12px;display:grid;position:fixed}.pad.left{left:calc(16px + env(safe-area-inset-left))}.pad.right{right:calc(16px + env(safe-area-inset-right))}.btn{box-sizing:border-box;color:#fff;text-align:center;touch-action:none;background:#150f3d59;border:2px solid #ffffff8c;border-radius:50%;justify-content:center;align-items:center;width:72px;height:72px;font-size:26px;display:flex}.btn.on{background:#ff4fa899;border-color:#fff}.btn.small{font-size:12px;font-weight:700;line-height:1.15}@media (pointer:coarse){#touch{display:block}#hint{bottom:calc(200px + env(safe-area-inset-bottom))}#hint .keys{display:none}#hint .touch{display:inline}#speed{bottom:auto;top:calc(40px + env(safe-area-inset-top));left:auto;right:calc(14px + env(safe-area-inset-right));font-size:24px;transform:none}}</style>
+  <script type="module" crossorigin src="./assets/index-C9jBKIaD.js"></script>
+</head>
+<body>
+  <canvas id="game"></canvas>
+  <div id="title" class="hud"><b>BAYHAVEN</b><span>Day 2 build by Fablestar Games</span></div>
+  <div id="clock" class="hud" title="Tap to skip time">14:00</div>
+  <div id="drop" class="hud"></div>
+  <div id="drift" class="hud"></div>
+  <div id="speed" class="hud"><span id="gear">N</span><span id="kmh">0</span><small>km/h</small><div id="revs"><div id="rev"></div></div></div>
+  <div id="hint" class="hud">
+    <span class="keys">WASD or arrows to drive, Space for the handbrake, H for the horn, C changes camera, hold B to look back, T skips time, R resets, M opens the map, 0 mutes</span>
+    <span class="touch">Hold Gas to drive, hold Handbrake in a turn to slide, tap the clock to skip time</span>
+  </div>
+  <div id="touch">
+    <div class="pad left">
+      <div class="btn small" data-press="KeyC">Camera</div>
+      <div class="btn small" data-key="horn">Horn</div>
+      <div class="btn" data-key="left">◀</div>
+      <div class="btn" data-key="right">▶</div>
+    </div>
+    <div class="pad right">
+      <div class="btn small" data-key="handbrake">Hand<br>brake</div>
+      <div class="btn small" data-key="back">Look<br>back</div>
+      <div class="btn small" data-key="brake">Brake</div>
+      <div class="btn small" data-key="gas">Gas</div>
+    </div>
+  </div>
+</body>
+</html>
