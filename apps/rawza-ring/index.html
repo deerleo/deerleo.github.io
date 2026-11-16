@@ -1,0 +1,162 @@
+<!doctype html>
+<!--
+  Rawza Ring — by Hashmatullahzaher (https://github.com/Hashmatullahzaher/mazar-rawza-race), created with Claude Fable 5.2.
+  Mirrored on milulab.com (lu.wiki) with the author's authorization; attribution required. All rights remain with the original author.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<!-- Home-screen app mode (full screen on phones): added after the test by Future AI, not written by Claude Fable 5.2 -->
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Rawza Ring">
+<link rel="apple-touch-icon" href="icons/icon-180.png">
+<meta name="theme-color" content="#1a1420">
+<title>Rawza Ring - street race around the Blue Mosque, Mazar-i-Sharif</title>
+<style>
+  :root { --tq: #35c7e6; --gold: #ffd166; --ink: rgba(16, 20, 32, 0.78); }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; overflow: hidden; background: #1a1420; color: #fff;
+    font-family: "Segoe UI", system-ui, -apple-system, Roboto, "Noto Sans", sans-serif; }
+  canvas#view { position: fixed; inset: 0; width: 100%; height: 100%; display: block; }
+  .hidden { display: none !important; }
+  #hud { position: fixed; inset: 0; pointer-events: none; font-variant-numeric: tabular-nums; }
+  .panel { background: var(--ink); border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 14px; backdrop-filter: blur(4px); }
+
+  #tl { position: absolute; left: 18px; top: 18px; width: 250px; padding: 12px 16px 10px; }
+  #posWrap { display: flex; align-items: baseline; gap: 4px; line-height: 1; }
+  #pos { font-size: 68px; font-weight: 800; color: var(--gold); }
+  #posSuf { font-size: 26px; font-weight: 700; color: var(--gold); }
+  #posOf { margin-left: 6px; font-size: 18px; color: rgba(255, 255, 255, 0.6); }
+  .kv { display: flex; justify-content: space-between; font-size: 15px; margin-top: 5px; }
+  .kv span:first-child { color: rgba(255, 255, 255, 0.6); letter-spacing: 0.08em; text-transform: uppercase; font-size: 12px; align-self: center; }
+  .kv .big { font-size: 20px; font-weight: 700; }
+  #board { margin-top: 10px; border-top: 1px solid rgba(255, 255, 255, 0.14); padding-top: 8px; }
+  #board .row { display: grid; grid-template-columns: 18px 14px 1fr auto; gap: 6px; align-items: center; font-size: 14px; padding: 2px 4px; border-radius: 6px; }
+  #board .row.me { background: rgba(255, 209, 102, 0.16); font-weight: 700; }
+  #board .p { color: rgba(255, 255, 255, 0.6); }
+  .dot { display: inline-block; width: 11px; height: 11px; border-radius: 50%; border: 1px solid rgba(255, 255, 255, 0.7); }
+  #board .g { color: rgba(255, 255, 255, 0.7); font-size: 12px; }
+
+  #top { position: absolute; left: 50%; top: 16px; transform: translateX(-50%); padding: 8px 18px; text-align: center; min-width: 260px; }
+  #street { font-size: 16px; font-weight: 600; }
+  #streetNative { font-size: 15px; color: var(--tq); direction: rtl; min-height: 1em; }
+  #cp { font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: rgba(255, 255, 255, 0.6); margin-top: 2px; }
+
+  #minimap { position: absolute; right: 18px; top: 18px; border-radius: 14px; border: 1px solid rgba(255, 255, 255, 0.18); }
+  #speedo { position: absolute; right: 18px; bottom: 18px; width: 220px; height: 220px; }
+
+  #msg { position: absolute; left: 50%; top: 30%; transform: translate(-50%, -50%) scale(0.8); font-size: 110px; font-weight: 900;
+    letter-spacing: 0.02em; opacity: 0; transition: opacity 0.25s, transform 0.25s; text-shadow: 0 6px 30px rgba(0, 0, 0, 0.65); white-space: nowrap; }
+  #msg.show { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+  #msg.go { color: #7dff9b; }
+  #msg.small { font-size: 54px; color: var(--gold); }
+  #msg.count { color: #fff; }
+  #warn { position: absolute; left: 50%; top: 46%; transform: translateX(-50%); padding: 8px 20px; border-radius: 10px; background: rgba(200, 40, 30, 0.88);
+    font-size: 24px; font-weight: 800; letter-spacing: 0.06em; opacity: 0; transition: opacity 0.2s; }
+  #warn.show { opacity: 1; }
+  #hint { position: absolute; left: 50%; bottom: 20px; transform: translateX(-50%); padding: 8px 16px; font-size: 13px; color: rgba(255, 255, 255, 0.85); white-space: nowrap; }
+  kbd { display: inline-block; padding: 1px 7px; margin: 0 2px; border-radius: 5px; border: 1px solid rgba(255, 255, 255, 0.35); background: rgba(255, 255, 255, 0.1);
+    font: 600 12px/1.5 "Segoe UI", system-ui, sans-serif; }
+
+  #attrib { position: fixed; left: 10px; bottom: 8px; font-size: 12px; color: rgba(255, 255, 255, 0.9); text-shadow: 0 1px 3px #000, 0 0 6px #000; z-index: 20; }
+  #fps { position: fixed; left: 10px; bottom: 28px; font-size: 11px; color: rgba(255, 255, 255, 0.75); text-shadow: 0 1px 3px #000; z-index: 20; }
+
+  .overlay { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; z-index: 10;
+    background: radial-gradient(ellipse at center, rgba(20, 16, 30, 0.35), rgba(12, 8, 20, 0.78)); }
+  .card { width: min(680px, 92vw); padding: 30px 36px; text-align: center; }
+  .card h1 { margin: 0; font-size: 46px; letter-spacing: 0.01em; }
+  .card h1 em { font-style: normal; color: var(--tq); }
+  .card .fa { direction: rtl; font-size: 22px; color: var(--gold); margin-top: 2px; }
+  .card p { color: rgba(255, 255, 255, 0.82); line-height: 1.5; font-size: 15px; }
+  .keys { display: grid; grid-template-columns: auto auto; gap: 7px 22px; justify-content: center; text-align: left; font-size: 14px; margin: 18px 0 22px; }
+  .keys div:nth-child(odd) { text-align: right; }
+  button.go { pointer-events: auto; cursor: pointer; border: 0; border-radius: 12px; padding: 14px 44px; font: 800 20px "Segoe UI", system-ui, sans-serif;
+    letter-spacing: 0.06em; color: #10202a; background: linear-gradient(180deg, #7fe6ff, #35c7e6); box-shadow: 0 6px 24px rgba(53, 199, 230, 0.45); }
+  button.go:hover { filter: brightness(1.08); }
+  button.go:disabled { filter: grayscale(0.8) brightness(0.7); cursor: wait; }
+  #status { font-size: 13px; color: rgba(255, 255, 255, 0.6); margin-top: 12px; min-height: 1.2em; }
+  table { width: 100%; border-collapse: collapse; margin: 16px 0 22px; font-variant-numeric: tabular-nums; }
+  th { font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: rgba(255, 255, 255, 0.55); padding: 6px 8px; text-align: left; }
+  td { padding: 9px 8px; border-top: 1px solid rgba(255, 255, 255, 0.12); text-align: left; font-size: 16px; }
+  td.laps { font-size: 12px; color: rgba(255, 255, 255, 0.65); }
+  tr.me td { color: var(--gold); font-weight: 700; }
+  td .dot { margin-right: 8px; }
+  #pause .card h1 { font-size: 40px; }
+  @media (max-width: 900px) { #top { display: none; } #msg { font-size: 70px; } #hint { display: none; } }
+</style>
+<script type="importmap">{ "imports": { "three": "./lib/three.module.min.js" } }</script>
+</head>
+<body>
+<canvas id="view"></canvas>
+
+<div id="hud" class="hidden">
+  <div id="tl" class="panel">
+    <div id="posWrap"><span id="pos">4</span><span id="posSuf">th</span><span id="posOf">of 4</span></div>
+    <div class="kv"><span>Lap</span><span class="big" id="lap">1 / 3</span></div>
+    <div class="kv"><span>Race</span><span id="time">0:00.000</span></div>
+    <div class="kv"><span>This lap</span><span id="lapTime">0:00.000</span></div>
+    <div class="kv"><span>Best lap</span><span id="best">--:--.---</span></div>
+    <div id="board"></div>
+  </div>
+  <div id="top" class="panel">
+    <div id="street"></div>
+    <div id="streetNative"></div>
+    <div id="cp"></div>
+  </div>
+  <canvas id="minimap"></canvas>
+  <canvas id="speedo"></canvas>
+  <div id="msg"></div>
+  <div id="warn"></div>
+  <div id="hint" class="panel">
+    <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> / arrows drive &nbsp;·&nbsp; <kbd>Space</kbd> handbrake &nbsp;·&nbsp; <kbd>C</kbd> camera &nbsp;·&nbsp;
+    <kbd>R</kbd> reset to checkpoint &nbsp;·&nbsp; <kbd>M</kbd> mute &nbsp;·&nbsp; <kbd>P</kbd> pause
+  </div>
+</div>
+
+<div id="attrib">Map data (c) OpenStreetMap contributors</div>
+<div id="fps" class="hidden"></div>
+
+<div id="menu" class="overlay">
+  <div class="card panel">
+    <h1>Rawza <em>Ring</em></h1>
+    <div class="fa">روضه شریف · مزار شریف</div>
+    <p>Three laps on the real streets around the Shrine of Hazrat Ali, the Blue Mosque of Mazar-i-Sharif, at golden hour.
+      Round the ring boulevard, out to Balkh Gate Square, down to Shahid Square and back. Three rivals. Every checkpoint counts.</p>
+    <div class="keys">
+      <div><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> or <kbd>&uarr;</kbd><kbd>&larr;</kbd><kbd>&darr;</kbd><kbd>&rarr;</kbd></div><div>accelerate, steer, brake / reverse</div>
+      <div><kbd>Space</kbd></div><div>handbrake (drift)</div>
+      <div><kbd>C</kbd></div><div>change camera</div>
+      <div><kbd>R</kbd></div><div>reset to the last checkpoint</div>
+      <div><kbd>M</kbd> <kbd>P</kbd> <kbd>F</kbd></div><div>mute, pause, frame-rate display</div>
+    </div>
+    <button class="go" id="startBtn" disabled>LOADING…</button>
+    <div id="status">Loading the city…</div>
+  </div>
+</div>
+
+<div id="finish" class="overlay hidden">
+  <div class="card panel">
+    <h1 id="finishTitle">Finished</h1>
+    <table id="results"></table>
+    <button class="go" id="restartBtn">RACE AGAIN</button>
+    <p style="font-size:12px;margin-bottom:0">or press <kbd>Enter</kbd></p>
+  </div>
+</div>
+
+<div id="pause" class="overlay hidden">
+  <div class="card panel"><h1>Paused</h1><p>Press <kbd>P</kbd> or <kbd>Esc</kbd> to continue.</p></div>
+</div>
+
+<script type="module" src="js/main.js"></script>
+<!-- Touch controls: added after the test by Future AI, not written by Claude Fable 5.2 -->
+<script src="js/touch.js?v=6" defer></script>
+<!-- Live player counter (real numbers): added after the test by Future AI, not written by Claude Fable 5.2 -->
+<script type="module" src="js/live.js?v=2"></script>
+<!-- Roadside billboards: added after the test by Future AI, not written by Claude Fable 5.2 -->
+<script type="module" src="js/billboards.js?v=2"></script>
+</body>
+</html>

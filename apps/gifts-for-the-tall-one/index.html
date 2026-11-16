@@ -1,0 +1,41 @@
+<!doctype html>
+<!--
+  Gifts for the Tall One — by eyeb0l (https://github.com/eyeb0l/catslop), created with Claude Fable 5.2.
+  Mirrored on milulab.com (lu.wiki) with the author's authorization; attribution required. All rights remain with the original author.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>catslop</title>
+<link rel="icon" href="assets/icon.svg">
+<link rel="stylesheet" href="gallery/gallery.css">
+</head>
+<body>
+<header class="mast">
+  <svg class="ears" viewBox="0 0 120 60" aria-hidden="true"><path d="M6 58 L22 6 L52 40 Q60 38 68 40 L98 6 L114 58 Z"/></svg>
+  <h1>catslop</h1>
+  <p class="lede">Every new model gets one prompt and no help:</p>
+  <blockquote>Build a 3D browser game about cats.</blockquote>
+  <p class="sub">Then a person plays what came back. <a href="BRIEF.md">The brief</a> · <a href="docs/JUDGING.md">How it is scored</a></p>
+</header>
+
+<main>
+  <div class="bar">
+    <h2 id="count">Runs</h2>
+    <div class="sort" role="group" aria-label="Sort runs">
+      <button type="button" data-sort="date" aria-pressed="true">Newest</button>
+      <button type="button" data-sort="score" aria-pressed="false">Best scored</button>
+    </div>
+  </div>
+  <div id="runs" class="runs" aria-live="polite"></div>
+  <p id="empty" class="empty" hidden>No runs yet. Start a session with a model and tell it: <code>Read BRIEF.md and complete the catslop challenge. Your run slug is &lt;model-id&gt;.</code></p>
+  <p id="error" class="empty" hidden>Could not read <code>runs/manifest.json</code>. Serve the repository with <code>npm run serve</code> (opening this file directly will not work), and run <code>npm run manifest</code> if the file is missing.</p>
+</main>
+
+<footer>
+  <p>To add a run: <code>Read BRIEF.md and complete the catslop challenge. Your run slug is &lt;model-id&gt;.</code></p>
+</footer>
+<script type="module" src="gallery/gallery.js"></script>
+</body>
+</html>

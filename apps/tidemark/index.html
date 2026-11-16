@@ -1,0 +1,109 @@
+<!doctype html>
+<!--
+  潮汐战线（Tidemark） — by CocoSgt (https://github.com/CocoSgt/dsh-game-tidemark), created with Claude Fable 5.2.
+  Mirrored on milulab.com (lu.wiki) with the author's authorization; attribution required. All rights remain with the original author.
+-->
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>潮汐战线</title>
+<link rel="icon" type="image/png" href="favicon.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<style>
+  /* 整个窗口就是游戏画面：地图、单位、范围、特效画在 #cv 上；所有面板是叠在上面的主机式大号界面。
+     样式（配色、面板、字号、键帽……）统一在 ui-kit.js 里，按窗口高度等比缩放（1920×1080 为基准）；各模块自己的版面样式写在各自的文件里。 */
+  * { box-sizing:border-box; }
+  html, body { margin:0; height:100%; background:#141927; color:#f4efe0; overflow:hidden; overscroll-behavior:none; user-select:none; -webkit-user-select:none; -webkit-touch-callout:none; -webkit-tap-highlight-color:transparent; touch-action:pan-x pan-y; }
+  /* 手机上双指捏合、双击不放大整页（地图自己的捏合缩放在 #cv 上，不受影响） */
+  button { font:inherit; color:inherit; cursor:pointer; margin:0; border:0; background:none; padding:0; border-radius:0; -webkit-appearance:none; appearance:none; outline:none; }
+  #cv { position:fixed; left:0; top:0; display:block; cursor:pointer; touch-action:none; }
+</style>
+<!-- 标题主视觉和脚本一起下，标题页一出来就有图（tools/split-load.js 从 title-art.js 里拆出来的） -->
+<link rel="preload" as="image" href="ui-assets/lazy/title-art.webp">
+</head>
+<body>
+<canvas id="cv"></canvas>
+<!-- 地图：maps/ 下每个文件一张图，各自 push 进 AWMapList；哪个文件出错只少那一张，不影响别的 -->
+<!-- 扩展（mods/README.md）：mods.js 定义 AWMods；mods/mods.js 列出启用的扩展（window.AWModList）；writeTags 把各扩展的 mod.js 依次写成 <script>。
+     列表为空或文件缺席 = 没有扩展。扩展的地图在 maps.js 里并入，数据在 data.js 末尾并入，文字在词典之后并入。 -->
+<script src="mods.js"></script>
+<script src="mods/mods.js"></script>
+<script>if (window.AWMods) AWMods.writeTags();</script>
+<script src="maps/01-晨曦镇.js"></script>
+<script src="maps/02-灯塔岬.js"></script>
+<script src="maps/10-雾港.js"></script>
+<script src="maps/20-断龙岭.js"></script>
+<script src="maps/30-千屿.js"></script>
+<script src="maps/40-黑沼三角洲.js"></script>
+<script src="maps/50-金砂矿谷.js"></script>
+<script src="maps/60-双子湖会战.js"></script>
+<script src="maps/70-衡海.js"></script>
+<script src="maps/72-三岔口.js"></script>
+<script src="maps/74-同盟走廊.js"></script>
+<script src="maps/76-孤城.js"></script>
+<script src="maps/78-十二港.js"></script>
+<script src="maps/79-炉城.js"></script>
+<script src="maps/80-大退潮.js"></script>
+<script src="maps/82-雾松林.js"></script>
+<script src="maps/84-九号井.js"></script>
+<script src="maps/86-潮闸.js"></script>
+<script src="maps/90-classic.js"></script>
+<script src="maps/95-四方演习.js"></script>
+<script src="maps.js"></script>
+<script src="data.js"></script>
+<script src="core.js"></script>
+<!-- 评分和记录（tools/RANK-SPEC.md）：rank.js 是规则和记录，ui-rank.js 是界面；缺席时各处照原样、没有评分 -->
+<script src="rank.js"></script>
+<!-- 战役《黑潮》的数据（AWCampaign）：缺席时标题页没有“战役”一项 -->
+<script src="campaign.js"></script>
+<script src="campaign-run.js"></script>
+<!-- 像素美术分模块（tools/ART-SPEC.md）：只往全局注册绘制函数，由 art.js 按需调用；文件缺席只会多一条 404 -->
+<script src="art-ground.js"></script>
+<script src="art-water.js"></script>
+<script src="art-buildings.js"></script>
+<script src="art-units-light.js"></script>
+<script src="art-units-heavy.js"></script>
+<script src="art-units-air.js"></script>
+<script src="art-units-sea.js"></script>
+<script src="art-fx.js"></script>
+<script src="art.js"></script>
+<!-- 单位逐帧素材（AWSprites）：缺席或没解码完时，界面和 art.js 都退回旧的像素画法 -->
+<!-- 单位素材 sprites.js（约 800KB）不在这里阻塞加载：ui-lazy.js 在标题页画出第一帧后第一个取它；到之前单位用代码画的旧样子顶着 -->
+<script src="portraits-lazy.js"></script>
+<script src="art-co.js"></script>
+<!-- 新版战场素材（树、山、建筑）：由素材那边维护，加载后 AWArt.TILE = 48、AWArt.TOP = 24 -->
+<script src="tiles.js"></script>
+<script src="audio.js"></script>
+<script src="lore.js"></script>
+<script src="title-art.js"></script>
+<script src="save.js"></script>
+<!-- 多语言（tools/I18N.md）：i18n.js 定下当前语言（玩家选过的 > 浏览器语言 > 英语；地址栏 ?lang=xx 可临时指定），
+     只加载当前语言的那一个词典（简体中文是源语言，没有词典），再把数据表（兵种、地形、指挥官、科技、故事、战役）整体换成当前语言。
+     界面脚本在这之后加载，显示文字时走 Kit.t()。换语言 = 记住选择后整页重新加载（G.switchLang）。 -->
+<script src="i18n.js"></script>
+<script>if (window.AWI18n) AWI18n.writeDictTag();</script>
+<script>if (window.AWMods) AWMods.applyText();</script>
+<script>if (window.AWI18n) { AWI18n.localizeAll(); AWI18n.applyDoc(); if (AWI18n.lang !== 'zh-CN') document.title = AWI18n.t('潮汐战线'); }</script>
+<!-- 界面：ui-assets.js 图标（缺席时退回代码画的图标）→ ui-skin.js 画布上的像素画法 → ui-kit.js 公共部件 → 各画面 → ui.js 对局流程 -->
+<script src="ui-assets.js"></script>
+<script src="ui-skin.js"></script>
+<script src="ui-kit.js"></script>
+<script src="ui-cg.js"></script>
+<script src="ui-front.js"></script>
+<script src="ui-battle.js"></script>
+<script src="ui-tech.js"></script>
+<script src="ui-capture.js"></script>
+<script src="ui-world.js"></script>
+<script src="ui-campaign.js"></script>
+<script src="codex.js"></script>
+<script src="ui-rank.js"></script>
+<script src="ui.js"></script>
+<script src="ui-skin2.js"></script>
+<!-- 扩展列表（只读）和“已启用扩展”的小标记；没有扩展时什么都不显示 -->
+<script src="mods-ui.js"></script>
+<!-- 延后加载和空闲预取（ui-lazy.js）：标题页画出第一帧后依次取 sprites.js、cg.js、world.js，再预取标志、开场前两张图、指挥官小头像。
+     立绘是按需加载的（portraits-lazy.js 只带清单，图在 portraits/ 和 portraits/thumb/）；全部内嵌的 portraits.js 只给手册和工具用，这里不加载 -->
+<script src="ui-lazy.js"></script>
+</body>
+</html>

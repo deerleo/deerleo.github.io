@@ -1,0 +1,261 @@
+<!doctype html>
+<!--
+  Circular Tic Tac Toe — by muhammad-sayed-mahdy (https://github.com/muhammad-sayed-mahdy/circular-tic-tac-toe-web), created with Claude Fable 5.2.
+  Mirrored on milulab.com (lu.wiki) with the author's authorization; attribution required. All rights remain with the original author.
+-->
+<html lang="en" data-theme="chalk" data-mode="light">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+
+  <!-- ===== SEO ===== -->
+  <title>Circular Tic Tac Toe – Play Online Free | 4-in-a-Row on a Ring Board vs AI or a Friend</title>
+  <meta name="description" content="Play Circular Tic Tac Toe free in your browser: a round board with 4 rings, 8 sectors and 56 ways to make four in a row. Beat the unbeatable Master AI or play 2 players on one device. No install, works offline.">
+  <meta name="keywords" content="circular tic tac toe, round tic tac toe, radial tic tac toe, polar tic tac toe, noughts and crosses, four in a row, browser game, board game, strategy game, two player game, tic tac toe AI, minimax, solved game">
+  <meta name="author" content="Built by Claude Fable 5.2">
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" href="https://muhammad-sayed-mahdy.github.io/circular-tic-tac-toe-web/">
+  <meta name="application-name" content="Circular Tic Tac Toe">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Circular Tic Tac Toe">
+  <meta property="og:title" content="Circular Tic Tac Toe – four in a row on a ring board">
+  <meta property="og:description" content="A free browser game: tic tac toe on a circular board with 32 cells and 56 winning patterns. Play the perfect-play Master AI or a friend.">
+  <meta property="og:url" content="https://muhammad-sayed-mahdy.github.io/circular-tic-tac-toe-web/">
+  <meta property="og:image" content="https://muhammad-sayed-mahdy.github.io/circular-tic-tac-toe-web/docs/social-preview.jpg">
+  <meta property="og:image:type" content="image/jpeg">
+  <meta property="og:image:width" content="1280">
+  <meta property="og:image:height" content="640">
+  <meta property="og:image:alt" content="Circular Tic Tac Toe board with X and O marks">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:image" content="https://muhammad-sayed-mahdy.github.io/circular-tic-tac-toe-web/docs/social-preview.jpg">
+  <meta name="twitter:title" content="Circular Tic Tac Toe">
+  <meta name="twitter:description" content="Tic tac toe on a circular board: 32 cells, 56 ways to win. Play vs AI or a friend, free in your browser.">
+  <meta name="theme-color" content="#f4efe4">
+  <link rel="icon" href="icon.png" type="image/png">
+  <link rel="manifest" href="manifest.webmanifest">
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "VideoGame",
+    "name": "Circular Tic Tac Toe",
+    "url": "https://muhammad-sayed-mahdy.github.io/circular-tic-tac-toe-web/",
+    "image": "https://muhammad-sayed-mahdy.github.io/circular-tic-tac-toe-web/docs/social-preview.jpg",
+    "description": "Tic tac toe played on a circular board with 4 rings and 8 sectors. Get four in a row along a ring, a line from the centre, or a spiral. Single player against an AI with four difficulty levels, or two players on one device.",
+    "genre": ["Board game", "Strategy", "Puzzle"],
+    "gamePlatform": "Web browser",
+    "applicationCategory": "Game",
+    "operatingSystem": "Any",
+    "playMode": ["SinglePlayer", "MultiPlayer"],
+    "numberOfPlayers": { "@type": "QuantitativeValue", "minValue": 1, "maxValue": 2 },
+    "inLanguage": "en",
+    "isAccessibleForFree": true,
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  }
+  </script>
+
+  <!-- Apply the saved theme before first paint (no flash). Mode defaults to the system setting. -->
+  <script>
+    (function () {
+      try {
+        var d = document.documentElement, t = localStorage.getItem('cttt.theme'), m = localStorage.getItem('cttt.mode');
+        if (t !== 'chalk' && t !== 'neon' && t !== 'sunset') t = 'chalk';
+        if (m !== 'light' && m !== 'dark') m = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+        d.setAttribute('data-theme', t); d.setAttribute('data-mode', m);
+      } catch (e) {}
+    })();
+  </script>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <canvas id="confetti" aria-hidden="true"></canvas>
+
+  <noscript>
+    <div class="noscript">
+      <h1>Circular Tic Tac Toe</h1>
+      <p>Tic tac toe on a circular board with 4 rings and 8 sectors (32 cells). Two players take turns; the first
+        to place four in a row &mdash; half a ring, a line from the centre, or a spiral &mdash; wins. This game needs
+        JavaScript to run. Please enable it to play.</p>
+    </div>
+  </noscript>
+
+  <!-- ============ MAIN MENU ============ -->
+  <main id="screen-menu" class="screen active">
+    <div class="menu-card">
+      <svg id="logo-board" class="logo-board" viewBox="-100 -100 200 200" aria-hidden="true"></svg>
+      <h1 class="title">Circular<br><span>Tic Tac Toe</span></h1>
+      <p class="tagline">Four in a row &mdash; around the ring, out from the centre, or along a spiral.</p>
+      <div class="menu-buttons">
+        <button class="btn primary" data-action="single">1 Player <small>vs computer</small></button>
+        <button class="btn primary alt" data-action="two">2 Players <small>same device</small></button>
+        <button class="btn" data-action="help">How to play</button>
+        <button class="btn" data-action="settings">Settings &amp; themes</button>
+      </div>
+      <a class="repo-link" href="https://github.com/muhammad-sayed-mahdy/circular-tic-tac-toe-web" target="_blank" rel="noopener">
+        <svg viewBox="0 0 16 16" width="18" height="18" aria-hidden="true"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82a7.4 7.4 0 0 1 4 0c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>
+        <span>Source code on GitHub</span>
+      </a>
+    </div>
+  </main>
+
+  <!-- ============ SINGLE PLAYER SETUP ============ -->
+  <main id="screen-setup" class="screen">
+    <div class="menu-card">
+      <h2>New game</h2>
+      <h3>Difficulty</h3>
+      <div class="seg" id="seg-level" role="radiogroup" aria-label="Difficulty">
+        <button data-value="easy" role="radio">Easy</button>
+        <button data-value="medium" role="radio">Medium</button>
+        <button data-value="hard" role="radio">Hard</button>
+        <button data-value="master" role="radio">Master</button>
+      </div>
+      <p class="hint-text" id="level-desc"></p>
+      <h3>You play as</h3>
+      <div class="seg" id="seg-side" role="radiogroup" aria-label="Your side">
+        <button data-value="x" role="radio"><b class="cx">X</b> first</button>
+        <button data-value="o" role="radio"><b class="co">O</b> second</button>
+        <button data-value="random" role="radio">Random</button>
+      </div>
+      <div class="menu-buttons">
+        <button class="btn primary" data-action="start-single">Start game</button>
+        <button class="btn" data-action="menu">Back</button>
+      </div>
+    </div>
+  </main>
+
+  <!-- ============ GAME ============ -->
+  <main id="screen-game" class="screen">
+    <header class="topbar">
+      <button class="btn ghost" data-action="menu" aria-label="Back to menu">&larr; Menu</button>
+      <div class="topbar-title" id="game-title"></div>
+      <div class="topbar-right">
+        <button class="btn ghost icon" data-action="help" aria-label="How to play" title="How to play">?</button>
+        <button class="btn ghost icon" data-action="settings" aria-label="Settings" title="Settings &amp; themes">&#9881;</button>
+        <button class="btn ghost icon sound-toggle" data-action="sound" aria-label="Toggle sound"></button>
+      </div>
+    </header>
+
+    <section class="players" aria-label="Score">
+      <div class="player px" id="card-x">
+        <span class="mark-letter">X</span>
+        <span class="pname" id="name-x"></span>
+        <span class="score" id="score-x">0</span>
+      </div>
+      <div class="draws"><span id="score-d">0</span><small>draws</small></div>
+      <div class="player po" id="card-o">
+        <span class="score" id="score-o">0</span>
+        <span class="pname" id="name-o"></span>
+        <span class="mark-letter">O</span>
+      </div>
+    </section>
+
+    <div class="status" id="status" role="status" aria-live="polite"></div>
+
+    <div class="board-wrap">
+      <svg id="board" class="board" viewBox="-100 -100 200 200" role="group" aria-label="Game board"></svg>
+    </div>
+
+    <div class="controls">
+      <button class="btn" data-action="undo" id="btn-undo" title="Undo (Ctrl+Z)">&#8630; Undo</button>
+      <button class="btn" data-action="redo" id="btn-redo" title="Redo (Ctrl+Y)">Redo &#8631;</button>
+      <button class="btn" data-action="hint" id="btn-hint" title="Show the best move (Alt+H)">&#128161; Hint</button>
+      <button class="btn" data-action="restart" id="btn-restart" title="New game (Alt+N)">New game</button>
+    </div>
+
+    <div class="result" id="result" hidden>
+      <div class="result-text" id="result-text"></div>
+      <div class="result-sub" id="result-sub"></div>
+      <div class="result-buttons">
+        <button class="btn primary" data-action="restart">Play again</button>
+        <button class="btn" data-action="undo">&#8630; Undo</button>
+        <button class="btn" data-action="menu">Menu</button>
+      </div>
+    </div>
+  </main>
+
+  <!-- ============ HELP ============ -->
+  <div class="modal" id="help" hidden>
+    <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="help-title">
+      <button class="btn ghost icon modal-close" data-action="close-modal" aria-label="Close">&times;</button>
+      <h2 id="help-title">How to play</h2>
+      <p>The board has <b>4 rings</b> and <b>8 sectors</b> &mdash; 32 cells. Players take turns placing a mark
+        (<b class="cx">X</b> goes first) on any empty cell. The first to get <b>four in a row</b> wins.
+        If the board fills up with no winner, it&rsquo;s a draw.</p>
+      <p>There are <b>56</b> winning patterns of four kinds:</p>
+      <div class="patterns">
+        <figure><svg class="mini" data-pattern="ring" viewBox="-100 -100 200 200"></svg><figcaption><b>Half ring</b><br>4 neighbours in one ring (32)</figcaption></figure>
+        <figure><svg class="mini" data-pattern="line" viewBox="-100 -100 200 200"></svg><figcaption><b>Line</b><br>one sector, centre to edge (8)</figcaption></figure>
+        <figure><svg class="mini" data-pattern="spiralL" viewBox="-100 -100 200 200"></svg><figcaption><b>Spiral left</b><br>one step over per ring (8)</figcaption></figure>
+        <figure><svg class="mini" data-pattern="spiralR" viewBox="-100 -100 200 200"></svg><figcaption><b>Spiral right</b><br>the other way round (8)</figcaption></figure>
+      </div>
+      <h3>Tips</h3>
+      <ul>
+        <li>Three in a row with the fourth cell empty is a <b>threat</b> &mdash; your opponent must block it.</li>
+        <li>Make <b>two threats at once</b> and they can only block one.</li>
+        <li>Every cell sits on 7 patterns. Rings wrap around, so there are no &ldquo;edges&rdquo; sideways.</li>
+        <li>Stuck? <b>Hint</b> shows the best move for the player whose turn it is.</li>
+      </ul>
+      <h3>Controls</h3>
+      <ul>
+        <li>Click / tap a cell to play. Keyboard: <kbd>Tab</kbd> or arrow keys to move, <kbd>Enter</kbd> to place.</li>
+        <li><kbd>Ctrl</kbd>+<kbd>Z</kbd> undo &nbsp; <kbd>Ctrl</kbd>+<kbd>Y</kbd> redo</li>
+        <li><kbd>Alt</kbd>+<kbd>H</kbd> hint &nbsp; <kbd>Alt</kbd>+<kbd>N</kbd> new game &nbsp; <kbd>Alt</kbd>+<kbd>M</kbd> mute</li>
+      </ul>
+      <h3>Can Master be beaten?</h3>
+      <p><b>Only if you move first.</b> This game is <em>solved</em>: the first player can always force a win by opening on the innermost (or outermost) ring. Master knows that win &mdash; when it plays <b class="cx">X</b> it wins every single game, guaranteed (checked against every possible defence). When <em>you</em> play <b class="cx">X</b>, a winning line exists for you, but you have to find it: one slip and Master takes over.</p>
+      <h3>About</h3>
+      <p>Free and open source. <a href="https://github.com/muhammad-sayed-mahdy/circular-tic-tac-toe-web" target="_blank" rel="noopener">View the code, report a bug or star the project on GitHub</a>.</p>
+    </div>
+  </div>
+
+  <!-- ============ SETTINGS ============ -->
+  <div class="modal" id="settings" hidden>
+    <div class="modal-card narrow" role="dialog" aria-modal="true" aria-labelledby="settings-title">
+      <button class="btn ghost icon modal-close" data-action="close-modal" aria-label="Close">&times;</button>
+      <h2 id="settings-title">Settings</h2>
+      <h3>Theme</h3>
+      <div class="themes" id="theme-list" role="radiogroup" aria-label="Theme">
+        <button class="theme-card" data-theme="chalk" role="radio">
+          <span class="tc-prev"><b class="cx">&#10005;</b><b class="co">&#9711;</b></span>
+          <span class="tc-name">Chalk</span><small>Ink on paper &middot; chalkboard</small>
+        </button>
+        <button class="theme-card" data-theme="neon" role="radio">
+          <span class="tc-prev"><b class="cx">&#10005;</b><b class="co">&#9711;</b></span>
+          <span class="tc-name">Neon</span><small>Glowing pop &middot; arcade night</small>
+        </button>
+        <button class="theme-card" data-theme="sunset" role="radio">
+          <span class="tc-prev"><b class="cx">&#10005;</b><b class="co">&#9711;</b></span>
+          <span class="tc-name">Sunset</span><small>Peach dawn &middot; purple dusk</small>
+        </button>
+      </div>
+      <h3>Appearance</h3>
+      <div class="seg" id="seg-mode" role="radiogroup" aria-label="Light or dark mode">
+        <button data-value="system" role="radio">System</button>
+        <button data-value="light" role="radio">Light</button>
+        <button data-value="dark" role="radio">Dark</button>
+      </div>
+      <h3>Sound</h3>
+      <div class="seg" id="seg-sound" role="radiogroup" aria-label="Sound effects">
+        <button data-value="on" role="radio">On</button>
+        <button data-value="off" role="radio">Off</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ CONFIRM ============ -->
+  <div class="modal" id="confirm" hidden>
+    <div class="modal-card narrow center" role="alertdialog" aria-modal="true" aria-labelledby="confirm-title" aria-describedby="confirm-text">
+      <h2 id="confirm-title"></h2>
+      <p id="confirm-text"></p>
+      <div class="result-buttons">
+        <button class="btn" data-action="close-modal">Keep playing</button>
+        <button class="btn primary" data-action="confirm-ok" id="confirm-ok"></button>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/book.js"></script>
+  <script src="js/engine.js"></script>
+  <script src="js/audio.js"></script>
+  <script src="js/game.js"></script>
+</body>
+</html>

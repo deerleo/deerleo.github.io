@@ -1,0 +1,90 @@
+<!doctype html>
+<!--
+  Rufus Crush — by bhoult (https://github.com/bhoult/phone-games), created with Claude Fable 5.2.
+  Shared repo: multiple works in one repository.
+  Mirrored on milulab.com (lu.wiki) with the author's authorization; attribution required. All rights remain with the original author.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Rufus Crush</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#2b6cb0">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Rufus Crush">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/icon-180.png">
+<style>
+  html, body {
+    margin: 0; padding: 0; width: 100%; height: 100%;
+    overflow: hidden; position: fixed; inset: 0;
+    background: #2b6cb0;
+    overscroll-behavior: none;
+    -webkit-user-select: none; user-select: none;
+    -webkit-touch-callout: none;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: none;
+  }
+  canvas#glcanvas {
+    -webkit-user-select: none; user-select: none;
+    position: fixed; inset: 0; width: 100%; height: 100%;
+    display: block; outline: none; touch-action: none;
+  }
+  /* Measured from Rust so the HUD keeps clear of notches and home bars. */
+  #safe {
+    position: fixed; visibility: hidden; pointer-events: none;
+    padding: env(safe-area-inset-top, 0px) env(safe-area-inset-right, 0px)
+             env(safe-area-inset-bottom, 0px) env(safe-area-inset-left, 0px);
+  }
+  #splash {
+    position: fixed; inset: 0; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; gap: 22px;
+    background: linear-gradient(#4f9be0, #2b6cb0);
+    color: #fff; font: 700 20px system-ui, sans-serif; text-align: center;
+    transition: opacity .35s ease;
+  }
+  #splash.gone { opacity: 0; pointer-events: none; }
+  #splash .ball {
+    width: 46px; height: 46px; border-radius: 50%;
+    background: radial-gradient(circle at 35% 30%, #eaff6b, #a9cf10 70%);
+    box-shadow: inset 0 0 0 3px #5f7d00;
+    animation: hop .55s cubic-bezier(.3,0,.7,1) infinite alternate;
+  }
+  @keyframes hop { from { transform: translateY(26px) scale(1.12, .88); } to { transform: translateY(-34px); } }
+  #splash small { font-weight: 500; opacity: .85; font-size: 14px; }
+</style>
+</head>
+<body>
+<canvas id="glcanvas" tabindex="1"></canvas>
+<div id="safe"></div>
+<div id="splash">
+  <div class="ball"></div>
+  <div>Rufus is fetching the game…<br><small id="splash-msg">(he will bring it back. probably.)</small></div>
+</div>
+<script>
+  // Keep hold of the audio contexts the engine creates, so sound can be
+  // paused when the game is in the background (see rufus.js).
+  (function () {
+    var Real = window.AudioContext || window.webkitAudioContext;
+    window.rufusAudio = [];
+    if (!Real) return;
+    function Tracked() {
+      var ctx = new Real();
+      window.rufusAudio.push(ctx);
+      return ctx;
+    }
+    Tracked.prototype = Real.prototype;
+    window.AudioContext = Tracked;
+    window.webkitAudioContext = Tracked;
+  })();
+</script>
+<script src="engine.js"></script>
+<script src="rufus.js"></script>
+<script>
+  load("rufus-crush.wasm");
+</script>
+</body>
+</html>

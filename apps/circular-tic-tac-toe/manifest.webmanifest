@@ -1,0 +1,11 @@
+{
+  "name": "Circular Tic Tac Toe",
+  "short_name": "Circular TTT",
+  "description": "Tic tac toe on a circular board: 32 cells, 56 ways to make four in a row. Play the AI or a friend.",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#1e2b27",
+  "theme_color": "#1e2b27",
+  "categories": ["games", "board", "strategy"],
+  "icons": [{ "src": "icon.png", "sizes": "any", "type": "image/png", "purpose": "any" }]
+}

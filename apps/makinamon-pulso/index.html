@@ -1,0 +1,86 @@
+<!doctype html>
+<!--
+  MAKINAMON · Versión Pulso — by gavilanbe (https://github.com/gavilanbe/makinamon-pulso), created with Claude Fable 5.2.
+  Mirrored on milulab.com (lu.wiki) with the author's authorization; attribution required. All rights remain with the original author.
+-->
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>MAKINAMON · Versión Pulso</title>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="theme-color" content="#0c0c14">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Makinamon">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="assets/icono-192.png">
+<link rel="apple-touch-icon" href="assets/icono-180.png">
+<style>
+  html, body { margin: 0; height: 100%; background: #0c0c14; overflow: hidden; }
+  body { display: flex; align-items: center; justify-content: center; flex-direction: column; font: 12px/1.4 ui-monospace, Menlo, monospace; color: #5a5a78; }
+  canvas { image-rendering: pixelated; image-rendering: crisp-edges; box-shadow: 0 0 0 3px #1c1c2c, 0 0 0 5px #3aa89a, 0 20px 80px #000; border-radius: 2px; }
+  p { position: fixed; bottom: 6px; margin: 0; letter-spacing: .04em; }
+  b { color: #8a8ab0; font-weight: normal; }
+
+  /* ── móvil: consola portátil ── */
+  body.tactil { justify-content: flex-start; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; -webkit-tap-highlight-color: transparent; touch-action: none; overscroll-behavior: none;
+    background: radial-gradient(120% 70% at 50% 0%, #1c2c34 0%, #0c0c14 60%); }
+  body.tactil p { display: none; }
+  body.tactil canvas { margin-top: calc(env(safe-area-inset-top) + 14px); touch-action: none; box-shadow: 0 0 0 3px #1c1c2c, 0 0 0 6px #3aa89a, 0 0 0 8px #1c1c2c, 0 14px 50px #000; border-radius: 3px; }
+  .mando { position: fixed; left: 0; right: 0; top: var(--pant, 55%); bottom: 0; padding: 14px 18px calc(env(safe-area-inset-bottom) + 14px); display: grid; grid-template-columns: 1fr auto 1fr; grid-template-rows: auto 1fr auto; align-content: stretch; align-items: center; pointer-events: none; }
+  .mando * { pointer-events: auto; box-sizing: border-box; }
+  .marca { grid-column: 1 / 4; grid-row: 1; display: flex; align-items: baseline; gap: 6px; padding: 0 4px; color: #3aa89a; font: 900 13px/1 ui-rounded, 'Arial Rounded MT Bold', system-ui, sans-serif; letter-spacing: .16em; opacity: .9; }
+  .marca b { color: #8ce0d4; font-weight: 900; } .marca i { font-style: italic; color: #f8d030; letter-spacing: .1em; font-size: 11px; } .marca .rayo { color: #f8d030; }
+  .marca .altavoz { margin-left: auto; width: 54px; height: 22px; background: radial-gradient(circle, #050508 1.6px, transparent 2px) 0 0 / 9px 9px; transform: rotate(-14deg) translateY(6px); opacity: .9; }
+  .lado { display: flex; align-items: center; } .lado.izq { justify-content: flex-start; grid-column: 1; grid-row: 2; } .lado.der { justify-content: flex-end; grid-column: 3; grid-row: 2; }
+  .pie { grid-column: 1 / 4; grid-row: 3; display: flex; justify-content: center; align-items: center; gap: 14px; margin-top: 14px; }
+  /* cruceta */
+  .cruz { position: relative; width: var(--cz, 150px); height: var(--cz, 150px); touch-action: none; }
+  .cruz::before { content: ''; position: absolute; inset: -10px; border-radius: 50%; background: radial-gradient(circle, rgba(58,168,154,.16), transparent 70%); }
+  .cruz .d, .cruz b { position: absolute; background: linear-gradient(#34323e, #22212a); box-shadow: inset 0 2px 0 #4a4858, inset 0 -3px 0 #121118, 0 4px 0 #0a0a10, 0 6px 14px rgba(0,0,0,.6); }
+  .cruz .u, .cruz .dn { left: 34%; width: 32%; height: 38%; } .cruz .u { top: 0; border-radius: 10px 10px 0 0; } .cruz .dn { bottom: 0; border-radius: 0 0 10px 10px; }
+  .cruz .l, .cruz .r { top: 34%; height: 32%; width: 38%; } .cruz .l { left: 0; border-radius: 10px 0 0 10px; } .cruz .r { right: 0; border-radius: 0 10px 10px 0; }
+  .cruz b { left: 32%; top: 32%; width: 36%; height: 36%; box-shadow: none; background: #26252e; }
+  .cruz b::after { content: ''; position: absolute; inset: 30%; border-radius: 50%; background: #1a1920; box-shadow: inset 0 2px 3px #0c0b10; }
+  .cruz .d::after { content: ''; position: absolute; left: 50%; top: 50%; width: 0; height: 0; border: 7px solid transparent; transform: translate(-50%, -50%); opacity: .55; }
+  .cruz .u::after { border-bottom-color: #8ce0d4; margin-top: -4px; } .cruz .dn::after { border-top-color: #8ce0d4; margin-top: 4px; } .cruz .l::after { border-right-color: #8ce0d4; margin-left: -4px; } .cruz .r::after { border-left-color: #8ce0d4; margin-left: 4px; }
+  .cruz.p-u .u, .cruz.p-dn .dn, .cruz.p-l .l, .cruz.p-r .r { background: linear-gradient(#2a2832, #1a1920); box-shadow: inset 0 3px 6px #0a0a10; transform: translateY(2px); }
+  .cruz.p-u .u::after, .cruz.p-dn .dn::after, .cruz.p-l .l::after, .cruz.p-r .r::after { opacity: 1; }
+  /* A y B en diagonal, como en las portátiles */
+  .btns { position: relative; width: var(--bz, 160px); height: calc(var(--bz, 160px) * .8); }
+  .bt { position: absolute; width: 46%; aspect-ratio: 1; border-radius: 50%; border: 0; padding: 0; touch-action: none; color: #fff; font: 900 20px/1 ui-rounded, 'Arial Rounded MT Bold', system-ui, sans-serif; letter-spacing: .02em;
+    box-shadow: inset 0 3px 0 rgba(255,255,255,.35), inset 0 -4px 0 rgba(0,0,0,.25), 0 5px 0 #0a0a10, 0 8px 18px rgba(0,0,0,.6); transition: transform .05s; }
+  .bt span { display: block; text-shadow: 0 2px 0 rgba(0,0,0,.35); }
+  .bt.a { right: 0; top: 0; background: radial-gradient(circle at 35% 30%, #ff8a6a, #e84838 60%, #b02820); }
+  .bt.b { left: 0; bottom: 0; background: radial-gradient(circle at 35% 30%, #6ae0d0, #30b8a8 60%, #1c8078); }
+  .bt.on { transform: translateY(4px) scale(.96); box-shadow: inset 0 3px 8px rgba(0,0,0,.35), 0 1px 0 #0a0a10; filter: brightness(1.15); }
+  .pill { border: 0; border-radius: 99px; padding: 9px 22px; background: linear-gradient(#3a3846, #26242e); color: #c8fff0; font: 800 12px/1 ui-rounded, system-ui, sans-serif; letter-spacing: .14em; transform: rotate(-6deg);
+    box-shadow: inset 0 2px 0 #55526a, 0 3px 0 #0a0a10, 0 5px 12px rgba(0,0,0,.5); touch-action: none; }
+  .pill.on { transform: rotate(-6deg) translateY(2px); box-shadow: inset 0 2px 5px #0a0a10; }
+  .mini { width: 38px; height: 38px; border-radius: 50%; border: 0; background: #1e1d25; color: #8ce0d4; font: 700 16px/1 system-ui, sans-serif; box-shadow: inset 0 2px 0 #3a3846, 0 3px 0 #0a0a10; touch-action: none; }
+  .mini.apagado { color: #50505e; text-decoration: line-through; }
+  /* horizontal: pantalla en medio y mandos a los lados */
+  @media (orientation: landscape) {
+    body.tactil { justify-content: center; }
+    body.tactil canvas { margin-top: 0; }
+    .marca { display: none; }
+    .lado.izq { grid-row: 1; }
+    .mando { grid-template-rows: 1fr auto; top: 0; padding: env(safe-area-inset-top) calc(env(safe-area-inset-right) + 22px) calc(env(safe-area-inset-bottom) + 10px) calc(env(safe-area-inset-left) + 22px); grid-template-rows: 1fr auto; }
+    .lado.der { grid-row: 1; align-self: end; margin-bottom: 18px; }
+    .pie { grid-column: 3; grid-row: 2; justify-content: flex-end; gap: 8px; margin-top: 0; }
+    .pill { padding: 8px 13px; }
+    .mini { width: 34px; height: 34px; }
+  }
+</style>
+</head>
+<body>
+<canvas id="c" width="160" height="144"></canvas>
+<p><b>Flechas</b> mover · <b>Z</b> aceptar · <b>X</b> atrás / correr · <b>Enter</b> menú · <b>M</b> silencio · <b>Alt+T</b> cambiar hora</p>
+<script>
+// siempre la última versión: cada archivo con una marca nueva, así el navegador no tira de copias viejas
+window.V = Date.now(); for (const f of ['engine', 'audio', 'data', 'art', 'ui', 'mochila', 'world', 'battle', 'vinculo', 'ataques', 'poste', 'movil', 'main']) document.write(`<script src="js/${f}.js?v=${V}"><\/script>`);
+</script>
+<script>if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => {});</script>
+</body>
+</html>

@@ -1,0 +1,49 @@
+<!doctype html>
+<!--
+  Escape the Fable — by ai-gamez-r-funz (https://github.com/ai-gamez-r-funz/escape-the-fable), created with Claude Fable 5.2.
+  Mirrored on milulab.com (lu.wiki) with the author's authorization; attribution required. All rights remain with the original author.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Escape the Fable</title>
+<meta name="description" content="A mid-century escape room generator. Play endless rooms, build your own, share them.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Ccircle cx='7' cy='12' r='5.6' fill='%23b8923a'/%3E%3Cpath d='M12 10.8H22.5V13.2H20.5V16H18.4V13.2H16.6V15H14.6V13.2H12Z' fill='%23b8923a'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="css/style.css">
+<script type="importmap">{ "imports": { "three": "./vendor/three.module.js" } }</script>
+</head>
+<body>
+<canvas id="view"></canvas>
+
+<div id="menu" class="screen">
+  <div class="menu-card">
+    <p class="kicker">A mid-century escape room generator</p>
+    <h1 class="logo">Escape <span>the</span> Fable</h1>
+    <p class="lead">Keys, dials, word wheels and clever furniture. No screens, no batteries: every room is a little machine of logic, and every room is different.</p>
+    <button id="btn-surprise" class="btn primary big">Surprise me</button>
+    <div class="pick">
+      <label>Setting <select id="sel-theme"></select></label>
+      <label>Difficulty <select id="sel-diff"><option value="">Any</option><option value="easy">Easy</option><option value="medium" selected>Medium</option><option value="hard">Hard</option></select></label>
+      <label>Room number <input id="inp-seed" type="text" inputmode="numeric" placeholder="random" maxlength="9"></label>
+      <button id="btn-play" class="btn">Play this room</button>
+    </div>
+    <div class="menu-row">
+      <button id="btn-editor" class="btn">Level workshop</button>
+      <button id="btn-load" class="btn">Load a level file</button>
+      <button id="btn-mute" class="btn ghost" title="Toggle sound">Sound: on</button>
+      <input id="file-load" type="file" accept=".json,application/json" hidden>
+    </div>
+    <p class="fine">First-person: WASD to walk, mouse to look, E or click to interact. Best with a keyboard and mouse.</p>
+  </div>
+</div>
+
+<div id="hud" hidden></div>
+
+<div id="editor" hidden></div>
+
+<div id="modal" hidden><div id="panel" class="panel"></div></div>
+<div id="toasts"></div>
+<script type="module" src="js/main.js"></script>
+</body>
+</html>
