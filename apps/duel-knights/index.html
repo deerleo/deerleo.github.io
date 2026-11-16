@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<!--
+  Duel Knights — by bitofastickler (https://github.com/bitofastickler/duel-knights), created with Claude Fable 5.2.
+  Mirrored on milulab.com (lu.wiki) with the author's authorization; attribution required. All rights remain with the original author.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Duel Knights</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<style>
+  :root{--gold:#d9b76c;--gold2:#8c6f33;--ink:#0b0a0d;--blood:#b3261e;--azure:#4f8ff0;}
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;background:#050507;overflow:hidden;color:#eadfc8;
+    font-family:"Palatino Linotype",Palatino,"Book Antiqua",Georgia,serif;user-select:none;-webkit-user-select:none}
+  canvas#c{position:fixed;inset:0;width:100%;height:100%;display:block}
+  .hidden{display:none!important}
+  #hud{position:fixed;inset:0;pointer-events:none;transition:opacity .5s}
+  #hud.off{opacity:0}
+  .side{position:absolute;top:22px;width:min(36vw,440px)}
+  .side.l{left:28px}.side.r{right:28px;text-align:right}
+  .name{font-size:17px;letter-spacing:.18em;text-transform:uppercase;text-shadow:0 2px 6px #000;margin-bottom:6px}
+  .name small{font-size:11px;letter-spacing:.25em;opacity:.65;margin:0 8px}
+  .bar{position:relative;height:16px;background:rgba(8,6,6,.72);border:1px solid var(--gold2);
+    box-shadow:0 0 0 1px #000,0 3px 10px rgba(0,0,0,.6);overflow:hidden}
+  .bar i{position:absolute;top:0;bottom:0;left:0;width:100%;transform-origin:left center}
+  .side.r .bar i{transform-origin:right center}
+  .bar.hp .ghost{background:#f1e2b8}
+  .bar.hp .fill{background:linear-gradient(#e2473a,#8f1611 70%,#5c0d0a)}
+  .side.l .bar.hp .fill{background:linear-gradient(#e2473a,#8f1611 70%,#5c0d0a)}
+  .bar.st{height:8px;margin-top:5px;width:78%}
+  .side.r .bar.st{margin-left:22%}
+  .bar.st .fill{background:linear-gradient(#e8d37a,#9c7d24)}
+  .bar.st.fail{animation:fail .35s}
+  @keyframes fail{0%,60%{border-color:#ff4b3a;box-shadow:0 0 12px #ff4b3a}}
+  .pips{margin-top:9px;display:flex;gap:9px}
+  .side.r .pips{justify-content:flex-end}
+  .pip{width:12px;height:12px;transform:rotate(45deg);border:1px solid var(--gold);background:rgba(0,0,0,.5)}
+  .pip.on{background:var(--gold);box-shadow:0 0 10px #ffcf6a}
+  #roundLabel{position:absolute;top:24px;left:50%;transform:translateX(-50%);font-size:14px;letter-spacing:.4em;
+    text-transform:uppercase;color:var(--gold);text-shadow:0 2px 6px #000}
+  #focus{position:absolute;top:48px;left:50%;transform:translateX(-50%);font-size:11px;letter-spacing:.3em;opacity:.55}
+  #focus.on{opacity:1;color:#ffd98a}
+  #help{position:absolute;bottom:18px;left:50%;transform:translateX(-50%);font-size:12px;letter-spacing:.14em;
+    opacity:.55;white-space:nowrap;text-shadow:0 1px 4px #000;transition:opacity 1.5s}
+  #help b{color:var(--gold);font-weight:normal}
+  #callout{position:absolute;top:31%;left:0;right:0;text-align:center;font-size:40px;letter-spacing:.3em;
+    text-transform:uppercase;color:#ffe9b0;text-shadow:0 0 22px #ff9a2a,0 3px 8px #000;opacity:0}
+  #callout.go{animation:pop .9s ease-out}
+  @keyframes pop{0%{opacity:0;transform:scale(1.7)}12%{opacity:1;transform:scale(1)}70%{opacity:1}100%{opacity:0;transform:scale(.96)}}
+  #banner{position:absolute;top:40%;left:0;right:0;text-align:center;opacity:0;transition:opacity .35s}
+  #banner.on{opacity:1}
+  #banner .big{font-size:76px;letter-spacing:.32em;text-indent:.32em;color:#f4e3b6;text-shadow:0 0 34px rgba(255,150,40,.7),0 4px 10px #000}
+  #banner .sub{font-size:16px;letter-spacing:.5em;text-indent:.5em;color:var(--gold);margin-top:6px;text-transform:uppercase}
+  #vig{position:fixed;inset:0;pointer-events:none;opacity:0;
+    background:radial-gradient(ellipse at center,rgba(0,0,0,0) 45%,rgba(160,10,5,.75) 100%)}
+  #frame{position:fixed;inset:0;pointer-events:none;background:radial-gradient(ellipse at center,rgba(0,0,0,0) 55%,rgba(0,0,0,.6) 100%)}
+  .overlay{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;
+    background:radial-gradient(ellipse at center,rgba(8,6,10,.45),rgba(4,3,5,.9));z-index:5}
+  h1{margin:0;font-weight:normal;font-size:clamp(46px,8vw,104px);letter-spacing:.22em;text-indent:.22em;color:#f3e2b4;
+    text-shadow:0 0 40px rgba(255,140,40,.55),0 6px 14px #000}
+  .tag{letter-spacing:.55em;text-indent:.55em;text-transform:uppercase;color:var(--gold);font-size:14px;margin:6px 0 30px}
+  .rule{width:260px;height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent);margin:0 auto 26px}
+  .keys{display:grid;grid-template-columns:auto auto;gap:7px 22px;text-align:left;font-size:14px;letter-spacing:.08em;margin-bottom:26px}
+  .keys b{color:var(--gold);font-weight:normal;text-align:right;letter-spacing:.14em}
+  .diffs{display:flex;gap:12px;margin-bottom:22px}
+  button{font:inherit;color:#eadfc8;background:rgba(20,15,12,.8);border:1px solid var(--gold2);padding:9px 20px;
+    letter-spacing:.24em;text-transform:uppercase;font-size:13px;cursor:pointer;transition:.15s}
+  button:hover{border-color:var(--gold);color:#fff}
+  button.sel{background:var(--gold);color:#17110a;border-color:var(--gold)}
+  button.main{font-size:18px;padding:14px 46px;border-color:var(--gold);box-shadow:0 0 24px rgba(255,160,60,.25)}
+  button.main:hover{background:var(--gold);color:#17110a}
+  .note{font-size:12px;opacity:.5;letter-spacing:.12em;margin-top:18px;max-width:560px;line-height:1.6}
+  #end h1{font-size:clamp(40px,7vw,88px)}
+  #stats{display:grid;grid-template-columns:auto auto auto;gap:6px 28px;font-size:14px;letter-spacing:.1em;margin:4px 0 30px}
+  #stats span:nth-child(3n+1){color:var(--gold);text-align:right}
+  #stats span:nth-child(3n+2){opacity:.7;text-transform:uppercase;font-size:11px;letter-spacing:.25em;align-self:center}
+  #stats span:nth-child(3n){color:#e2857c;text-align:left}
+  #err{position:fixed;inset:0;display:none;align-items:center;justify-content:center;z-index:9;background:#050507;padding:30px;text-align:center;line-height:1.7}
+  button:focus-visible{outline:2px solid #ecdaac;outline-offset:4px}
+  #arenaLabel{position:absolute;bottom:48px;left:50%;transform:translateX(-50%);color:var(--gold);font-size:10px;letter-spacing:.28em;text-transform:uppercase;text-shadow:0 2px 4px #000;white-space:nowrap;opacity:.75}
+  .arena-pick{width:min(1080px,100%);margin:0 0 16px;flex-shrink:0}
+  .arena-cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+  button.arena-card{position:relative;display:flex;align-items:center;gap:14px;text-align:left;padding:12px 16px;letter-spacing:.07em;background:linear-gradient(115deg,rgba(58,34,19,.88),rgba(9,8,13,.94));min-height:76px;overflow:hidden}
+  button.arena-card.starfall{background:linear-gradient(115deg,rgba(27,54,63,.9),rgba(9,12,22,.94))}
+  button.arena-card.wyrmfire{background:linear-gradient(115deg,rgba(83,34,23,.92),rgba(16,10,18,.94))}
+  .wyrmfire .arena-sigil{color:#ffc185;text-shadow:0 0 18px #d4552388}
+  .arena-card b{display:block;font-size:15px;font-weight:normal;color:#e7d9bb;letter-spacing:.14em}
+  .arena-card small{display:block;font-size:9px;letter-spacing:.2em;color:#b5a991;margin-bottom:5px}
+  .arena-sigil{font-size:37px;line-height:1;color:var(--gold);width:36px;text-align:center;flex:none;text-shadow:0 0 16px #aa793866}
+  .starfall .arena-sigil{color:#a1d4d0;text-shadow:0 0 18px #73bcc688}
+  button.arena-card.sel{border-color:var(--gold);box-shadow:inset 0 0 22px #b8994920,0 0 12px #b8994918;color:#fff}
+  .arena-check{margin-left:auto;color:var(--gold);visibility:hidden}
+  .arena-card.sel .arena-check{visibility:visible}
+  #arenaDescription{font-size:12px;letter-spacing:.05em;line-height:1.5;color:#c4beaF;margin:9px 0 0;min-height:18px;text-shadow:0 2px 6px #000}
+  @media(max-width:900px){.arena-cards{grid-template-columns:1fr}.arena-pick{max-width:370px}.arena-card b{font-size:14px}.vs{display:none}}
+  /* knight select */
+  #title{overflow-y:auto;justify-content:safe center;padding:28px 16px}
+  #title>*{flex-shrink:0}
+  #title h1{font-size:clamp(32px,6.4vw,88px);font-weight:700;line-height:1.15;text-transform:uppercase;
+    letter-spacing:.13em;text-indent:.13em;margin:0 0 26px;color:var(--gold);text-shadow:none;
+    filter:drop-shadow(0 2px 0 #50300f) drop-shadow(0 5px 6px #000)}
+  /* Static gold reflections: no font download, animation or extra canvas work. */
+  @supports (background-clip:text) or (-webkit-background-clip:text){
+    #title h1,button.home-button span{background:linear-gradient(180deg,#fff3c7 0%,#f4d78b 22%,#b6832f 47%,#80531d 50%,#fff0b5 54%,#d4a84f 72%,#92601f 100%);
+      background-clip:text;-webkit-background-clip:text;color:transparent;-webkit-text-fill-color:transparent}
+  }
+  #title{background:radial-gradient(ellipse at center,rgba(8,6,10,.08) 30%,rgba(4,3,5,.88))}
+  .pick{display:flex;align-items:flex-start;justify-content:space-between;gap:26px;margin-bottom:16px;flex-wrap:wrap;width:100%;max-width:1240px}
+  .side-pick{width:min(370px,100%);text-align:left;background:rgba(6,5,8,.55);border:1px solid rgba(140,111,51,.35);padding:14px 16px 6px}
+  @media (max-width:900px){.pick{justify-content:center}}
+  .pickLabel{font-size:11px;letter-spacing:.4em;text-transform:uppercase;color:var(--gold);margin-bottom:10px;text-align:center}
+  /* one coat of arms per knight; the name, weapon and style of the chosen one are spelled out in the bio below */
+  .cards{display:flex;flex-wrap:wrap;justify-content:center;gap:6px}
+  button.card{padding:3px;line-height:0;opacity:.72;transition:opacity .12s,transform .12s}
+  button.card:hover,button.card:focus-visible{opacity:1}
+  .card img{width:34px;height:34px;display:block}
+  button.card.sel{opacity:1;background:rgba(217,183,108,.16);border-color:var(--gold);box-shadow:0 0 0 1px var(--gold),0 0 18px rgba(255,170,70,.35);transform:translateY(-2px)}
+  .bio{margin-top:12px;min-height:146px}
+  .bio h3{margin:0;font-weight:normal;font-size:17px;letter-spacing:.16em;text-transform:uppercase;color:#f3e2b4}
+  .bio h3 small{font-size:11px;letter-spacing:.24em;opacity:.65;margin-left:8px;white-space:nowrap}
+  .bio .arm{font-size:10px;letter-spacing:.3em;text-transform:uppercase;color:var(--gold);margin-top:3px}
+  .bio p{margin:4px 0 8px;font-size:12px;letter-spacing:.05em;opacity:.75;line-height:1.5}
+  .meters{display:grid;grid-template-columns:auto 1fr;gap:4px 12px;font-size:10px;letter-spacing:.25em;text-transform:uppercase;align-items:center}
+  .meter{display:flex;gap:4px}.meter i{width:16px;height:6px;border:1px solid var(--gold2);background:rgba(0,0,0,.4)}.meter i.on{background:var(--gold)}
+  .vs{align-self:flex-start;margin-top:4px;font-size:28px;letter-spacing:.3em;text-indent:.3em;color:var(--gold);opacity:.85;text-shadow:0 2px 8px #000}
+  button.link{background:none;border:none;font-size:11px;letter-spacing:.3em;opacity:.6;margin-top:12px;padding:6px 10px}
+  button.link:hover{opacity:1;color:#fff}
+  button.home-button{display:inline-flex;align-items:center;justify-content:center;gap:12px;min-width:174px;
+    margin-top:18px;padding:12px 28px;color:var(--gold);font-size:14px;letter-spacing:.28em;
+    border:1px solid #b18b48;background:linear-gradient(#30261a,#13100c 48%,#21190f);
+    box-shadow:inset 0 1px 0 #e8ca7d55,inset 0 -2px 0 #000,0 3px 12px #0008}
+  button.home-button:hover{border-color:#f4db9b;background:linear-gradient(#493820,#1e170e 48%,#332511)}
+  .home-button svg{width:20px;height:20px;flex:none;filter:drop-shadow(0 1px 0 #000)}
+  #how .keys{max-width:640px}
+  @media(max-height:800px) and (min-width:901px){#title h1{font-size:48px;margin-bottom:18px}#title{padding:14px 16px}.bio{min-height:118px}.arena-pick{margin-bottom:12px}.diffs{margin-bottom:12px}}
+</style>
+<script type="importmap">
+{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+            "three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}
+</script>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div id="frame"></div>
+<div id="vig"></div>
+
+<div id="hud" class="off">
+  <div class="side l">
+    <div class="name" id="pName"></div>
+    <div class="bar hp"><i class="ghost" id="pGhost"></i><i class="fill" id="pHp"></i></div>
+    <div class="bar st" id="pStBar"><i class="fill" id="pSt"></i></div>
+    <div class="pips" id="pPips"></div>
+  </div>
+  <div id="roundLabel">Round I</div>
+  <div id="focus">Q · Focus</div>
+  <div id="arenaLabel"></div>
+  <div class="side r">
+    <div class="name" id="eName"></div>
+    <div class="bar hp"><i class="ghost" id="eGhost"></i><i class="fill" id="eHp"></i></div>
+    <div class="bar st"><i class="fill" id="eSt"></i></div>
+    <div class="pips" id="ePips"></div>
+  </div>
+  <div id="callout"></div>
+  <div id="banner"><div class="big"></div><div class="sub"></div></div>
+  <div id="help"><b>WASD</b> move · <b>Mouse</b> aim · <b>LMB</b> light · <b>RMB</b> heavy · <b>Space</b> block / parry · <b>Shift</b> dodge · <b>Q</b> focus · <b>M</b> mute</div>
+</div>
+
+<div id="title" class="overlay">
+  <h1>Duel Knights</h1>
+  <div class="pick">
+    <div class="side-pick"><div class="pickLabel">Your knight</div><div class="cards" id="pCards"></div><div class="bio" id="pBio"></div></div>
+    <div class="vs">vs</div>
+    <div class="side-pick"><div class="pickLabel">Your foe</div><div class="cards" id="eCards"></div><div class="bio" id="eBio"></div></div>
+  </div>
+  <section class="arena-pick" aria-labelledby="arenaHeading">
+    <div class="pickLabel" id="arenaHeading">Choose your battleground</div>
+    <div class="arena-cards" id="arenaCards" role="group" aria-labelledby="arenaHeading"></div>
+    <p id="arenaDescription" aria-live="polite"></p>
+  </section>
+  <div class="diffs" id="diffs">
+    <button data-d="squire">Squire</button><button data-d="knight">Knight</button><button data-d="warlord">Warlord</button>
+  </div>
+  <button class="main" id="begin">Enter the ring</button>
+  <button class="link" id="howBtn">How to fight</button>
+</div>
+
+<div id="how" class="overlay hidden">
+  <h1 style="font-size:clamp(36px,5vw,64px)">How to fight</h1>
+  <div class="tag">First to three rounds</div>
+  <div class="rule"></div>
+  <div class="keys">
+    <b>W A S D</b><span>Move — you face where the mouse aims</span>
+    <b>Left click</b><span>Light attack — swords, the spear and the axe chain three blows, the mace two</span>
+    <b>Right click</b><span>Heavy attack — slow, crushes guards. Tap Space mid-windup to feint</span>
+    <b>Space</b><span>Block. Raise it just before the blow lands to parry</span>
+    <b>Shift</b><span>Dodge toward your movement keys</span>
+    <b>Q</b><span>Focus (lock facing onto your foe)</span>
+    <b>P · M</b><span>Pause · mute</span>
+  </div>
+  <div class="note" style="margin:0 0 24px">Every action costs stamina — an empty bar breaks your guard. Weapons only wound what they actually touch.<br>
+    A mace drains your guard fast and its blows bleed through the shield: dodge it, or parry it.<br>
+    A spear thrusts from beyond sword reach, so step inside the point. When its head starts to glow, the long thrust is coming. An axe hits hardest of all, but a raised shield shrugs it off.</div>
+  <button class="main" id="howBack">Back</button>
+</div>
+
+<div id="pause" class="overlay hidden">
+  <h1 style="font-size:60px">Paused</h1>
+  <div class="tag">Click to return to the ring</div>
+</div>
+
+<div id="end" class="overlay hidden">
+  <h1 id="endTitle">Victory</h1>
+  <div class="tag" id="endSub"></div>
+  <div class="rule"></div>
+  <div id="stats"></div>
+  <div class="diffs" id="diffs2">
+    <button data-d="squire">Squire</button><button data-d="knight">Knight</button><button data-d="warlord">Warlord</button>
+  </div>
+  <button class="main" id="again">Fight again</button>
+  <button class="home-button" id="menu">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" aria-hidden="true" focusable="false">
+      <path d="M4 21V9H2V3H6V6H10V3H14V6H18V3H22V9H20V21Z M10 21V16A2 2 0 0 1 14 16V21 M7 11V14 M17 11V14"/>
+    </svg>
+    <span>Home</span>
+  </button>
+</div>
+
+<div id="err"></div>
+<script>
+(function(){
+  var e=document.getElementById('err');
+  function show(h){e.innerHTML=h;e.style.display='flex';}
+  if(location.protocol==='file:')show('Duel Knights is split into modules, and browsers will not load those from a file on disk.<br>'+
+    'Run <b>python -m http.server 8000</b> in this folder, then open <b>http://localhost:8000</b>.');
+  else setTimeout(function(){if(!window.__booted)show('The game could not start. Three.js loads from a CDN, so the page needs an internet connection the first time it opens.');},9000);
+})();
+</script>
+<script type="module" src="src/main.js"></script>
+</body>
+</html>

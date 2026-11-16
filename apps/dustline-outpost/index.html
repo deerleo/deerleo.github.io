@@ -1,0 +1,88 @@
+<!doctype html>
+<!--
+  Dustline Outpost — by systemsluke (https://github.com/systemsluke/fable5.2game), created with Claude Fable 5.2.
+  Mirrored on milulab.com (lu.wiki) with the author's authorization; attribution required. All rights remain with the original author.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Dustline Outpost</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Saira+Condensed:wght@500;700;800&family=Saira:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<canvas id="view" tabindex="0"></canvas>
+
+<div id="hud" hidden>
+  <div id="marks"></div>
+  <div id="scope" hidden></div>
+  <div id="relays"></div>
+  <div id="vig"></div>
+  <div class="corner tl">
+    <div class="label">Strike <span id="wave">1</span> of 6 · <span id="left">0</span> echoes</div>
+    <canvas id="radar" width="264" height="264"></canvas>
+  </div>
+  <div class="corner tr">
+    <div class="label">Storm resets in</div>
+    <div class="big" id="score">1:10</div>
+  </div>
+  <div class="corner bl">
+    <div class="label">Vitals <span id="hpnum">100</span></div>
+    <div id="hpbar"><div id="hpfill"></div></div>
+  </div>
+  <div class="corner br">
+    <div id="nades"></div>
+    <div class="label" id="wname">M91 SCOPED RIFLE</div>
+    <div><span class="big" id="ammo">5</span> <span class="mid dim" id="res">/ 35</span></div>
+  </div>
+  <div id="cross"><b class="d"></b><b id="c0"></b><b id="c1"></b><b id="c2"></b><b id="c3"></b></div>
+  <div id="hit"></div>
+  <div id="dmg"></div>
+  <div id="banner"><div class="s" id="bs"></div><div class="t" id="bt"></div></div>
+  <div id="feed"></div>
+  <div id="msg"></div>
+</div>
+
+<div id="flash"></div>
+<div id="overlay">
+  <div id="card">
+    <h1 id="title">Dustline <em>Outpost</em></h1>
+    <div id="stats" hidden></div>
+    <p id="brief">A storm has the yard stuck on repeat. Every lightning strike rewinds the last 70 seconds, and every run you make stays behind as an echo that repeats exactly what you did. Lock all three relays inside a single loop by standing in each ring until it turns green. You can't be in three places at once, so be there three times. You get six strikes.</p>
+    <dl id="keys">
+      <div><dt>W A S D</dt><dd>Move</dd></div>
+      <div><dt>Mouse</dt><dd>Aim</dd></div>
+      <div><dt>Click</dt><dd>Fire</dd></div>
+      <div><dt>Right click / F</dt><dd>Scope / aim</dd></div>
+      <div><dt>Shift</dt><dd>Sprint</dd></div>
+      <div><dt>Space</dt><dd>Jump</dd></div>
+      <div><dt>C</dt><dd>Crouch</dd></div>
+      <div><dt>R</dt><dd>Reload</dd></div>
+      <div><dt>1 / 2</dt><dd>Rifle / pistol</dd></div>
+      <div><dt>G</dt><dd>Grenade</dd></div>
+      <div><dt>T</dt><dd>Call the strike early</dd></div>
+      <div><dt>Esc</dt><dd>Pause</dd></div>
+    </dl>
+    <div id="load"><div id="loadbar"></div></div>
+    <div class="row">
+      <button id="go" type="button" disabled>Loading</button>
+      <button id="again" type="button" class="ghost" hidden>Restart</button>
+    </div>
+    <div id="note">Needs a keyboard and a mouse or trackpad. Sound starts when you deploy.</div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/RGBELoader.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/utils/SkeletonUtils.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/CopyShader.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/LuminosityHighPassShader.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/EffectComposer.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/RenderPass.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/ShaderPass.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/UnrealBloomPass.js"></script>
+<script src="game.js"></script>
+</body>
+</html>

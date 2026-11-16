@@ -1,0 +1,93 @@
+<!doctype html>
+<!--
+  Power the Spire — by cdurgun (https://github.com/cdurgun/claude-fable-3d-world), created with Claude Fable 5.2.
+  Mirrored on milulab.com (lu.wiki) with the author's authorization; attribution required. All rights remain with the original author.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Power the Spire</title>
+<link rel="icon" href="data:,">
+<style>
+  @font-face { font-family: "Space Grotesk"; font-weight: 500; src: url("/assets/fonts/SpaceGrotesk-500.woff2") format("woff2"); }
+  @font-face { font-family: "Space Grotesk"; font-weight: 700; src: url("/assets/fonts/SpaceGrotesk-700.woff2") format("woff2"); }
+  :root { --blue: #4da3ff; --violet: #a66bff; --mono: "SF Mono", Menlo, Monaco, monospace; }
+  html, body { margin: 0; height: 100%; background: #000; overflow: hidden; }
+  /* The stage is always 1080x1920; in live mode it is scaled to fit the window. */
+  #stage { position: absolute; left: 0; top: 0; width: 1080px; height: 1920px; transform-origin: 0 0; overflow: hidden;
+           background: #02040b; font-family: "Space Grotesk", sans-serif; color: #fff; }
+  #c { touch-action: none; position: absolute; inset: 0; width: 1080px; height: 1920px; display: block; }
+  .hud { position: absolute; pointer-events: none; opacity: 0; }
+  #vignette { opacity: 1; inset: 0;
+    background:
+      linear-gradient(180deg, rgba(2,4,11,.62) 0, rgba(2,4,11,0) 26%, rgba(2,4,11,0) 62%, rgba(2,4,11,.7) 100%),
+      radial-gradient(ellipse 75% 60% at 50% 46%, rgba(0,0,0,0) 55%, rgba(0,0,0,.5) 100%); }
+  #flash { inset: 0; background: radial-gradient(ellipse 85% 34% at 50% 43%, rgba(214,232,255,.95) 0, rgba(77,163,255,.5) 32%, rgba(77,163,255,0) 100%); }
+
+  #prompt { left: 0; right: 0; top: 800px; text-align: center; font: 500 58px var(--mono); letter-spacing: -1px; white-space: pre;
+            text-shadow: 0 0 28px rgba(77,163,255,.75); }
+  #prompt .chev { color: var(--blue); }
+  .caret { display: inline-block; width: 30px; height: 62px; margin-left: 6px; vertical-align: -12px; background: var(--blue); box-shadow: 0 0 24px var(--blue); }
+
+  #code { left: 70px; top: 236px; padding: 10px 0 10px 22px; border-left: 4px solid var(--blue);
+          font: 500 29px var(--mono); color: #a9d0ff; white-space: nowrap; text-shadow: 0 2px 12px #000, 0 0 18px rgba(77,163,255,.45); }
+
+  #title { left: 0; right: 0; top: 262px; text-align: center; font-weight: 700; font-size: 118px; line-height: 1.02; letter-spacing: -3px;
+           text-shadow: 0 4px 30px rgba(0,0,0,.8), 0 0 60px rgba(77,163,255,.55); }
+  #title span { display: block; opacity: 0; }
+  #title .accent { color: #8cc4ff; }
+
+  #caption { left: 60px; right: 60px; top: 1352px; text-align: center; font-weight: 700; font-size: 66px; line-height: 1.1; letter-spacing: -1px; white-space: nowrap;
+             text-shadow: 0 0 6px #000, 0 3px 6px rgba(0,0,0,.95), 0 0 34px rgba(0,0,0,.9); }
+  #caption span { color: rgba(255,255,255,.72); }
+  #caption span.said { color: #fff; }
+  #caption span.now { color: #6db6ff; }
+
+  #endcard { left: 0; right: 0; top: 1158px; text-align: center; }
+  #chip { display: inline-block; padding: 12px 30px 14px; border: 2px solid rgba(77,163,255,.8); border-radius: 16px; background: rgba(6,14,36,.72);
+          font: 500 40px var(--mono); box-shadow: 0 0 34px rgba(77,163,255,.45), inset 0 0 18px rgba(77,163,255,.18); white-space: pre; }
+  #chip .chev { color: var(--blue); }
+  #chip .caret { width: 20px; height: 42px; vertical-align: -8px; }
+  #credit { margin-top: 18px; font-weight: 500; font-size: 34px; letter-spacing: 2px; color: #b9c8e8; text-shadow: 0 2px 10px #000; }
+  #credit b { font-weight: 700; color: #fff; letter-spacing: 1px; }
+
+  #hint { left: 0; right: 0; top: 1560px; text-align: center; font-weight: 500; font-size: 30px; color: #b9c8e8; text-shadow: 0 2px 10px #000; }
+  /* game HUD */
+  #score { left: 70px; top: 216px; font-weight: 700; font-size: 64px; letter-spacing: -1px; text-shadow: 0 3px 16px #000, 0 0 30px rgba(77,163,255,.6); }
+  #score small { display: block; font-weight: 500; font-size: 28px; letter-spacing: 4px; color: #b9c8e8; }
+  #score.pop { color: #8cc4ff; }
+  #time { right: 70px; top: 216px; text-align: right; font: 500 44px var(--mono); color: #cfe0ff; text-shadow: 0 3px 16px #000; }
+  #win { left: 0; right: 0; top: 470px; text-align: center; font-weight: 700; font-size: 112px; line-height: 1.02; letter-spacing: -3px;
+         text-shadow: 0 4px 30px rgba(0,0,0,.8), 0 0 60px rgba(77,163,255,.7); }
+  #win .accent { display: block; color: #8cc4ff; }
+  #win small { display: block; margin-top: 22px; font: 500 52px var(--mono); letter-spacing: 0; color: #fff; }
+  #audio { right: 70px; top: 282px; text-align: right; font: 500 24px var(--mono); color: #9fb2d8; text-shadow: 0 2px 10px #000; opacity: 1; pointer-events: auto; cursor: pointer; }
+  #audio span { display: block; padding: 3px 0; }
+</style>
+<script type="importmap">
+{ "imports": { "three": "/node_modules/three/build/three.module.js", "three/addons/": "/node_modules/three/examples/jsm/" } }
+</script>
+</head>
+<body>
+<div id="stage">
+  <canvas id="c" width="1080" height="1920"></canvas>
+  <div id="vignette" class="hud"></div>
+  <div id="flash" class="hud"></div>
+  <div id="prompt" class="hud"><span class="chev">&gt;</span> <span id="typed"></span><span id="caret" class="caret"></span></div>
+  <div id="code" class="hud"></div>
+  <div id="title" class="hud"></div>
+  <div id="endcard" class="hud">
+    <div id="chip"><span class="chev">&gt;</span> build me a world<span id="chipcaret" class="caret"></span></div>
+    <div id="credit">Scene code written by <b>Claude · Fable 5.2</b></div>
+  </div>
+  <div id="caption" class="hud"></div>
+  <div id="hint" class="hud"></div>
+  <div id="score" class="hud"><small>ORBS</small><span id="scoreval">0 / 8</span></div>
+  <div id="time" class="hud">0.0 s</div>
+  <div id="audio" class="hud"><span id="musicbtn">M  music on</span><span id="sfxbtn">N  sound on</span></div>
+  <div id="win" class="hud">WORLD<span class="accent">POWERED</span><small id="wintime"></small></div>
+</div>
+<script type="module" src="/game/main.js"></script>
+</body>
+</html>

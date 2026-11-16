@@ -1,0 +1,1110 @@
+<!doctype html>
+<!--
+  Shuttle Strike — by fedifianto (https://github.com/fedifianto/shuttlestrike), created with Claude Fable 5.2.
+  Mirrored on milulab.com (lu.wiki) with the author's authorization; attribution required. All rights remain with the original author.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Shuttle Strike</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;800&display=swap">
+<style>
+:root{color-scheme:dark;--display:"Barlow Condensed","Arial Narrow",ui-sans-serif,system-ui,sans-serif;--bg:#0b1020;--fg:#f3f6ff;--muted:#9aa6c4;--accent:#ffd23f;--accent2:#3fd2ff;--panel:rgba(12,18,36,.8);--line:rgba(255,255,255,.14)}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{margin:0;height:100%;overflow:hidden;background:var(--bg);color:var(--fg);
+  font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;user-select:none}
+canvas#gl{display:block;position:fixed;inset:0;touch-action:none}
+#score{position:fixed;top:calc(14px + env(safe-area-inset-top,0px));left:50%;transform:translateX(-50%);display:flex;gap:16px;align-items:center;
+  background:var(--panel);border:1px solid var(--line);padding:8px 20px;border-radius:14px;font-weight:700;backdrop-filter:blur(6px)}
+#score .side{display:flex;align-items:center;gap:8px}
+#score .n{font-family:var(--display);font-size:34px;min-width:36px;text-align:center;font-variant-numeric:tabular-nums}
+#score .lbl{font-size:11px;letter-spacing:.12em;color:var(--muted)}
+#score .dash{color:var(--muted)}
+.srv{width:8px;height:8px;border-radius:50%;background:var(--accent);visibility:hidden}
+.srv.on{visibility:visible}
+#msg{position:fixed;top:26%;left:0;right:0;text-align:center;font-family:var(--display);padding:0 16px;font-size:clamp(28px,6vw,64px);font-weight:900;
+  letter-spacing:.02em;text-shadow:0 4px 24px rgba(0,0,0,.7);pointer-events:none;opacity:0;transition:opacity .2s}
+#msg small{display:block;font-size:.35em;font-weight:600;color:var(--muted);letter-spacing:.1em;margin-top:6px}
+#shot{position:fixed;top:60%;left:0;right:0;text-align:center;font-size:20px;font-weight:800;letter-spacing:.25em;
+  color:var(--accent);text-shadow:0 2px 12px rgba(0,0,0,.8);pointer-events:none;opacity:0;transition:opacity .3s}
+#hint{position:fixed;bottom:calc(22px + env(safe-area-inset-bottom,0px));max-width:calc(100% - 32px);overflow:hidden;text-overflow:ellipsis;left:50%;transform:translateX(-50%);background:var(--panel);border:1px solid var(--line);
+  padding:8px 16px;border-radius:999px;font-size:14px;color:var(--fg);opacity:0;transition:opacity .2s;white-space:nowrap;pointer-events:none}
+#camwrap{position:fixed;right:14px;bottom:14px;width:220px;background:var(--panel);border:1px solid var(--line);
+  border-radius:12px;overflow:hidden;display:none}
+#camview{display:block;width:100%;height:auto;background:#000}
+#camwrap .row{display:flex;align-items:center;gap:8px;padding:6px 8px;font-size:11px;color:var(--muted)}
+#meter{flex:1;height:6px;border-radius:3px;background:rgba(255,255,255,.12);overflow:hidden}
+#meter i{display:block;height:100%;width:0;background:var(--accent2)}
+#gest{min-width:54px;text-align:right}
+#overlay{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;padding-block:16px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));
+  background:rgba(5,8,18,.72);backdrop-filter:blur(5px);overflow:auto}
+.card{width:min(560px,100%);margin:auto;background:var(--panel);border:1px solid var(--line);border-radius:20px;padding:28px}
+.card h1{margin:0;font-family:var(--display);font-size:clamp(38px,9vw,60px);font-weight:800;letter-spacing:.01em;line-height:1;text-wrap:balance}
+.card h1 span{color:var(--accent)}
+.card p.sub{margin:8px 0 18px;color:var(--muted)}
+.card ul{margin:0 0 18px;padding:0;list-style:none;display:grid;gap:8px;font-size:14px}
+.card li{display:flex;gap:10px;align-items:baseline}
+.card li b{flex:0 0 96px;color:var(--accent2);font-size:12px;letter-spacing:.08em;text-transform:uppercase}
+.seg{display:flex;gap:6px;margin-bottom:16px}
+.seg button{flex:1;padding:8px;border-radius:10px;border:1px solid var(--line);background:transparent;color:var(--muted);
+  font:inherit;font-weight:700;cursor:pointer}
+.seg button.on{background:rgba(63,210,255,.16);color:var(--fg);border-color:var(--accent2)}
+.btns{display:flex;gap:10px;flex-wrap:wrap}
+.btns button{flex:1 1 180px;padding:14px;border-radius:12px;border:0;font:inherit;font-weight:800;font-size:16px;cursor:pointer}
+#bCam{background:var(--accent);color:#1b1400}
+#bMouse{background:rgba(255,255,255,.1);color:var(--fg);border:1px solid var(--line)}
+button:disabled{opacity:.5;cursor:default}
+#status{margin-top:12px;min-height:18px;font-size:13px;color:var(--muted)}
+@media (max-width:560px){#camwrap{width:130px}.card li b{flex-basis:76px}}
+</style>
+</head>
+<body>
+<canvas id="gl"></canvas>
+
+<div id="score">
+  <div class="side"><i class="srv" id="srvP"></i><span class="lbl">YOU</span><span class="n" id="sP">0</span></div>
+  <span class="dash">–</span>
+  <div class="side"><span class="n" id="sA">0</span><span class="lbl">CPU</span><i class="srv" id="srvA"></i></div>
+</div>
+<div id="msg"></div>
+<div id="shot"></div>
+<div id="hint"></div>
+
+<div id="camwrap">
+  <canvas id="camview" width="220" height="165"></canvas>
+  <div class="row"><span>swing</span><div id="meter"><i></i></div><span id="gest">–</span></div>
+</div>
+<video id="cam" playsinline muted style="display:none"></video>
+
+<div id="overlay">
+  <div class="card">
+    <h1>SHUTTLE <span>STRIKE</span></h1>
+    <p class="sub" id="ovSub">First-person badminton. Your hand is the racket.</p>
+    <ul id="ovHelp">
+      <li><b>Grip</b><span>Close your hand as if holding a racket handle ✊ — the racket sits in your fist and tilts with your wrist.</span></li>
+      <li><b>Swing</b><span>Swing your closed hand fast when the shuttle reaches the racket head. Swing left or right to aim.</span></li>
+      <li><b>Shots</b><span>Racket high + hard swing = smash. Racket low = lift/clear. Soft swing = drop shot.</span></li>
+      <li><b>Pause</b><span>Open your palm ✋ and hold it still to pause. Close your hand again ✊ to resume or rematch.</span></li>
+      <li><b>Footwork</b><span>Automatic — you run to the shuttle. First to 11, win by 2.</span></li>
+    </ul>
+    <div class="seg" id="diff">
+      <button data-d="easy">Easy</button><button data-d="normal" class="on">Normal</button><button data-d="hard">Hard</button>
+    </div>
+    <div class="btns">
+      <button id="bCam">Play with webcam ✋</button>
+      <button id="bMouse">Play with mouse</button>
+    </div>
+    <div id="status"></div>
+  </div>
+</div>
+
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}</script>
+<script type="module">
+import * as THREE from 'three';
+import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
+import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
+import { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js';
+import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
+const V3 = THREE.Vector3;
+const $ = id => document.getElementById(id);
+const clamp = (v,a,b) => Math.max(a, Math.min(b, v));
+const gauss = () => (Math.random()+Math.random()+Math.random()-1.5)/0.5;
+const DEG = Math.PI/180;
+
+/* ───────── constants ───────── */
+const G = 9.8, K = 0.16;                       // gravity, shuttle drag
+const HALF_LEN = 6.7, HALF_W = 2.59;           // singles court
+const NET_H = 1.55, NET_HALF = 3.05;
+const WIN_SCORE = 11;
+const HIT_R = 0.55, SWING_THR = 1.8;           // racket reach (m), swing speed (screen widths / s)
+const EYE = 1.6, REACH_Z = 0.95, RLEN = 0.52;   // RLEN: grip → centre of racket head
+const H = 1/240;
+const DIFF = {
+  easy:   {ts:0.70, aiSpeed:3.0, react:0.30, noise:0.55, leave:0.50},
+  normal: {ts:0.85, aiSpeed:4.0, react:0.20, noise:0.32, leave:0.75},
+  hard:   {ts:1.00, aiSpeed:5.2, react:0.12, noise:0.15, leave:0.95},
+};
+
+/* ───────── scene ───────── */
+const renderer = new THREE.WebGLRenderer({canvas:$('gl'), antialias:true});
+renderer.setPixelRatio(Math.min(devicePixelRatio, 1.5));
+renderer.setSize(innerWidth, innerHeight);
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+const scene = new THREE.Scene();
+renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.15;
+scene.background = new THREE.Color(0x03050a);
+scene.fog = new THREE.Fog(0x03050a, 45, 130);
+const camera = new THREE.PerspectiveCamera(70, innerWidth/innerHeight, 0.05, 200);
+camera.rotation.order = 'YXZ';
+scene.add(camera);
+
+// post-processing: HDR render → bloom on emitters (lamps, LED boards, flashes) → vignette + film grain → tone mapping
+const composer = new EffectComposer(renderer);
+composer.renderTarget1.samples = composer.renderTarget2.samples = 4;      // keep anti-aliasing through the HDR buffer
+composer.addPass(new RenderPass(scene, camera));
+const bloom = new UnrealBloomPass(new THREE.Vector2(innerWidth, innerHeight), 0.28, 0.42, 1.35);
+composer.addPass(bloom);
+const grade = new ShaderPass({
+  uniforms: {tDiffuse:{value:null}, time:{value:0}},
+  vertexShader: 'varying vec2 vUv; void main(){ vUv = uv; gl_Position = projectionMatrix*modelViewMatrix*vec4(position,1.0); }',
+  fragmentShader: `uniform sampler2D tDiffuse; uniform float time; varying vec2 vUv;
+    float hash(vec2 p){ return fract(sin(dot(p, vec2(12.9898,78.233)) + time)*43758.5453); }
+    void main(){
+      vec4 c = texture2D(tDiffuse, vUv);
+      float v = smoothstep(0.95, 0.3, length(vUv - 0.5));
+      c.rgb *= mix(0.62, 1.0, v);                                   // vignette
+      c.rgb *= 1.0 + (hash(vUv*vec2(1733.0, 977.0)) - 0.5)*0.06;     // film grain
+      gl_FragColor = c;
+    }`,
+});
+composer.addPass(grade);
+composer.addPass(new OutputPass());
+function setQuality(pr) { renderer.setPixelRatio(pr); composer.setPixelRatio(pr); composer.setSize(innerWidth, innerHeight); }
+addEventListener('resize', () => {
+  renderer.setSize(innerWidth, innerHeight); composer.setSize(innerWidth, innerHeight);
+  camera.aspect = innerWidth/innerHeight; camera.updateProjectionMatrix();
+});
+
+// image-based lighting: a tiny dark hall with bright ceiling panels, baked once, gives every PBR surface real reflections
+{
+  const env = new THREE.Scene(), hdr = (r, g, b) => new THREE.MeshBasicMaterial({color:new THREE.Color(r, g, b)});
+  env.add(new THREE.Mesh(new THREE.BoxGeometry(40, 16, 50), new THREE.MeshBasicMaterial({color:0x06080d, side:THREE.BackSide})));
+  const panel = (w, h, d, x, y, z, m) => { const q = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), m); q.position.set(x, y, z); env.add(q); };
+  for (const x of [-5.5, 5.5]) for (let z=-10.5; z<=10.5; z+=3) panel(1.2, .2, 1.2, x, 7.5, z, hdr(22, 21, 19));
+  panel(.3, .9, 19, -6.3, -1.2, 0, hdr(.5, .9, 2.4)); panel(.3, .9, 19, 6.3, -1.2, 0, hdr(2.2, .5, .6));     // LED boards as coloured rim light
+  panel(12.6, .9, .3, 0, -1.2, -10, hdr(.6, 1.2, 2.4)); panel(12.6, .9, .3, 0, -1.2, 10, hdr(.6, 1.2, 2.4));
+  const pm = new THREE.PMREMGenerator(renderer);
+  scene.environment = pm.fromScene(env, 0.035).texture; pm.dispose();
+}
+
+// ── procedural PBR textures (colour / normal / roughness), generated once on load: no image downloads ──
+const MAXA = renderer.capabilities.getMaxAnisotropy();
+const mulberry = (a) => () => { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0)/4294967296; };
+function valueNoise(size, cells, seed) {             // tileable value noise, 0..1
+  const r = mulberry(seed), g = new Float32Array(cells*cells).map(() => r()), out = new Float32Array(size*size), k = cells/size;
+  for (let y=0; y<size; y++) {
+    const fy = y*k, y0 = Math.floor(fy), ty = fy-y0, sy = ty*ty*(3-2*ty), ya = (y0%cells)*cells, yb = ((y0+1)%cells)*cells;
+    for (let x=0; x<size; x++) {
+      const fx = x*k, x0 = Math.floor(fx), tx = fx-x0, sx = tx*tx*(3-2*tx), xa = x0%cells, xb = (x0+1)%cells;
+      const a = g[ya+xa], b = g[ya+xb], c = g[yb+xa], d = g[yb+xb];
+      out[y*size+x] = a + (b-a)*sx + (c-a + (a-b+d-c)*sx)*sy;
+    }
+  }
+  return out;
+}
+function fbm(size, cells, octaves, seed) {
+  const out = new Float32Array(size*size); let amp = 1, tot = 0;
+  for (let o=0; o<octaves; o++) { const n = valueNoise(size, Math.min(size, cells << o), seed+o*17); for (let i=0; i<out.length; i++) out[i] += n[i]*amp; tot += amp; amp *= .5; }
+  for (let i=0; i<out.length; i++) out[i] /= tot;
+  return out;
+}
+function dataTex(size, fill, srgb=false) {            // fill(d, o, i, x, y) writes RGBA bytes at offset o
+  const c = document.createElement('canvas'); c.width = c.height = size;
+  const g = c.getContext('2d'), im = g.createImageData(size, size), d = im.data;
+  for (let y=0; y<size; y++) for (let x=0; x<size; x++) { const i = y*size+x; fill(d, i*4, i, x, y); d[i*4+3] = 255; }
+  g.putImageData(im, 0, 0);
+  const t = new THREE.CanvasTexture(c); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.anisotropy = MAXA; if (srgb) t.colorSpace = THREE.SRGBColorSpace;
+  return t;
+}
+function normalFromHeight(h, size, strength) {
+  return dataTex(size, (d, o, i, x, y) => {
+    const l = h[y*size + (x+size-1)%size], r = h[y*size + (x+1)%size], u = h[((y+size-1)%size)*size + x], dn = h[((y+1)%size)*size + x];
+    const nx = (l-r)*strength, ny = (dn-u)*strength, il = 1/Math.hypot(nx, ny, 1);
+    d[o] = (nx*il*.5+.5)*255; d[o+1] = (ny*il*.5+.5)*255; d[o+2] = (il*.5+.5)*255;
+  });
+}
+const TEX = {};
+{ // sports-vinyl court mat: fine pebbled grain with soft mottling and wear
+  const S = 512, grain = valueNoise(S, 170, 11), soft = fbm(S, 6, 4, 23), h = grain.map((v, i) => v*.6 + soft[i]*.4);
+  TEX.matN = normalFromHeight(h, S, 2.4);
+  TEX.matR = dataTex(S, (d, o, i) => { d[o] = d[o+1] = d[o+2] = clamp(138 + (soft[i]-.5)*110 + (grain[i]-.5)*40, 0, 255); });
+  TEX.matC = dataTex(S, (d, o, i) => { d[o] = d[o+1] = d[o+2] = clamp(232 + (soft[i]-.5)*46 + (grain[i]-.5)*14, 0, 255); }, true);
+}
+{ // lacquered maple floor: staggered planks, long grain, dark seams (one tile = 1.6 m)
+  const S = 512, PW = 32, PL = 256, r = mulberry(7), n = valueNoise(S, 128, 31), soft = fbm(S, 4, 3, 5);
+  const offs = Array.from({length:S/PW}, () => Math.floor(r()*4)*64), tints = Array.from({length:S/PW*2}, () => .8 + r()*.3);
+  const col = new Float32Array(S*S), hgt = new Float32Array(S*S), rgh = new Float32Array(S*S);
+  for (let y=0; y<S; y++) for (let x=0; x<S; x++) {
+    const cx = Math.floor(x/PW), yy = (y+offs[cx]) % S, id = cx*2 + Math.floor(yy/PL);
+    const fy = y/16, r0 = Math.floor(fy), t = fy-r0, gx = (x + id*37) % S;
+    const g = n[((r0+id*5)%32)*S + gx]*(1-t) + n[((r0+1+id*5)%32)*S + gx]*t;            // grain stretched along the plank
+    const sx = x % PW, sy = yy % PL, seam = (sx < 1 || sy < 1) ? 1 : (sx < 2 || sy < 2) ? .45 : 0, i = y*S+x;
+    col[i] = tints[id]*(.86 + .26*g)*(1 - .5*seam)*(.94 + .12*soft[i]); hgt[i] = g*.12 - seam; rgh[i] = .3 + g*.14 + seam*.35;
+  }
+  TEX.woodC = dataTex(S, (d, o, i) => { const v = col[i]; d[o] = clamp(v*168, 0, 255); d[o+1] = clamp(v*122, 0, 255); d[o+2] = clamp(v*78, 0, 255); }, true);
+  TEX.woodN = normalFromHeight(hgt, S, 1.6);
+  TEX.woodR = dataTex(S, (d, o, i) => { d[o] = d[o+1] = d[o+2] = clamp(rgh[i]*255, 0, 255); });
+}
+{ // woven fabric bump for kit and uniforms
+  const S = 64, h = new Float32Array(S*S);
+  for (let y=0; y<S; y++) for (let x=0; x<S; x++) h[y*S+x] = Math.sin(x*Math.PI/4)*Math.sin(y*Math.PI/4) > 0 ? Math.abs(Math.sin(x*Math.PI/4)) : Math.abs(Math.sin(y*Math.PI/4))*.6;
+  TEX.fabricN = normalFromHeight(h, S, 1.4); TEX.fabricN.repeat.set(14, 14);
+}
+function canvasMap(w, h, draw, srgb=true) {
+  const c = document.createElement('canvas'); c.width = w; c.height = h; draw(c.getContext('2d'), w, h);
+  const t = new THREE.CanvasTexture(c); t.anisotropy = MAXA; if (srgb) t.colorSpace = THREE.SRGBColorSpace; return t;
+}
+TEX.strings = canvasMap(256, 256, (g) => {            // racket string bed
+  g.fillStyle = 'rgba(255,255,255,.035)'; g.fillRect(0, 0, 256, 256); g.strokeStyle = 'rgba(245,245,235,.9)'; g.lineWidth = 1.6;
+  for (let i=1; i<20; i++) { const q = i*12.8; g.beginPath(); g.moveTo(q, 0); g.lineTo(q, 256); g.moveTo(0, q); g.lineTo(256, q); g.stroke(); }
+});
+TEX.grip = canvasMap(64, 64, (g) => {                 // overgrip tape wrap
+  g.fillStyle = '#1b1b1d'; g.fillRect(0, 0, 64, 64); g.strokeStyle = '#050506'; g.lineWidth = 3;
+  for (let i=-64; i<128; i+=16) { g.beginPath(); g.moveTo(i, 0); g.lineTo(i+64, 64); g.stroke(); }
+  g.strokeStyle = 'rgba(255,255,255,.07)'; g.lineWidth = 1; for (let i=-64; i<128; i+=16) { g.beginPath(); g.moveTo(i+4, 0); g.lineTo(i+68, 64); g.stroke(); }
+});
+TEX.grip.wrapS = TEX.grip.wrapT = THREE.RepeatWrapping; TEX.grip.repeat.set(1, 5);
+TEX.feathers = canvasMap(512, 256, (g) => {           // shuttle skirt: 16 goose feathers, quills and two thread bands (top = cork end)
+  for (let i=0; i<16; i++) {
+    const cx = i*32 + 16;
+    g.fillStyle = '#fbfaf4'; g.beginPath(); g.moveTo(cx, 78); g.bezierCurveTo(cx-19, 120, cx-17, 215, cx-12, 250); g.quadraticCurveTo(cx, 258, cx+12, 250);
+    g.bezierCurveTo(cx+17, 215, cx+19, 120, cx, 78); g.fill();
+    g.strokeStyle = 'rgba(150,150,140,.35)'; g.lineWidth = 1;
+    for (let y=96; y<250; y+=7) { g.beginPath(); g.moveTo(cx, y); g.lineTo(cx-13, y+12); g.moveTo(cx, y); g.lineTo(cx+13, y+12); g.stroke(); }
+    g.strokeStyle = '#e9e4d2'; g.lineWidth = 3; g.beginPath(); g.moveTo(cx, 0); g.lineTo(cx, 252); g.stroke();
+  }
+  g.fillStyle = '#efeadb'; g.fillRect(0, 52, 512, 5); g.fillRect(0, 84, 512, 5);
+});
+TEX.feathers.wrapS = THREE.RepeatWrapping;
+TEX.net = canvasMap(32, 32, (g) => {                  // 19 mm net mesh, one cell per tile
+  g.clearRect(0, 0, 32, 32); g.strokeStyle = 'rgba(38,26,18,.95)'; g.lineWidth = 5; g.strokeRect(0, 0, 32, 32);
+});
+TEX.net.wrapS = TEX.net.wrapT = THREE.RepeatWrapping; TEX.net.repeat.set(6.1/0.019, 0.76/0.019);
+const fabric = (c, sheen=.3) => new THREE.MeshPhysicalMaterial({color:c, roughness:.92, sheen, sheenRoughness:.55,
+  sheenColor:new THREE.Color(c).lerp(new THREE.Color(0xffffff), .22), normalMap:TEX.fabricN, normalScale:new THREE.Vector2(.55, .55)});
+
+// arena lighting: a dark bowl with one bright pool of light over the court
+scene.add(new THREE.HemisphereLight(0xbfd2ff, 0x10141f, 0.32));
+const sun = new THREE.SpotLight(0xfff6e6, 3.4, 0, 0.66, 0.55, 0);
+sun.position.set(0, 16, 0); sun.target.position.set(0, 0, 0); sun.castShadow = true;
+sun.shadow.mapSize.set(4096, 4096); sun.shadow.camera.near = 3; sun.shadow.camera.far = 24; sun.shadow.bias = -0.0003; sun.shadow.radius = 2.5;
+scene.add(sun, sun.target);
+for (const z of [12, -12]) { const fill = new THREE.DirectionalLight(0xdfe8ff, 0.45); fill.position.set(0, 7, z); scene.add(fill); }
+
+function flat(w, d, color, y, x=0, z=0, opts={}) {
+  const m = new THREE.Mesh(new THREE.PlaneGeometry(w, d), new THREE.MeshStandardMaterial({color, roughness:.9, ...opts}));
+  m.rotation.x = -Math.PI/2; m.position.set(x, y, z); m.receiveShadow = true; scene.add(m); return m;
+}
+function slab(w, d, y, mat, tile) {                 // textured floor piece with UVs in metres / tile
+  const geo = new THREE.PlaneGeometry(w, d), uv = geo.attributes.uv;
+  for (let i=0; i<uv.count; i++) uv.setXY(i, uv.getX(i)*w/tile, uv.getY(i)*d/tile);
+  const m = new THREE.Mesh(geo, mat); m.rotation.x = -Math.PI/2; m.position.y = y; m.receiveShadow = true; scene.add(m); return m;
+}
+slab(60, 70, -0.002, new THREE.MeshPhysicalMaterial({map:TEX.woodC, normalMap:TEX.woodN, roughnessMap:TEX.woodR, roughness:1,
+  clearcoat:.55, clearcoatRoughness:.22, normalScale:new THREE.Vector2(.7, .7)}), 1.6);                       // arena floor: lacquered maple
+const vinyl = (c) => new THREE.MeshStandardMaterial({color:c, map:TEX.matC, normalMap:TEX.matN, roughnessMap:TEX.matR, roughness:1,
+  normalScale:new THREE.Vector2(.5, .5), envMapIntensity:.8});
+slab(8.5, 17.8, 0, vinyl(0x1a7a50), 0.7);               // court mat
+slab(6.1, 13.4, 0.001, vinyl(0x21956a), 0.7);           // playing area
+const LW = 0.045, lineMat = {roughness:.45, envMapIntensity:.6};
+const L = (w,d,x,z) => flat(w, d, 0xffffff, 0.003, x, z, lineMat);
+for (const s of [-1,1]) {
+  L(LW, 13.4, s*3.05, 0); L(LW, 13.4, s*HALF_W, 0);          // side lines (doubles, singles)
+  L(6.1, LW, 0, s*HALF_LEN); L(6.1, LW, 0, s*(HALF_LEN-0.76)); // back / long service
+  L(6.1, LW, 0, s*1.98);                                      // short service
+  L(LW, HALF_LEN-1.98, 0, s*(1.98+(HALF_LEN-1.98)/2));        // centre line
+}
+// net
+{
+  const net = new THREE.Mesh(new THREE.PlaneGeometry(6.1, 0.76),
+    new THREE.MeshBasicMaterial({map:TEX.net, transparent:true, side:THREE.DoubleSide, depthWrite:false}));
+  net.position.set(0, NET_H-0.38, 0); scene.add(net);
+  const tape = new THREE.Mesh(new THREE.BoxGeometry(6.1, 0.05, 0.02), fabric(0xf4f4f0, .3));
+  tape.position.set(0, NET_H, 0); scene.add(tape);
+  for (const s of [-1,1]) {
+    const post = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.03, NET_H, 16), new THREE.MeshStandardMaterial({color:0x2a3350, metalness:.85, roughness:.3}));
+    post.position.set(s*NET_HALF, NET_H/2, 0); post.castShadow = true; scene.add(post);
+  }
+}
+// ── people: a jointed human figure (hips → spine → head / arms, hips → legs) posed by joint angles ──
+function makeHuman(o = {}) {
+  const M = (c, r=.75) => new THREE.MeshStandardMaterial({color:c, roughness:r});
+  const skin = M(o.skin ?? 0xd9a47a, .55), top = fabric(o.shirt ?? 0xe8334a), bottom = fabric(o.shorts ?? 0x16203a, .3), hair = M(o.hair ?? 0x1a1310, .6),
+        shoe = M(o.shoe ?? 0xf4f4f4, .5), sock = M(0xf0f0f0), ink = M(0x16110f, .5), trim = M(o.trim ?? 0xffffff);
+  const cast = o.shadow ?? true, longSleeve = !!o.longSleeve, longLeg = !!o.longLeg;
+  const mesh = (geo, mat, parent, x=0, y=0, z=0) => { const m = new THREE.Mesh(geo, mat); m.position.set(x, y, z); m.castShadow = cast; parent.add(m); return m; };
+  const limb = (rTop, rBot, len, mat, parent, y=0) => { const g = new THREE.CylinderGeometry(rTop, rBot, len, 12); g.translate(0, -len/2, 0); return mesh(g, mat, parent, 0, y, 0); };
+  const ball = (r, mat, parent, x=0, y=0, z=0, sx=1, sy=1, sz=1) => { const m = mesh(new THREE.SphereGeometry(r, 16, 12), mat, parent, x, y, z); m.scale.set(sx, sy, sz); return m; };
+  const grp = (parent, x=0, y=0, z=0) => { const g = new THREE.Group(); g.position.set(x, y, z); parent.add(g); return g; };
+
+  const root = new THREE.Group(), hips = grp(root, 0, .98, 0), spine = grp(hips);
+  ball(.15, bottom, hips, 0, -.03, 0, 1.15, .78, .86);                                   // pelvis
+  const prof = [[0,-.03],[.12,-.02],[.128,.08],[.14,.22],[.158,.36],[.15,.44],[.085,.5],[.05,.52]].map(([x, y]) => new THREE.Vector2(x, y));
+  mesh(new THREE.LatheGeometry(prof, 20), top, spine).scale.set(1.22, 1, .8);            // torso, waist → shoulders
+  limb(.05, .052, .1, skin, spine, .6);                                                  // neck
+  const head = grp(spine, 0, .67, .005);
+  ball(.1, skin, head, 0, 0, 0, .9, 1.12, 1);
+  const cap = mesh(new THREE.SphereGeometry(.105, 18, 10, 0, Math.PI*2, 0, Math.PI*.55), hair, head, 0, .008, -.012);
+  cap.rotation.x = -.42; cap.scale.set(.93, 1.12, 1.04);
+  for (const sx of [-1, 1]) {
+    ball(.012, ink, head, sx*.036, .012, .089);                                          // eyes
+    ball(.02, skin, head, sx*.089, -.005, 0, .5, 1, .8);                                 // ears
+    mesh(new THREE.BoxGeometry(.03, .006, .01), hair, head, sx*.036, .034, .09);         // brows
+  }
+  ball(.015, skin, head, 0, -.015, .097, 1, 1.4, 1);                                     // nose
+  mesh(new THREE.BoxGeometry(.036, .007, .01), M(0x8a3b3b), head, 0, -.052, .086);       // mouth
+  const arm = (sx) => {
+    const sh = grp(spine, sx*.2, .43, 0); ball(.062, top, sh);
+    if (longSleeve) limb(.055, .046, .28, top, sh); else { limb(.046, .04, .28, skin, sh); limb(.058, .054, .13, top, sh); }
+    const el = grp(sh, 0, -.28, 0); ball(.042, longSleeve ? top : skin, el);
+    limb(.042, .032, .25, longSleeve ? top : skin, el);
+    const wr = grp(el, 0, -.25, 0); ball(.04, skin, wr, 0, -.045, 0, .8, 1.2, .5);
+    return [sh, el, wr];
+  };
+  const leg = (sx) => {
+    const hip = grp(hips, sx*.092, -.04, 0);
+    if (longLeg) limb(.084, .062, .44, bottom, hip); else { limb(.076, .058, .44, skin, hip); limb(.09, .084, .2, bottom, hip); }
+    const kn = grp(hip, 0, -.44, 0); ball(.058, longLeg ? bottom : skin, kn);
+    limb(.056, .04, .42, longLeg ? bottom : skin, kn);
+    if (!longLeg) limb(.045, .044, .1, sock, kn, -.32);
+    const ft = grp(kn, 0, -.42, 0);
+    mesh(new THREE.BoxGeometry(.095, .06, .26), shoe, ft, 0, -.04, .06); mesh(new THREE.BoxGeometry(.1, .02, .27), trim, ft, 0, -.0725, .06);
+    return [hip, kn, ft];
+  };
+  const [shR, elR, wrR] = arm(-1), [shL, elL, wrL] = arm(1), [hipR, knR, ftR] = leg(-1), [hipL, knL, ftL] = leg(1);   // facing +z, the right side is −x
+  if (o.band) limb(.037, .036, .045, trim, elR, -.19);
+  if (o.racket) {
+    const rk = grp(wrR, 0, -.05, .02);
+    limb(.014, .013, .17, ink, rk, .07); limb(.005, .005, .3, new THREE.MeshStandardMaterial({color:0xdddddd, metalness:.9, roughness:.25}), rk, -.1);
+    const hd = mesh(new THREE.TorusGeometry(.105, .008, 10, 40), new THREE.MeshPhysicalMaterial({color:0x1fa9e0, metalness:.6, roughness:.25, clearcoat:1, clearcoatRoughness:.1}), rk, 0, -.53, 0); hd.scale.y = 1.25;
+    const st = new THREE.Mesh(new THREE.CircleGeometry(.1, 24), new THREE.MeshBasicMaterial({map:TEX.strings, transparent:true, side:THREE.DoubleSide, depthWrite:false}));
+    st.position.y = -.53; st.scale.y = 1.25; rk.add(st);
+  }
+  return {root, hips, spine, head, shR, elR, wrR, shL, elL, wrL, hipR, knR, ftR, hipL, knL, ftL};
+}
+// Joint angles (radians). Arms/legs hang down at 0; negative x swings a limb forward, positive back. Knees bend with +x, elbows with −x.
+const BASE = {spineX:0, spineY:0, headX:0, headY:0, shRx:0, shRz:-.08, elR:-.1, wrR:0, shLx:0, shLz:.08, elL:-.1,
+              thRx:0, thRz:-.03, knR:0, thLx:0, thLz:.03, knL:0, jump:0};
+const pose = (o) => ({...BASE, ...o});
+function applyPose(h, P) {
+  h.spine.rotation.set(P.spineX, P.spineY, 0); h.head.rotation.set(P.headX, P.headY, 0);
+  h.shR.rotation.set(P.shRx, 0, P.shRz); h.elR.rotation.x = P.elR; h.wrR.rotation.x = P.wrR;
+  h.shL.rotation.set(P.shLx, 0, P.shLz); h.elL.rotation.x = P.elL;
+  h.hipR.rotation.set(P.thRx, 0, P.thRz); h.knR.rotation.x = P.knR; h.ftR.rotation.x = clamp(-(P.thRx+P.knR), -.9, .5);
+  h.hipL.rotation.set(P.thLx, 0, P.thLz); h.knL.rotation.x = P.knL; h.ftL.rotation.x = clamp(-(P.thLx+P.knL), -.9, .5);
+  const drop = Math.max(.44*Math.cos(P.thRx)*Math.cos(P.thRz) + .42*Math.cos(P.thRx+P.knR), .44*Math.cos(P.thLx)*Math.cos(P.thLz) + .42*Math.cos(P.thLx+P.knL));
+  h.hips.position.y = drop + .1225 + P.jump;                                             // keep the lower foot on the floor
+}
+const SIT = pose({spineX:.06, shRx:-.5, elR:-1.0, shLx:-.5, elL:-1.0, thRx:-1.5, thRz:-.07, knR:1.5, thLx:-1.5, thLz:.07, knL:1.5});
+const lunge = {thRx:-1.0, thRz:-.1, knR:1.0, thLx:.45, thLz:.12, knL:.4};
+const POSE = {
+  ready:       pose({spineX:.24, shRx:-.7, shRz:-.3, elR:-1.5, wrR:-.2, shLx:-.45, shLz:.32, elL:-1.1, thRx:-.48, thRz:-.17, knR:.8, thLx:-.48, thLz:.17, knL:.8}),
+  serve:       pose({spineX:.14, spineY:-.2, shRx:.35, shRz:-.25, elR:-.45, wrR:-.5, shLx:-.95, shLz:.05, elL:-.55, thRx:.16, knR:.25, thLx:-.3, knL:.3}),
+  prepOver:    pose({spineX:-.06, spineY:-.5, shRx:-2.3, shRz:-1.45, elR:-1.6, wrR:-.3, shLx:-2.4, shLz:.22, elL:-.2, thRx:.18, thRz:-.12, knR:.5, thLx:-.45, thLz:.1, knL:.45}),
+  hitOver:     pose({spineX:.12, spineY:.15, shRx:-2.95, shRz:-.2, elR:-.08, wrR:-.15, shLx:-.5, shLz:.4, elL:-1.3, thRx:.1, knR:.35, thLx:-.3, knL:.3, jump:.16}),
+  followOver:  pose({spineX:.5, spineY:.55, shRx:-.8, shRz:.45, elR:-.5, wrR:.3, shLx:.25, shLz:.3, elL:-1.0, thRx:-.75, knR:.65, thLx:.25, knL:.5}),
+  prepUnder:   pose({spineX:.34, spineY:-.3, shRx:.45, shRz:-.35, elR:-.3, wrR:-.5, shLx:.3, shLz:.4, elL:-.6, ...lunge}),
+  hitUnder:    pose({spineX:.42, spineY:.1, shRx:-.7, shRz:-.25, elR:-.25, wrR:-.6, shLx:.5, shLz:.45, elL:-.4, ...lunge}),
+  followUnder: pose({spineX:.22, spineY:.3, shRx:-2.1, shRz:-.1, elR:-.8, wrR:-.2, shLx:.4, shLz:.4, elL:-.5, ...lunge}),
+};
+
+// ── championship arena ──
+const SRGB = THREE.SRGBColorSpace;
+function canvasTex(w, h, draw) {
+  const c = document.createElement('canvas'); c.width = w; c.height = h; draw(c.getContext('2d'), w, h);
+  const t = new THREE.CanvasTexture(c); t.colorSpace = SRGB; t.anisotropy = 8; return t;
+}
+function fitText(g, txt, x, y, maxW, px, weight=800) {
+  g.font = `${weight} ${px}px system-ui, sans-serif`;
+  const w = g.measureText(txt).width; if (w > maxW) g.font = `${weight} ${Math.floor(px*maxW/w)}px system-ui, sans-serif`;
+  g.fillText(txt, x, y);
+}
+const arena = {seats:[], flashes:[], burst:0};
+const addBox = (w, h, d, x, y, z, mat, shadow=false) => {
+  const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mat); m.position.set(x, y, z); m.castShadow = shadow; scene.add(m); return m;
+};
+// scrolling LED perimeter boards (fictional sponsors)
+const adTex = canvasTex(2048, 128, (g) => {
+  const ADS = [['WORLD CHAMPIONSHIPS 2026', '#0b2a6b', '#ffffff'], ['SHUTTLE STRIKE', '#a30f27', '#ffffff'],
+               ['AEROFEATHER', '#0d141f', '#3fd2ff'], ['SMASH ENERGY', '#0b5c3a', '#ffe45c']];
+  g.textAlign = 'center'; g.textBaseline = 'middle';
+  ADS.forEach(([txt, bg, fg], i) => { g.fillStyle = bg; g.fillRect(i*512, 0, 512, 128); g.fillStyle = fg; fitText(g, txt, i*512+256, 68, 450, 60); });
+  g.fillStyle = 'rgba(0,0,0,.3)';                     // LED pixel pitch
+  for (let x=0; x<2048; x+=4) g.fillRect(x, 0, 1, 128);
+  for (let y=0; y<128; y+=4) g.fillRect(0, y, 2048, 1);
+});
+adTex.wrapS = THREE.RepeatWrapping;
+const ledMat = new THREE.MeshBasicMaterial({map:adTex, color:new THREE.Color(2.3, 2.3, 2.3)});      // HDR, so bright text blooms
+const ledGlow = new THREE.MeshBasicMaterial({map:adTex, vertexColors:true, blending:THREE.AdditiveBlending, transparent:true, depthWrite:false});
+function floorGlow(x0, z0, x1, z1, dx, dz, u0, u1) {  // the board's mirror image fading across the glossy floor in front of it
+  const geo = new THREE.BufferGeometry(), y = 0.004, k = .5;
+  geo.setAttribute('position', new THREE.Float32BufferAttribute([x0, y, z0, x1, y, z1, x1+dx, y, z1+dz, x0+dx, y, z0+dz], 3));
+  geo.setAttribute('uv', new THREE.Float32BufferAttribute([u0, 0, u1, 0, u1, 1, u0, 1], 2));
+  geo.setAttribute('color', new THREE.Float32BufferAttribute([k, k, k, k, k, k, 0, 0, 0, 0, 0, 0], 3));
+  geo.setIndex([0, 1, 2, 0, 2, 3]);
+  const m = new THREE.Mesh(geo, ledGlow); m.material.side = THREE.DoubleSide; scene.add(m);
+}
+function ledBoard(len, h, x, y, z, ry, metresPerLoop=10) {
+  const geo = new THREE.PlaneGeometry(len, h), uv = geo.attributes.uv;
+  for (let i=0; i<uv.count; i++) uv.setX(i, uv.getX(i)*len/metresPerLoop);
+  const m = new THREE.Mesh(geo, ledMat); m.position.set(x, y, z); m.rotation.y = ry; scene.add(m);
+}
+// big screens at both ends, showing the live score
+const screenCv = document.createElement('canvas'); screenCv.width = 1024; screenCv.height = 352;
+const screenTex = new THREE.CanvasTexture(screenCv); screenTex.colorSpace = SRGB;
+function paintScreen(sp, sa, server) {
+  const g = screenCv.getContext('2d');
+  g.fillStyle = '#06101f'; g.fillRect(0, 0, 1024, 352);
+  g.fillStyle = '#0d2147'; g.fillRect(0, 0, 1024, 84);
+  g.textBaseline = 'middle'; g.textAlign = 'center'; g.fillStyle = '#ffd23f';
+  g.font = '700 40px system-ui, sans-serif'; g.fillText('WORLD CHAMPIONSHIPS  ·  FINAL', 512, 44);
+  [['YOU', sp, 'player', 158], ['CPU', sa, 'ai', 280]].forEach(([name, n, who, y]) => {
+    g.fillStyle = '#ffd23f'; if (server === who) { g.beginPath(); g.arc(70, y, 13, 0, 7); g.fill(); }
+    g.fillStyle = '#e9eefc'; g.textAlign = 'left'; g.font = '800 88px system-ui, sans-serif'; g.fillText(name, 120, y+4);
+    g.textAlign = 'right'; g.font = '900 104px system-ui, sans-serif'; g.fillText(String(n), 950, y+4);
+  });
+  g.fillStyle = 'rgba(255,255,255,.12)'; g.fillRect(60, 218, 904, 2);
+  g.fillStyle = 'rgba(0,0,0,.28)';
+  for (let x=0; x<1024; x+=4) g.fillRect(x, 0, 1, 352);
+  for (let y=0; y<352; y+=4) g.fillRect(0, y, 1024, 1);
+  screenTex.needsUpdate = true;
+}
+{
+  const WH = 23, WX = 26.5, WZ = 31;
+  const shell = new THREE.MeshStandardMaterial({color:0x0a0d15, roughness:1});
+  addBox(2*WX, WH, .5, 0, WH/2, -WZ, shell); addBox(2*WX, WH, .5, 0, WH/2, WZ, shell);
+  addBox(.5, WH, 2*WZ, -WX, WH/2, 0, shell); addBox(.5, WH, 2*WZ, WX, WH/2, 0, shell);
+  addBox(2*WX, .5, 2*WZ, 0, WH, 0, shell);
+
+  // perimeter boards
+  const back = new THREE.MeshStandardMaterial({color:0x0b0e16, roughness:.8});
+  for (const sgn of [-1, 1]) {
+    ledBoard(19, 0.9, sgn*6.3, 0.45, 0, -sgn*Math.PI/2); addBox(.12, .9, 19, sgn*6.37, .45, 0, back);
+    floorGlow(sgn*6.3, -sgn*9.5, sgn*6.3, sgn*9.5, -sgn*1.7, 0, 0, 1.9);
+    ledBoard(12.6, 0.9, 0, 0.45, sgn*10, sgn > 0 ? Math.PI : 0); addBox(12.7, .9, .12, 0, .45, sgn*10.07, back);
+    floorGlow(sgn*6.3, sgn*10, -sgn*6.3, sgn*10, 0, -sgn*1.05, 0, 1.26);
+    ledBoard(2*WZ-1, 0.7, sgn*(WX-.3), 11.6, 0, -sgn*Math.PI/2, 20);                 // upper-tier ribbon
+    const scr = new THREE.Mesh(new THREE.PlaneGeometry(16, 5.5), new THREE.MeshBasicMaterial({map:screenTex, color:new THREE.Color(1.5, 1.5, 1.5)}));
+    scr.position.set(0, 14.2, sgn*(WZ-.4)); scr.rotation.y = sgn > 0 ? Math.PI : 0; scene.add(scr);
+    addBox(16.5, 6, .2, 0, 14.2, sgn*(WZ-.28), back);
+  }
+
+  // tiered stands on all four sides
+  const tread = new THREE.MeshStandardMaterial({color:0x121722, roughness:1});
+  const fascia = canvasTex(1024, 64, (g) => {
+    g.fillStyle = '#0b2a6b'; g.fillRect(0, 0, 1024, 64); g.fillStyle = '#ffd23f'; g.fillRect(0, 58, 1024, 6);
+    g.fillStyle = '#ffffff'; g.textAlign = 'center'; g.textBaseline = 'middle';
+    fitText(g, 'WORLD CHAMPIONSHIPS', 256, 30, 440, 34); fitText(g, 'SHUTTLE STRIKE 2026', 768, 30, 440, 34);
+  });
+  fascia.wrapS = THREE.RepeatWrapping;
+  const fasciaMat = new THREE.MeshBasicMaterial({map:fascia, color:0x8a8a8a});
+  const banner = (len, x, z, ry) => {
+    const geo = new THREE.PlaneGeometry(len, 1.2), uv = geo.attributes.uv;
+    for (let i=0; i<uv.count; i++) uv.setX(i, uv.getX(i)*len/16);
+    const m = new THREE.Mesh(geo, fasciaMat); m.position.set(x, .6, z); m.rotation.y = ry; scene.add(m);
+  };
+  const ROWS = 18;
+  for (let r=0; r<ROWS; r++) {
+    const fy = 1.2 + r*0.5, off = r*0.85, lit = 1 - r/ROWS*0.65;
+    for (const sgn of [-1, 1]) {
+      addBox(.85, fy, 2*(12.6+off)+.85, sgn*(9+off), fy/2, 0, tread);
+      addBox(2*(8.4+off)+.85, fy, .85, 0, fy/2, sgn*(13+off), tread);
+      for (let z=-(12.6+off); z<=12.6+off; z+=0.62) arena.seats.push([sgn*(9+off), fy, z, -sgn*Math.PI/2, lit, sgn > 0 ? 0 : 1]);
+      for (let x=-(8.4+off); x<=8.4+off; x+=0.62) arena.seats.push([x, fy, sgn*(13+off), sgn > 0 ? Math.PI : 0, lit, sgn > 0 ? 2 : 3]);
+    }
+  }
+  for (const sgn of [-1, 1]) { banner(26, sgn*8.565, 0, -sgn*Math.PI/2); banner(17.6, 0, sgn*12.565, sgn > 0 ? Math.PI : 0); }
+
+  // crowd: seated spectators built from merged low-poly parts (clothes / skin / hair), instanced per stand so off-screen stands are culled
+  const P3 = (x, y, z) => new V3(x, y, z);
+  const tube = (a, b, rA, rB, seg=6) => {
+    const d = new V3().subVectors(b, a), len = d.length(), g = new THREE.CylinderGeometry(rB, rA, len, seg, 1, true);
+    g.applyQuaternion(new THREE.Quaternion().setFromUnitVectors(new V3(0,1,0), d.normalize()));
+    g.translate((a.x+b.x)/2, (a.y+b.y)/2, (a.z+b.z)/2); return g;
+  };
+  const tint = (g, r, gg, b) => {
+    const n = g.attributes.position.count, c = new Float32Array(n*3);
+    for (let i=0; i<n; i++) { c[i*3] = r; c[i*3+1] = gg; c[i*3+2] = b; }
+    g.setAttribute('color', new THREE.BufferAttribute(c, 3)); return g;
+  };
+  const tg = new THREE.CapsuleGeometry(.14, .26, 3, 8); tg.scale(1.25, 1, .78); tg.translate(0, .72, 0);
+  const hg = new THREE.SphereGeometry(.1, 8, 6); hg.scale(.9, 1.12, 1); hg.translate(0, 1.12, .02);
+  const clothesParts = [tint(tg, 1, 1, 1)], skinParts = [hg, tube(P3(0,.93,0), P3(0,1.05,.012), .045, .045, 5)];
+  for (const sx of [-1, 1]) {
+    clothesParts.push(tint(tube(P3(sx*.2,.9,0), P3(sx*.235,.66,.05), .052, .046), 1, 1, 1));              // sleeves
+    clothesParts.push(tint(tube(P3(sx*.09,.5,.02), P3(sx*.1,.5,.45), .078, .062), .42, .44, .56));        // thighs (trousers: darker)
+    clothesParts.push(tint(tube(P3(sx*.1,.52,.45), P3(sx*.1,.04,.43), .056, .045), .42, .44, .56));       // shins
+    skinParts.push(tube(P3(sx*.235,.66,.05), P3(sx*.12,.58,.3), .042, .036, 5));                          // forearms resting on the lap
+  }
+  const hairG = new THREE.SphereGeometry(.107, 8, 4, 0, Math.PI*2, 0, Math.PI*.55); hairG.rotateX(-.45); hairG.scale(.92, 1.13, 1.03); hairG.translate(0, 1.128, .01);
+  const clothesG = mergeGeometries(clothesParts), skinG = mergeGeometries(skinParts);
+  const matC = new THREE.MeshLambertMaterial({vertexColors:true}), matS = new THREE.MeshLambertMaterial(), matH = new THREE.MeshLambertMaterial();
+  const mtx = new THREE.Matrix4(), q = new THREE.Quaternion(), scl = new V3(), pos = new V3(), col = new THREE.Color(), YA = new V3(0,1,0);
+  const SKINS = [0xe8c3a0, 0xd3a07a, 0xb37c55, 0x8a5a3c, 0x5e3d2a, 0xf1d2b6], HAIRS_C = [0x15100c, 0x2b1b12, 0x4a3320, 0x8a6a3a, 0x8c8c8c, 0x0b0b0b, 0x6e2f1a];
+  for (let side=0; side<4; side++) {
+    const ppl = arena.seats.filter(st => st[5] === side && Math.random() < 0.94), n = ppl.length;
+    const C = new THREE.InstancedMesh(clothesG, matC, n), S = new THREE.InstancedMesh(skinG, matS, n), Hh = new THREE.InstancedMesh(hairG, matH, n);
+    ppl.forEach(([x, fy, z, ry, lit], i) => {
+      const j = (Math.random()-.5)*.08, sc = Math.random() < .07 ? .78 : .93+Math.random()*.14;
+      q.setFromAxisAngle(YA, ry + (Math.random()-.5)*.5);
+      mtx.compose(pos.set(x+j, fy, z+j), q, scl.setScalar(sc));
+      C.setMatrixAt(i, mtx); S.setMatrixAt(i, mtx); Hh.setMatrixAt(i, mtx);
+      const pick = Math.random();
+      if (pick < .12) col.setScalar(.7*lit); else if (pick < .24) col.setScalar(.05*lit);
+      else col.setHSL(Math.random(), .2+Math.random()*.5, (.14+Math.random()*.3)*lit);
+      C.setColorAt(i, col);
+      S.setColorAt(i, col.set(SKINS[Math.floor(Math.random()*SKINS.length)]).multiplyScalar(lit));
+      Hh.setColorAt(i, col.set(HAIRS_C[Math.floor(Math.random()*HAIRS_C.length)]).multiplyScalar(lit));
+    });
+    for (const m of [C, S, Hh]) { m.computeBoundingSphere(); scene.add(m); }
+  }
+
+  // lighting truss with fixtures and hazy beams
+  const steel = new THREE.MeshStandardMaterial({color:0x2a2f3c, roughness:.38, metalness:.9});
+  const lens = new THREE.MeshBasicMaterial({color:new THREE.Color(5, 4.7, 4.2)});
+  const beam = new THREE.MeshBasicMaterial({color:0xbfd4ff, transparent:true, opacity:.006, blending:THREE.AdditiveBlending, depthWrite:false, side:THREE.DoubleSide});
+  for (const sgn of [-1, 1]) {
+    addBox(.3, .3, 25, sgn*5.5, 13, 0, steel);
+    for (let z=-10.5; z<=10.5; z+=3) {
+      addBox(.36, .34, .36, sgn*5.5, 12.7, z, steel);
+      const l = new THREE.Mesh(new THREE.CircleGeometry(.15, 16), lens); l.rotation.x = Math.PI/2; l.position.set(sgn*5.5, 12.52, z); scene.add(l);
+      const dir = new V3(-sgn*4, -12.5, 0), len = dir.length();
+      const cone = new THREE.Mesh(new THREE.CylinderGeometry(.14, 2.3, len, 20, 1, true), beam);
+      cone.position.set(sgn*3.5, 12.5-6.25, z); cone.quaternion.setFromUnitVectors(new V3(0,-1,0), dir.normalize()); scene.add(cone);
+    }
+  }
+  for (const z of [-12, -6, 0, 6, 12]) addBox(11.3, .3, .3, 0, 13, z, steel);
+  for (const [x, z] of [[-5.5,-12],[5.5,-12],[-5.5,12],[5.5,12]]) addBox(.06, 10, .06, x, 18, z, steel);
+
+  // officials: umpire's high chair, service judge, line judges
+  const suit = new THREE.MeshStandardMaterial({color:0x1b2238, roughness:.8});
+  const skinM = new THREE.MeshStandardMaterial({color:0xe2b892, roughness:.8});
+  const chairM = new THREE.MeshStandardMaterial({color:0x39425e, roughness:.6});
+  const TONES = [0xe2b892, 0xc68f63, 0x8f5d3b, 0xf0c8a4], HAIRS = [0x15100c, 0x3a2616, 0x6b6b6b, 0x0c0c0c];
+  let nOff = 0;
+  const official = (x, z, ry, seatH=0.45, umpire=false) => {
+    const g = new THREE.Group();
+    const add = (geo, mat, px, py, pz) => { const m = new THREE.Mesh(geo, mat); m.position.set(px, py, pz); m.castShadow = true; g.add(m); };
+    add(new THREE.BoxGeometry(.46, .05, .46), chairM, 0, seatH-.025, 0);
+    add(new THREE.BoxGeometry(.46, .5, .04), chairM, 0, seatH+.27, -.24);
+    for (const [lx, lz] of [[-.2,-.2],[.2,-.2],[-.2,.2],[.2,.2]]) add(new THREE.BoxGeometry(.04, seatH, .04), chairM, lx, seatH/2, lz);
+    if (seatH > 1) add(new THREE.BoxGeometry(.5, .04, .34), chairM, 0, seatH-.47, .4);   // footrest
+    const h = makeHuman({skin:TONES[nOff % 4], hair:HAIRS[(nOff*3+1) % 4], shirt:umpire ? 0x1b2238 : 0x0f6e6e, shorts:0x23262f,
+                         shoe:0x15151a, trim:0x2a2a2a, longSleeve:umpire, longLeg:true, shadow:false});
+    nOff++;
+    applyPose(h, SIT); h.root.position.set(0, seatH-.45, -.04); g.add(h.root);
+    g.position.set(x, 0, z); g.rotation.y = ry; scene.add(g);
+  };
+  official(3.95, 0, -Math.PI/2, 1.5, true); official(-3.95, 0, Math.PI/2);
+  for (const sgn of [-1, 1]) {
+    official(5.3, sgn*HALF_LEN, -Math.PI/2); official(-5.3, sgn*HALF_LEN, Math.PI/2);
+    for (const x of [-HALF_W, 0, HALF_W]) official(x, sgn*9.3, sgn > 0 ? Math.PI : 0);
+    addBox(.55, .45, .38, 4.9, .225, sgn*1.7, new THREE.MeshStandardMaterial({color:0xa30f27, roughness:.7}), true);   // kit box
+    addBox(.3, .3, .78, 4.9, .15, sgn*2.6, new THREE.MeshStandardMaterial({color:0x0b2a6b, roughness:.7}), true);      // racket bag
+  }
+
+  // camera flashes in the crowd
+  const glow = canvasTex(64, 64, (g) => {
+    const gr = g.createRadialGradient(32, 32, 0, 32, 32, 32); gr.addColorStop(0, '#fff'); gr.addColorStop(.25, 'rgba(255,255,255,.7)'); gr.addColorStop(1, 'rgba(255,255,255,0)');
+    g.fillStyle = gr; g.fillRect(0, 0, 64, 64);
+  });
+  for (let i=0; i<14; i++) {
+    const sp = new THREE.Sprite(new THREE.SpriteMaterial({map:glow, color:new THREE.Color(4, 4, 4.4), blending:THREE.AdditiveBlending, depthWrite:false}));
+    sp.visible = false; scene.add(sp); arena.flashes.push({sp, life:0});
+  }
+}
+function arenaTick(dt, t) {
+  adTex.offset.x = (t*0.018) % 1;
+  arena.burst = Math.max(0, arena.burst - dt);
+  if (Math.random() < (arena.burst > 0 ? 30 : 1.2)*dt) {
+    const f = arena.flashes.find(f => f.life <= 0);
+    if (f) { const s = arena.seats[Math.floor(Math.random()*arena.seats.length)]; f.sp.position.set(s[0], s[1]+.8, s[2]); f.life = .09; f.sp.scale.setScalar(.5+Math.random()*.5); }
+  }
+  for (const f of arena.flashes) { f.life -= dt; f.sp.visible = f.life > 0; }
+}
+
+// shuttle
+const shuttle = new THREE.Group();
+{
+  const skirt = new THREE.Mesh(new THREE.CylinderGeometry(0.0125, 0.034, 0.066, 48, 1, true),
+    new THREE.MeshStandardMaterial({map:TEX.feathers, alphaTest:.45, side:THREE.DoubleSide, roughness:.8, envMapIntensity:.5}));
+  const corkMat = new THREE.MeshStandardMaterial({color:0xf2eee0, roughness:.55});
+  const base = new THREE.Mesh(new THREE.CylinderGeometry(0.0135, 0.0135, 0.012, 24), corkMat); base.position.y = 0.037;
+  const dome = new THREE.Mesh(new THREE.SphereGeometry(0.0135, 24, 12, 0, Math.PI*2, 0, Math.PI/2), corkMat); dome.position.y = 0.043;
+  const band = new THREE.Mesh(new THREE.CylinderGeometry(0.0139, 0.0139, 0.004, 24), new THREE.MeshStandardMaterial({color:0xffc928, roughness:.5, emissive:0x3a2c00}));
+  band.position.y = 0.034;
+  for (const q of [skirt, base, dome, band]) q.castShadow = true;
+  const cork = dome;
+  shuttle.add(skirt, base, band, cork); shuttle.scale.setScalar(2.3); scene.add(shuttle);  shuttle.add(skirt, cork); shuttle.scale.setScalar(2.3); scene.add(shuttle);
+}
+const TRAIL_N = 24;
+const trailGeo = new THREE.BufferGeometry();
+trailGeo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(TRAIL_N*3), 3));
+const trail = new THREE.Line(trailGeo, new THREE.LineBasicMaterial({color:0xffffff, transparent:true, opacity:.35}));
+trail.frustumCulled = false; scene.add(trail);
+const trailPts = [];
+const mark = new THREE.Mesh(new THREE.RingGeometry(0.12, 0.2, 32), new THREE.MeshBasicMaterial({color:0x4dff88, transparent:true, opacity:.9}));
+mark.rotation.x = -Math.PI/2; mark.visible = false; scene.add(mark);
+
+// player racket (attached to camera)
+const racket = new THREE.Group();
+{
+  const frameMat = new THREE.MeshPhysicalMaterial({color:0xe8243f, metalness:.55, roughness:.28, clearcoat:1, clearcoatRoughness:.08});
+  const head = new THREE.Mesh(new THREE.TorusGeometry(0.105, 0.007, 12, 64), frameMat); head.scale.y = 1.25; head.position.y = RLEN;
+  const strings = new THREE.Mesh(new THREE.CircleGeometry(0.1, 32),
+    new THREE.MeshBasicMaterial({map:TEX.strings, transparent:true, side:THREE.DoubleSide, depthWrite:false}));
+  strings.scale.y = 1.25; strings.position.y = RLEN;
+  const shaft = new THREE.Mesh(new THREE.CylinderGeometry(0.005, 0.005, 0.26, 12), new THREE.MeshStandardMaterial({color:0xe6e6ea, metalness:.9, roughness:.22}));
+  shaft.position.y = RLEN-0.26;
+  const grip = new THREE.Mesh(new THREE.CylinderGeometry(0.014, 0.016, 0.18, 20), new THREE.MeshStandardMaterial({map:TEX.grip, roughness:.95}));
+  grip.position.y = RLEN-0.48;
+  racket.add(head, strings, shaft, grip);
+  racket.traverse(o => { if (o.isMesh) { o.material.transparent = true; o.material.userData.base = o.material.opacity; } });
+  racket.position.set(0.2, -0.5, -REACH_Z); camera.add(racket);
+}
+
+// opponent
+const oppH = makeHuman({skin:0xd9a47a, shirt:0xe8334a, shorts:0x16203a, hair:0x1a1310, shoe:0xf4f4f4, trim:0xffd23f, racket:true, band:true});
+const oppPose = {...POSE.ready};
+applyPose(oppH, oppPose); oppH.root.position.set(0, 0, -4.3);
+scene.add(oppH.root);
+
+/* ───────── physics ───────── */
+function stepPhys(p, v, dt) {
+  const sp = v.length(), k = K*sp*dt;
+  v.x -= k*v.x; v.y -= G*dt + k*v.y; v.z -= k*v.z;
+  p.addScaledVector(v, dt);
+}
+function simulate(p0, v0) {                     // → landing point + height at net crossing
+  const p = p0.clone(), v = v0.clone(); let netY = null;
+  for (let i=0; i<240*8; i++) {
+    const pz = p.z; stepPhys(p, v, H);
+    if (netY === null && (pz > 0) !== (p.z > 0)) netY = p.y;
+    if (p.y <= 0) break;
+  }
+  return {p, netY};
+}
+function predict(p0, v0, side, hitY) {          // where the shuttle can be met on `side` (+1 player, -1 cpu)
+  const p = p0.clone(), v = v0.clone();
+  for (let i=0; i<240*8; i++) {
+    stepPhys(p, v, H);
+    if (p.y <= 0) return p;
+    if (p.z*side > 0.4 && v.y < 0 && p.y <= hitY) return p;
+  }
+  return p;
+}
+function solveShot(from, target, elev) {        // launch velocity that lands on target and clears the net
+  const dir = new V3(target.x-from.x, 0, target.z-from.z), D = dir.length(); dir.normalize();
+  let v = new V3();
+  for (let e=elev; e<=76; e+=4) {
+    const ce = Math.cos(e*DEG), se = Math.sin(e*DEG);
+    let lo = 2, hi = 75, r;
+    for (let i=0; i<16; i++) {
+      const s = (lo+hi)/2; v.set(dir.x*ce*s, se*s, dir.z*ce*s);
+      r = simulate(from, v);
+      if (Math.hypot(r.p.x-from.x, r.p.z-from.z) < D) lo = s; else hi = s;
+    }
+    if (r.netY === null || r.netY > NET_H+0.1) break;
+  }
+  return v;
+}
+
+/* ───────── state ───────── */
+const game = {state:'menu', score:{player:0, ai:0}, server:'player', timer:0, lastHitter:null,
+              mode:'mouse', diff:DIFF.normal, paused:false, rally:0};
+const sh = {pos:new V3(0,1,3), vel:new V3(), prev:new V3(), netted:false};
+const player = {x:0, z:4.6};
+const ai = {x:0, z:-4.3, reactAt:0, decided:false, leave:false, swingT:0, swingKind:'over', px:0, pz:-4.3, phase:0, yaw:0, hx:0, hy:0};
+const hand = {x:0.6, y:0.6, tx:0.6, ty:0.6, vx:0, vy:0, speed:0, roll:0, grip:false, seen:0, lastT:0, lx:0.6, ly:0.6};
+const swing = {t:-9, peak:0, vx:0, vy:0, used:true};
+let camPitch = -0.08, camYaw = 0;
+const racketWorld = new V3(); let headY = 0, lastHint = null;
+
+/* ───────── input ───────── */
+function feedSample(x, y, t, px = x, py = y) {  // x,y: swing sample point; px,py: where the hand is (0..1 screen space)
+  const dt = Math.max(1/240, t - hand.lastT);
+  if (dt < 0.25) {
+    const vx = (x-hand.lx)/dt, vy = (y-hand.ly)/dt;
+    hand.vx = hand.vx*0.4 + vx*0.6; hand.vy = hand.vy*0.4 + vy*0.6;
+    hand.speed = Math.hypot(hand.vx, hand.vy);
+    if (hand.speed > SWING_THR) {
+      if (t - swing.t > 0.3) { swing.peak = 0; swing.used = false; }
+      swing.t = t;
+      if (hand.speed > swing.peak) { swing.peak = hand.speed; swing.vx = hand.vx; swing.vy = hand.vy; }
+    }
+  }
+  hand.lx = x; hand.ly = y; hand.lastT = t; hand.tx = px; hand.ty = py; hand.seen = t;
+}
+addEventListener('pointerdown', e => {            // a new touch must not read as a swing from the last position
+  if (game.mode !== 'mouse') return;
+  hand.lx = hand.tx = e.clientX/innerWidth; hand.ly = hand.ty = e.clientY/innerHeight; hand.lastT = performance.now()/1000;
+});
+addEventListener('pointermove', e => {
+  if (game.mode === 'mouse') feedSample(e.clientX/innerWidth, e.clientY/innerHeight, performance.now()/1000);
+});
+addEventListener('keydown', e => { if (e.key === 'p' || e.key === 'P') togglePause(); });
+
+// webcam + MediaPipe hands
+let landmarker = null, lastVideoT = -1;
+const video = $('cam'), cv = $('camview'), cx = cv.getContext('2d');
+const gesture = {name:'none', since:0, fired:false};
+const BONES = [[0,1],[1,2],[2,3],[3,4],[0,5],[5,6],[6,7],[7,8],[5,9],[9,10],[10,11],[11,12],[9,13],[13,14],[14,15],[15,16],[13,17],[17,18],[18,19],[19,20],[0,17]];
+async function initCam() {
+  const stream = await navigator.mediaDevices.getUserMedia({video:{width:640, height:480, facingMode:'user'}, audio:false});
+  video.srcObject = stream; await video.play();
+  const mp = await import('https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/vision_bundle.mjs');
+  const files = await mp.FilesetResolver.forVisionTasks('https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/wasm');
+  const opts = d => ({baseOptions:{modelAssetPath:'https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task', delegate:d},
+                      runningMode:'VIDEO', numHands:1});
+  try { landmarker = await mp.HandLandmarker.createFromOptions(files, opts('GPU')); }
+  catch { landmarker = await mp.HandLandmarker.createFromOptions(files, opts('CPU')); }
+  $('camwrap').style.display = 'block';
+}
+function pollHand(now) {
+  if (!landmarker || video.readyState < 2 || video.currentTime === lastVideoT) return;
+  lastVideoT = video.currentTime;
+  const res = landmarker.detectForVideo(video, now);
+  cx.save(); cx.translate(cv.width, 0); cx.scale(-1, 1);
+  cx.drawImage(video, 0, 0, cv.width, cv.height);
+  const lm = res.landmarks && res.landmarks[0];
+  let g = 'none';
+  if (lm) {
+    cx.strokeStyle = hand.grip ? '#ffd23f' : '#3fd2ff'; cx.lineWidth = 2; cx.beginPath();
+    for (const [a,b] of BONES) { cx.moveTo(lm[a].x*cv.width, lm[a].y*cv.height); cx.lineTo(lm[b].x*cv.width, lm[b].y*cv.height); }
+    cx.stroke(); cx.fillStyle = '#ffd23f';
+    for (const p of lm) { cx.beginPath(); cx.arc(p.x*cv.width, p.y*cv.height, 2.5, 0, 7); cx.fill(); }
+    const px = (lm[0].x+lm[5].x+lm[9].x+lm[17].x)/4, py = (lm[0].y+lm[5].y+lm[9].y+lm[17].y)/4;
+    const d = (a,b) => Math.hypot(lm[a].x-lm[b].x, lm[a].y-lm[b].y);
+    // a racket handle lies along the knuckle row (pinky → index), so that is the direction the racket points
+    const asp = (video.videoWidth || 4)/(video.videoHeight || 3);
+    if (d(5,17) > d(0,9)*0.3) {
+      const want = Math.atan2((lm[5].x-lm[17].x)*asp, -(lm[5].y-lm[17].y));
+      const dr = Math.atan2(Math.sin(want-hand.roll), Math.cos(want-hand.roll));
+      hand.roll += dr*0.5;
+    }
+    const hx = clamp(0.5 + (0.5-px)*1.35, 0, 1), hy = clamp(0.5 + (py-0.5)*1.35, 0, 1);
+    // swing speed is sampled a little way up the racket so wrist flicks count too
+    feedSample(hx - Math.sin(hand.roll)*0.09, hy - Math.cos(hand.roll)*0.12, now/1000, hx, hy);
+    let ext = 0; for (const [tip,pip] of [[8,6],[12,10],[16,14],[20,18]]) if (d(tip,0) > d(pip,0)*1.2) ext++;
+    g = ext === 4 ? 'open' : ext <= 1 ? 'grip' : 'none';
+  }
+  cx.restore();
+  // hold-to-confirm gestures (ignored while the hand is moving fast)
+  const t = now/1000;
+  if (hand.speed > 1.0) g = 'none';
+  if (g !== gesture.name) { gesture.name = g; gesture.since = t; gesture.fired = false; }
+  const held = t - gesture.since;
+  // grip state is sticky: it only changes on a clear, steady reading, so motion blur mid-swing can't drop the racket
+  if (g === 'grip') hand.grip = true; else if (g === 'open' && held > 0.3) hand.grip = false;
+  $('gest').textContent = !lm ? 'no hand' : hand.grip ? '✊ grip' : '✋ open';
+  if (!gesture.fired && g !== 'none' && held > 0.7) {
+    gesture.fired = true;
+    if (g === 'open' && !game.paused) togglePause();
+    else if (g === 'grip') { if (game.paused) togglePause(); else if (game.state === 'over') startMatch(); }
+  }
+}
+
+/* ───────── audio ───────── */
+let actx = null;
+function thwack(power=0.5, pitch=1) {
+  try {
+    actx ||= new (window.AudioContext || window.webkitAudioContext)();
+    const n = actx.sampleRate*0.09, buf = actx.createBuffer(1, n, actx.sampleRate), d = buf.getChannelData(0);
+    for (let i=0; i<n; i++) d[i] = (Math.random()*2-1) * Math.pow(1-i/n, 3);
+    const src = actx.createBufferSource(); src.buffer = buf;
+    const f = actx.createBiquadFilter(); f.type = 'bandpass'; f.frequency.value = (900+power*1600)*pitch; f.Q.value = 1.2;
+    const gn = actx.createGain(); gn.gain.value = 0.35+power*0.6;
+    src.connect(f).connect(gn).connect(actx.destination); src.start();
+  } catch {}
+}
+
+function cheer(level=0.5) {                     // crowd applause
+  try {
+    actx ||= new (window.AudioContext || window.webkitAudioContext)();
+    const sr = actx.sampleRate, n = Math.floor(sr*(1.3+level*1.7)), buf = actx.createBuffer(1, n, sr), d = buf.getChannelData(0);
+    for (let i=0; i<n; i++) d[i] = (Math.random()*2-1) * (0.55+0.45*Math.random()) * Math.min(1, i/(0.08*sr)) * Math.pow(1-i/n, 1.5);
+    const src = actx.createBufferSource(); src.buffer = buf;
+    const f = actx.createBiquadFilter(); f.type = 'bandpass'; f.frequency.value = 1700; f.Q.value = 0.5;
+    const gn = actx.createGain(); gn.gain.value = 0.1+level*0.22;
+    src.connect(f).connect(gn).connect(actx.destination); src.start();
+  } catch {}
+}
+
+/* ───────── HUD ───────── */
+let msgTimer = 0, shotTimer = 0;
+function showMsg(html, secs=1.6) { $('msg').innerHTML = html; $('msg').style.opacity = 1; msgTimer = secs; }
+function showShot(txt) { $('shot').textContent = txt; $('shot').style.opacity = 1; shotTimer = 0.8; }
+function setHint(txt) { if (txt === lastHint) return; lastHint = txt; const h = $('hint'); if (txt) { h.textContent = txt; h.style.opacity = 1; } else h.style.opacity = 0; }
+function drawScore() {
+  $('sP').textContent = game.score.player; $('sA').textContent = game.score.ai;
+  $('srvP').classList.toggle('on', game.server === 'player'); $('srvA').classList.toggle('on', game.server === 'ai');
+  paintScreen(game.score.player, game.score.ai, game.server);
+}
+
+/* ───────── game flow ───────── */
+function startMatch() {
+  game.score.player = game.score.ai = 0; game.server = 'player'; game.paused = false;
+  $('overlay').style.display = 'none'; drawScore(); setupServe();
+}
+function setupServe() {
+  game.state = 'serve'; game.timer = 1.4; game.lastHitter = null; game.rally = 0;
+  sh.vel.set(0,0,0); sh.netted = false; trailPts.length = 0; mark.visible = false;
+  player.x = 0; player.z = 4.6; ai.x = 0; ai.z = -4.3; ai.leave = false;
+  swing.used = true;
+}
+function launch(v, who, power) {
+  sh.vel.copy(v); sh.netted = false; game.lastHitter = who; game.state = 'rally'; game.rally++;
+  thwack(power, who === 'ai' ? 0.8 : 1);
+  if (who === 'ai') { swing.used = false; swing.peak = hand.speed; }   // a fresh swing is allowed for each incoming shot
+  if (who === 'player') { ai.reactAt = performance.now()/1000 + game.diff.react; ai.decided = false; ai.leave = false; }
+}
+function playerHit(serve) {
+  const power = clamp((swing.peak - SWING_THR)/4.5, 0, 1);
+  const ry = headY;
+  const from = sh.pos.clone(); from.y = Math.max(from.y, 0.3);
+  const tx = clamp(from.x + clamp(swing.vx, -6, 6)*0.42, -HALF_W+0.25, HALF_W-0.25);
+  let tz, elev, name;
+  if (serve)                               { tz = 4.6+power*1.6; elev = 48; name = 'SERVE'; }
+  else if (ry > 0.12 && power > 0.4 && from.y > 1.7) { tz = 2.8+power*2.6; elev = -8; name = 'SMASH'; }
+  else if (power < 0.18)                   { tz = 1.3+Math.random()*0.8; elev = 26; name = 'DROP'; }
+  else if (ry > 0.05)                      { tz = 3.6+power*2.4; elev = 9; name = 'DRIVE'; }
+  else                                     { tz = 4.6+power*1.7; elev = 46; name = 'CLEAR'; }
+  swing.used = true;
+  launch(solveShot(from, new V3(tx, 0, -tz), elev), 'player', power);
+  showShot(name);
+}
+function aiHit(serve) {
+  const d = game.diff, from = sh.pos.clone(); from.y = Math.max(from.y, 0.3);
+  let tz, elev, name, power = 0.5; const r = Math.random();
+  if (serve)                                   { tz = 4.8+Math.random()*1.4; elev = 50; name = ''; }
+  else if (from.y > 2.2 && from.z > -5 && r < 0.5) { tz = 3+Math.random()*2.5; elev = -6; name = 'CPU SMASH'; power = 1; }
+  else if (r < 0.28)                           { tz = 1.3+Math.random()*1.0; elev = 25; name = ''; power = 0.2; }
+  else if (r < 0.52)                           { tz = 3.5+Math.random()*2.2; elev = 9; name = ''; power = 0.7; }
+  else                                         { tz = 5+Math.random()*1.3; elev = 48; name = ''; }
+  let tx = Math.random() < 0.35 ? (Math.random()*2-1)*2.1 : (player.x > 0 ? -1 : 1)*(0.4+Math.random()*1.7);
+  if (serve) tx = (Math.random()*2-1)*1.2;
+  tx += gauss()*d.noise; tz += gauss()*d.noise;
+  ai.swingT = 0.42; ai.swingKind = !serve && from.y > 1.45 ? 'over' : 'under';
+  launch(solveShot(from, new V3(tx, 0, tz), elev), 'ai', power);
+  if (name) showShot(name);
+}
+function land() {
+  sh.pos.y = 0; sh.vel.set(0,0,0);
+  const side = sh.pos.z > 0 ? 'player' : 'ai';
+  const inb = Math.abs(sh.pos.x) <= HALF_W+0.02 && Math.abs(sh.pos.z) <= HALF_LEN+0.02;
+  const hitter = game.lastHitter, other = hitter === 'player' ? 'ai' : 'player';
+  let winner, why;
+  if (sh.netted)            { winner = other;  why = 'Into the net'; }
+  else if (side === hitter) { winner = other;  why = 'Short'; }
+  else if (inb)             { winner = hitter; why = 'In'; }
+  else                      { winner = other;  why = 'Out'; }
+  mark.position.set(sh.pos.x, 0.006, sh.pos.z); mark.material.color.set(inb && side !== hitter && !sh.netted ? 0x4dff88 : 0xff5566); mark.visible = true;
+  game.score[winner]++; game.server = winner; game.state = 'point'; game.timer = 1.9; drawScore();
+  cheer(clamp(game.rally/10, 0.25, 1)); arena.burst = 1.2;
+  const s = game.score, over = Math.max(s.player, s.ai) >= WIN_SCORE && Math.abs(s.player - s.ai) >= 2;
+  showMsg(`${winner === 'player' ? 'Your point' : 'CPU point'}<small>${why.toUpperCase()}${game.rally > 3 ? ' · ' + game.rally + '-SHOT RALLY' : ''}</small>`, 1.7);
+  if (over) game.state = 'ending';
+}
+function gameOver() {
+  game.state = 'over'; setHint('');
+  const won = game.score.player > game.score.ai;
+  $('ovSub').textContent = `${won ? 'You win' : 'CPU wins'} ${game.score.player}–${game.score.ai}. ` +
+    (game.mode === 'cam' ? 'Close your hand ✊ and hold for a rematch.' : 'Play again?');
+  $('ovHelp').style.display = 'none';
+  if (window.NO_CAM) $('bMouse').textContent = 'Rematch'; else { $('bCam').textContent = 'Rematch'; $('bMouse').style.display = 'none'; }
+  $('overlay').style.display = 'flex';
+}
+function togglePause() {
+  if (!['serve','rally','point'].includes(game.state)) return;
+  game.paused = !game.paused;
+  if (game.paused) { showMsg(`Paused<small>${game.mode === 'cam' ? 'CLOSE YOUR HAND ✊ TO RESUME' : 'PRESS P TO RESUME'}</small>`, 1e9); }
+  else { msgTimer = 0.01; }
+}
+
+/* ───────── per-frame update ───────── */
+const _a = new V3(), _b = new V3(), UP = new V3(0,1,0);
+function segDist(a, b, p) {
+  _a.subVectors(b, a); const l2 = _a.lengthSq();
+  const u = l2 > 0 ? clamp(_b.subVectors(p, a).dot(_a)/l2, 0, 1) : 0;
+  return _b.copy(a).addScaledVector(_a, u).distanceTo(p);
+}
+function moveToward(o, tx, tz, maxStep) {
+  const dx = tx-o.x, dz = tz-o.z, d = Math.hypot(dx, dz);
+  if (d <= maxStep) { o.x = tx; o.z = tz; } else { o.x += dx/d*maxStep; o.z += dz/d*maxStep; }
+}
+
+function animateOpponent(dt) {
+  const vx = dt > 0 ? (ai.x-ai.px)/dt : 0, vz = dt > 0 ? (ai.z-ai.pz)/dt : 0; ai.px = ai.x; ai.pz = ai.z;
+  const speed = Math.min(8, Math.hypot(vx, vz)), amp = clamp(speed/3, 0, 1);
+  ai.phase += speed*dt*4;
+  ai.swingT = Math.max(0, ai.swingT - dt);
+  // pick the pose to move toward: stroke phases, serve stance, wind-up as the shuttle arrives, otherwise ready stance
+  let target = POSE.ready, k = 10; const over = ai.swingKind === 'over';
+  if (ai.swingT > 0) {
+    if (1 - ai.swingT/0.42 < 0.22) { target = over ? POSE.hitOver : POSE.hitUnder; k = 45; }
+    else { target = over ? POSE.followOver : POSE.followUnder; k = 13; }
+  } else if (game.state === 'serve' && game.server === 'ai') target = POSE.serve;
+  else if (game.state === 'rally' && game.lastHitter === 'player' && !ai.leave && !sh.netted && sh.pos.z < 0.5 &&
+           Math.hypot(sh.pos.x-(ai.x-0.3), sh.pos.z-ai.z) < 3.2) { target = sh.pos.y > 1.6 ? POSE.prepOver : POSE.prepUnder; k = 12; }
+  const a = Math.min(1, dt*k);
+  for (const key in oppPose) oppPose[key] += (target[key] - oppPose[key])*a;
+  // layer the run cycle and head tracking on top
+  const P = {...oppPose}, s1 = Math.sin(ai.phase), c1 = Math.cos(ai.phase);
+  P.thRx += s1*.65*amp; P.thLx -= s1*.65*amp;
+  P.knR += Math.max(0, -c1)*.8*amp; P.knL += Math.max(0, c1)*.8*amp;
+  P.shLx += s1*.35*amp; P.jump += Math.abs(s1)*.03*amp;
+  ai.yaw += (clamp(vx*0.12, -.5, .5) - ai.yaw)*Math.min(1, dt*8);
+  const dx = sh.pos.x-ai.x, dy = sh.pos.y-1.65, dz = sh.pos.z-ai.z, kh = Math.min(1, dt*10);
+  ai.hy += (clamp(Math.atan2(dx, Math.max(.5, dz)) - ai.yaw - P.spineY, -.9, .9) - ai.hy)*kh;
+  ai.hx += (clamp(-Math.atan2(dy, Math.hypot(dx, dz))*.8 - P.spineX, -.9, .5) - ai.hx)*kh;
+  P.headX = ai.hx; P.headY = ai.hy;
+  applyPose(oppH, P);
+  oppH.root.position.set(ai.x, 0, ai.z); oppH.root.rotation.y = ai.yaw;
+}
+
+function update(dt, t) {
+  const d = game.diff;
+  // -- player footwork (automatic)
+  let ptx = 0, ptz = 4.6;
+  if (game.state === 'rally' && game.lastHitter === 'ai' && !sh.netted) {
+    const p = predict(sh.pos, sh.vel, 1, EYE+0.1);
+    ptx = clamp(p.x, -3.2, 3.2); ptz = clamp(p.z + REACH_Z, 1.3, HALF_LEN+1.2);
+  }
+  if (game.state !== 'serve') moveToward(player, ptx, ptz, 5.5*dt);
+
+  // -- camera
+  const dz = Math.max(2, player.z - sh.pos.z);
+  const wantPitch = clamp(Math.atan2(sh.pos.y - EYE, dz)*0.6, -0.2, 0.6);
+  const wantYaw = clamp(-Math.atan2(sh.pos.x - player.x, dz)*0.3, -0.3, 0.3);
+  const kc = Math.min(1, dt*5);
+  camPitch += (wantPitch-camPitch)*kc; camYaw += (wantYaw-camYaw)*kc;
+  camera.position.set(player.x, EYE, player.z);
+  camera.rotation.set(camPitch, camYaw, 0);
+
+  // -- racket follows hand
+  const kh = Math.min(1, dt*28);
+  hand.x += (hand.tx-hand.x)*kh; hand.y += (hand.ty-hand.y)*kh;
+  if (t - hand.lastT > 0.12) { hand.vx *= 0.8; hand.vy *= 0.8; hand.speed *= 0.8; }
+  const cam = game.mode === 'cam', gripped = !cam || hand.grip;
+  const roll = cam ? hand.roll : clamp(-hand.vx*0.12, -0.9, 0.9);
+  const dr = Math.atan2(Math.sin(roll-racket.rotation.z), Math.cos(roll-racket.rotation.z));
+  racket.rotation.z += dr*Math.min(1, dt*16);
+  racket.rotation.x += (clamp(-hand.vy*0.14, -1, 1) - racket.rotation.x)*Math.min(1, dt*14);
+  const rz = racket.rotation.z;
+  let gx = (hand.x-0.5)*1.5, gy = (0.5-hand.y)*1.1;
+  if (cam) gy -= 0.33;                                           // webcam: the hand is the grip
+  else { gx += Math.sin(rz)*RLEN; gy -= Math.cos(rz)*RLEN; }     // mouse: the cursor is the racket head
+  racket.position.set(gx, gy, -REACH_Z);
+  headY = gy + Math.cos(rz)*RLEN;
+  racket.traverse(o => { if (o.isMesh) o.material.opacity = o.material.userData.base*(gripped ? 1 : 0.2); });
+  camera.updateMatrixWorld(true);
+  racketWorld.set(0, RLEN, 0).applyMatrix4(racket.matrixWorld);
+  const swinging = gripped && !swing.used && t - swing.t < 0.16;
+
+  // -- states
+  if (game.state === 'serve') {
+    if (game.server === 'player') {
+      sh.pos.set(0.15, -0.05 + Math.sin(t*3)*0.015, -REACH_Z).applyMatrix4(camera.matrixWorld);
+      if (swinging && racketWorld.distanceTo(sh.pos) < 0.6) playerHit(true);
+    } else {
+      oppH.wrL.getWorldPosition(sh.pos); sh.pos.y -= 0.03; sh.pos.z += 0.07;      // held in the server's free hand
+      game.timer -= dt; if (game.timer <= 0) aiHit(true);
+    }
+  } else if (game.state === 'rally') {
+    // CPU decides + moves
+    let atx = 0, atz = -4.3;
+    if (game.lastHitter === 'player' && !sh.netted && t >= ai.reactAt) {
+      if (!ai.decided) {
+        ai.decided = true;
+        const lp = simulate(sh.pos, sh.vel).p;
+        const out = Math.abs(lp.x) > HALF_W+0.1 || lp.z < -HALF_LEN-0.1 || lp.z > 0;
+        ai.leave = out && Math.random() < d.leave;
+      }
+      if (!ai.leave) { const p = predict(sh.pos, sh.vel, -1, 1.5); atx = clamp(p.x+0.3, -3.3, 3.3); atz = clamp(p.z-0.15, -HALF_LEN-1, -0.7); }
+    }
+    moveToward(ai, atx, atz, d.aiSpeed*dt);
+
+    // physics substeps with hit tests
+    let left = dt;
+    while (left > 1e-6 && game.state === 'rally') {
+      const h = Math.min(H, left); left -= h;
+      sh.prev.copy(sh.pos); stepPhys(sh.pos, sh.vel, h);
+      if (!sh.netted && (sh.prev.z > 0) !== (sh.pos.z > 0) && sh.pos.y < NET_H && Math.abs(sh.pos.x) < NET_HALF) {
+        sh.netted = true; sh.pos.z = sh.prev.z > 0 ? 0.04 : -0.04; sh.vel.set(sh.vel.x*0.1, -0.5, -sh.vel.z*0.04);
+      }
+      if (sh.pos.y <= 0) { land(); break; }
+      if (sh.netted) continue;
+      if (game.lastHitter === 'ai' && swinging && sh.pos.z > 0.1 && segDist(sh.prev, sh.pos, racketWorld) < HIT_R) playerHit(false);
+      else if (game.lastHitter === 'player' && !ai.leave && t >= ai.reactAt && sh.pos.z < -0.25 && sh.pos.y > 0.2 && sh.pos.y < 3.0 &&
+               (sh.vel.y < 0 || sh.pos.y > 1.2) && Math.hypot(sh.pos.x-(ai.x-0.3), sh.pos.z-ai.z) < 0.75) aiHit(false);
+    }
+  } else if (game.state === 'point' || game.state === 'ending') {
+    moveToward(ai, 0, -4.3, 2*dt);
+    game.timer -= dt;
+    if (game.timer <= 0) { if (game.state === 'ending') gameOver(); else setupServe(); }
+  }
+
+  // -- hint
+  const live = game.state === 'serve' || game.state === 'rally';
+  setHint(live && !gripped ? 'Close your hand ✊ to grip the racket'
+    : game.state === 'serve' ? (game.server === 'player' ? 'Your serve — swing through the shuttle' : 'CPU serving…')
+    : game.state === 'rally' && game.lastHitter === 'ai' && !sh.netted && sh.pos.z > 0 && sh.pos.distanceTo(racketWorld) < 2.2 ? 'Swing!' : '');
+
+  // -- visuals
+  shuttle.position.copy(sh.pos);
+  if (sh.vel.lengthSq() > 0.01) shuttle.quaternion.setFromUnitVectors(UP, _a.copy(sh.vel).normalize());
+  else shuttle.quaternion.setFromUnitVectors(UP, _a.set(0.01, -1, 0).normalize());
+  if (game.state === 'rally') { trailPts.push(sh.pos.clone()); if (trailPts.length > TRAIL_N) trailPts.shift(); }
+  const arr = trailGeo.attributes.position.array;
+  for (let i=0; i<TRAIL_N; i++) { const p = trailPts[Math.min(i, trailPts.length-1)] || sh.pos; arr[i*3] = p.x; arr[i*3+1] = p.y; arr[i*3+2] = p.z; }
+  trailGeo.attributes.position.needsUpdate = true; trail.visible = trailPts.length > 1;
+
+  animateOpponent(dt);
+}
+
+let last = performance.now();
+const perf = {t:0, n:0, level:0};
+function frame(now) {
+  requestAnimationFrame(frame);
+  const dt = Math.min(0.05, (now-last)/1000); last = now;
+  pollHand(now);
+  if (!game.paused) update(game.state === 'menu' || game.state === 'over' ? 0 : dt*game.diff.ts, now/1000);
+  if (msgTimer > 0 && (msgTimer -= dt) <= 0) $('msg').style.opacity = 0;
+  if (shotTimer > 0 && (shotTimer -= dt) <= 0) $('shot').style.opacity = 0;
+  $('meter').firstElementChild.style.width = clamp(hand.speed/6, 0, 1)*100 + '%';
+  arenaTick(dt, now/1000);
+  grade.uniforms.time.value = (now/1000) % 10;
+  composer.render();
+  // if this machine can't hold a smooth frame rate at full resolution, step the resolution down once
+  if (document.visibilityState === 'visible' && perf.level < 2) {
+    perf.t += dt; perf.n++;
+    if (perf.n >= 90) { if (perf.t/perf.n > 1/50) { perf.level++; setQuality(perf.level === 1 ? Math.min(devicePixelRatio, 1.25) : 1); } perf.t = perf.n = 0; }
+  }
+}
+drawScore();
+requestAnimationFrame(frame);
+
+/* ───────── menu ───────── */
+$('diff').addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return;
+  for (const x of $('diff').children) x.classList.toggle('on', x === b);
+  game.diff = DIFF[b.dataset.d];
+});
+$('bMouse').addEventListener('click', () => { game.mode = 'mouse'; startMatch(); });
+if (window.NO_CAM) {                              // shared page: the host does not allow camera access, so play by mouse or touch
+  $('bCam').hidden = true; $('bMouse').textContent = 'Play';
+  $('ovSub').textContent = 'First-person badminton in a championship arena.';
+  $('ovHelp').innerHTML =
+    '<li><b>Move</b><span>Move the mouse, or drag a finger. The racket head follows it.</span></li>' +
+    '<li><b>Swing</b><span>Flick fast through the shuttle when it reaches you. Flick left or right to aim.</span></li>' +
+    '<li><b>Shots</b><span>Racket high + hard swing = smash. Racket low = lift/clear. Soft swing = drop shot.</span></li>' +
+    '<li><b>Pause</b><span>Press P.</span></li>' +
+    '<li><b>Footwork</b><span>Automatic. You run to the shuttle. First to 11, win by 2.</span></li>';
+  $('status').textContent = 'Webcam hand tracking is switched off on this shared page.';
+}
+$('bCam').addEventListener('click', async () => {
+  if (landmarker || game.state === 'over') { startMatch(); return; }
+  const st = $('status'); $('bCam').disabled = true; st.textContent = 'Starting camera and loading hand tracker…';
+  try { await initCam(); game.mode = 'cam'; st.textContent = ''; startMatch(); }
+  catch (err) { st.textContent = 'Webcam unavailable (' + (err && err.name || 'error') + '). You can still play with the mouse.'; }
+  $('bCam').disabled = false;
+});
+window.__game = {game, sh, player, ai, hand, swing, feedSample, startMatch, camera, oppH, POSE, applyPose};
+</script>
+</body>
+</html>

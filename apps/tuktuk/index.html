@@ -1,0 +1,78 @@
+<!doctype html>
+<!--
+  TukTuk — by basemazab (https://github.com/basemazab/tuktuk), created with Claude Fable 5.2.
+  Mirrored on milulab.com (lu.wiki) with the author's authorization; attribution required. All rights remain with the original author.
+-->
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>توك توك: وسّع يا باشا</title>
+<meta name="description" content="لعبة توك توك تلاتية الأبعاد في شارع مصري. كل حاجة فيها مرسومة بالكود.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@600;900&display=swap" rel="stylesheet">
+<style>
+  :root { --yellow: #ffd21f; --ink: #111; }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; height: 100%; background: #111; overflow: hidden; touch-action: none;
+    font-family: "Cairo", Tahoma, "Segoe UI", sans-serif; color: #fff; user-select: none; }
+  canvas#c { position: fixed; inset: 0; width: 100%; height: 100%; display: block; }
+  .hud { position: fixed; top: 0; left: 0; right: 0; display: flex; justify-content: space-between;
+    padding: max(14px, env(safe-area-inset-top)) 14px 0; pointer-events: none; }
+  .stat { background: var(--ink); border: 2px solid var(--yellow); border-radius: 12px; padding: 4px 14px 6px;
+    min-width: 104px; text-align: center; line-height: 1.15; }
+  .stat small { display: block; font-size: 12px; font-weight: 600; color: #cfcfcf; }
+  .stat b { font-size: 24px; font-weight: 900; color: var(--yellow); }
+  .toast { position: fixed; top: 24%; left: 0; right: 0; text-align: center; font-size: 44px; font-weight: 900;
+    color: var(--yellow); -webkit-text-stroke: 2px var(--ink); paint-order: stroke fill; opacity: 0;
+    transition: opacity .15s; pointer-events: none; }
+  .toast.on { opacity: 1; }
+  .screen { position: fixed; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 14px; padding: 24px; text-align: center; background: rgba(17, 17, 17, .62); }
+  .screen[hidden] { display: none; }
+  .screen h1 { margin: 0; font-size: clamp(56px, 16vw, 110px); font-weight: 900; color: var(--yellow); line-height: 1; }
+  .screen h2 { margin: 0; font-size: clamp(22px, 6vw, 34px); font-weight: 900; }
+  .screen p { margin: 0; font-size: 16px; font-weight: 600; color: #e6e6e6; max-width: 30ch; }
+  .screen .score { font-size: 20px; color: #fff; }
+  .screen .score b { color: var(--yellow); font-size: 30px; direction: ltr; display: inline-block; }
+  button.go { font: inherit; font-weight: 900; font-size: 24px; color: var(--ink); background: var(--yellow); border: 0;
+    border-radius: 14px; padding: 10px 44px 12px; cursor: pointer; }
+  button.go:active { background: #e6bc12; }
+  .credit { position: fixed; bottom: max(56px, calc(env(safe-area-inset-bottom) + 50px)); left: 0; right: 0; text-align: center;
+    font-size: 12px; font-weight: 600; color: #d8d8d8; pointer-events: none; }
+  button.mute { position: fixed; bottom: 14px; left: 14px; font: inherit; font-size: 13px; font-weight: 600; color: #fff;
+    background: var(--ink); border: 1px solid #555; border-radius: 10px; padding: 4px 12px; cursor: pointer; }
+  body.clean .hud, body.clean .toast, body.clean .credit, body.clean button.mute { display: none; }
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+
+<div class="hud">
+  <div class="stat"><small>المسافة</small><b id="dist">0 م</b></div>
+  <div class="stat"><small>الأجرة</small><b id="fare">0 ج</b></div>
+</div>
+<div class="toast" id="toast">مطب!</div>
+
+<div class="screen" id="menu">
+  <h1>توك توك</h1>
+  <h2>وسّع يا باشا</h2>
+  <p>اسحب يمين وشمال، أو دوس على السهمين. المسافة للزمّارة.</p>
+  <button class="go" id="start">ابدأ</button>
+</div>
+
+<div class="screen" id="over" hidden>
+  <h2>خبطت!</h2>
+  <div class="score">مشيت <b id="oDist">0</b> متر</div>
+  <div class="score">ولمّيت <b id="oFare">0</b> جنيه</div>
+  <p id="oBest"></p>
+  <button class="go" id="again">العب تاني</button>
+</div>
+
+<button class="mute" id="mute">الصوت: شغال</button>
+<div class="credit">كل اللي في اللعبة مرسوم بالكود. كتبها Claude Fable 5.2.</div>
+
+<script type="module" src="./game.js"></script>
+</body>
+</html>

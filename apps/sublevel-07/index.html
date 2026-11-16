@@ -1,0 +1,89 @@
+<!doctype html>
+<!--
+  SUBLEVEL 07 — by wquguru (https://github.com/wquguru/fable52-fps-repro), created with Claude Fable 5.2.
+  Mirrored on milulab.com (lu.wiki) with the author's authorization; attribution required. All rights remain with the original author.
+-->
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Fable 5.2 FPS Repro</title>
+<meta name="description" content="用 Claude Code + Fable 5.2 分 4 个实验复现一句话 FPS：音效、材质、建模、完整游戏。全部单文件 HTML，在线可玩。">
+<style>
+:root{--bg:#0b0d10;--card:#14181d;--ink:#e9e6df;--dim:#9aa3ab;--line:#262c33;--acc:#ffb347}
+@media (prefers-color-scheme: light){:root:not([data-theme="dark"]){--bg:#f6f4ef;--card:#fff;--ink:#16191c;--dim:#5b636b;--line:#e2ded6;--acc:#c46a12}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.6 -apple-system,BlinkMacSystemFont,"PingFang SC","Hiragino Sans","Yu Gothic","Segoe UI",sans-serif}
+main{max-width:1080px;margin:0 auto;padding:28px 16px 64px}
+.top{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:10px;flex-wrap:wrap}
+.langs{display:flex;gap:4px;border:1px solid var(--line);border-radius:999px;padding:3px}
+.langs button{all:unset;cursor:pointer;font-size:13px;padding:3px 10px;border-radius:999px;color:var(--dim)}
+.langs button[aria-pressed="true"]{background:var(--acc);color:#111}
+.langs button:focus-visible{outline:2px solid var(--acc)}
+h1{font-size:clamp(26px,5vw,40px);line-height:1.2;margin:0 0 8px;letter-spacing:.01em}
+p.lead{color:var(--dim);margin:0 0 28px;max-width:760px}
+.hero{display:block;width:100%;border-radius:12px;border:1px solid var(--line);margin-bottom:32px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px}
+a.card{display:block;background:var(--card);border:1px solid var(--line);border-radius:12px;overflow:hidden;color:inherit;text-decoration:none;transition:transform .15s,border-color .15s}
+a.card:hover{transform:translateY(-2px);border-color:var(--acc)}
+a.card img{display:block;width:100%;aspect-ratio:16/10;object-fit:cover}
+.meta{padding:14px 16px 16px}
+.meta b{display:block;font-size:17px}
+.meta span{color:var(--dim);font-size:14px}
+.tag{color:var(--acc);font:600 12px/1 ui-monospace,monospace;letter-spacing:.08em}
+.meta .tag{color:var(--acc)}
+footer{margin-top:40px;color:var(--dim);font-size:14px}
+footer a{color:var(--acc)}
+</style>
+</head>
+<body>
+<main>
+  <div class="top"><div class="tag" data-i="tag"></div>
+    <div class="langs" role="group" aria-label="Language"><button data-l="zh">中文</button><button data-l="en">EN</button><button data-l="ja">日本語</button></div></div>
+  <h1 data-i="title"></h1>
+  <p class="lead" data-i="lead"></p>
+  <img class="hero" src="docs/demo.gif" data-alt="heroAlt" alt="">
+  <div class="grid">
+    <a class="card" href="demos/04-fps/"><img src="docs/screens/04-fps-330.jpg" alt=""><div class="meta"><span class="tag" data-stat="04|40.8|15.96"></span><b data-i="c04t"></b><span data-i="c04d"></span></div></a>
+    <a class="card" href="demos/01-audio/"><img src="docs/screens/01-audio.jpg" alt=""><div class="meta"><span class="tag" data-stat="01|16.6|4.66"></span><b data-i="c01t"></b><span data-i="c01d"></span></div></a>
+    <a class="card" href="demos/02-materials/"><img src="docs/screens/02-mat-container.jpg" alt=""><div class="meta"><span class="tag" data-stat="02|23.9|8.56"></span><b data-i="c02t"></b><span data-i="c02d"></span></div></a>
+    <a class="card" href="demos/03-models/"><img src="docs/screens/03-model-1.jpg" alt=""><div class="meta"><span class="tag" data-stat="03|28.7|10.38"></span><b data-i="c03t"></b><span data-i="c03d"></span></div></a>
+  </div>
+  <footer data-i="footer"></footer>
+</main>
+<script>
+const T = {"zh": {"tag": "CLAUDE CODE × FABLE 5.2", "title": "一句话 FPS，分 4 步复现", "lead": "音效、材质、建模、完整游戏，每一步都是 Fable 5.2 无人值守跑出来的单文件 HTML，不加载任何外部模型、图片和音频。点开就能玩（three.js 从 CDN 加载）。", "heroAlt": "SUBLEVEL 07 实机画面：潮湿的地下变电站走廊，持红点卡宾枪射击悬浮无人机", "c04t": "SUBLEVEL 07 · 完整 FPS", "c04d": "原版那句提示词，三波无人机，点 ENTER 开始", "c01t": "纯 WebAudio 音效台", "c01d": "14 个合成音效 + 配乐，0 采样", "c02t": "程序化材质 · 雨夜码头", "c02d": "湿混凝土、锈蚀集装箱、镀锌钢", "c03t": "纯代码建模", "c03d": "岸桥、货船、红点步枪", "min": "分钟", "footer": "成本按 API 价折算（实际走订阅额度）。提示词、跑法和数据见 {github} · 作者 {x}", "metaDesc": "用 Claude Code + Fable 5.2 分 4 个实验复现一句话 FPS：音效、材质、建模、完整游戏。全部单文件 HTML，在线可玩。"}, "en": {"tag": "CLAUDE CODE × FABLE 5.2", "title": "One-Prompt FPS, Reproduced in 4 Steps", "lead": "Audio, materials, models, and the full game—each generated unattended by Fable 5.2 as a single-file HTML demo with zero external models, images, or audio files. Click to play in your browser (three.js loaded via CDN).", "heroAlt": "SUBLEVEL 07 gameplay: firing a red-dot carbine at hovering drones down a wet underground substation corridor", "c04t": "SUBLEVEL 07 · Complete FPS", "c04d": "The original one-line prompt, 3 drone waves, press ENTER to start", "c01t": "Pure WebAudio Soundboard", "c01d": "14 synth sound effects + music loop, 0 samples", "c02t": "Procedural Materials · Rainy Dock", "c02d": "Wet concrete, rusted containers, galvanized steel", "c03t": "Pure-Code 3D Models", "c03d": "Quay crane, cargo ship, red-dot carbine", "min": "min", "footer": "Costs are API-equivalent estimates (ran on subscription quota). Prompts, runner scripts & data on {github} · by {x}", "metaDesc": "Reproducing a one-prompt 3D FPS across 4 experiments with Claude Code + Fable 5.2: audio, materials, models, and full game. All single-file HTML, playable online."}, "ja": {"tag": "CLAUDE CODE × FABLE 5.2", "title": "1行プロンプトFPSを4ステップで再現", "lead": "効果音、マテリアル、モデリング、そして完全版ゲーム。すべて Fable 5.2 が無人実行で書き上げた単一 HTML ファイルで、外部の3Dモデル・画像・音声ファイルは一切読み込んでいません。ブラウザで開いてすぐ遊べます（three.js のみ CDN 読み込み）。", "heroAlt": "SUBLEVEL 07 プレイ画面：濡れた地下変電所の通路でドットサイト付きカービン銃を構え、浮遊ドローンを撃つシーン", "c04t": "SUBLEVEL 07 · 完全版 FPS", "c04d": "元ポストの1行プロンプト、全3ウェーブのドローン戦、ENTERで開始", "c01t": "純 WebAudio サウンドボード", "c01d": "14種の合成効果音＋BGM、サンプル音源ゼロ", "c02t": "プロシージャル材質 · 雨夜の埠頭", "c02d": "濡れたコンクリート、錆びたコンテナ、亜鉛メッキ鋼", "c03t": "純コード3Dモデリング", "c03d": "ガントリークレーン、貨物船、ドットサイト付きライフル", "min": "分", "footer": "コストはAPI料金換算（実際にはサブスク枠内で実行）。プロンプト・実行スクリプト・データは {github} · 作成者 {x}", "metaDesc": "Claude Code + Fable 5.2 で「1行プロンプトFPS」を4つの実験に分けて再現：効果音、マテリアル、モデリング、完全版ゲーム。すべて単一HTMLでブラウザからプレイ可能。"}};
+const HTML_LANG = { zh: 'zh-CN', en: 'en', ja: 'ja' };
+function detect() {
+  const q = new URLSearchParams(location.search).get('lang'); if (T[q]) return q;
+  try { const s = localStorage.getItem('fps-repro-lang'); if (T[s]) return s; } catch (e) {}
+  for (const l of (navigator.languages || [navigator.language || 'en'])) {
+    const k = String(l).toLowerCase();
+    if (k.startsWith('zh')) return 'zh'; if (k.startsWith('ja')) return 'ja'; if (k.startsWith('en')) return 'en';
+  }
+  return 'en';
+}
+function link(href, text) { const a = document.createElement('a'); a.href = href; a.textContent = text; return a; }
+function apply(l) {
+  const t = T[l]; document.documentElement.lang = HTML_LANG[l];
+  document.querySelectorAll('[data-i]').forEach(el => {
+    const k = el.dataset.i;
+    if (k === 'footer') {
+      el.textContent = '';
+      for (const p of t.footer.split(/(\{github\}|\{x\})/)) {
+        if (p === '{github}') el.append(link('https://github.com/wquguru/fable52-fps-repro', 'GitHub'));
+        else if (p === '{x}') el.append(link('https://x.com/wquguru', '@wquguru'));
+        else el.append(p);
+      }
+    } else el.textContent = t[k];
+  });
+  document.querySelectorAll('[data-alt]').forEach(el => el.alt = t[el.dataset.alt]);
+  document.querySelectorAll('[data-stat]').forEach(el => { const [n, m, c] = el.dataset.stat.split('|'); el.textContent = n + ' · ' + m + ' ' + t.min.toUpperCase() + ' · $' + c; });
+  document.querySelector('meta[name=description]').content = t.metaDesc;
+  document.querySelectorAll('.langs button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.l === l)));
+}
+document.querySelectorAll('.langs button').forEach(b => b.onclick = () => { try { localStorage.setItem('fps-repro-lang', b.dataset.l); } catch (e) {} apply(b.dataset.l); });
+apply(detect());
+</script>
+</body>
+</html>
