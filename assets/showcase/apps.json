@@ -1,0 +1,1442 @@
+[
+ {
+  "slug": "volt",
+  "title": "VoltLab",
+  "subtitle": "电路实验室",
+  "url": "/edulab/volt/",
+  "thumb": "/assets/showcase/thumbs/volt.jpg",
+  "category": "3D 教学实验",
+  "tags": [
+   "物理"
+  ],
+  "desc": "电学虚拟实验台：自由搭建电路，实时观察电流、电压与元件状态，支持仪表测量与数据记录。",
+  "credit": "",
+  "shot": true
+ },
+ {
+  "slug": "contour",
+  "title": "Contour 3D",
+  "subtitle": "等高线地形实验室",
+  "url": "/edulab/contour/",
+  "thumb": "/assets/showcase/thumbs/contour.jpg",
+  "category": "3D 教学实验",
+  "tags": [
+   "地理"
+  ],
+  "desc": "等高线三维教学演示：水平面切割与投影动画、阶梯模型、同步地形图、剖面图绘制与随堂检测。",
+  "credit": "",
+  "shot": true
+ },
+ {
+  "slug": "atmos",
+  "title": "AtmosFlow",
+  "subtitle": "大气环流实验室",
+  "url": "/edulab/atmos/",
+  "thumb": "/assets/showcase/thumbs/atmos.jpg",
+  "category": "3D 教学实验",
+  "tags": [
+   "地理"
+  ],
+  "desc": "大气环流粒子演示：热力环流四步拆解、城市热岛与污染扩散实验、海陆风、山谷风，三维地球上的三圈环流、气压带风带及其季节移动。",
+  "credit": "",
+  "shot": true
+ },
+ {
+  "slug": "earth",
+  "title": "EarthMotion",
+  "subtitle": "地球运动实验室",
+  "url": "/edulab/earth/",
+  "thumb": "/assets/showcase/thumbs/earth.jpg",
+  "category": "3D 教学实验",
+  "tags": [
+   "地理"
+  ],
+  "desc": "地球运动三维演示：自转与晨昏线、公转与黄赤交角、太阳直射点移动、昼夜长短、正午太阳高度与四季更替。",
+  "credit": "",
+  "shot": true
+ },
+ {
+  "slug": "tide",
+  "title": "TideLab",
+  "subtitle": "潮汐的形成",
+  "url": "/edulab/tide/",
+  "thumb": "/assets/showcase/thumbs/tide.jpg",
+  "category": "3D 教学实验",
+  "tags": [
+   "地理"
+  ],
+  "desc": "潮汐形成原因的三维演示：真实地球与月球，引力、惯性离心力与引潮力的箭头分解，随月球移动的潮汐隆起与等潮高线，一天两涨两落、大潮与小潮、日潮不等；角落的海岸小窗实时显示观测点的涨落、水尺读数与昼夜。",
+  "credit": "",
+  "shot": true
+ },
+ {
+  "slug": "drift",
+  "title": "TerraDrift",
+  "subtitle": "海陆变迁实验室",
+  "url": "/edulab/drift/",
+  "thumb": "/assets/showcase/thumbs/drift.jpg",
+  "category": "3D 教学实验",
+  "tags": [
+   "地理"
+  ],
+  "desc": "海陆的变迁：喜马拉雅海洋化石的剖面动画、台湾海峡冰期陆桥、魏格纳大陆漂移证据、泛大陆分裂的三维重建、六大板块与两大火山地震带。",
+  "credit": "",
+  "shot": true
+ },
+ {
+  "slug": "water",
+  "title": "WaterCycle",
+  "subtitle": "水循环实验室",
+  "url": "/edulab/water/",
+  "thumb": "/assets/showcase/thumbs/water.jpg",
+  "category": "3D 教学实验",
+  "tags": [
+   "地理"
+  ],
+  "desc": "水循环三维沙盘：从海洋、城市、水库、高山到内陆湖的剖面地形，粒子演示蒸发、水汽输送、降水、径流、下渗与地下径流，三类水循环、城市化与海绵城市、人类活动影响、水量平衡与随堂检测。",
+  "credit": "",
+  "shot": true
+ },
+ {
+  "slug": "cell",
+  "title": "CellLab",
+  "subtitle": "三维细胞实验室",
+  "url": "/edulab/cell/",
+  "thumb": "/assets/showcase/thumbs/cell.jpg",
+  "category": "3D 教学实验",
+  "tags": [
+   "生物"
+  ],
+  "desc": "细胞三维结构：剖开的动物细胞与植物细胞、线粒体嵴与叶绿体基粒等细胞器详解、原核与真核细胞对比、流动镶嵌模型与物质跨膜运输、分泌蛋白合成与运输、马达蛋白与胞质环流，可切换荧光显微成像。",
+  "credit": "",
+  "shot": true
+ },
+ {
+  "slug": "micro",
+  "title": "MicroLab",
+  "subtitle": "显微镜实验室",
+  "url": "/edulab/micro/",
+  "thumb": "/assets/showcase/thumbs/micro.jpg",
+  "category": "3D 教学实验",
+  "tags": [
+   "生物"
+  ],
+  "desc": "可以亲手操作的写实光学显微镜：转动粗细准焦螺旋、转换器、遮光器与反光镜，目镜视野按真实光学成像——倒像、景深、分辨率、离焦光晕、明场 / 暗场 / 相差；26 种玻片，覆盖规范操作、观察动植物细胞、质壁分离、有丝分裂、油镜、测微尺与血球计数板。",
+  "credit": "",
+  "shot": true
+ },
+ {
+  "slug": "pea",
+  "title": "PeaLab",
+  "subtitle": "孟德尔的豌豆园",
+  "url": "/edulab/pea/",
+  "thumb": "/assets/showcase/thumbs/pea.jpg",
+  "category": "3D 教学实验",
+  "tags": [
+   "生物"
+  ],
+  "desc": "写实的修道院豆园：七对相对性状长在豌豆植株上看得见，亲手去雄、套袋、授粉、挂牌，拖动时间轴看豌豆开花结荚，收获后在工作台剥荚分拣计数，用卡方检验验证 3 : 1、测交 1 : 1 与 9 : 3 : 3 : 1。",
+  "credit": "",
+  "shot": true
+ },
+ {
+  "slug": "atp",
+  "title": "ATPLab",
+  "subtitle": "ATP 能量实验室",
+  "url": "/edulab/atp/",
+  "thumb": "/assets/showcase/thumbs/atp.jpg",
+  "category": "3D 教学实验",
+  "tags": [
+   "生物"
+  ],
+  "desc": "细胞的能量“货币”：在暗室里亲手做萤火虫发光器实验，比较蒸馏水、葡萄糖、ATP 与煮沸对照；按 PubChem 三维结构旋转 ATP 分子、看水解时特殊化学键断裂；Ca²⁺ 载体蛋白的磷酸化循环与 ATP—ADP 动态平衡；线粒体内膜上旋转的 ATP 合酶。",
+  "credit": "",
+  "shot": true
+ },
+ {
+  "slug": "dna",
+  "title": "DNALab",
+  "subtitle": "DNA 双螺旋实验室",
+  "url": "/edulab/dna/",
+  "thumb": "/assets/showcase/thumbs/dna.jpg",
+  "category": "3D 教学实验",
+  "tags": [
+   "生物"
+  ],
+  "desc": "DNA 双螺旋结构：像沃森和克里克一样，调节螺距、半径和链数，让计算的 X 射线衍射图样与照片 51 号吻合；亲手组装脱氧核苷酸、按互补配对补全另一条链，再把“梯子”扭成右手双螺旋；按 PDB 1BNA 晶体结构生成任意序列的原子模型，点碱基对看氢键，碱基计算器实时验证查哥夫规则。",
+  "credit": "",
+  "shot": true
+ },
+ {
+  "slug": "immune",
+  "title": "ImmuneLab",
+  "subtitle": "体液免疫实验室",
+  "url": "/edulab/immune/",
+  "thumb": "/assets/showcase/thumbs/immune.jpg",
+  "category": "3D 教学实验",
+  "tags": [
+   "生物"
+  ],
+  "desc": "体液免疫：走进淋巴结，看树突状细胞摄取、呈递抗原，辅助性 T 细胞与 B 细胞结合，B 细胞分裂分化为浆细胞和记忆细胞，Y 形抗体凝集病毒；关掉辅助性 T 细胞或细胞因子看后果；按时间轴接种疫苗、再次感染、感染变异株，实时画出初次与二次免疫的抗体曲线；还有皮肤剖面里的三道防线与过敏反应。",
+  "credit": "",
+  "shot": true
+ },
+ {
+  "slug": "plant",
+  "title": "PlantLab",
+  "subtitle": "一颗豆子的一生",
+  "url": "/edulab/plant/",
+  "thumb": "/assets/showcase/thumbs/plant.jpg",
+  "category": "3D 教学实验",
+  "tags": [
+   "生物"
+  ],
+  "desc": "玻璃温室里的根箱实验台，按真实生理模型延时摄影一株菜豆的一生：种子吸胀萌发、弯钩顶土、根沿玻璃向地生长，长出单叶与三出复叶，开蝶形花、结荚鼓粒。做萌发条件对照、黄化、根的向地性、金鱼藻放氧、绿叶在光下制造淀粉、套袋看蒸腾、达尔文与温特的胚芽鞘实验，光、水、温度、CO₂ 和肥料都会改变植株的样子。",
+  "credit": "",
+  "shot": true
+ },
+ {
+  "slug": "periodic",
+  "title": "PeriodicLab",
+  "subtitle": "元素周期表实验室",
+  "url": "/edulab/periodic/",
+  "thumb": "/assets/showcase/thumbs/periodic.jpg",
+  "category": "3D 教学实验",
+  "tags": [
+   "化学"
+  ],
+  "desc": "三维元素周期表：118 种元素升起成柱，看原子半径、电负性、电离能的周期律；拖动温度看物态变化，播放元素发现史，在长式表、螺旋与同心环之间变形，点开任一元素看原子结构与单质。",
+  "credit": "",
+  "shot": true
+ },
+ {
+  "slug": "gas",
+  "title": "GasLab",
+  "subtitle": "气体制备实验室",
+  "url": "/edulab/gas/",
+  "thumb": "/assets/showcase/thumbs/gas.jpg",
+  "category": "3D 教学实验",
+  "tags": [
+   "化学"
+  ],
+  "desc": "写实的化学实验台：加热高锰酸钾、分解过氧化氢制氧气，大理石与稀盐酸制二氧化碳。按“查装定点收离熄”一步步操作，故意做错会看到试管炸裂、倒吸；最后检验并验证两种气体的性质。",
+  "credit": "",
+  "shot": true
+ },
+ {
+  "slug": "analysis",
+  "title": "AnalytLab",
+  "subtitle": "化学分析实验室",
+  "url": "/edulab/analysis/",
+  "thumb": "/assets/showcase/thumbs/analysis.jpg",
+  "category": "3D 教学实验",
+  "tags": [
+   "化学"
+  ],
+  "desc": "夜间分析实验室：亲手拧活塞控制滴速、半滴、摇瓶，在背光板前找酚酞终点，自己平视读数、填写记录本，平行测定盐酸浓度；pH 滴定曲线与误差分析；任意试剂滴进任意试管做离子检验，焰色反应透过钴玻璃看钾，最后鉴定一种未知的盐。",
+  "credit": "",
+  "shot": true
+ },
+ {
+  "slug": "mechanism",
+  "title": "Mechanism",
+  "subtitle": "反应机理实验室",
+  "url": "/edulab/mechanism/",
+  "thumb": "/assets/showcase/thumbs/mechanism.jpg",
+  "category": "3D 教学实验",
+  "tags": [
+   "化学"
+  ],
+  "desc": "反应机理三维动画：19 个反应逐步拆解——弯箭头表示电子转移，虚线表示过渡态，¹⁸O 同位素示踪酯化反应，覆盖高中有机、离子反应、氧化还原与大学有机机理。",
+  "credit": "",
+  "shot": true
+ },
+ {
+  "slug": "vsepr",
+  "title": "MoleCraft",
+  "subtitle": "分子构型实验室",
+  "url": "/edulab/vsepr/",
+  "thumb": "/assets/showcase/thumbs/vsepr.jpg",
+  "category": "3D 教学实验",
+  "tags": [
+   "化学"
+  ],
+  "desc": "分子构型三维演示：价层电子对斥力沙盒、孤对电子与键角、杂化轨道、分子极性、扩展八隅体与手性分子，内置近 30 个分子。",
+  "credit": "",
+  "shot": true
+ },
+ {
+  "slug": "orbital",
+  "title": "OrbitalLab",
+  "subtitle": "原子轨道实验室",
+  "url": "/edulab/orbital/",
+  "thumb": "/assets/showcase/thumbs/orbital.jpg",
+  "category": "3D 教学实验",
+  "tags": [
+   "化学"
+  ],
+  "desc": "原子轨道三维演示：电子云逐点“曝光”、s/p/d/f 轨道形状与相位、径向分布与节面、构造原理逐个填电子、1–36 号元素电子排布与量子数。",
+  "credit": "",
+  "shot": true
+ },
+ {
+  "slug": "reaction",
+  "title": "ReactionLab",
+  "subtitle": "微型反应实验室",
+  "url": "/edulab/reaction/",
+  "thumb": "/assets/showcase/thumbs/reaction.jpg",
+  "category": "3D 教学实验",
+  "tags": [
+   "化学"
+  ],
+  "desc": "化学反应微观演示：有效碰撞与取向、麦克斯韦–玻尔兹曼分布与活化分子、催化剂表面、浓度与压强、平衡的建立与移动、光照引发的链式爆炸。",
+  "credit": "",
+  "shot": true
+ },
+ {
+  "slug": "geo",
+  "title": "GeoSpace",
+  "subtitle": "立体几何实验室",
+  "url": "/edulab/geo/",
+  "thumb": "/assets/showcase/thumbs/geo.jpg",
+  "category": "3D 教学实验",
+  "tags": [
+   "数学"
+  ],
+  "desc": "立体几何三维演示：几何体与欧拉公式、展开与折叠（正方体 11 种展开图）、三视图与斜二测画法、拖动三点截正方体、空间角的几何法与向量法对照、外接球与内切球（11 + 7 种模型）、正四面体专题，附随堂检测。",
+  "credit": "",
+  "shot": true
+ },
+ {
+  "slug": "conic",
+  "title": "ConicLab",
+  "subtitle": "圆锥曲线实验室",
+  "url": "/edulab/conic/",
+  "thumb": "/assets/showcase/thumbs/conic.jpg",
+  "category": "3D 教学实验",
+  "tags": [
+   "数学"
+  ],
+  "desc": "圆锥曲线演示：平面截对顶圆锥得到圆、椭圆、抛物线、双曲线，Dandelin 双球揭示焦点的来历；三种曲线的定义与方程、离心率连续变化、光学性质、直线与圆锥曲线的判别式。",
+  "credit": "",
+  "shot": true
+ },
+ {
+  "slug": "func",
+  "title": "FuncLab",
+  "subtitle": "函数图像实验室",
+  "url": "/edulab/func/",
+  "thumb": "/assets/showcase/thumbs/func.jpg",
+  "category": "3D 教学实验",
+  "tags": [
+   "数学"
+  ],
+  "desc": "函数图像演示：参数一拖，图像怎么平移、伸缩、翻折；指数与对数互为反函数；单位圆展开成正弦曲线与五点法；割线逼近切线、导函数与单调性极值；二分法求零点与定积分的黎曼和。",
+  "credit": "",
+  "shot": true
+ },
+ {
+  "slug": "construct",
+  "title": "ConstructLab",
+  "subtitle": "尺规作图实验室",
+  "url": "/edulab/construct/",
+  "thumb": "/assets/showcase/thumbs/construct.jpg",
+  "category": "3D 教学实验",
+  "tags": [
+   "数学"
+  ],
+  "desc": "尺规作图闯关：只用圆规和直尺完成 12 个经典作图，交点自动生成，按步数评星，可回放最少步数解法；全等判定的翻折叠合演示与 SSA 反例；位似与相似比。",
+  "credit": "",
+  "shot": true
+ },
+ {
+  "slug": "pythagoras",
+  "title": "PythagoLab",
+  "subtitle": "勾股定理实验室",
+  "url": "/edulab/pythagoras/",
+  "thumb": "/assets/showcase/thumbs/pythagoras.jpg",
+  "category": "3D 教学实验",
+  "tags": [
+   "数学"
+  ],
+  "desc": "勾股定理：亲手把碎片拼进斜边上的正方形，赵爽弦图与刘徽出入相补，欧几里得证明的剪切变换，转动水槽让 a² 和 b² 的水倒满 c²，勾股数散点图。",
+  "credit": "",
+  "shot": true
+ },
+ {
+  "slug": "wonder",
+  "title": "WonderLab",
+  "subtitle": "数学奇观实验室",
+  "url": "/edulab/wonder/",
+  "thumb": "/assets/showcase/thumbs/wonder.jpg",
+  "category": "3D 教学实验",
+  "tags": [
+   "数学"
+  ],
+  "desc": "趣味数学：随机跳跃长出谢尔宾斯基三角形，科赫雪花的无限周长，随风摇摆的分形树，三维莫比乌斯带上的蚂蚁、涂色与剪开，黄金分割小游戏与无限放大的螺旋，向日葵的黄金角。",
+  "credit": "",
+  "shot": true
+ },
+ {
+  "slug": "motion",
+  "title": "MotionLab",
+  "subtitle": "运动与力实验室",
+  "url": "/edulab/motion/",
+  "thumb": "/assets/showcase/thumbs/motion.jpg",
+  "category": "3D 教学实验",
+  "tags": [
+   "物理"
+  ],
+  "desc": "写实三维力学实验台：打点计时器与纸带、光电门、气垫导轨、弹簧测力计，10 个课题覆盖匀变速直线运动、自由落体、牛顿第二定律、摩擦力、斜面、超重失重、机械能与动量守恒。",
+  "credit": "",
+  "shot": true
+ },
+ {
+  "slug": "machine",
+  "title": "MachineLab",
+  "subtitle": "简单机械实验室",
+  "url": "/edulab/machine/",
+  "thumb": "/assets/showcase/thumbs/machine.jpg",
+  "category": "3D 教学实验",
+  "tags": [
+   "物理"
+  ],
+  "desc": "没有实验器材，就在真实的生活场景里做：建筑工地上用撬棍撬石块、在脚手架上用滑轮组吊砖、沿跳板把木箱拉上货车、看塔吊的力矩限制器；古代农家院里用辘轳打水、桔槔提水、杆秤称米。拉力计、吊秤实时读数，叠加画出力与力臂，算出机械效率。",
+  "credit": "",
+  "shot": true
+ },
+ {
+  "slug": "float",
+  "title": "FloatLab",
+  "subtitle": "压强与浮力实验室",
+  "url": "/edulab/float/",
+  "thumb": "/assets/showcase/thumbs/float.jpg",
+  "category": "3D 教学实验",
+  "tags": [
+   "物理"
+  ],
+  "desc": "在真实的港口和海底里学液体压强与浮力：深潜器一路下潜到马里亚纳海沟、船闸让货船升降 3 m、吊车把混凝土块放进海里称浮力、潜艇靠压载水舱浮沉、集装箱船越装越深直到载重线。海面是实时的波浪，船随浪起伏的姿态由浮力逐点算出。",
+  "credit": "",
+  "shot": true
+ },
+ {
+  "slug": "rocket",
+  "title": "RocketLab",
+  "subtitle": "神舟发射与返回",
+  "url": "/edulab/rocket/",
+  "thumb": "/assets/showcase/thumbs/rocket.jpg",
+  "category": "3D 教学实验",
+  "tags": [
+   "物理"
+  ],
+  "desc": "跟着长征二号F和神舟飞船走完一次真实任务：从酒泉卫星发射中心点火起飞，冲出大气、助推器与一二级分离、整流罩分离，进入轨道绕地球飞行，再入大气穿过黑障，开伞反推降落在东风着陆场。全程按真实参数计算飞行，可以改载荷、助推器、比冲、关机时刻、再入角和主伞面积，看火箭能不能入轨、返回舱能不能安全落地。",
+  "credit": "",
+  "shot": true
+ },
+ {
+  "slug": "thermo",
+  "title": "ThermoLab",
+  "subtitle": "热学工作站",
+  "url": "/edulab/thermo/",
+  "thumb": "/assets/showcase/thumbs/thermo.jpg",
+  "category": "3D 教学实验",
+  "tags": [
+   "物理"
+  ],
+  "desc": "傍晚工作室里的一台热力学工作站：玻璃气缸里能看见分子在跑，转动控制台上的旋钮加热、推拉活塞，两块屏幕实时画出 p–V 图和速率分布。十二个课题从分子热运动、压强的微观解释、三个气体实验定律，到压缩引火、热力学第一定律、剖开的四冲程汽油机、卡诺循环和第二定律的“倒放”。",
+  "credit": "",
+  "shot": true
+ },
+ {
+  "slug": "heat",
+  "title": "HeatLab",
+  "subtitle": "热与物态变化",
+  "url": "/edulab/heat/",
+  "thumb": "/assets/showcase/thumbs/heat.jpg",
+  "category": "3D 教学实验",
+  "tags": [
+   "物理"
+  ],
+  "desc": "正午白色展厅里的传热与物态变化实验台：温度计的使用、海波与石蜡的熔化曲线、水的沸腾与气压、酒精蒸发致冷、碘锤升华凝华、比热容、铜铝铁玻璃棒的热传导、高锰酸钾画出的对流、黑罐白罐与保温瓶的热辐射。一键切换热成像看温度怎么传，或者切到原理线稿看标注。",
+  "credit": "",
+  "shot": true
+ },
+ {
+  "slug": "optics",
+  "title": "OpticsLab",
+  "subtitle": "光学实验室",
+  "url": "/edulab/optics/",
+  "thumb": "/assets/showcase/thumbs/optics.jpg",
+  "category": "3D 教学实验",
+  "tags": [
+   "物理"
+  ],
+  "desc": "暗室光学实验台：激光、量角盘、半圆砖、三棱镜、光具座与光屏，12 个课题覆盖反射与折射、全反射与光纤、色散、凸透镜成像、眼睛与视力矫正、双缝干涉、衍射与光栅、薄膜干涉和偏振。",
+  "credit": "",
+  "shot": true
+ },
+ {
+  "slug": "waves",
+  "title": "WaveLab",
+  "subtitle": "振动与波实验室",
+  "url": "/edulab/waves/",
+  "thumb": "/assets/showcase/thumbs/waves.jpg",
+  "category": "3D 教学实验",
+  "tags": [
+   "物理"
+  ],
+  "desc": "振动与波三维实验：弹簧振子与纸带记录、单摆测 g、受迫振动与共振曲线、绳波的形成与反射、驻波、水波槽干涉与衍射、多普勒效应（可听）、示波器与共鸣管，共 11 个课题。",
+  "credit": "",
+  "shot": true
+ },
+ {
+  "slug": "fields",
+  "title": "FieldLab",
+  "subtitle": "电场与磁场实验室",
+  "url": "/edulab/fields/",
+  "thumb": "/assets/showcase/thumbs/fields.jpg",
+  "category": "3D 教学实验",
+  "tags": [
+   "物理"
+  ],
+  "desc": "电场与磁场三维实验：可拖动电荷的电场线与等势面、电容器、示波管、铁屑显示的磁感线、安培力、洛伦兹力、质谱仪与回旋加速器、电磁感应与楞次定律、交流发电机，共 11 个课题。",
+  "credit": "",
+  "shot": true
+ },
+ {
+  "slug": "war",
+  "title": "WarTable",
+  "subtitle": "真实地形上的著名战役",
+  "url": "/edulab/war/",
+  "thumb": "/assets/showcase/thumbs/war.jpg",
+  "category": "3D 教学实验",
+  "tags": [
+   "历史"
+  ],
+  "desc": "中外古代著名战役的真实地形战役图：长平、巨鹿、官渡、赤壁、淝水，以及温泉关、高加米拉、坎尼、黑斯廷斯等世界古代与中世纪战役，在真实高程地形上用发光光点群推演兵团行军、交战与火攻夜袭，字幕逐句解说战局，附兵力变化、战役概况、胜负原因与随堂检测。",
+  "credit": "",
+  "shot": true
+ },
+ {
+  "slug": "atlas",
+  "title": "HistoryAtlas",
+  "subtitle": "历代中国疆域变迁",
+  "url": "/edulab/atlas/",
+  "thumb": "/assets/showcase/thumbs/atlas.jpg",
+  "category": "3D 教学实验",
+  "tags": [
+   "历史"
+  ],
+  "desc": "中国历代疆域变迁的真实地形动态地图：从秦统一到清朝前期，选取 16 个关键年份，把历代王朝与周边政权的疆域画在东亚真实地形上，两个时期之间的边界连续变形。可拖动时间轴或自动播放字幕解说，实时显示疆域面积与面积曲线，叠加都城、长城、都护府与行省注记，并能从战役标记进入战役沙盘。",
+  "credit": "",
+  "shot": true
+ },
+ {
+  "slug": "neuro",
+  "title": "NeuroLab",
+  "subtitle": "机器怎样认出数字",
+  "url": "/edulab/neuro/",
+  "thumb": "/assets/showcase/thumbs/neuro.jpg",
+  "category": "3D 教学实验",
+  "tags": [
+   "信息技术"
+  ],
+  "desc": "神经网络识别手写数字：在手写板上写一个数字，看信号在三维神经网络里逐层点亮、给出答案；亲手给一个神经元画权重，在浏览器里从随机权重开始现场训练，看卷积核扫过整张图，再看 AI 在旋转、平移和噪点面前怎样认错。",
+  "credit": "",
+  "shot": true
+ },
+ {
+  "slug": "lathe",
+  "title": "LatheLab",
+  "subtitle": "车床仿真实验室",
+  "url": "/edulab/lathe/",
+  "thumb": "/assets/showcase/thumbs/lathe.jpg",
+  "category": "3D 教学实验",
+  "tags": [
+   "机械加工"
+  ],
+  "desc": "CA6140 普通车床三维仿真：认识床身、主轴箱、溜板箱、刀架、尾座，练习卡盘装夹与试切对刀，调切削三要素走一刀车外圆——切屑飞出、直径实时变小、表面纹路随参数变化，配车端面倒角、安全规程与随堂检测。",
+  "credit": "",
+  "shot": true
+ },
+ {
+  "slug": "haber-step",
+  "title": "合成氨工业",
+  "subtitle": "工业流程",
+  "url": "/edulab/haber-step/",
+  "thumb": "/assets/showcase/thumbs/haber-step.jpg",
+  "category": "3D 教学实验",
+  "tags": [
+   "化学"
+  ],
+  "desc": "怎样把空气里的氮又快、又多、又省地变成氨？",
+  "credit": "",
+  "shot": true
+ },
+ {
+  "slug": "river-step",
+  "title": "河流地貌的发育",
+  "subtitle": "原理与现象",
+  "url": "/edulab/river-step/",
+  "thumb": "/assets/showcase/thumbs/river-step.jpg",
+  "category": "3D 教学实验",
+  "tags": [
+   "地理"
+  ],
+  "desc": "长江镇江段的岸线为什么持续向北推移？",
+  "credit": "",
+  "shot": true
+ },
+ {
+  "slug": "rate-step",
+  "title": "化学反应速率的影响因素",
+  "subtitle": "原理与现象",
+  "url": "/edulab/rate-step/",
+  "thumb": "/assets/showcase/thumbs/rate-step.jpg",
+  "category": "3D 教学实验",
+  "tags": [
+   "化学"
+  ],
+  "desc": "同样两个反应，为什么有的几秒就完、有的等半天？快慢到底由什么决定？",
+  "credit": "",
+  "shot": true
+ },
+ {
+  "slug": "insolation-step",
+  "title": "太阳直射点的回归运动与四季、五带",
+  "subtitle": "原理与现象",
+  "url": "/edulab/insolation-step/",
+  "thumb": "/assets/showcase/thumbs/insolation-step.jpg",
+  "category": "3D 教学实验",
+  "tags": [
+   "地理"
+  ],
+  "desc": "学校所在地的正午太阳高度和正午太阳方向，一年里为什么有规律地变化？",
+  "credit": "",
+  "shot": true
+ },
+ {
+  "slug": "ball-stick-step",
+  "title": "搭建球棍模型认识有机化合物分子结构",
+  "subtitle": "原理与现象模拟",
+  "url": "/edulab/ball-stick-step/",
+  "thumb": "/assets/showcase/thumbs/ball-stick-step.jpg",
+  "category": "3D 教学实验",
+  "tags": [
+   "化学"
+  ],
+  "desc": "分子画在纸上是平的，真实的三维形状到底是什么样？搭一座球棍模型能看出什么？",
+  "credit": "",
+  "shot": true
+ },
+ {
+  "slug": "titration-step",
+  "title": "强酸与强碱的中和滴定",
+  "subtitle": "原理与现象",
+  "url": "/edulab/titration-step/",
+  "thumb": "/assets/showcase/thumbs/titration-step.jpg",
+  "category": "3D 教学实验",
+  "tags": [
+   "化学"
+  ],
+  "desc": "前面加了 20 多毫升几乎看不出变化，为什么最后半滴颜色就全变了？",
+  "credit": "",
+  "shot": true
+ },
+ {
+  "slug": "chlorine-step",
+  "title": "氯气的制备及性质",
+  "subtitle": "原理与现象",
+  "url": "/edulab/chlorine-step/",
+  "thumb": "/assets/showcase/thumbs/chlorine-step.jpg",
+  "category": "3D 教学实验",
+  "tags": [
+   "化学"
+  ],
+  "desc": "要一瓶干燥、纯净的氯气，装置里每一段各管什么？少一段会怎样？",
+  "credit": "",
+  "shot": true
+ },
+ {
+  "slug": "blast-furnace-step",
+  "title": "高炉炼铁",
+  "subtitle": "工业流程",
+  "url": "/edulab/blast-furnace-step/",
+  "thumb": "/assets/showcase/thumbs/blast-furnace-step.jpg",
+  "category": "3D 教学实验",
+  "tags": [
+   "化学"
+  ],
+  "desc": "一堆矿石从炉顶倒下去，怎么几小时后就变成一股铁水，还越省越好？",
+  "credit": "",
+  "shot": true
+ },
+ {
+  "slug": "smelting-step",
+  "title": "金属冶炼：电解熔融盐 + 铝热",
+  "subtitle": "工业流程",
+  "url": "/edulab/smelting-step/",
+  "thumb": "/assets/showcase/thumbs/smelting-step.jpg",
+  "category": "3D 教学实验",
+  "tags": [
+   "化学"
+  ],
+  "desc": "为什么铝只能靠电「拆」出来，而铁能被铝「换」出来？",
+  "credit": "",
+  "shot": true
+ },
+ {
+  "slug": "currents-step",
+  "title": "世界洋流的分布规律与影响",
+  "subtitle": "原理与现象",
+  "url": "/edulab/currents-step/",
+  "thumb": "/assets/showcase/thumbs/currents-step.jpg",
+  "category": "3D 教学实验",
+  "tags": [
+   "地理"
+  ],
+  "desc": "数万只玩具鸭散落海面，为什么会漂到世界各地的海岸？",
+  "credit": "",
+  "shot": true
+ },
+ {
+  "slug": "enso-step",
+  "title": "海—气相互作用与厄尔尼诺、拉尼娜",
+  "subtitle": "原理与现象",
+  "url": "/edulab/enso-step/",
+  "thumb": "/assets/showcase/thumbs/enso-step.jpg",
+  "category": "3D 教学实验",
+  "tags": [
+   "地理"
+  ],
+  "desc": "秘鲁沿海常年干旱，为什么 2016 年底海水一暖，就下起了暴雨、还死了近百人？",
+  "credit": "",
+  "shot": true
+ },
+ {
+  "slug": "coal-gas-step",
+  "title": "煤的综合利用：以煤的气化为主线",
+  "subtitle": "工业流程",
+  "url": "/edulab/coal-gas-step/",
+  "thumb": "/assets/showcase/thumbs/coal-gas-step.jpg",
+  "category": "3D 教学实验",
+  "tags": [
+   "化学"
+  ],
+  "desc": "煤只能烧吗？怎么把煤变成能造化肥、造甲醇的气？",
+  "credit": "",
+  "shot": true
+ },
+ {
+  "slug": "sulfuric-step",
+  "title": "接触法制硫酸",
+  "subtitle": "工业流程",
+  "url": "/edulab/sulfuric-step/",
+  "thumb": "/assets/showcase/thumbs/sulfuric-step.jpg",
+  "category": "3D 教学实验",
+  "tags": [
+   "化学"
+  ],
+  "desc": "怎样把矿石里的硫，又快、又多、又省、又干净地变成硫酸？",
+  "credit": "",
+  "shot": true
+ },
+ {
+  "slug": "hydrolysis-step",
+  "title": "盐类的水解及其应用",
+  "subtitle": "原理与现象",
+  "url": "/edulab/hydrolysis-step/",
+  "thumb": "/assets/showcase/thumbs/hydrolysis-step.jpg",
+  "category": "3D 教学实验",
+  "tags": [
+   "化学"
+  ],
+  "desc": "盐电离出来的离子看上去「既不酸也不碱」，凭什么能让溶液显出酸碱性？",
+  "credit": "",
+  "shot": true
+ },
+ {
+  "slug": "heating-step",
+  "title": "大气受热过程",
+  "subtitle": "原理与现象",
+  "url": "/edulab/heating-step/",
+  "thumb": "/assets/showcase/thumbs/heating-step.jpg",
+  "category": "3D 教学实验",
+  "tags": [
+   "地理"
+  ],
+  "desc": "太阳晒了一整天的地面，为什么白天先热起来，夜里又凉得那么快——大气到底替地面留住了多少热？",
+  "credit": "",
+  "shot": true
+ },
+ {
+  "slug": "karst-step",
+  "title": "喀斯特地貌的形成与识别",
+  "subtitle": "原理与现象",
+  "url": "/edulab/karst-step/",
+  "thumb": "/assets/showcase/thumbs/karst-step.jpg",
+  "category": "3D 教学实验",
+  "tags": [
+   "地理"
+  ],
+  "desc": "徐霞客写的「峭峰离立，分行竞颖」——这些像从地里长出来的尖峰，是怎么一块岩层变出来的？",
+  "credit": "",
+  "shot": true
+ },
+ {
+  "slug": "cement-step",
+  "title": "工业制水泥",
+  "subtitle": "工业流程",
+  "url": "/edulab/cement-step/",
+  "thumb": "/assets/showcase/thumbs/cement-step.jpg",
+  "category": "3D 教学实验",
+  "tags": [
+   "化学"
+  ],
+  "desc": "一车石头和土，凭什么磨一磨、烧一烧、再磨一磨，就变成能撑起大坝的水泥？",
+  "credit": "",
+  "shot": true
+ },
+ {
+  "slug": "carbon-step",
+  "title": "全球气候变化与国家安全",
+  "subtitle": "原理与现象",
+  "url": "/edulab/carbon-step/",
+  "thumb": "/assets/showcase/thumbs/carbon-step.jpg",
+  "category": "3D 教学实验",
+  "tags": [
+   "地理"
+  ],
+  "desc": "马尔代夫为什么要把内阁会议开到 6 米深的海底去？",
+  "credit": "",
+  "shot": true
+ },
+ {
+  "slug": "tectonic-step",
+  "title": "构造地貌的形成",
+  "subtitle": "原理与现象",
+  "url": "/edulab/tectonic-step/",
+  "thumb": "/assets/showcase/thumbs/tectonic-step.jpg",
+  "category": "3D 教学实验",
+  "tags": [
+   "地理"
+  ],
+  "desc": "青藏高原上为什么会找到阔叶树的叶子化石 —— 什么力量把地表抬起来、又把它切开？",
+  "credit": "",
+  "shot": true
+ },
+ {
+  "slug": "photoelectric-step",
+  "title": "光电效应",
+  "subtitle": "原理与实验",
+  "url": "/edulab/photoelectric-step/",
+  "thumb": "/assets/showcase/thumbs/photoelectric-step.jpg",
+  "category": "3D 教学实验",
+  "tags": [
+   "物理"
+  ],
+  "desc": "同一束光，为什么换成另一种金属就一个电子都打不出来？光电子的能量到底由光的什么决定？",
+  "credit": "",
+  "shot": true
+ },
+ {
+  "slug": "capacitor-step",
+  "title": "观察电容器的充放电",
+  "subtitle": "原理与实验",
+  "url": "/edulab/capacitor-step/",
+  "thumb": "/assets/showcase/thumbs/capacitor-step.jpg",
+  "category": "3D 教学实验",
+  "tags": [
+   "物理"
+  ],
+  "desc": "电容器里到底存了什么？能不能只用一个数把它的「肚量」量出来？",
+  "credit": "",
+  "shot": true
+ },
+ {
+  "slug": "earth-motion-step",
+  "title": "地球运动的地理意义",
+  "subtitle": "原理与现象",
+  "url": "/edulab/earth-motion-step/",
+  "thumb": "/assets/showcase/thumbs/earth-motion-step.jpg",
+  "category": "3D 教学实验",
+  "tags": [
+   "地理"
+  ],
+  "desc": "同一时刻，为什么北京是中午、纽约是半夜，而夏天的白天又比冬天长？",
+  "credit": "",
+  "shot": true
+ },
+ {
+  "slug": "accel-force-step",
+  "title": "实验：探究加速度与力、质量的关系",
+  "subtitle": "原理与现象",
+  "url": "/edulab/accel-force-step/",
+  "thumb": "/assets/showcase/thumbs/accel-force-step.jpg",
+  "category": "3D 教学实验",
+  "tags": [
+   "物理"
+  ],
+  "desc": "不直接测力、也不直接测加速度——一张纸带加几个槽码，能不能把 a 与 F、m 的关系量出来？",
+  "credit": "",
+  "shot": true
+ },
+ {
+  "slug": "iron-step",
+  "title": "铁及其化合物：铁的价态转化",
+  "subtitle": "原理与现象",
+  "url": "/edulab/iron-step/",
+  "thumb": "/assets/showcase/thumbs/iron-step.jpg",
+  "category": "3D 教学实验",
+  "tags": [
+   "化学"
+  ],
+  "desc": "同一个铁元素，为什么在试管里一会儿是 +2 价、一会儿是 +3 价，我们凭什么知道它是哪一个？",
+  "credit": "",
+  "shot": true
+ },
+ {
+  "slug": "plasmolysis-step",
+  "title": "植物细胞的吸水和失水",
+  "subtitle": "原理与现象",
+  "url": "/edulab/plasmolysis-step/",
+  "thumb": "/assets/showcase/thumbs/plasmolysis-step.jpg",
+  "category": "3D 教学实验",
+  "tags": [
+   "生物"
+  ],
+  "desc": "菜叶泡在清水里会变硬挺，撒了盐会出水——植物细胞怎样吸水和失水？",
+  "credit": "",
+  "shot": true
+ },
+ {
+  "slug": "electrolysis-step",
+  "title": "电解原理：电解氯化铜溶液与饱和食盐水",
+  "subtitle": "原理与现象",
+  "url": "/edulab/electrolysis-step/",
+  "thumb": "/assets/showcase/thumbs/electrolysis-step.jpg",
+  "category": "3D 教学实验",
+  "tags": [
+   "化学"
+  ],
+  "desc": "同一个直流电源，为什么电解氯化铜溶液得到铜和氯气，电解饱和食盐水却得到氢气、氯气和氢氧化钠？",
+  "credit": "",
+  "shot": true
+ },
+ {
+  "slug": "ammonia-step",
+  "title": "氨的制备与性质（含喷泉实验）",
+  "subtitle": "原理与现象",
+  "url": "/edulab/ammonia-step/",
+  "thumb": "/assets/showcase/thumbs/ammonia-step.jpg",
+  "category": "3D 教学实验",
+  "tags": [
+   "化学"
+  ],
+  "desc": "一瓶氨气，凭什么能把烧杯里的水自己「吸」到瓶子里去？",
+  "credit": "",
+  "shot": true
+ },
+ {
+  "slug": "equilibrium-step",
+  "title": "探究影响化学平衡移动的因素",
+  "subtitle": "原理与实验",
+  "url": "/edulab/equilibrium-step/",
+  "thumb": "/assets/showcase/thumbs/equilibrium-step.jpg",
+  "category": "3D 教学实验",
+  "tags": [
+   "化学"
+  ],
+  "desc": "改变一个条件，凭什么说平衡「往哪边移」？",
+  "credit": "",
+  "shot": true
+ },
+ {
+  "slug": "flame-step",
+  "title": "焰色试验与原子光谱",
+  "subtitle": "原理与现象",
+  "url": "/edulab/flame-step/",
+  "thumb": "/assets/showcase/thumbs/flame-step.jpg",
+  "category": "3D 教学实验",
+  "tags": [
+   "化学"
+  ],
+  "desc": "金属在火焰里为什么各有各的颜色，这点颜色凭什么能当成「化验报告」？",
+  "credit": "",
+  "shot": true
+ },
+ {
+  "slug": "galvanic-step",
+  "title": "原电池：单液到双液",
+  "subtitle": "原理与现象",
+  "url": "/edulab/galvanic-step/",
+  "thumb": "/assets/showcase/thumbs/galvanic-step.jpg",
+  "category": "3D 教学实验",
+  "tags": [
+   "化学"
+  ],
+  "desc": "同一杯稀硫酸里已经有电流了，为什么还要换成两杯、再加一根盐桥？",
+  "credit": "",
+  "shot": true
+ },
+ {
+  "slug": "conductivity-step",
+  "title": "电解质的电离与溶液导电性、离子反应的实质",
+  "subtitle": "原理与现象",
+  "url": "/edulab/conductivity-step/",
+  "thumb": "/assets/showcase/thumbs/conductivity-step.jpg",
+  "category": "3D 教学实验",
+  "tags": [
+   "化学"
+  ],
+  "desc": "干手、湿手都是同一只手，为什么湿了反而容易触电？",
+  "credit": "",
+  "shot": true
+ },
+ {
+  "slug": "energy-step",
+  "title": "实验：验证机械能守恒定律",
+  "subtitle": "原理与现象",
+  "url": "/edulab/energy-step/",
+  "thumb": "/assets/showcase/thumbs/energy-step.jpg",
+  "category": "3D 教学实验",
+  "tags": [
+   "物理"
+  ],
+  "desc": "重物下落时，减少的重力势能是不是正好变成了增加的动能？一条纸带能不能把这件事量出来？",
+  "credit": "",
+  "shot": true
+ },
+ {
+  "slug": "soil-step",
+  "title": "土壤的主要形成因素与土壤剖面观察",
+  "subtitle": "原理与现象",
+  "url": "/edulab/soil-step/",
+  "thumb": "/assets/showcase/thumbs/soil-step.jpg",
+  "category": "3D 教学实验",
+  "tags": [
+   "地理"
+  ],
+  "desc": "东北的土又黑又肥，南方的土为什么相对贫瘠？",
+  "credit": "",
+  "shot": true
+ },
+ {
+  "slug": "projectile-step",
+  "title": "实验：探究平抛运动的特点",
+  "subtitle": "原理与现象",
+  "url": "/edulab/projectile-step/",
+  "thumb": "/assets/showcase/thumbs/projectile-step.jpg",
+  "category": "3D 教学实验",
+  "tags": [
+   "物理"
+  ],
+  "desc": "只靠一只斜槽和一块挡板，能不能把平抛拆成两个分运动、量出初速度？",
+  "credit": "",
+  "shot": true
+ },
+ {
+  "slug": "transport-step",
+  "title": "物质跨膜运输",
+  "subtitle": "原理与现象",
+  "url": "/edulab/transport-step/",
+  "thumb": "/assets/showcase/thumbs/transport-step.jpg",
+  "category": "3D 教学实验",
+  "tags": [
+   "生物"
+  ],
+  "desc": "同一片细胞膜，为什么氧能自己穿过去、葡萄糖要好几个蛋白帮忙、K⁺ 还能逆着浓度往里走？",
+  "credit": "",
+  "shot": true
+ },
+ {
+  "slug": "nitric-lab-step",
+  "title": "浓、稀硝酸的性质与氮氧化物的转化",
+  "subtitle": "原理与现象",
+  "url": "/edulab/nitric-lab-step/",
+  "thumb": "/assets/showcase/thumbs/nitric-lab-step.jpg",
+  "category": "3D 教学实验",
+  "tags": [
+   "化学"
+  ],
+  "desc": "同样是铜和硝酸，为什么一瓶冒红棕色气体、另一瓶什么颜色都没有？",
+  "credit": "",
+  "shot": true
+ },
+ {
+  "slug": "centripetal-step",
+  "title": "探究向心力大小与半径、角速度、质量的关系",
+  "subtitle": "原理与现象",
+  "url": "/edulab/centripetal-step/",
+  "thumb": "/assets/showcase/thumbs/centripetal-step.jpg",
+  "category": "3D 教学实验",
+  "tags": [
+   "物理"
+  ],
+  "desc": "这台手摇的演示器只给你两个标尺上的格数——能不能用它把 F 与 m、r、ω 的定量关系量出来？",
+  "credit": "",
+  "shot": true
+ },
+ {
+  "slug": "self-induction-step",
+  "title": "自感与涡流",
+  "subtitle": "原理与实验",
+  "url": "/edulab/self-induction-step/",
+  "thumb": "/assets/showcase/thumbs/self-induction-step.jpg",
+  "category": "3D 教学实验",
+  "tags": [
+   "物理"
+  ],
+  "desc": "线圈里只是多绕了几圈铜线，为什么两只灯泡亮得不一样？开关已经断开了，灯泡凭什么还能再亮一下？",
+  "credit": "",
+  "shot": true
+ },
+ {
+  "slug": "emf-step",
+  "title": "测电源电动势和内阻",
+  "subtitle": "原理与实验",
+  "url": "/edulab/emf-step/",
+  "thumb": "/assets/showcase/thumbs/emf-step.jpg",
+  "category": "3D 教学实验",
+  "tags": [
+   "物理"
+  ],
+  "desc": "一节旧干电池的电动势和内阻，怎么用一只电压表、一只电流表和一个滑动变阻器「测」出来？换一种接法，测出来的还一样吗？",
+  "credit": "",
+  "shot": true
+ },
+ {
+  "slug": "impulse-step",
+  "title": "神经冲动的产生和传导",
+  "subtitle": "原理与现象",
+  "url": "/edulab/impulse-step/",
+  "thumb": "/assets/showcase/thumbs/impulse-step.jpg",
+  "category": "3D 教学实验",
+  "tags": [
+   "生物"
+  ],
+  "desc": "发令枪响后 0.1 s 内起跑就算抢跑（教材 p.27）——兴奋在身体里怎样「跑」过去？",
+  "credit": "",
+  "shot": true
+ },
+ {
+  "slug": "bromine-step",
+  "title": "海水提溴：空气吹出法",
+  "subtitle": "工业流程",
+  "url": "/edulab/bromine-step/",
+  "thumb": "/assets/showcase/thumbs/bromine-step.jpg",
+  "category": "3D 教学实验",
+  "tags": [
+   "化学"
+  ],
+  "desc": "海水里的溴只有 65 mg/L，怎么把它变成一瓶液溴？",
+  "credit": "",
+  "shot": true
+ },
+ {
+  "slug": "thermal-step",
+  "title": "大气热力环流",
+  "subtitle": "原理与现象",
+  "url": "/edulab/thermal-step/",
+  "thumb": "/assets/showcase/thumbs/thermal-step.jpg",
+  "category": "3D 教学实验",
+  "tags": [
+   "地理"
+  ],
+  "desc": "台湾海峡两岸的风向，为什么一天里会反过来？",
+  "credit": "",
+  "shot": true
+ },
+ {
+  "slug": "mitosis-step",
+  "title": "观察根尖分生区组织细胞的有丝分裂",
+  "subtitle": "原理与现象",
+  "url": "/edulab/mitosis-step/",
+  "thumb": "/assets/showcase/thumbs/mitosis-step.jpg",
+  "category": "3D 教学实验",
+  "tags": [
+   "生物"
+  ],
+  "desc": "一根洋葱根尖上，哪些细胞正在分裂？它们分裂一次各要多久？",
+  "credit": "",
+  "shot": true
+ },
+ {
+  "slug": "sodium-step",
+  "title": "金属钠的性质（含钠着火扑救）",
+  "subtitle": "原理与现象",
+  "url": "/edulab/sodium-step/",
+  "thumb": "/assets/showcase/thumbs/sodium-step.jpg",
+  "category": "3D 教学实验",
+  "tags": [
+   "化学"
+  ],
+  "desc": "一块银白色的小金属，为什么必须泡在煤油里，着火时连水都不能浇？",
+  "credit": "",
+  "shot": true
+ },
+ {
+  "slug": "sulfur-step",
+  "title": "硫、二氧化硫、浓硫酸的性质与不同价态含硫物质的转化",
+  "subtitle": "原理与现象",
+  "url": "/edulab/sulfur-step/",
+  "thumb": "/assets/showcase/thumbs/sulfur-step.jpg",
+  "category": "3D 教学实验",
+  "tags": [
+   "化学"
+  ],
+  "desc": "同样是硫，为什么有时它是黄色固体、有时让品红褪成无色、有时又跑进铁粉里？",
+  "credit": "",
+  "shot": true
+ },
+ {
+  "slug": "wind-step",
+  "title": "大气的水平运动——风",
+  "subtitle": "原理与现象",
+  "url": "/edulab/wind-step/",
+  "thumb": "/assets/showcase/thumbs/wind-step.jpg",
+  "category": "3D 教学实验",
+  "tags": [
+   "地理"
+  ],
+  "desc": "天气图上的风，为什么不是从高压直直吹向低压？",
+  "credit": "",
+  "shot": true
+ },
+ {
+  "slug": "corrosion-step",
+  "title": "吸氧腐蚀与暖贴的设计",
+  "subtitle": "原理与现象",
+  "url": "/edulab/corrosion-step/",
+  "thumb": "/assets/showcase/thumbs/corrosion-step.jpg",
+  "category": "3D 教学实验",
+  "tags": [
+   "化学"
+  ],
+  "desc": "铁生锈这么慢的事，凭什么能做出一个 45 ℃ 以上的暖贴？又凭什么反过来用它保护铁不生锈？",
+  "credit": "",
+  "shot": true
+ },
+ {
+  "slug": "enzyme-step",
+  "title": "影响酶活性的条件",
+  "subtitle": "原理与现象",
+  "url": "/edulab/enzyme-step/",
+  "thumb": "/assets/showcase/thumbs/enzyme-step.jpg",
+  "category": "3D 教学实验",
+  "tags": [
+   "生物"
+  ],
+  "desc": "同一支酶，为什么放进沸水里就再也救不回来，放进冰水里却还能醒过来？",
+  "credit": "",
+  "shot": true
+ },
+ {
+  "slug": "chlor-alkali-step",
+  "title": "氯碱工业",
+  "subtitle": "工业流程",
+  "url": "/edulab/chlor-alkali-step/",
+  "thumb": "/assets/showcase/thumbs/chlor-alkali-step.jpg",
+  "category": "3D 教学实验",
+  "tags": [
+   "化学"
+  ],
+  "desc": "同样的电，怎样换来更多烧碱、更少电耗，又不出事故？",
+  "credit": "",
+  "shot": true
+ },
+ {
+  "slug": "hou-soda-step",
+  "title": "侯氏制碱",
+  "subtitle": "工业流程",
+  "url": "/edulab/hou-soda-step/",
+  "thumb": "/assets/showcase/thumbs/hou-soda-step.jpg",
+  "category": "3D 教学实验",
+  "tags": [
+   "化学"
+  ],
+  "desc": "怎样用食盐和氨造出纯碱，还顺手拿到氮肥？",
+  "credit": "",
+  "shot": true
+ },
+ {
+  "slug": "current-field-step",
+  "title": "电流的磁场",
+  "subtitle": "原理与现象",
+  "url": "/edulab/current-field-step/",
+  "thumb": "/assets/showcase/thumbs/current-field-step.jpg",
+  "category": "3D 教学实验",
+  "tags": [
+   "物理"
+  ],
+  "desc": "磁场看不见摸不着，怎么把它画出来、又怎么判断它的方向？",
+  "credit": "",
+  "shot": true
+ },
+ {
+  "slug": "brownian-step",
+  "title": "布朗运动与扩散",
+  "subtitle": "原理与现象",
+  "url": "/edulab/brownian-step/",
+  "thumb": "/assets/showcase/thumbs/brownian-step.jpg",
+  "category": "3D 教学实验",
+  "tags": [
+   "物理"
+  ],
+  "desc": "看不见的分子，凭什么说它在乱动？",
+  "credit": "",
+  "shot": true
+ },
+ {
+  "slug": "water-cycle-step",
+  "title": "水循环的过程与地理意义",
+  "subtitle": "原理与现象",
+  "url": "/edulab/water-cycle-step/",
+  "thumb": "/assets/showcase/thumbs/water-cycle-step.jpg",
+  "category": "3D 教学实验",
+  "tags": [
+   "地理"
+  ],
+  "desc": "江河不断注入大海，为什么大海的水没有增多？",
+  "credit": "",
+  "shot": true
+ },
+ {
+  "slug": "circulation-step",
+  "title": "气压带、风带与三圈环流",
+  "subtitle": "原理与现象",
+  "url": "/edulab/circulation-step/",
+  "thumb": "/assets/showcase/thumbs/circulation-step.jpg",
+  "category": "3D 教学实验",
+  "tags": [
+   "地理"
+  ],
+  "desc": "麦哲伦船队为什么有的航段逆风、有的顺风，到了 30°S 附近却寸步难行？",
+  "credit": "",
+  "shot": true
+ },
+ {
+  "slug": "robotics-bench",
+  "title": "Robotics Bench",
+  "subtitle": "机器人电路实验台（镜像学习版）",
+  "url": "/apps/robotics-bench/",
+  "category": "独立应用",
+  "tags": [
+   "机器人",
+   "电子电路",
+   "教育"
+  ],
+  "desc": "Movez 做的浏览器 3D 电子实验室：13 块真实开发板从贴片、回流焊到烙铁焊全程可上手，本站镜像仅供学习，版权归原作者。",
+  "credit": "原作者 Movez（@0xMovez）· 镜像学习版",
+  "thumb": "/assets/showcase/thumbs/robotics-bench.jpg",
+  "shot": true
+ },
+ {
+  "slug": "saltline",
+  "title": "Saltline",
+  "subtitle": "港口潜行小游戏（已授权转载）",
+  "url": "/apps/saltline/",
+  "category": "独立应用",
+  "tags": [
+   "独立游戏",
+   "潜行",
+   "程序化生成"
+  ],
+  "desc": "港务局潜行游戏：剪断三处监控链路再乘船撤离，画面与音效全部在浏览器内程序化生成。",
+  "credit": "原作者 Felix Rieseberg（Anthropic）· Claude Fable 5.2 生成 · 已获授权署名转载",
+  "thumb": "/assets/showcase/thumbs/saltline.jpg",
+  "shot": true
+ },
+ {
+  "slug": "what-the-water-keeps",
+  "title": "What the water keeps",
+  "subtitle": "提灯行舟叙事游戏（已授权转载）",
+  "url": "/apps/what-the-water-keeps/",
+  "category": "独立应用",
+  "tags": [
+   "独立游戏",
+   "叙事互动"
+  ],
+  "desc": "提一盏灯驾小船沿宽阔水道穿行风格迥异的连续场景，也可以任由水流带你漂。",
+  "credit": "原作者 Kevin Ngo（@kevin_t_ngo）· 已获授权署名转载",
+  "thumb": "/assets/showcase/thumbs/what-the-water-keeps.jpg",
+  "shot": true
+ },
+ {
+  "slug": "auditorbench",
+  "title": "AuditorBench",
+  "subtitle": "AI 审计员可靠性评测基准",
+  "url": "/project/auditorbench/",
+  "category": "专题页",
+  "tags": [
+   "AI 安全",
+   "审计",
+   "评测基准"
+  ],
+  "desc": "研究大语言模型审计员的稳定性、误报、上下文影响与集成可靠性的受控实验基准。",
+  "credit": "",
+  "thumb": "/assets/showcase/thumbs/auditorbench.jpg",
+  "shot": true
+ },
+ {
+  "slug": "fable-52-prompt-map",
+  "title": "Fable 5.2 提示词解剖图",
+  "subtitle": "系统提示词结构全解",
+  "url": "/project/fable-52-prompt-map/",
+  "category": "专题页",
+  "tags": [
+   "提示词工程",
+   "可视化"
+  ],
+  "desc": "Claude Fable 5.2 完整系统提示词逐条拆解：129 个工具接口、44 套内置技能，关键条款原文摘录。",
+  "credit": "",
+  "thumb": "/assets/showcase/thumbs/fable-52-prompt-map.jpg",
+  "shot": true
+ },
+ {
+  "slug": "fable-52-showcase",
+  "title": "Claude Fable 5.2 惊人作品专题",
+  "subtitle": "社区代表作盘点",
+  "url": "/project/fable-52-showcase/",
+  "category": "专题页",
+  "tags": [
+   "专题",
+   "AI 作品"
+  ],
+  "desc": "Fable 5.2 发布一周内社区代表性作品盘点：12 件作品总表、成本与耗时数据、源代码可得性标注。",
+  "credit": "",
+  "thumb": "/assets/showcase/thumbs/fable-52-showcase.jpg",
+  "shot": true
+ },
+ {
+  "slug": "dsh-research-lab",
+  "title": "DSH Research Lab",
+  "subtitle": "高校科研智能体工作台",
+  "url": "/project/dsh-research-lab/",
+  "category": "专题页",
+  "tags": [
+   "科研工具",
+   "开源",
+   "智能体"
+  ],
+  "desc": "基于 DeepSeek Harness 的开源科研智能体框架：真实公开数据、分层架构、49 项自动验收，支持按学科定制。",
+  "credit": "",
+  "thumb": "/assets/showcase/thumbs/dsh-research-lab.jpg",
+  "shot": true
+ },
+ {
+  "slug": "beaker-mixer",
+  "title": "烧杯混合互动实验",
+  "subtitle": "在浏览器里做化学",
+  "url": "/beaker-mixer.html",
+  "category": "互动实验",
+  "tags": [
+   "化学实验",
+   "互动"
+  ],
+  "desc": "选取试剂倒入烧杯自由混合，实时观察颜色、沉淀与气泡等反应现象。",
+  "credit": "",
+  "thumb": "/assets/showcase/thumbs/beaker-mixer.jpg",
+  "shot": true
+ }
+]

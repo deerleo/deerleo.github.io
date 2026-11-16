@@ -1,0 +1,609 @@
+{
+ "volt": {
+  "ok": true,
+  "stddev": 98.8,
+  "attempt": 1
+ },
+ "saltline": {
+  "ok": true,
+  "stddev": 57.6,
+  "attempt": 1
+ },
+ "beaker-mixer": {
+  "ok": true,
+  "stddev": 24.2,
+  "attempt": 1
+ },
+ "atlas": {
+  "ok": true,
+  "stddev": 83.0,
+  "attempt": 1
+ },
+ "what-the-water-keeps": {
+  "ok": true,
+  "stddev": 48.8,
+  "attempt": 2
+ },
+ "robotics-bench": {
+  "ok": true,
+  "stddev": null,
+  "attempt": 1,
+  "note": "全量批次产出，报告以磁盘产物补录"
+ },
+ "conic": {
+  "ok": true,
+  "stddev": null,
+  "attempt": 1,
+  "note": "全量批次产出，报告以磁盘产物补录"
+ },
+ "waves": {
+  "ok": true,
+  "stddev": null,
+  "attempt": 1,
+  "note": "全量批次产出，报告以磁盘产物补录"
+ },
+ "dsh-research-lab": {
+  "ok": true,
+  "stddev": null,
+  "attempt": 1,
+  "note": "全量批次产出，报告以磁盘产物补录"
+ },
+ "energy-step": {
+  "ok": true,
+  "stddev": null,
+  "attempt": 1,
+  "note": "全量批次产出，报告以磁盘产物补录"
+ },
+ "flame-step": {
+  "ok": true,
+  "stddev": null,
+  "attempt": 1,
+  "note": "全量批次产出，报告以磁盘产物补录"
+ },
+ "carbon-step": {
+  "ok": true,
+  "stddev": null,
+  "attempt": 1,
+  "note": "全量批次产出，报告以磁盘产物补录"
+ },
+ "sulfuric-step": {
+  "ok": true,
+  "stddev": null,
+  "attempt": 1,
+  "note": "全量批次产出，报告以磁盘产物补录"
+ },
+ "geo": {
+  "ok": true,
+  "stddev": null,
+  "attempt": 1,
+  "note": "全量批次产出，报告以磁盘产物补录"
+ },
+ "karst-step": {
+  "ok": true,
+  "stddev": null,
+  "attempt": 1,
+  "note": "全量批次产出，报告以磁盘产物补录"
+ },
+ "photoelectric-step": {
+  "ok": true,
+  "stddev": null,
+  "attempt": 1,
+  "note": "全量批次产出，报告以磁盘产物补录"
+ },
+ "auditorbench": {
+  "ok": true,
+  "stddev": null,
+  "attempt": 1,
+  "note": "全量批次产出，报告以磁盘产物补录"
+ },
+ "conductivity-step": {
+  "ok": true,
+  "stddev": null,
+  "attempt": 1,
+  "note": "全量批次产出，报告以磁盘产物补录"
+ },
+ "wind-step": {
+  "ok": true,
+  "stddev": null,
+  "attempt": 1,
+  "note": "全量批次产出，报告以磁盘产物补录"
+ },
+ "mechanism": {
+  "ok": true,
+  "stddev": null,
+  "attempt": 1,
+  "note": "全量批次产出，报告以磁盘产物补录"
+ },
+ "accel-force-step": {
+  "ok": true,
+  "stddev": null,
+  "attempt": 1,
+  "note": "全量批次产出，报告以磁盘产物补录"
+ },
+ "lathe": {
+  "ok": true,
+  "stddev": null,
+  "attempt": 1,
+  "note": "全量批次产出，报告以磁盘产物补录"
+ },
+ "sodium-step": {
+  "ok": true,
+  "stddev": null,
+  "attempt": 1,
+  "note": "全量批次产出，报告以磁盘产物补录"
+ },
+ "ball-stick-step": {
+  "ok": true,
+  "stddev": null,
+  "attempt": 1,
+  "note": "全量批次产出，报告以磁盘产物补录"
+ },
+ "blast-furnace-step": {
+  "ok": true,
+  "stddev": null,
+  "attempt": 1,
+  "note": "全量批次产出，报告以磁盘产物补录"
+ },
+ "cement-step": {
+  "ok": true,
+  "stddev": null,
+  "attempt": 1,
+  "note": "全量批次产出，报告以磁盘产物补录"
+ },
+ "orbital": {
+  "ok": true,
+  "stddev": null,
+  "attempt": 1,
+  "note": "全量批次产出，报告以磁盘产物补录"
+ },
+ "chlor-alkali-step": {
+  "ok": true,
+  "stddev": null,
+  "attempt": 1,
+  "note": "全量批次产出，报告以磁盘产物补录"
+ },
+ "hydrolysis-step": {
+  "ok": true,
+  "stddev": null,
+  "attempt": 1,
+  "note": "全量批次产出，报告以磁盘产物补录"
+ },
+ "impulse-step": {
+  "ok": true,
+  "stddev": null,
+  "attempt": 1,
+  "note": "全量批次产出，报告以磁盘产物补录"
+ },
+ "iron-step": {
+  "ok": true,
+  "stddev": null,
+  "attempt": 1,
+  "note": "全量批次产出，报告以磁盘产物补录"
+ },
+ "enso-step": {
+  "ok": true,
+  "stddev": null,
+  "attempt": 1,
+  "note": "全量批次产出，报告以磁盘产物补录"
+ },
+ "motion": {
+  "ok": true,
+  "stddev": null,
+  "attempt": 1,
+  "note": "全量批次产出，报告以磁盘产物补录"
+ },
+ "func": {
+  "ok": true,
+  "stddev": null,
+  "attempt": 1,
+  "note": "全量批次产出，报告以磁盘产物补录"
+ },
+ "hou-soda-step": {
+  "ok": true,
+  "stddev": null,
+  "attempt": 1,
+  "note": "全量批次产出，报告以磁盘产物补录"
+ },
+ "machine": {
+  "ok": true,
+  "stddev": null,
+  "attempt": 1,
+  "note": "全量批次产出，报告以磁盘产物补录"
+ },
+ "soil-step": {
+  "ok": true,
+  "stddev": null,
+  "attempt": 1,
+  "note": "全量批次产出，报告以磁盘产物补录"
+ },
+ "vsepr": {
+  "ok": true,
+  "stddev": null,
+  "attempt": 1,
+  "note": "全量批次产出，报告以磁盘产物补录"
+ },
+ "gas": {
+  "ok": true,
+  "stddev": null,
+  "attempt": 1,
+  "note": "全量批次产出，报告以磁盘产物补录"
+ },
+ "nitric-lab-step": {
+  "ok": true,
+  "stddev": null,
+  "attempt": 1,
+  "note": "全量批次产出，报告以磁盘产物补录"
+ },
+ "micro": {
+  "ok": true,
+  "stddev": null,
+  "attempt": 1,
+  "note": "全量批次产出，报告以磁盘产物补录"
+ },
+ "corrosion-step": {
+  "ok": true,
+  "stddev": null,
+  "attempt": 1,
+  "note": "全量批次产出，报告以磁盘产物补录"
+ },
+ "heating-step": {
+  "ok": true,
+  "stddev": null,
+  "attempt": 1,
+  "note": "全量批次产出，报告以磁盘产物补录"
+ },
+ "rate-step": {
+  "ok": true,
+  "stddev": null,
+  "attempt": 1,
+  "note": "全量批次产出，报告以磁盘产物补录"
+ },
+ "mitosis-step": {
+  "ok": true,
+  "stddev": null,
+  "attempt": 1,
+  "note": "全量批次产出，报告以磁盘产物补录"
+ },
+ "self-induction-step": {
+  "ok": true,
+  "stddev": null,
+  "attempt": 1,
+  "note": "全量批次产出，报告以磁盘产物补录"
+ },
+ "rocket": {
+  "ok": true,
+  "stddev": null,
+  "attempt": 1,
+  "note": "全量批次产出，报告以磁盘产物补录"
+ },
+ "thermo": {
+  "ok": true,
+  "stddev": null,
+  "attempt": 1,
+  "note": "全量批次产出，报告以磁盘产物补录"
+ },
+ "galvanic-step": {
+  "ok": true,
+  "stddev": null,
+  "attempt": 1,
+  "note": "全量批次产出，报告以磁盘产物补录"
+ },
+ "optics": {
+  "ok": true,
+  "stddev": null,
+  "attempt": 1,
+  "note": "全量批次产出，报告以磁盘产物补录"
+ },
+ "transport-step": {
+  "ok": true,
+  "stddev": null,
+  "attempt": 1,
+  "note": "全量批次产出，报告以磁盘产物补录"
+ },
+ "analysis": {
+  "ok": true,
+  "stddev": null,
+  "attempt": 1,
+  "note": "全量批次产出，报告以磁盘产物补录"
+ },
+ "earth": {
+  "ok": true,
+  "stddev": null,
+  "attempt": 1,
+  "note": "全量批次产出，报告以磁盘产物补录"
+ },
+ "centripetal-step": {
+  "ok": true,
+  "stddev": null,
+  "attempt": 1,
+  "note": "全量批次产出，报告以磁盘产物补录"
+ },
+ "haber-step": {
+  "ok": true,
+  "stddev": null,
+  "attempt": 1,
+  "note": "全量批次产出，报告以磁盘产物补录"
+ },
+ "pea": {
+  "ok": true,
+  "stddev": null,
+  "attempt": 1,
+  "note": "全量批次产出，报告以磁盘产物补录"
+ },
+ "plasmolysis-step": {
+  "ok": true,
+  "stddev": null,
+  "attempt": 1,
+  "note": "全量批次产出，报告以磁盘产物补录"
+ },
+ "wonder": {
+  "ok": true,
+  "stddev": null,
+  "attempt": 1,
+  "note": "全量批次产出，报告以磁盘产物补录"
+ },
+ "titration-step": {
+  "ok": true,
+  "stddev": null,
+  "attempt": 1,
+  "note": "全量批次产出，报告以磁盘产物补录"
+ },
+ "tectonic-step": {
+  "ok": true,
+  "stddev": null,
+  "attempt": 1,
+  "note": "全量批次产出，报告以磁盘产物补录"
+ },
+ "tide": {
+  "ok": true,
+  "stddev": null,
+  "attempt": 1,
+  "note": "全量批次产出，报告以磁盘产物补录"
+ },
+ "atmos": {
+  "ok": true,
+  "stddev": null,
+  "attempt": 1,
+  "note": "全量批次产出，报告以磁盘产物补录"
+ },
+ "drift": {
+  "ok": true,
+  "stddev": null,
+  "attempt": 1,
+  "note": "全量批次产出，报告以磁盘产物补录"
+ },
+ "capacitor-step": {
+  "ok": true,
+  "stddev": null,
+  "attempt": 1,
+  "note": "全量批次产出，报告以磁盘产物补录"
+ },
+ "electrolysis-step": {
+  "ok": true,
+  "stddev": null,
+  "attempt": 1,
+  "note": "全量批次产出，报告以磁盘产物补录"
+ },
+ "enzyme-step": {
+  "ok": true,
+  "stddev": null,
+  "attempt": 1,
+  "note": "全量批次产出，报告以磁盘产物补录"
+ },
+ "dna": {
+  "ok": true,
+  "stddev": null,
+  "attempt": 1,
+  "note": "全量批次产出，报告以磁盘产物补录"
+ },
+ "immune": {
+  "ok": true,
+  "stddev": null,
+  "attempt": 1,
+  "note": "全量批次产出，报告以磁盘产物补录"
+ },
+ "water": {
+  "ok": true,
+  "stddev": null,
+  "attempt": 1,
+  "note": "全量批次产出，报告以磁盘产物补录"
+ },
+ "chlorine-step": {
+  "ok": true,
+  "stddev": null,
+  "attempt": 1,
+  "note": "全量批次产出，报告以磁盘产物补录"
+ },
+ "circulation-step": {
+  "ok": true,
+  "stddev": null,
+  "attempt": 1,
+  "note": "全量批次产出，报告以磁盘产物补录"
+ },
+ "fable-52-showcase": {
+  "ok": true,
+  "stddev": null,
+  "attempt": 1,
+  "note": "全量批次产出，报告以磁盘产物补录"
+ },
+ "sulfur-step": {
+  "ok": true,
+  "stddev": null,
+  "attempt": 1,
+  "note": "全量批次产出，报告以磁盘产物补录"
+ },
+ "current-field-step": {
+  "ok": true,
+  "stddev": null,
+  "attempt": 1,
+  "note": "全量批次产出，报告以磁盘产物补录"
+ },
+ "float": {
+  "ok": true,
+  "stddev": null,
+  "attempt": 1,
+  "note": "全量批次产出，报告以磁盘产物补录"
+ },
+ "projectile-step": {
+  "ok": true,
+  "stddev": null,
+  "attempt": 1,
+  "note": "全量批次产出，报告以磁盘产物补录"
+ },
+ "war": {
+  "ok": true,
+  "stddev": null,
+  "attempt": 1,
+  "note": "全量批次产出，报告以磁盘产物补录"
+ },
+ "river-step": {
+  "ok": true,
+  "stddev": null,
+  "attempt": 1,
+  "note": "全量批次产出，报告以磁盘产物补录"
+ },
+ "fields": {
+  "ok": true,
+  "stddev": null,
+  "attempt": 1,
+  "note": "全量批次产出，报告以磁盘产物补录"
+ },
+ "cell": {
+  "ok": true,
+  "stddev": null,
+  "attempt": 1,
+  "note": "全量批次产出，报告以磁盘产物补录"
+ },
+ "coal-gas-step": {
+  "ok": true,
+  "stddev": null,
+  "attempt": 1,
+  "note": "全量批次产出，报告以磁盘产物补录"
+ },
+ "currents-step": {
+  "ok": true,
+  "stddev": null,
+  "attempt": 1,
+  "note": "全量批次产出，报告以磁盘产物补录"
+ },
+ "emf-step": {
+  "ok": true,
+  "stddev": null,
+  "attempt": 1,
+  "note": "全量批次产出，报告以磁盘产物补录"
+ },
+ "construct": {
+  "ok": true,
+  "stddev": null,
+  "attempt": 1,
+  "note": "全量批次产出，报告以磁盘产物补录"
+ },
+ "periodic": {
+  "ok": true,
+  "stddev": null,
+  "attempt": 1,
+  "note": "全量批次产出，报告以磁盘产物补录"
+ },
+ "heat": {
+  "ok": true,
+  "stddev": null,
+  "attempt": 1,
+  "note": "全量批次产出，报告以磁盘产物补录"
+ },
+ "atp": {
+  "ok": true,
+  "stddev": null,
+  "attempt": 1,
+  "note": "全量批次产出，报告以磁盘产物补录"
+ },
+ "contour": {
+  "ok": true,
+  "stddev": null,
+  "attempt": 1,
+  "note": "全量批次产出，报告以磁盘产物补录"
+ },
+ "ammonia-step": {
+  "ok": true,
+  "stddev": null,
+  "attempt": 1,
+  "note": "全量批次产出，报告以磁盘产物补录"
+ },
+ "brownian-step": {
+  "ok": true,
+  "stddev": null,
+  "attempt": 1,
+  "note": "全量批次产出，报告以磁盘产物补录"
+ },
+ "fable-52-prompt-map": {
+  "ok": true,
+  "stddev": null,
+  "attempt": 1,
+  "note": "全量批次产出，报告以磁盘产物补录"
+ },
+ "equilibrium-step": {
+  "ok": true,
+  "stddev": null,
+  "attempt": 1,
+  "note": "全量批次产出，报告以磁盘产物补录"
+ },
+ "plant": {
+  "ok": true,
+  "stddev": null,
+  "attempt": 1,
+  "note": "全量批次产出，报告以磁盘产物补录"
+ },
+ "earth-motion-step": {
+  "ok": true,
+  "stddev": null,
+  "attempt": 1,
+  "note": "全量批次产出，报告以磁盘产物补录"
+ },
+ "insolation-step": {
+  "ok": true,
+  "stddev": null,
+  "attempt": 1,
+  "note": "全量批次产出，报告以磁盘产物补录"
+ },
+ "neuro": {
+  "ok": true,
+  "stddev": null,
+  "attempt": 1,
+  "note": "全量批次产出，报告以磁盘产物补录"
+ },
+ "water-cycle-step": {
+  "ok": true,
+  "stddev": null,
+  "attempt": 1,
+  "note": "全量批次产出，报告以磁盘产物补录"
+ },
+ "pythagoras": {
+  "ok": true,
+  "stddev": null,
+  "attempt": 1,
+  "note": "全量批次产出，报告以磁盘产物补录"
+ },
+ "reaction": {
+  "ok": true,
+  "stddev": null,
+  "attempt": 1,
+  "note": "全量批次产出，报告以磁盘产物补录"
+ },
+ "thermal-step": {
+  "ok": true,
+  "stddev": null,
+  "attempt": 1,
+  "note": "全量批次产出，报告以磁盘产物补录"
+ },
+ "smelting-step": {
+  "ok": true,
+  "stddev": null,
+  "attempt": 1,
+  "note": "全量批次产出，报告以磁盘产物补录"
+ },
+ "bromine-step": {
+  "ok": true,
+  "stddev": null,
+  "attempt": 1,
+  "note": "全量批次产出，报告以磁盘产物补录"
+ }
+}
