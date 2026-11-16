@@ -1,0 +1,338 @@
+---
+---
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#F7F5EE">
+  {% include theme-init.html %}
+  <link rel="stylesheet" href="{{ '/assets/css/theme.css' | relative_url }}?v=20261027">
+  <script src="{{ '/assets/js/theme.js' | relative_url }}" defer></script>
+  <meta name="description" content="Claude Fable 5.2（2026-11-09 发布）一周内社区代表性作品盘点：12 件作品总表、成本与耗时数据、Saltline 详情、源代码可得性标注与镜像指引，附合规与出处说明。">
+  <meta name="robots" content="index,follow">
+  <title>Claude Fable 5.2 惊人作品专题 · 迷鹿 MiLu</title>
+  <style>
+    *{box-sizing:border-box}html{scroll-behavior:smooth}
+    body{margin:0;background:var(--page-glow,#fff),var(--bg,#F7F5EE);color:var(--ink,#0E2A1F);font:16px/1.72 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}a{color:inherit}
+    .wrap{max-width:1080px;margin:auto;padding:46px 24px 86px}
+    .eyebrow{color:var(--mint,#064B35);font-size:12px;font-weight:850;letter-spacing:.16em;text-transform:uppercase}
+    .hero{max-width:820px}.hero h1{margin:10px 0 15px;font-size:clamp(38px,6.5vw,64px);line-height:1.08;letter-spacing:-.05em}.hero h1 em{color:var(--accent,#064B35);font-style:normal}
+    .hero p{color:var(--muted,#4E635A);font-size:17px}
+    .tags{display:flex;gap:9px;flex-wrap:wrap;margin-top:22px}.tags span{padding:5px 11px;border:1px solid var(--line,rgba(6,75,53,.15));border-radius:999px;color:var(--ink-2,#24473A);font-size:12px}
+    .section{margin-top:54px}.section h2{margin:0 0 12px;font-size:clamp(24px,3.6vw,34px);letter-spacing:-.03em}.section-intro{max-width:760px;color:var(--muted,#4E635A);font-size:14px}
+    /* 数据总览 */
+    .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:20px}
+    .stat{padding:20px;border:1px solid var(--line,rgba(6,75,53,.15));border-radius:16px;background:var(--card-grad,linear-gradient(145deg,#fffef9,#fbf9f0))}
+    .stat b{display:block;font-size:clamp(22px,3vw,30px);letter-spacing:-.02em;color:var(--accent,#064B35);font-variant-numeric:tabular-nums}
+    .stat span{display:block;margin-top:4px;color:var(--muted,#4E635A);font-size:12.5px}
+    .stats-6{grid-template-columns:repeat(3,1fr)}
+    /* 源代码可得性徽章 */
+    .badge{display:inline-block;padding:2px 9px;border-radius:999px;font-size:11.5px;font-weight:800;white-space:nowrap}
+    .b-yes{color:var(--accent,#064B35);background:var(--accent-soft,rgba(6,75,53,.08));border:1px solid var(--line-strong,rgba(6,75,53,.30))}
+    .b-part{color:var(--amber,#8a5a18);background:rgba(245,154,11,.12);border:1px solid rgba(245,154,11,.45)}
+    .b-no{color:var(--ink-3,#55685E);background:var(--panel-2,#F1EFE4);border:1px solid var(--line,rgba(6,75,53,.15))}
+    /* 作品总表 */
+    .showtable{margin-top:18px;overflow-x:auto;-webkit-overflow-scrolling:touch}
+    .showtable table{width:100%;border-collapse:collapse;font-size:13px;min-width:1000px}
+    .showtable th{text-align:left;padding:10px 12px;color:var(--mint,#064B35);font-size:11.5px;letter-spacing:.08em;border-bottom:2px solid var(--line,rgba(6,75,53,.15));white-space:nowrap}
+    .showtable td{padding:11px 12px;border-bottom:1px solid var(--line,rgba(6,75,53,.15));color:var(--ink-2,#24473A);vertical-align:top}
+    .showtable td.w{white-space:nowrap;font-weight:800;color:var(--ink,#0E2A1F)}
+    .showtable td a{color:var(--accent,#064B35);font-weight:700;text-decoration:none;border-bottom:1px dashed var(--line-strong,rgba(6,75,53,.30))}
+    .showtable td a:hover{border-bottom-style:solid}
+    .showtable td a.in{color:var(--mint,#064B35)}
+    .showtable .cost{white-space:nowrap;font-variant-numeric:tabular-nums;font-weight:700}
+    .legend{display:flex;gap:14px;flex-wrap:wrap;margin-top:14px;color:var(--muted,#4E635A);font-size:12px;align-items:center}
+    .legend b{font-weight:800;color:var(--ink-2,#24473A)}
+    /* Saltline 详情 */
+    .detail{margin-top:16px;display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+    .fact{display:flex;gap:12px;align-items:baseline;padding:11px 14px;border:1px solid var(--line,rgba(6,75,53,.15));border-radius:12px;background:var(--card-grad,linear-gradient(145deg,#fffef9,#fbf9f0))}
+    .fact code{flex:0 0 auto;color:var(--accent,#064B35);font-size:12px;font-weight:800;font-variant-numeric:tabular-nums;white-space:nowrap;font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
+    .fact span{color:var(--ink-2,#24473A);font-size:13px}
+    .quote{margin-top:16px;border:1px solid var(--line,rgba(6,75,53,.15));border-radius:16px;background:var(--panel,#FFFDF6);overflow:hidden}
+    .quote header{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;padding:13px 18px;background:var(--accent-soft,rgba(6,75,53,.08));border-bottom:1px solid var(--line,rgba(6,75,53,.15))}
+    .quote header b{font-size:13.5px}.quote header code{color:var(--mint,#064B35);font-size:11.5px;font-weight:700}
+    .quote pre{margin:0;padding:18px;white-space:pre-wrap;word-break:break-word;font:13px/1.68 ui-monospace,SFMono-Regular,Menlo,monospace;color:var(--ink-2,#24473A)}
+    .quote pre strong{color:var(--accent,#064B35);background:var(--accent-soft,rgba(6,75,53,.08));border-radius:4px;padding:0 3px}
+    .quote footer{padding:10px 18px;border-top:1px dashed var(--line,rgba(6,75,53,.15));color:var(--muted,#4E635A);font-size:12px}
+    /* 镜像仓库卡片 */
+    .repos{margin-top:18px;display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+    .repo{padding:18px;border:1px solid var(--line,rgba(6,75,53,.15));border-radius:16px;background:var(--card-grad,linear-gradient(145deg,#fffef9,#fbf9f0))}
+    .repo .rk{font-size:11px;font-weight:850;letter-spacing:.1em;color:var(--amber,#8a5a18);text-transform:uppercase}
+    .repo .rk.main{color:var(--accent,#064B35)}
+    .repo b{display:block;margin-top:6px;font-size:14.5px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;color:var(--accent,#064B35);word-break:break-all}
+    .repo p{margin:8px 0 0;color:var(--muted,#4E635A);font-size:12.5px}
+    .repo a{display:inline-block;margin-top:10px;color:var(--mint,#064B35);font-size:12.5px;font-weight:800;text-decoration:none}
+    .run{margin-top:14px;border:1px solid var(--line,rgba(6,75,53,.15));border-radius:14px;background:var(--panel,#FFFDF6);overflow:hidden}
+    .run header{padding:11px 18px;background:var(--accent-soft,rgba(6,75,53,.08));border-bottom:1px solid var(--line,rgba(6,75,53,.15));font-size:13px;font-weight:800}
+    .run pre{margin:0;padding:16px 18px;font:12.8px/1.7 ui-monospace,SFMono-Regular,Menlo,monospace;color:var(--ink-2,#24473A);overflow-x:auto}
+    .run pre em{color:var(--ink-3,#55685E);font-style:normal}
+    /* 合规区 */
+    .legal{margin-top:18px;display:grid;grid-template-columns:1fr;gap:10px}
+    .legal div{padding:15px 18px;border:1px solid var(--line,rgba(6,75,53,.15));border-left:3px solid var(--accent,#064B35);border-radius:0 12px 12px 0;background:var(--panel-soft,rgba(255,254,250,.86));color:var(--ink-2,#24473A);font-size:13.5px}
+    .legal b{display:block;margin-bottom:4px;color:var(--ink,#0E2A1F);font-size:13.5px}
+    .note{margin-top:26px;padding:16px 18px;border:1px solid rgba(237,189,118,.4);border-radius:13px;background:var(--accent-soft,rgba(6,75,53,.08));color:var(--amber,#8a5a18);font-size:13px}
+    .related{display:flex;gap:18px;flex-wrap:wrap;margin-top:22px}.related a{color:var(--mint,#064B35);font-size:13px;font-weight:800;text-decoration:none}
+    .footer{display:flex;justify-content:space-between;gap:16px;margin-top:54px;padding-top:18px;border-top:1px solid var(--line,rgba(6,75,53,.15));color:var(--ink-3,#55685E);font-size:12px}
+    @media(max-width:720px){.wrap{padding:34px 16px 68px}.stats{grid-template-columns:repeat(2,1fr)}.stats-6 .stat b{font-size:19px}.detail{grid-template-columns:1fr}.repos{grid-template-columns:1fr}.footer{display:block}.footer span{display:block;margin:5px 0}}
+    @media(max-width:380px){.stats-6 .stat b{font-size:15px}}
+  </style>
+  <link rel="stylesheet" href="{{ '/assets/css/subpage-shell.css?v=20261112' | relative_url }}">
+  <link rel="canonical" href="https://lu.wiki/project/fable-52-showcase/">
+</head>
+<body id="top">
+  {% include subpage-shell.html identity="Fable 5.2 惊人作品专题" descriptor="作品盘点 × 源代码镜像指引" %}
+  <main class="wrap">
+    <header class="hero">
+      <p class="eyebrow">One week of Fable 5.2</p>
+      <h1>Fable 5.2<br>惊人<em>作品专题</em></h1>
+      <p>2026 年 11 月 9 日，Anthropic 发布 Claude Fable 5.2。随后一周，社区交出了一批让人意外的作品：一次提示词生成的完整浏览器 FPS、一部 Blender 短片、一座可导航的 3D 城市。本页盘点其中代表性的 12 件，逐一标注成本与耗时，并重点给出每个作品的<strong>源代码可得性</strong>——能不能拿来跑、能改到什么程度，比「看起来很厉害」更值得先弄清楚；对已开源镜像的作品，本页给出获取与本地运行指引。</p>
+      <div class="tags"><span>作品盘点</span><span>源代码镜像指引</span><span>成本数据</span><span>合规出处</span></div>
+    </header>
+
+    <section class="section" id="overview">
+      <h2>一、作品总览：一周 12 件，源代码几可得</h2>
+      <p class="section-intro">下表按类型汇总发布一周内的代表性作品。源代码一栏是本页重点：只有少数作品公开了可获取的源码，多数爆款停留在「在线可看、拿不到手」的状态。</p>
+      <div class="stats">
+        <div class="stat"><b>12</b><span>一周内代表性作品（本页收录）</span></div>
+        <div class="stat"><b>8h / ~$550</b><span>Saltline：一次提示词的完整成本</span></div>
+        <div class="stat"><b>3</b><span>Saltline 相关开源仓库（见「镜像指引」）</span></div>
+        <div class="stat"><b>95 万字</b><span>泄漏系统提示词，站内有逐行解剖图</span></div>
+      </div>
+      <div class="legend">
+        <span><b>源代码可得性图例</b></span>
+        <span class="badge b-yes">✅ 开源</span><span>源码仓库公开可获取</span>
+        <span class="badge b-part">⚠️ 部分可得</span><span>在线可玩或部分资料公开，无完整源码</span>
+        <span class="badge b-no">❌ 未公开</span><span>截至收录时未见公开仓库</span>
+      </div>
+      <div class="showtable">
+        <table>
+          <thead><tr><th>作品</th><th>作者</th><th>类型</th><th>亮点与规格</th><th>成本 · 耗时</th><th>源代码</th><th>链接</th></tr></thead>
+          <tbody>
+            <tr>
+              <td class="w">Saltline</td>
+              <td>Felix Rieseberg（Anthropic 工程师，Electron 维护者）</td>
+              <td>浏览器 FPS</td>
+              <td>一次提示词零人工反馈：约 270 万输出 token + 4.45 亿输入 token；单文件约 1.42–1.43MB（两版本略有差异），Three.js r180 内联，模型/纹理/音效全程序化生成，零外部资源</td>
+              <td class="cost">8h / ~$550</td>
+              <td><span class="badge b-yes">✅ 开源镜像多个</span></td>
+              <td><a href="https://claude.ai/artifact/BGY1SztrAYcJQHSsnHHGmp" target="_blank" rel="noopener">原版 artifact ↗</a> · <a href="https://github.com/realcodebear/saltline-fable-5.2" target="_blank" rel="noopener">GitHub 镜像 ↗</a></td>
+            </tr>
+            <tr>
+              <td class="w">Saltline 中文存档版</td>
+              <td>Megasu 存档</td>
+              <td>同上汉化</td>
+              <td>1,425,707 字节单文件，离线可玩。网上传「几猫国产 3A」实为套壳改名，已被社区扒皮（见页底「合规与出处」）</td>
+              <td class="cost">—</td>
+              <td><span class="badge b-yes">✅ 开源</span></td>
+              <td><a href="https://github.com/Megasu/jimao-3a-game" target="_blank" rel="noopener">GitHub ↗</a></td>
+            </tr>
+            <tr>
+              <td class="w">Saltline 联机版「盐线行动」</td>
+              <td>wenzhengshi</td>
+              <td>非官方多人改造</td>
+              <td>Node.js + WebSocket 多人混战 / 排行榜 / 语音</td>
+              <td class="cost">—</td>
+              <td><span class="badge b-yes">✅ MIT（仅限整理部分）</span></td>
+              <td><a href="https://github.com/wenzhengshi/fable5-2-salt-online" target="_blank" rel="noopener">GitHub ↗</a></td>
+            </tr>
+            <tr>
+              <td class="w">What the Water Keeps</td>
+              <td>Kevin Ngo</td>
+              <td>浏览器泛舟游戏</td>
+              <td>乘小船穿越 8 个梦境世界，小王子绘本风；Tripo 3D 造模型 + Suno 配乐</td>
+              <td class="cost">—</td>
+              <td><span class="badge b-part">⚠️ 在线可玩，源码未公开仓库</span></td>
+              <td><a href="https://what-the-water-keeps.vercel.app" target="_blank" rel="noopener">在线试玩 ↗</a></td>
+            </tr>
+            <tr>
+              <td class="w">The Edge</td>
+              <td>Riley Brown</td>
+              <td>Blender 短片</td>
+              <td>13 镜头，一屋一桌一机一人，从黄昏到日出；RunPod 云渲染 + ElevenLabs 配乐</td>
+              <td class="cost">—</td>
+              <td><span class="badge b-no">❌ 未公开</span></td>
+              <td>—</td>
+            </tr>
+            <tr>
+              <td class="w">Three Games 合集</td>
+              <td>Felix Rieseberg</td>
+              <td>浏览器 3D 游戏</td>
+              <td>The Clockmaker's Heart 齿轮解谜 / Tidewright 航海 等；同为单次提示词生成，与 Saltline 同合集</td>
+              <td class="cost">—</td>
+              <td><span class="badge b-part">⚠️ artifact 公开可玩</span></td>
+              <td><a href="https://claude.ai/artifact/MXxb36zKgN261ckbGhmNin" target="_blank" rel="noopener">artifact ↗</a></td>
+            </tr>
+            <tr>
+              <td class="w">Istanbul 可导航重建</td>
+              <td>Peter Gostev</td>
+              <td>3D 城市场景</td>
+              <td>城市尺度缩放到院落街道，可见行人；单提示成本据报道约 2,618 美元</td>
+              <td class="cost">~$2,618</td>
+              <td><span class="badge b-no">❌ 未公开</span></td>
+              <td>—</td>
+            </tr>
+            <tr>
+              <td class="w">鸟群特效合成实拍</td>
+              <td>Gregory Weber</td>
+              <td>视频特效</td>
+              <td>手部追踪驱动模拟鸟群入实拍</td>
+              <td class="cost">~$23</td>
+              <td><span class="badge b-no">❌ 未公开</span></td>
+              <td>—</td>
+            </tr>
+            <tr>
+              <td class="w">鹈鹕骑车 3D</td>
+              <td>@Tech Friend AJ</td>
+              <td>Blender 3D 动画</td>
+              <td>4800 行 Python 控 Blender：建模 / 羽毛 / 绑定 / 打光 / 分镜媲美五年经验设计师</td>
+              <td class="cost">—</td>
+              <td><span class="badge b-no">❌ 未公开</span></td>
+              <td>—</td>
+            </tr>
+            <tr>
+              <td class="w">代码绘画</td>
+              <td>Fable 5.2 自身实验（社区流传）</td>
+              <td>生成艺术</td>
+              <td>不调图像模型，每幅画是 1–2 千行 Python，含模拟颜料引擎；单幅最高 70 万笔触</td>
+              <td class="cost">—</td>
+              <td><span class="badge b-no">❌ 未公开</span></td>
+              <td>—</td>
+            </tr>
+            <tr>
+              <td class="w">20 秒旅行广告全代码生成</td>
+              <td>Geeky Gadgets 实测</td>
+              <td>视频</td>
+              <td>音乐 / 美术 / 动画 / 脚本全代码</td>
+              <td class="cost">—</td>
+              <td><span class="badge b-no">❌ 未公开</span></td>
+              <td>—</td>
+            </tr>
+            <tr>
+              <td class="w">Shardstorm（类 Mega Bonk 3D 肉鸽）</td>
+              <td>Geeky Gadgets 实测</td>
+              <td>浏览器游戏</td>
+              <td>三人称群像生存肉鸽，16 分钟中等推理生成</td>
+              <td class="cost">—</td>
+              <td><span class="badge b-no">❌ 未公开</span></td>
+              <td>—</td>
+            </tr>
+            <tr>
+              <td class="w">Tamagotchi 式掌机</td>
+              <td>Bamboo Studio 等</td>
+              <td>硬件设计</td>
+              <td>电路板 → 外壳全设计，含 STL / 固件 / 组装手册；15 分钟出组装手册</td>
+              <td class="cost">—</td>
+              <td><span class="badge b-part">⚠️ 部分资料公开</span></td>
+              <td>—</td>
+            </tr>
+            <tr>
+              <td class="w">Fable 5.2 提示词解剖图</td>
+              <td>milulab</td>
+              <td>专题工具页</td>
+              <td>95 万字泄漏系统提示词逐行拆解：129 个工具、44 套技能、关键条款原文摘录</td>
+              <td class="cost">—</td>
+              <td>—</td>
+              <td><a class="in" href="/project/fable-52-prompt-map/">站内专题 ↗</a></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="section-intro" style="margin-top:12px">注：成本与 token 数据多为作者自述或媒体报道，未经独立核实；「—」表示公开资料未给出该项。</p>
+    </section>
+
+    <section class="section" id="saltline">
+      <h2>二、Saltline：一次提示词的极限样本</h2>
+      <p class="section-intro">表里最值得展开的一件。Felix Rieseberg 用三句话提示词生成了一款可玩的浏览器 FPS，全程零人工反馈——8 小时、约 270 万输出 token、4.45 亿输入 token、API 成本约 550 美元。整个游戏是约 1.42–1.43MB 的单文件（两版本略有差异），Three.js r180 直接内联，模型、纹理、音效全部程序化生成，零外部资源。</p>
+      <div class="quote">
+        <header><b>提示词原文（三句话，无迭代）</b><code>摘录自作者公开帖</code></header>
+        <pre>“You know, you should also build me an FPS. <strong>Insanely detailed quality</strong> pls...”</pre>
+        <footer>要点：完整提示词共三句话，没有后续人工反馈修正。工程质量感来自模型一次性输出，而非多轮调教。</footer>
+      </div>
+      <div class="stats stats-6">
+        <div class="stat"><b>8 小时</b><span>生成耗时，零人工反馈</span></div>
+        <div class="stat"><b>~270 万</b><span>输出 token</span></div>
+        <div class="stat"><b>4.45 亿</b><span>输入 token</span></div>
+        <div class="stat"><b>~$550</b><span>API 成本</span></div>
+        <div class="stat"><b>1.42–1.43MB</b><span>单文件体积（两版本略有差异）</span></div>
+        <div class="stat"><b>0</b><span>外部资源：全程序化生成，Three.js r180 内联</span></div>
+      </div>
+      <div class="detail">
+        <div class="fact"><code>15 个子模块</code><span>代码按模块组织，单文件内自成结构</span></div>
+        <div class="fact"><code>153 张 PBR 纹理</code><span>全部程序化生成</span></div>
+        <div class="fact"><code>57 种音效</code><span>全部程序化合成</span></div>
+        <div class="fact"><code>~79 万三角形</code><span>静态场景规模</span></div>
+        <div class="fact"><code>MISSION / HOLDOUT</code><span>两种模式，三档难度</span></div>
+        <div class="fact"><code>Gull + Hound</code><span>敌人：Gull 无人机与 Hound 机器狗</span></div>
+        <div class="fact"><code>?show=</code><span>自带展示模式，另有 ?bench 自测</span></div>
+        <div class="fact"><code>种子 4207</code><span>启动种子固定，结果可复现</span></div>
+        <div class="fact"><code>镜像 3 个</code><span>主镜像 + 中文存档 + 联机改造，见下节</span></div>
+      </div>
+    </section>
+
+    <section class="section" id="mirror">
+      <h2>三、本站镜像指引：可镜像的只有 Saltline</h2>
+      <p class="section-intro">逐条核对上表 12 件作品后，明确可在本站给出镜像指引的只有 Saltline——社区已有多个仓库实践。需要先说清楚本站的做法：<strong>本站仓库不复制游戏文件</strong>。原 artifact 没有独立的许可证声明，版权状态未明，所以本页只做外链与指引，这与本站「Fable 5.2 提示词解剖图」引用原文摘录的处理口径一致。</p>
+      <div class="repos">
+        <div class="repo">
+          <span class="rk main">主推镜像</span>
+          <b>realcodebear/saltline-fable-5.2</b>
+          <p>代码零改动，仅去除 frame-runtime 并补加 doctype，仓库含在线 Demo。</p>
+          <a href="https://github.com/realcodebear/saltline-fable-5.2" target="_blank" rel="noopener">前往仓库 ↗</a>
+        </div>
+        <div class="repo">
+          <span class="rk">中文存档</span>
+          <b>Megasu/jimao-3a-game</b>
+          <p>Saltline 中文存档版：1,425,707 字节单文件，离线可玩。即页底「几猫」事件所涉仓库。</p>
+          <a href="https://github.com/Megasu/jimao-3a-game" target="_blank" rel="noopener">前往仓库 ↗</a>
+        </div>
+        <div class="repo">
+          <span class="rk">联机改造</span>
+          <b>wenzhengshi/fable5-2-salt-online</b>
+          <p>非官方联机版「盐线行动」：Node.js + WebSocket 多人混战 / 排行榜 / 语音。MIT 声明仅覆盖整理部分。</p>
+          <a href="https://github.com/wenzhengshi/fable5-2-salt-online" target="_blank" rel="noopener">前往仓库 ↗</a>
+        </div>
+      </div>
+      <div class="run">
+        <header>本地运行（以仓库实际说明为准）</header>
+        <pre>git clone https://github.com/realcodebear/saltline-fable-5.2
+cd saltline-fable-5.2
+python3 -m http.server 8731
+<em># 浏览器打开 http://localhost:8731 即可离线游玩</em></pre>
+      </div>
+      <div class="note">提醒：上述仓库均为社区第三方镜像，MIT 声明仅适用于整理者新增内容，不构成对原作的再授权；游戏本体的使用授权以 Anthropic 平台条款为准。</div>
+    </section>
+
+    <section class="section" id="legal">
+      <h2>四、合规与出处</h2>
+      <p class="section-intro">本页为公开资料盘点，立场上中立、数据上注明来源；以下四条适用于全页。</p>
+      <div class="legal">
+        <div>
+          <b>版权归属</b>
+          所有作品版权归原作者 / 平台所有。Saltline 等镜像仓库中的 MIT 声明仅适用于整理者新增内容，不构成对原作的再授权；原 artifact 的授权条款以 Anthropic 平台为准。
+        </div>
+        <div>
+          <b>「几猫」说明</b>
+          网上流传的「几猫国产 3A」经社区核查为对 Saltline 全局替换改名后的搬运，已被社区扒皮；本站不使用该名称指代原作。
+        </div>
+        <div>
+          <b>数据来源</b>
+          Felix Rieseberg 于 2026-11-09/10 在 X 的原帖（成本 / token 数据为作者自述，未经独立核实）；pagepop.ai、geeky-gadgets.com、hellobro.ai 等汇编报道。
+        </div>
+        <div>
+          <b>站内延伸</b>
+          泄漏的 95 万字系统提示词话题，见本站「Fable 5.2 提示词解剖图」专题页与相关博文。
+        </div>
+      </div>
+      <div class="related">
+        <a href="/project/fable-52-prompt-map/">Fable 5.2 提示词解剖图 →</a>
+        <a href="/blog/2026-11-15-fable-52-prompt-leak/">博文：《95万字家底被扒，扒出来的其实是产品》 →</a>
+      </div>
+    </section>
+
+    <footer class="footer">
+      <span>Fable 5.2 Showcase · 作品盘点与源代码镜像指引，数据来源见「合规与出处」</span>
+      <span>迷鹿 MiLu · lu.wiki</span>
+    </footer>
+  </main>
+</body>
+</html>
