@@ -7,6 +7,9 @@ series: "哟哟鹿鸣"
 
 ![CoRL 2026（机器人学习年会）主视觉：2026 年 11 月 9 日至 12 日，得州奥斯汀](/assets/images/2026-11-16-openai-robotics-team-dissolved/corl2026_austin.jpg)
 
+<video controls preload="metadata" style="display:block;max-width:100%;width:720px;margin:0 auto;" poster="/assets/videos/2026-11-16-openai-robotics-team-dissolved-cover.jpg" src="/assets/videos/2026-11-16-openai-robotics-team-dissolved.mp4"></video>
+*同一件事的视频版：166 天，从高调立起到展位清空*
+
 看一家公司还信不信自己说的话，别去读愿景文档，去看两样东西：组织架构图，和招聘页。
 
 这不是我的偏方。管理学者奥卡西奥（Simone Ocasio）1997 年提出过"注意力基础观"，说白了就一句话：高管注意力放在哪，钱和人就流向哪；没进注意力清单的事，口号写得再响也只是墙上的字。博弈论补了另一半，有个词叫廉价磋商（cheap talk）——说话不要成本的时候，话不构成承诺；要动编制、动预算的，才算信号。
