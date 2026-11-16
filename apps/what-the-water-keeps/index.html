@@ -1,0 +1,288 @@
+<!DOCTYPE html><html lang="en"><head>
+  <!--
+    What the Water Keeps — original game by Kevin Ngo (@kevin_t_ngo), created with Claude Fable 5.2 (2026-11).
+    Original release: https://what-the-water-keeps.vercel.app
+    Mirrored from the community source reconstruction at https://github.com/dill-lk/What-the-Water-Keeps
+    Posted on milulab.com with authorization obtained via the site owner; original author attribution required.
+    All rights in the original work remain with Kevin Ngo.
+  -->
+  <meta charset="utf-8">
+  <title>What the water keeps</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="description" content="A slow boat ride by lantern light. Steer a small boat along a wide, quiet waterway through a chain of very different realms, or let the current carry you.">
+  <meta name="color-scheme" content="dark">
+  <meta name="theme-color" content="#05060c">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <!-- share: the icons and the card a link to this page shows. Written by tools/share.py: change it there. -->
+  <link rel="icon" href="images/favicon.ico" sizes="32x32">
+  <link rel="icon" href="images/favicon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="images/apple-touch-icon.png">
+  <link rel="manifest" href="site.webmanifest">
+  <link rel="canonical" href="https://what-the-water-keeps.vercel.app/">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="What the water keeps">
+  <meta property="og:description" content="A slow boat ride by lantern light. Steer a small boat along a wide, quiet waterway through a chain of very different realms, or let the current carry you.">
+  <meta property="og:url" content="https://what-the-water-keeps.vercel.app/">
+  <meta property="og:image" content="images/card.jpg">
+  <meta property="og:image:type" content="image/jpeg">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="A small wooden boat on a dark sea in the rain, a lantern at its bow and a rower standing at its stern, pushing one long oar. The water lights in rings where the rain touches it; a wall of basalt stands behind. Above, the name: What the water keeps.">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="What the water keeps">
+  <meta name="twitter:description" content="A slow boat ride by lantern light. Steer a small boat along a wide, quiet waterway through a chain of very different realms, or let the current carry you.">
+  <meta name="twitter:image" content="images/card.jpg">
+  <meta name="twitter:image:alt" content="A small wooden boat on a dark sea in the rain, a lantern at its bow and a rower standing at its stern, pushing one long oar. The water lights in rings where the rain touches it; a wall of basalt stands behind. Above, the name: What the water keeps.">
+  <!-- /share -->
+  <link rel="stylesheet" href="css/style.css">
+  <!-- opening: the two tiny pictures the page shows in its first moment, before the still they are made from has
+       arrived. Written by tools/opening.py: change them there. -->
+  <style>:root { --opening-wide: url(data:image/webp;base64,UklGRroAAABXRUJQVlA4IK4AAABwBQCdASokAA8APrVKoEonJCMhqqwA4BaJaACdMoR+IrcTIAN+i8wbHG0mkC2dDQ3slf0AAP335vMf8XZHOL+0gWPPS/1zYPT+CPSqrUlVHF46lm4KANW2L6IQX/FFSlyF8NpIZl8zcNDX6AXyI40GcLozYewcFoj7w1hwBTYf1KmZuIIzp6f3PXG1zOqe2pRRbDp2miFDXY/U5fifouTC/iNblD22gkIvDOUW4AA=); --opening-tall: url(data:image/webp;base64,UklGRqoAAABXRUJQVlA4IJ4AAADQBQCdASoRABUAPrVKnEonJCKhsBgMAOAWiWYswAKk1xOoljNtgAHzCXVnB9b95/NqjNRYl3sAAP6uTEnWyj+qAh4eGUkbpbjgmZPXt9KUD2c2XBPZAy3pi8N398+7Ds9ETWTa0oMXrCgeNZyi5qjDQShOGTP9gAMy1o8lnBYyoImbzd0pyYpxpnUwLTzBS/CGvfgXwQSIc1H5eoAAAA==); }</style>
+  <!-- /opening -->
+  <script type="importmap">
+    { "imports": { "three": "./vendor/three/three.module.js", "three/addons/": "./vendor/three/addons/" } }
+  </script>
+  </head>
+<body>
+  <canvas id="view" tabindex="0" aria-label="The ride: a view from a small boat on the water"></canvas>
+  <!-- The opening: what is on the page before the ride is (docs/build/hosting.md). A still of the view the title card
+       stands over, the name, and a line that fills as the first place arrives; when it has, the title card takes the
+       name's place and the still lets the living picture through (src/ui.js, showTitle). The two stills, the tone and
+       the two weights are written by tools/opening.py. -->
+  <div id="opening" class="opening" aria-hidden="true" data-wide="assets/opening/wide.webp" data-tall="assets/opening/tall.webp"><i class="opening__soft"></i><i class="opening__still"></i></div>
+  <div id="ui">
+    <section id="loading" class="title title--loading is-failed" data-tone="day" data-bytes="24910641" data-files="144">
+      <div class="title__card">
+        <h1 class="title__name"><span class="vh">What the water keeps</span><canvas class="mark title__mark" width="8" height="3" aria-hidden="true"></canvas></h1>
+        <div class="loading">
+          <p class="loading__word" role="status" title="Failed to fetch dynamically imported module: https://what-the-water-keeps.vercel.app/src/main.js">Part of the ride did not arrive. Check the connection, then try again.</p>
+          <div class="loading__rule" role="progressbar" aria-label="Loading the ride" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" style="--p: 0.0002;"><i></i></div>
+          <button type="button" class="quiet-link loading__again">Try again</button>
+        </div>
+      </div>
+    </section>
+    <!-- first load: every file the first place asks for, in the order it asks (tools/opening.py writes it). The
+         opening's script asks for them all at once instead of one after another. -->
+    <script type="application/json" id="first-load">{"code":["src/main.js","src/engine/net.js","src/engine/engine.js","vendor/three/three.module.js","src/realms/index.js","src/engine/post.js","src/engine/boat.js","src/engine/boat-hero.js","src/engine/input.js","src/engine/water-final.js","src/engine/realms.js","src/engine/gouache.js","vendor/three/addons/loaders/GLTFLoader.js","src/engine/lamp-hero.js","src/engine/rower.js","vendor/three/addons/postprocessing/EffectComposer.js","vendor/three/addons/postprocessing/RenderPass.js","vendor/three/addons/postprocessing/UnrealBloomPass.js","vendor/three/addons/postprocessing/ShaderPass.js","vendor/three/addons/postprocessing/Pass.js","src/engine/path.js","src/engine/kit.js","src/engine/stage.js","src/engine/water-final-sim.js","src/engine/water-final-trace.js","vendor/three/three.core.js","vendor/three/addons/utils/BufferGeometryUtils.js","vendor/three/addons/utils/SkeletonUtils.js","vendor/three/addons/shaders/CopyShader.js","vendor/three/addons/postprocessing/MaskPass.js","vendor/three/addons/shaders/LuminosityHighPassShader.js","src/engine/models.js","src/engine/wayfinder.js","src/realms/landing.js","src/engine/modules.js","src/engine/lamp.js","src/realms/landing/plan.js","src/realms/landing/light.js","src/realms/landing/set.js","src/realms/landing/heroes.js","src/realms/landing/heroes_b.js","src/realms/landing/kit.js","src/engine/life/ribbons.js","src/engine/cloth.js","src/engine/life/ropes.js","src/realms/landing/kit_plants.js","src/engine/life/falls.js","src/engine/life/floaters.js","src/realms/landing/kit_pilings.js","src/realms/landing/cast.js","src/engine/life/birds.js","src/engine/life/waders.js","src/realms/landing/cast_mayflies.js","src/engine/life/insects.js","src/engine/life/swarm.js","src/realms/landing/cast_insects.js","src/realms/landing/cast_fish.js","src/engine/life/fish.js","src/engine/life/swimmers.js","src/realms/landing/cast_drift.js","src/realms/landing/cast_lines.js","src/realms/landing/stage.js","src/engine/audio.js","src/ui.js"],"files":["assets/models/life/boat.json","assets/models/life/boat.glb","assets/models/life/lantern.glb","assets/models/life/rower.json","assets/models/life/rower.glb","assets/models/life/lamp_post.glb","assets/models/life/lamp_hook.glb","assets/models/life/lamp_bracket.glb","assets/art/shared/drybrush.webp","assets/art/landing/timber.webp","assets/art/landing/reed.webp","assets/art/landing/wicker.webp","assets/art/landing/sky.webp","assets/art/landing/ceiling.webp","assets/art/landing/far.webp","assets/models/landing/bridge_mid.glb","assets/models/landing/bridge_left.glb","assets/models/landing/bridge_right.glb","assets/models/landing/staithe.glb","assets/models/landing/rick.glb","assets/models/landing/gangway.glb","assets/models/landing/jetty.glb","assets/models/landing/keep_box.glb","assets/models/landing/punt.glb","assets/models/landing/sedge.glb","assets/models/landing/ford_stone.glb","assets/art/reach/cloth.webp","assets/art/reach/cloth_wet.webp","assets/models/landing/reedmace_a.glb","assets/models/landing/reedmace_b.glb","assets/models/landing/reedmace_c.glb","assets/models/landing/reedmace_tuft.glb","assets/models/landing/iris_a.glb","assets/models/landing/iris_b.glb","assets/models/landing/lily_pad_a.glb","assets/models/landing/lily_pad_b.glb","assets/models/landing/lily_pad_c.glb","assets/models/landing/lily_stem.glb","assets/models/landing/lily_bud.glb","assets/models/landing/lily_flower.glb","assets/models/landing/lily_shoot.glb","assets/models/landing/eel_trap_a.glb","assets/models/landing/eel_trap_b.glb","assets/models/landing/eel_trap_c.glb","assets/models/landing/trap_crook_a.glb","assets/models/landing/trap_crook_b.glb","assets/models/landing/reed_bundle_a.glb","assets/models/landing/reed_bundle_b.glb","assets/models/landing/reed_bundle_c.glb","assets/models/landing/reed_bundle_far.glb","assets/models/landing/piling_a.glb","assets/models/landing/piling_b.glb","assets/models/landing/piling_c.glb","assets/models/landing/piling_left.glb","assets/models/landing/piling_right.glb","assets/models/landing/revetment_left.glb","assets/models/landing/revetment_right.glb","assets/models/landing/revetment_run.glb","assets/models/landing/gate_masts.glb","assets/models/landing/far_mast.glb","assets/models/landing/withy_a.glb","assets/models/landing/withy_b.glb","assets/models/landing/withy_c.glb","assets/models/landing/low_rick.glb","assets/models/life/heron.glb","assets/models/life/mayfly.glb","assets/models/life/mayfly_far.glb","assets/models/life/dragonfly.glb","assets/models/life/damselfly.glb","assets/models/life/pond_skater.glb","assets/models/life/pike.glb","assets/models/life/pike.json"]}</script>
+    <!-- /first load -->
+    <noscript>
+      <style>#loading { display: none; }</style>
+      <div class="noscript">
+        <h1>What the water keeps</h1>
+        <p>A slow boat ride by lantern light, drawn live in your browser.</p>
+        <p>It needs JavaScript and WebGL to run. Please turn JavaScript on and load the page again.</p>
+      </div>
+    </noscript>
+  </div>
+  <script>
+    // The opening (see the note above): the still, how far along the first load is, and what to say when it stops or
+    // fails. Plain script, on purpose: it runs before any module has arrived, and in a browser too old to run them.
+    // What the ride calls:  __opening.loaded()   everything the first picture needs is in (src/main.js)
+    //                       __opening.done(ms)   the title card has taken over: the still fades in ms (src/ui.js)
+    //                       __opening.fail(err)  the ride cannot start: say so, in words, on the card
+    (function () {
+      var box = document.getElementById('opening'), card = document.getElementById('loading');
+      var o = window.__opening = { over: true, loaded: function () {}, done: function () {}, fail: function () {} };
+      if (!box || !card) return;
+      // a developer's picture, timing or film is of the ride itself: nothing is laid over it
+      if (/[?&](realm|shot|perf|cine|journey|handover|where|census|uistub)(=|&|$)/.test(location.search)) { box.remove(); card.remove(); return; }
+      o.over = false;
+      var word = card.querySelector('.loading__word'), rule = card.querySelector('.loading__rule'), again = card.querySelector('.loading__again');
+      var still = box.querySelector('.opening__still');
+
+      // ---- the still: the wide one or the tall one, whichever this window's shape shows (src/style.css, "the opening")
+      var wide = window.matchMedia ? window.matchMedia('(min-aspect-ratio: 15596/10000)') : null, showing = '';
+      function pick() {
+        if (o.over) return;
+        var src = box.getAttribute(!wide || wide.matches ? 'data-wide' : 'data-tall');
+        if (!src || src === showing) return;
+        showing = src;
+        var im = new Image();
+        im.onload = function () { if (showing !== src || o.over) return; still.style.backgroundImage = 'url("' + src + '")'; still.classList.add('is-in'); };
+        try { im.fetchPriority = 'high'; } catch (e) { /* an older browser: it is asked for in its turn */ }
+        im.src = src;
+      }
+      pick();
+      if (wide) { if (wide.addEventListener) wide.addEventListener('change', pick); else if (wide.addListener) wide.addListener(pick); }
+
+      // ---- Everything the first place needs is asked for now, at once. Left to itself the ride asks for its 140
+      //      files as it comes to need them, one part after another, and on any line the waits between the asking and
+      //      the answer add up to more than the files themselves (docs/build/hosting.md, "All at once"). The code is
+      //      asked for as the browser's own early fetch of a module; the rest are fetched here, eight at a time in
+      //      the order they will be wanted, and handed to whoever asks for them later (src/engine/net.js).
+      //      (&first=0 leaves this out: tools/opening.py measures the ride's own order that way.)
+      try {
+        var listed = document.getElementById('first-load');
+        var list = listed && window.fetch && window.Promise && !/[?&]first=0(&|$)/.test(location.search) ? JSON.parse(listed.textContent) : null;
+        if (list && list.files && list.code) {
+          var waiting = [], going = 0, held = {};
+          var ask = window.fetch;                      // (the browser's own: the ride puts its own in its place later, and that one hands these files over)
+          var start = function (e) {
+            going++;
+            e.got = ask.call(window, e.path, { priority: 'low' })
+              .then(function (r) { return r.ok ? r.arrayBuffer().then(function (body) { return { body: body, type: r.headers.get('content-type') || '' }; }) : null; })
+              .catch(function () { return null; })
+              .then(function (got) { going--; more(); return got; });
+          };
+          var more = function () { while (going < 8 && waiting.length) { var e = waiting.shift(); if (!e.got) start(e); } };
+          for (var k = 0; k < list.files.length; k++) { var e = { path: list.files[k], got: null }; held[new URL(e.path, location.href).href] = e; waiting.push(e); }
+          // take(address): the file, if it was asked for here (at once, if its turn had not come); nothing otherwise
+          window.__first = { count: list.files.length, used: 0, take: function (href) { var e = held[href]; if (!e) return null; delete held[href]; this.used++; if (!e.got) start(e); return e.got; }, drop: function () { held = {}; waiting = []; } };
+          for (var c = 0; c < list.code.length; c++) { var link = document.createElement('link'); link.rel = 'modulepreload'; link.href = list.code[c]; document.head.appendChild(link); }
+          more();
+        }
+      } catch (e) { /* no list, or a browser that cannot: the ride asks for its files itself, as before */ }
+
+      // ---- how far along: what has arrived, against what a first load weighs (measured by tools/opening.py; a phone
+      //      is sent the same files, and so the same weight, unless the card says otherwise)
+      var phone = !!(window.matchMedia && window.matchMedia('(hover: none) and (pointer: coarse)').matches);
+      var expectBytes = +card.getAttribute(phone ? 'data-phone-bytes' : 'data-bytes') || +card.getAttribute('data-bytes') || 0;
+      var expectFiles = +card.getAttribute(phone ? 'data-phone-files' : 'data-files') || +card.getAttribute('data-files') || 140;
+      var t0 = performance.now(), last = t0, moved = t0, bytes = 0, files = 0, full = false, failed = false, shown = 0, told = -1;
+      function arrived(list) {
+        var all = list.getEntries();
+        for (var i = 0; i < all.length; i++) {
+          if (/\/assets\/audio\//.test(all[i].name)) continue;      // (the music is asked for early and nothing waits for it)
+          files++; bytes += all[i].decodedBodySize || all[i].encodedBodySize || 0;
+        }
+        moved = performance.now();
+      }
+      var watch = null;
+      try { watch = new PerformanceObserver(arrived); watch.observe({ type: 'resource', buffered: true }); } catch (e) { watch = null; }
+      function part() { return full ? 1 : Math.min(0.96, expectBytes > 0 && bytes > 0 ? bytes / expectBytes : files / expectFiles); }
+      function say(text) { if (word.textContent !== text) word.textContent = text; }
+      function frame() {
+        if (failed || !card.isConnected) return;
+        var now = performance.now(), dt = Math.min(0.25, (now - last) / 1000);
+        last = now;
+        shown += (part() - shown) * (1 - Math.exp(-dt / (full ? 0.1 : 0.35)));      // (once everything is in, the line runs to its end)
+        rule.style.setProperty('--p', shown.toFixed(4));
+        if (Math.round(shown * 100) !== told) { told = Math.round(shown * 100); rule.setAttribute('aria-valuenow', String(told)); }
+        if (!full) {
+          if (navigator.onLine === false) say('No connection. Waiting for it to come back.');
+          else say(now - moved > 15000 ? 'Still loading. This connection is slow.' : 'Loading');
+        }
+        requestAnimationFrame(frame);
+      }
+      requestAnimationFrame(frame);
+      // (The card is only told of a failure by the ride itself, which knows what it cannot do without: fail(), below.
+      //  A stray error in the page while it loads is not one: the ride puts up with a good deal.)
+
+      o.loaded = function () {
+        if (full) return;
+        full = true; o.bytes = bytes; o.files = files;
+        say('Loading');
+        var ahead = window.__first;
+        if (ahead) ahead.drop();                              // (what was asked for and never wanted is let go)
+        try { console.info('opening: the first place was in after ' + ((performance.now() - t0) / 1000).toFixed(1) + ' s: ' + bytes + ' bytes in ' + files + ' files' + (ahead ? ' (' + ahead.used + ' of the ' + ahead.count + ' asked for ahead were used)' : '')); } catch (e) { /* no console */ }
+      };
+      o.done = function (ms) {
+        if (o.over) return;
+        o.over = true; full = true;
+        if (watch) watch.disconnect();
+        try { console.info('opening: the title card took over after ' + ((performance.now() - t0) / 1000).toFixed(1) + ' s'); } catch (e) { /* no console */ }
+        if (!(ms > 0)) { card.remove(); box.remove(); return; }
+        // the name is the title card's from this frame on; the word and its line go as 'Push off' comes, and the
+        // still lets the living picture through
+        var name = card.querySelector('.title__name');
+        if (name) name.style.visibility = 'hidden';
+        card.classList.add('is-going');
+        setTimeout(function () { card.remove(); }, 700);
+        box.style.transition = 'opacity ' + ms + 'ms cubic-bezier(.33, 0, .2, 1)';
+        void box.offsetWidth;
+        box.style.opacity = '0';
+        setTimeout(function () { box.remove(); }, ms + 80);
+      };
+      o.fail = function (err) {
+        if (o.over || failed) return;
+        failed = true;
+        var m = String((err && err.message) || err || '');
+        var text = /too old|specifier|does not resolve|import ?map/i.test(m) ? 'This browser is too old for the ride. A current Chrome, Safari, Firefox or Edge will run it.'
+          : /webgl|context/i.test(m) ? 'The ride is drawn with WebGL 2, and this browser could not start it.'
+          : /fetch|import|load|network/i.test(m) ? 'Part of the ride did not arrive. Check the connection, then try again.'
+          : 'The ride could not start here.';
+        card.classList.add('is-failed');
+        word.textContent = text; word.title = m;
+        again.hidden = false;
+        // (it was the connection's doing: when the connection comes back, try again without being asked)
+        if (/part of the ride did not arrive/i.test(text)) window.addEventListener('online', function () { location.reload(); });
+        try { console.error('opening: the ride could not start: ' + m); } catch (e) { /* no console */ }
+      };
+      again.addEventListener('click', function () { location.reload(); });
+    })();
+  </script>
+  <script nomodule="">if (window.__opening) window.__opening.fail('too old: this browser does not run modules');</script>
+  <script type="module">
+    // The name on the opening card: the title card's own drawing (src/logo.js), as soon as its face has arrived.
+    import { makeLogo } from './src/logo.js';
+    const o = window.__opening, mark = document.querySelector('#loading .title__mark');
+    if (o && !o.over && mark) {
+      const draw = () => {
+        if (o.over || !mark.isConnected || mark.clientWidth < 8) return;
+        const cs = getComputedStyle(mark), px = Math.min(2600, Math.round(mark.clientWidth * Math.min(2, window.devicePixelRatio || 1)));
+        try { makeLogo({ canvas: mark, width: px, ink: cs.color, lamp: cs.getPropertyValue('--mark-lamp').trim() || '#ffb45e' }); mark.classList.add('is-drawn'); } catch (err) { console.warn(err); }
+      };
+      const face = document.fonts && document.fonts.load ? document.fonts.load('500 48px "Cormorant Garamond"') : Promise.resolve();
+      face.then(draw, draw);
+      window.addEventListener('resize', draw);
+    }
+  </script>
+  <script>
+    // Development only (a headless browser on a development host; a visitor never runs a line of this).
+    // tools/pageshot.py photographs the page on Chrome's virtual clock. That clock leaps to its end the moment the
+    // page sits idle (waiting for a picture to decode, say), so the photograph was being taken before the first area
+    // had been built; and whenever it falls behind the real clock, frames all but stop. So, until the interface says
+    // that everything its picture shows has arrived (src/ui.js: window.__clockHeld.release()), this keeps the page
+    // from ever sitting idle and lets the virtual clock on only as fast as a real one, which it reads from an audio
+    // clock (the only clock in the page that the virtual one does not replace): pageshot's --wait means what it
+    // says. After release() the rest of --wait is crossed in a few leaps, and the photograph is taken at once.
+    (function () {
+      if (!/HeadlessChrome/.test(navigator.userAgent)) return;
+      if (!/^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname) && !/\.localhost$/.test(location.hostname)) return;
+      if (/[?&](shot|perf|out)=/.test(location.search)) return;   // tools/shot.py and the scripted runs keep real time: nothing to mend
+      var over = false;
+      window.__clockHeld = { release: function () { if (over) return; over = true; (function leap() { setTimeout(leap, 5000); })(); } };
+      if (/[?&]uistub=/.test(location.search)) return;            // the stub waits for nothing but the network, and the clock waits for that by itself
+      var port = new MessageChannel(), resting = false, turns = 0, x = 0, real = null, from = 0, heard = false;
+      try { real = new AudioContext(); } catch (e) { /* no audio clock: the turns are counted instead */ }
+      function behind() {
+        if (real && real.state === 'running' && real.currentTime > 0) {
+          if (!heard) { heard = true; from = performance.now() - real.currentTime * 1000; }
+          return performance.now() < from + real.currentTime * 1000;
+        }
+        return turns % 20 === 0;                                  // no real clock to follow yet: 8 ms on for every twenty turns
+      }
+      // Turn after turn of a little work: while they follow one another the page is never idle and the clock stands.
+      // When it is behind, a turn rests instead: the clock leaps to the next timer, which is the fence below, at
+      // most 8 ms on, and the fence starts the turns again.
+      port.port1.onmessage = function () {
+        for (var i = 0; i < 2e4; i++) x += Math.sqrt(i);
+        if (over) return;
+        turns++;
+        if (behind()) resting = true; else port.port2.postMessage(x > 0 ? 0 : 1);
+      };
+      (function fence() {
+        if (over) return;
+        setTimeout(fence, 8);
+        if (resting) { resting = false; port.port2.postMessage(0); }
+      })();
+      port.port2.postMessage(0);
+    })();
+  </script>
+  <script type="module">
+    // The ride. (Development only: ?uistub=1 on a development host puts the interface over a still picture or a
+    // flat colour instead, with no ride behind it, for photographing and measuring it: src/ui.js, stubEngine.)
+    const q = new URLSearchParams(location.search);
+    if (q.has('uistub') && /^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname)) {
+      const ui = await import('./src/ui.js');
+      ui.initUI(await ui.stubEngine(document.getElementById('view'), q), { dev: true });
+    } else {
+      // (a part of the ride that did not arrive, or a browser that cannot read it: said on the opening card)
+      try { await import('./src/main.js'); } catch (err) { console.error(err); if (window.__opening) window.__opening.fail(err); }
+    }
+  </script>
+
+
+</body></html>

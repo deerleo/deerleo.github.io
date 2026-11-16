@@ -1,0 +1,840 @@
+/* ==============================================================================================================
+   What the water keeps: the interface.
+   A hand-lettered card laid over a painting: one serif face, sentence case, thin rules, slow fades. Nothing is in
+   capitals (there is no text-transform in this file), and nothing is smaller than 19px in the serif (15px in the
+   key caps, which are a heavier sans).
+
+   TWO INKS
+     By lantern light (most of the ride, and every panel): pale lettering.
+     By daylight (the title card over the landing, the words of the ride where they stand in a pale sky, and the
+       ending): tea-brown ink.
+   Lettering that stands on the picture takes its ink from the picture behind it, as it appears (src/ui.js:
+   readTitleTone, chooseInk).
+
+   WHAT THE LETTERING STANDS ON
+     Over the picture itself (the title card, the name of a place, a hint, the waiting dots): a ground. A ground
+       is a limit set on the picture, dot by dot, and not a plate laid over it: nothing lighter than a certain tone
+       under pale lettering, nothing darker under ink, and whatever is already on the right side of that is left
+       as it was painted ("the grounds", below). Tea-brown shadow over the golden landing, plum over the dyers'
+       sunset, slate over snow; nothing to be seen over the night sea, or under ink in an open sky.
+     The two corner buttons, the buttons for steering and looking (an option), and 'Push off' at the mooring: small
+       plates of smoked glass.
+     The panel (pause, options, controls): one card of dark glass.
+     The ending: a veil of pale paper over the whole picture.
+
+   CONTRAST (WCAG 2.2 AA: 4.5 for lettering, 3 for large lettering, for the marks that identify a control and for
+   focus). No lettering depends on the picture: every ground holds by itself, whatever is behind it.
+   Worst cases, measured on 8 November 2026 from photographs of the page with one flat colour in place of the
+   picture, the worst there is for each ink (white under pale lettering, black under ink):
+       tools/pageshot.py "/?uistub=1&flat=white&ink=night&uitest=name,hints,ghost&boxes=x.json" x.png
+       python3 .shots/ui_audit_measure.py x
+   (the photograph has its lettering invisible: what is left is what it stands on; the boxes say where each piece
+   of lettering is, and its colour. The whole audit, state by state: docs/build/interface-audit.md.)
+
+     what                                          on                                   worst case            needs
+     pale lettering #f4efe6 over the picture       its ground, the picture all white    5.41                  4.5
+       key caps in a hint: letter / edge                                                8.08 / 3.68           4.5 / 3
+     ink #2a1b14 over the picture                  its ground, the picture all black    5.07                  4.5
+       key caps in a hint: letter / edge                                                9.05 / 4.42           4.5 / 3
+     the title card by daylight                    its ground, the picture all black    5.07                  3 (4.5 the two quiet words)
+       'Push off' on its plate / the plate's edge                                       8.47 / 4.09           3 / 3
+     the title card by lantern light               its ground, the picture all white    5.41                  3 (4.5 the two quiet words)
+       'Push off' on its plate / the plate's edge                                       4.77 / 3.47 (3.11 against the plate)   3 / 3
+     the two corner marks                          smoked glass, the picture all white  3.85 (3.16 in lantern colour, under the pointer)   3
+     the buttons for steering and looking          the same glass, the picture all white 3.85; one held on: mark 3.16, its small light 3.16   3
+       (measured 9 November 2026: docs/build/interface-dragging.md)
+     'Push off' at the mooring                     smoked glass, the picture all white  5.58                  3
+     the panel: lettering / quieter lettering      dark glass, the picture all white    12.79 / 9.11          4.5
+       key caps: letter / edge; switch, tile edge; slider line                          10.75 / 7.36; 5.57, 5.59; 4.97   4.5 / 3; 3; 3
+     the ending: name / buttons / button edge      the paper veil, the picture black    9.36 / 10.58 / 4.83   3 / 3 / 3
+     focus rings: on the title's grounds 4.37 (lantern) and 4.68 (ink); in the panel 10.49; on the ending 8.30;
+       the corner buttons, 'Push off' at the mooring and the picture's four corners carry a dark line with the
+       pale one, and read on white and on black alike                                                         3
+
+   These are floors: a ground holds them whatever the picture does. Over the ride itself only the title card has
+   been measured (over the landing's sky, which needs no ground at all there): 6.28 at the name's worst dot, 8.51
+   for the two quiet words.
+
+   Where the browser cannot blend (mix-blend-mode) a ground is its own colour, flat; where it cannot work on the
+   picture behind an element (backdrop-filter) the glass is a flat wash of warm black (0.74, 0.56 in the corner,
+   0.92 in the panel). Both hold the same figures; they are only heavier to look at.
+   ============================================================================================================== */
+
+/* Cormorant Garamond (variable weight 300 to 700, roman and italic), by the Cormorant Project Authors, under the
+   SIL Open Font License 1.1: assets/fonts/OFL.txt. Latin and Latin Extended subsets, as distributed by Google Fonts. */
+@font-face {
+  font-family: "Cormorant Garamond"; font-style: normal; font-weight: 300 700; font-display: swap;
+  src: url("../fonts/cormorant-garamond-latin-roman.woff2") format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: "Cormorant Garamond"; font-style: normal; font-weight: 300 700; font-display: swap;
+  src: url("../fonts/cormorant-garamond-latin-ext-roman.woff2") format("woff2");
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: "Cormorant Garamond"; font-style: italic; font-weight: 300 700; font-display: swap;
+  src: url("../fonts/cormorant-garamond-latin-italic.woff2") format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: "Cormorant Garamond"; font-style: italic; font-weight: 300 700; font-display: swap;
+  src: url("../fonts/cormorant-garamond-latin-ext-italic.woff2") format("woff2");
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+:root {
+  --paper: 244 239 230;               /* #f4efe6  lettering by lantern light */
+  --dust: 207 202 213;                /* #cfcad5  quieter lettering by lantern light */
+  --glow: 255 211 154;                /* #ffd39a  the lantern: accents and focus */
+  --ember: 240 180 106;               /* #f0b46a  its deeper edge: glows only, never lettering */
+  --ink: 13 11 12;                    /* #0d0b0c  the wash in every dark ground: a warm black, never blue */
+  --tea: 42 27 20;                    /* #2a1b14  lettering by daylight */
+  --serif: "Cormorant Garamond", "Iowan Old Style", "Palatino Linotype", Palatino, "Book Antiqua", Georgia, serif;
+  --sans: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --ease: cubic-bezier(.33, 0, .2, 1);
+  --gutter-l: max(1.25rem, env(safe-area-inset-left));
+  --gutter-r: max(1.25rem, env(safe-area-inset-right));
+  /* The grounds under lettering that stands on the picture itself (the title card, the name of a place, a hint,
+     the waiting dots): the darkest the picture is let be under ink, the lightest under pale lettering. These two
+     are the stylesheet's own; src/ui.js gives each ground the same two luminances in the picture's own hue. */
+  --cap-night: 98 92 86;              /* #625c56  luminance .11: pale lettering stands on it at 5.7 to 1 */
+  --cap-day: 150 143 132;             /* #968f84  luminance .28: ink stands on it at 5.2 to 1 */
+  /* Dark glass (the two corner buttons, 'Push off' at the mooring, the panel): where the browser can work on the
+     picture behind an element (backdrop-filter), the picture is blurred and darkened and a thin wash of warm black
+     laid over it; where it cannot, a flat wash and no more. */
+  --glass-wash: .74; --glass-filter: none;            /* under 'Push off' at the mooring */
+  --corner-wash: .56; --corner-filter: none;          /* under the two corner buttons (a mark needs 3, not 4.5) */
+  --panel-wash: .92; --panel-filter: none;            /* the panel */
+  color-scheme: dark;
+}
+@supports ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  :root {
+    --glass-wash: .34; --glass-filter: blur(.75rem) brightness(.54) saturate(1.15);
+    --corner-wash: .26; --corner-filter: blur(.5rem) brightness(.62) saturate(1.1);      /* (.62: over a white picture the plate is #787878, and a mark stands on it at 3.8 to 1, 3.1 in lantern colour under the pointer) */
+    --panel-wash: .58; --panel-filter: blur(1.5rem) brightness(.5) saturate(1.15);
+  }
+}
+
+html, body { margin: 0; height: 100%; overflow: hidden; overscroll-behavior: none; background: #05060c; color: rgb(var(--paper)); font-family: var(--serif); }
+body { font-size: 1.25rem; line-height: 1.4; -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+canvas#view { position: fixed; inset: 0; width: 100%; height: 100%; display: block; outline: none; touch-action: none; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
+
+/* ---------------------------------------------------------------------------------------------------- shell */
+/* The interface answers to the width of its own box, not the window's (container units and container queries),
+   so it can be tried at any width inside a wider window. */
+#ui {
+  position: fixed; inset: 0; z-index: 1; pointer-events: none; container: ui / inline-size;
+  font: 500 1.25rem/1.4 var(--serif); -webkit-font-smoothing: antialiased;
+  /* by lantern light */
+  --text: rgb(var(--paper)); --text-soft: rgb(var(--dust)); --accent: rgb(var(--glow)); --focus: rgb(var(--glow));
+  --edge: rgb(var(--paper) / .6); --key-edge: rgb(var(--paper) / .72); --hair: rgb(var(--paper) / .18);
+  --key-fill: rgb(var(--paper) / .06); --key-shade: rgb(var(--paper) / .14); --rule: rgb(var(--glow) / .8);
+  --btn-edge: rgb(var(--glow) / .8); --plate: rgb(var(--glow) / .07); --plate-hover: rgb(var(--glow) / .16);
+  color: var(--text);
+}
+/* by daylight */
+#ui .title[data-tone="day"], #ui .title__more[data-tone="day"], #ui .title__keys[data-tone="day"], #ui .ending, #ui .realm[data-tone="day"], #ui .hint[data-tone="day"], #ui .holding[data-tone="day"] {
+  --text: rgb(var(--tea)); --text-soft: rgb(var(--tea)); --accent: rgb(var(--tea)); --focus: rgb(var(--tea));
+  --edge: rgb(var(--tea) / .8); --key-edge: rgb(var(--tea) / .9); --hair: rgb(var(--tea) / .3);
+  --key-fill: rgb(255 252 246 / .45); --key-shade: rgb(var(--tea) / .2); --rule: rgb(var(--tea) / .7);
+  --btn-edge: rgb(var(--tea) / .85); --plate: rgb(255 250 240 / .4); --plate-hover: rgb(255 252 246 / .8);
+  color: var(--text);
+}
+/* (the two quiet words of the title card stand apart from it on an upright screen, at the foot of the picture, and take their own ink there) */
+#ui .title__more[data-tone="night"] { --text: rgb(var(--paper)); --accent: rgb(var(--glow)); --focus: rgb(var(--glow)); color: var(--text); }
+#ui .title__keys[data-tone="night"] { --text: rgb(var(--paper)); --key-edge: rgb(var(--paper) / .72); --key-shade: rgb(var(--paper) / .14); color: var(--text); }
+#ui *, #ui *::before, #ui *::after { box-sizing: border-box; }
+#ui [hidden] { display: none !important; }
+/* ask for the two serif faces at first paint, so the title card never waits for them */
+#ui::before, #ui::after { content: "\00a0"; position: absolute; left: 0; top: 0; visibility: hidden; font: 300 1rem/1 var(--serif); }
+#ui::after { font-style: italic; font-weight: 500; }
+
+.vh { position: absolute !important; width: 1px; height: 1px; margin: -1px; padding: 0; border: 0; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+
+:where(#ui) button { margin: 0; padding: 0; border: 0; background: none; color: inherit; font: inherit; cursor: pointer; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
+/* focus: a ring in the ink of the place, 2px, a little way off the control */
+:where(#ui) :focus-visible { outline: 2px solid var(--focus); outline-offset: 3px; }
+
+.noscript { position: absolute; inset: 0; display: grid; align-content: center; justify-items: center; gap: .75rem; padding: 2rem; text-align: center; pointer-events: auto; }
+.noscript h1 { margin: 0 0 .5rem; font: 300 clamp(2.5rem, 1.5rem + 3.6cqi, 4.75rem)/1.04 var(--serif); }
+.noscript p { margin: 0; max-width: 34rem; color: rgb(var(--dust)); }
+
+/* key caps: small outlined tiles */
+:where(#ui) kbd {
+  display: inline-grid; place-items: center; min-width: 2.125rem; height: 2.125rem; padding: 0 .55rem;
+  font: 600 .9375rem/1 var(--sans); color: var(--text); white-space: nowrap;
+  border: 1px solid var(--key-edge, var(--edge)); border-radius: .35rem; background: var(--key-fill);
+  box-shadow: inset 0 -2px 0 var(--key-shade);
+}
+.keys { display: inline-flex; align-items: center; gap: .4rem; white-space: nowrap; }
+.or { padding: 0 .15rem; font: italic 500 1.1875rem/1 var(--serif); color: var(--text); }
+
+/* ------------------------------------------------------------------------------------------------ the grounds */
+/* What lettering stands on when it stands on the picture itself. A ground is not a plate laid over the picture:
+   it is a limit set on the picture, dot by dot. Under pale lettering nothing may be lighter than the ground's
+   colour (mix-blend-mode: darken), under ink nothing darker (lighten); whatever is already on the right side of
+   it is left exactly as it was painted. So over the night sea, the theatre, the town and the boat's own boards
+   pale lettering has no ground to be seen at all; over the golden landing its ground is a tea-brown shadow, over
+   the snow a slate one; and ink over the landing's sky or the snow's has none, until a dark beam passes behind
+   it and is turned to mist. It thins away over its last --f on every side: a shadow or a mist, never a box.
+   The lettering is sure of its contrast whatever the picture does: the worst there can be behind it is the
+   ground's own colour (5.4 to 1 under pale lettering, 5.1 under ink: the table at the top).
+   A browser that cannot blend paints the ground's colour itself, flat: heavier, and exactly as readable.
+   The grounds lie in a layer of their own between the picture and the interface (blending only reaches the
+   picture from there), and src/ui.js lays each one where its words are: --x --y --w --h. */
+.grounds { position: absolute; inset: 0; overflow: hidden; pointer-events: none; }
+/* (a ground has no box of its own: it carries where its words are, and its two leaves take that from it.
+   A leaf that is not showing is not there at all: the picture is then drawn straight to the screen, as if there
+   were no interface) */
+.ground { --f: 1.75rem; --px: .875rem; --py: .5rem; display: contents; }
+.ground > b {
+  position: absolute; left: calc(var(--x, 0px) - var(--px) - var(--f)); top: calc(var(--y, 0px) - var(--py) - var(--f));
+  width: calc(var(--w, 0px) + (var(--px) + var(--f)) * 2); height: calc(var(--h, 0px) + (var(--py) + var(--f)) * 2);
+  display: none; opacity: 0;
+  transition: opacity 2.6s var(--ease), background-color 2.4s linear;      /* (for a browser that does not know the next line) */
+  transition: opacity 2.6s var(--ease), background-color 2.4s linear, display 2.6s allow-discrete;
+  -webkit-mask-image:
+    linear-gradient(to right, transparent 0, rgb(0 0 0 / .14) calc(var(--f) * .3), rgb(0 0 0 / .5) calc(var(--f) * .6), rgb(0 0 0 / .86) calc(var(--f) * .85), #000 var(--f), #000 calc(100% - var(--f)), rgb(0 0 0 / .86) calc(100% - var(--f) * .85), rgb(0 0 0 / .5) calc(100% - var(--f) * .6), rgb(0 0 0 / .14) calc(100% - var(--f) * .3), transparent 100%),
+    linear-gradient(to bottom, transparent 0, rgb(0 0 0 / .14) calc(var(--f) * .3), rgb(0 0 0 / .5) calc(var(--f) * .6), rgb(0 0 0 / .86) calc(var(--f) * .85), #000 var(--f), #000 calc(100% - var(--f)), rgb(0 0 0 / .86) calc(100% - var(--f) * .85), rgb(0 0 0 / .5) calc(100% - var(--f) * .6), rgb(0 0 0 / .14) calc(100% - var(--f) * .3), transparent 100%);
+  mask-image:
+    linear-gradient(to right, transparent 0, rgb(0 0 0 / .14) calc(var(--f) * .3), rgb(0 0 0 / .5) calc(var(--f) * .6), rgb(0 0 0 / .86) calc(var(--f) * .85), #000 var(--f), #000 calc(100% - var(--f)), rgb(0 0 0 / .86) calc(100% - var(--f) * .85), rgb(0 0 0 / .5) calc(100% - var(--f) * .6), rgb(0 0 0 / .14) calc(100% - var(--f) * .3), transparent 100%),
+    linear-gradient(to bottom, transparent 0, rgb(0 0 0 / .14) calc(var(--f) * .3), rgb(0 0 0 / .5) calc(var(--f) * .6), rgb(0 0 0 / .86) calc(var(--f) * .85), #000 var(--f), #000 calc(100% - var(--f)), rgb(0 0 0 / .86) calc(100% - var(--f) * .85), rgb(0 0 0 / .5) calc(100% - var(--f) * .6), rgb(0 0 0 / .14) calc(100% - var(--f) * .3), transparent 100%);
+  -webkit-mask-composite: source-in; mask-composite: intersect;
+}
+.ground.is-on > b { opacity: 1; transition-duration: 1.8s, 2.4s, 1.8s; }
+@starting-style { .ground.is-on > b { opacity: 0; } }
+/* the limit: nothing lighter than this under pale lettering, nothing darker under ink */
+.ground__cap { background: rgb(var(--cap-n, var(--cap-night))); mix-blend-mode: darken; }
+.ground.is-on > .ground__cap { display: block; }
+.ground[data-tone="day"] > .ground__cap { background: rgb(var(--cap-d, var(--cap-day))); mix-blend-mode: lighten; }
+/* under ink the picture is first softened a little, so that a bare twig or a rail behind the words is a breath of
+   mist and not a stroke among the letters (pale lettering needs none: nothing under it is light enough to be taken for one) */
+.ground[data-tone="day"] > .ground__soft { -webkit-backdrop-filter: blur(.5rem); backdrop-filter: blur(.5rem); }
+.ground.is-on[data-tone="day"] > .ground__soft { display: block; }
+/* under pale lettering a bright picture is first dimmed as a whole, as far as it needs (src/ui.js, --dim): a shadow
+   that keeps the picture's own hues and detail. The limit then has little left to do, and nothing to flatten. */
+.ground:not([data-tone="day"])[data-dim="on"] > .ground__soft { -webkit-backdrop-filter: brightness(var(--dim, 1)); backdrop-filter: brightness(var(--dim, 1)); }
+.ground.is-on:not([data-tone="day"])[data-dim="on"] > .ground__soft { display: block; }
+.ground--hint > b, .ground--hint.is-on > b { transition-duration: 1.2s, 2.4s, 1.2s; }
+/* (the title's two grounds reach far enough round their words to hold the focus ring of 'Push off' and of the two
+   quiet words at full strength: a ring is 5px outside its control, and it too must be read over any picture) */
+.ground--title { --f: clamp(2rem, 6vw, 3.5rem); --px: 1.5rem; --py: 1.25rem; }
+.ground--more { --px: 1.5rem; --py: 1.25rem; }
+.ground--title > b { transition-duration: 1.6s, 2.4s, 1.6s; }
+.ground--title.is-on > b { transition-duration: 2.4s, 2.4s, 2.4s; }
+.ground--title.is-on[data-tone="day"] > .ground__soft { display: none; }      /* (the title stands in open sky: its clouds are not to be smoothed) */
+.ground--hold { --px: .9rem; --py: .75rem; }
+/* dark glass: 'Push off' at the mooring stands on a small plate of it */
+.moored .begin::before {
+  background: rgb(var(--ink) / var(--glass-wash));
+  -webkit-backdrop-filter: var(--glass-filter); backdrop-filter: var(--glass-filter);
+}
+
+/* --------------------------------------------------------------------------------------------- title card */
+/* The card stands in the sky and ends above the bridge, at every shape of window: where the window is lower its
+   pieces draw closer together and its name is set a little smaller (the lengths below that follow vh). */
+.title {
+  --title-top: clamp(1.25rem, 22vh - 8.4rem, 4.8rem);      /* (the line of controls under the button is part of the card: it begins that much higher) */
+  position: absolute; inset: 0; overflow: hidden auto; overscroll-behavior: contain; pointer-events: auto;
+  display: grid; justify-items: center; align-content: start;
+  padding: var(--title-top) var(--gutter-r) 3rem var(--gutter-l);
+  scrollbar-width: thin; scrollbar-color: rgb(var(--paper) / .22) transparent;
+}
+.title.is-leaving { pointer-events: none; }
+/* (the card's pieces fade, each for itself; its ground, in the layer under the interface, fades with them) */
+.title__card > * { transition: opacity 1.6s var(--ease); }
+.title.is-leaving .title__card > * { opacity: 0; }
+/* while the controls or the options are open over it, the card steps back: its letters would show round the panel */
+.title.is-under .title__card > * { opacity: 0; transition-duration: .5s; }
+
+.title__card {
+  display: grid; justify-items: center; width: min(100%, 58rem);
+  padding: 0 clamp(0rem, 2cqi, 1.5rem); text-align: center;
+}
+/* The name is drawn, not set (src/logo.js): the words on a waterline, the water keeping them, one kept lamp at the
+   line's end. The canvas takes its ink from `color` and its flame from --mark-lamp. Its box is 1 : 0.37, with the
+   waterline 0.205 of its width down: what is above the lettering is only the lamp's post, what is below is the
+   reflection thinning out, so the box is drawn in a little at the top and the foot. */
+.title__name { margin: 0; width: min(100%, clamp(21rem, min(16rem + 38cqi, 92vh), 51rem)); color: var(--text); --mark-lamp: #ffb45e; }
+.title[data-tone="day"] .title__name { --mark-lamp: #e2601a; }      /* (on a pale sky a pale flame is light on light) */
+.mark { display: block; width: 100%; height: auto; aspect-ratio: 1 / .37; }
+.title__mark { margin: -11% 0 -7% 2%; }
+/* (nothing is written under the name: the button follows the wave, with air between them) */
+.begin {
+  position: relative; isolation: isolate; display: inline-grid; place-items: center; margin-top: clamp(1.35rem, 6vh - 1.1rem, 2.4rem); min-width: 11rem; min-height: 3.125rem;
+  padding: .3rem 2.25rem .5rem calc(2.25rem + .06em);
+  font: 500 1.5rem/1 var(--serif); letter-spacing: .06em; color: var(--text);
+  border: 1px solid var(--btn-edge); border-radius: .1875rem; background: var(--plate);
+  transition: background .6s var(--ease), border-color .6s var(--ease), box-shadow .6s var(--ease);
+}
+.begin:hover { background: var(--plate-hover); border-color: var(--text); }
+.begin:active { background: var(--plate-hover); box-shadow: inset 0 0 0 1px var(--btn-edge); }
+.title[data-tone="night"] .begin:hover, .moored .begin:hover { border-color: var(--accent); box-shadow: 0 0 2.5rem rgb(var(--ember) / .22); }
+
+/* two quiet words under the button: each opens a card */
+.title__more { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 0 .2rem; margin-top: clamp(.15rem, 1.2vh - .25rem, .55rem); }
+.title__more i { width: .1875rem; height: .1875rem; border-radius: 50%; background: var(--text); opacity: .9; }
+.quiet-link {
+  display: inline-grid; place-items: center; min-width: 2.75rem; min-height: 2.75rem; padding: 0 .9rem .1rem;
+  font: italic 500 1.25rem/1 var(--serif); letter-spacing: .01em; color: var(--text); border-radius: .125rem;
+  text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: .3em;
+  text-decoration-color: currentColor; text-decoration-color: color-mix(in srgb, currentColor 45%, transparent);
+  transition: text-decoration-color .5s var(--ease);
+}
+.quiet-link:hover { text-decoration-color: currentColor; }
+
+/* the controls in one line under the button: there without being asked for (src/ui.js, LEGEND). Two halves with a
+   dot between them; each half keeps its key caps with its words. It has a ground of its own (.ground--keys). */
+.title__keys {
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: .3rem 1.9rem;
+  margin: clamp(.75rem, 2.6vh - .35rem, 1.2rem) 0 0; max-width: min(100%, 48rem);
+  font: 500 1.125rem/1.35 var(--serif); letter-spacing: .01em; color: var(--text);
+}
+.title__keys .legend__half { display: inline-flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: .3rem .4rem; }
+.title__keys kbd { min-width: 1.75rem; height: 1.75rem; padding: 0 .4rem; font-size: .8125rem; }
+.title__keys:not([data-tone="day"]) .words { text-shadow: 0 0 .18em rgb(var(--ink) / .5), 0 0 .7em rgb(var(--ink) / .32); }
+.title__keys:not([data-tone="day"]) kbd { --key-fill: rgb(var(--ink) / .3); }
+/* (a phone held upright: one more line, asking for it to be turned) */
+.title__keys .legend__turn { display: none; flex-basis: 100%; font-style: italic; }
+@media (hover: none) and (pointer: coarse) and (orientation: portrait) { .title__keys .legend__turn { display: block; } }
+.ground--keys { --px: 1.25rem; --py: .6rem; }
+
+/* the title card arrives out of the dark, one piece at a time */
+@keyframes emerge { from { opacity: 0; filter: blur(.45rem); } to { opacity: 1; filter: blur(0); } }
+@keyframes appear { from { opacity: 0; } to { opacity: 1; } }
+.title.is-arriving .title__name { animation: emerge 2.6s var(--ease) .5s both; }
+.title.is-arriving .begin { animation: appear 1.8s var(--ease) 2s both; }
+.title.is-arriving .title__keys { animation: appear 1.8s var(--ease) 2.3s both; }
+.title.is-arriving .title__more { animation: appear 1.8s var(--ease) 2.6s both; }
+/* (a panel opened over the card while it is still arriving: the card steps back at once, and arrives again when the panel closes) */
+.title.is-under.is-arriving .title__card > * { animation: none; }
+
+/* a window that is not tall (a laptop with its toolbars showing): draw the card closer together */
+@media (max-height: 40rem) {
+  .title { --title-top: clamp(1.25rem, 7vh, 2.75rem); padding-bottom: 1.5rem; }
+  .title__name { width: min(100%, clamp(20rem, 15rem + 32cqi, 37.5rem)); }
+  .begin { margin-top: 1.35rem; }
+  .title__keys { margin-top: .7rem; }
+  .title__more { margin-top: .25rem; }
+}
+/* an upright window (a phone held upright): the sky is not tall enough for the whole card, so the two quiet words
+   go to the foot of the picture, over the boat's own boards, where a thumb finds them; the name and the button
+   keep the sky, and nothing is written across the bridge */
+@container ui (max-width: 36rem) {
+  @media (min-height: 30rem) {
+    .title { --title-top: clamp(1.5rem, 30vh - 9.5rem, 7rem); }
+    .title__more { position: absolute; left: var(--gutter-l); right: var(--gutter-r); bottom: max(.875rem, env(safe-area-inset-bottom)); margin: 0; }
+  }
+}
+/* a low, wide window (a phone on its side): no wave, and the two quiet words stand beside the button, so that the
+   card stays in the sky and leaves the bridge, the lamp and the water alone */
+@media (max-height: 30rem) and (min-width: 36rem) {
+  .title { --title-top: clamp(.875rem, 5vh, 1.5rem); }
+  .title__card { grid-template-columns: 1fr auto auto 1fr; column-gap: .75rem; align-items: center; }
+  .title__name { grid-column: 1 / -1; width: min(100%, clamp(20rem, 14rem + 28cqi, 29.5rem)); }
+  .title__mark { margin-bottom: -9%; }
+  .begin { grid-column: 2; grid-row: 2; margin-top: 1rem; min-height: 2.875rem; }
+  .title__more { grid-column: 3; grid-row: 2; margin-top: 1rem; }
+  .title__keys { grid-column: 1 / -1; grid-row: 3; margin-top: .55rem; font-size: 1.0625rem; }
+}
+
+/* ------------------------------------------------------------------------------------------------- the opening */
+/* What is on the page before the ride is (index.html; docs/build/hosting.md): a still of the view the title card
+   stands over, between the picture and the interface, and on it the title card's own name with one word and a line
+   under it that fills as the first place arrives.
+   The still is laid exactly as the ride frames its picture (src/engine/engine.js, resize), so that it gives way to
+   the living picture without a jump. The view is 60 degrees high while that makes it at least 84 wide (a window
+   wider than 1.56 to 1): the wide still, as high as the window, its sides cut off. Narrower than that it is 84 wide
+   and as high as that comes to: the tall still, as wide as the window, its top and foot cut off. And never more than
+   96 high (a window narrower than 0.81 to 1, a phone held upright): the tall still, as high as the window, its sides
+   cut off. Under each still lies a tiny picture of it, which is there with the page itself. */
+.opening { position: fixed; inset: 0; overflow: hidden; pointer-events: none; background: #d8b074; }
+.opening > i { position: absolute; left: 50%; top: 50%; width: 100%; height: auto; aspect-ratio: 973 / 1200; transform: translate(-50%, -50%); background: center / cover no-repeat; }
+.opening > .opening__soft { background-image: var(--opening-tall); }
+.opening__still { opacity: 0; transition: opacity .8s var(--ease); }
+.opening__still.is-in { opacity: 1; }
+@media (max-aspect-ratio: 973/1200) { .opening > i { width: auto; height: 100%; } }
+@media (min-aspect-ratio: 15596/10000) {
+  .opening > i { width: auto; height: 100%; min-width: 100%; aspect-ratio: 2160 / 900; }
+  .opening > .opening__soft { background-image: var(--opening-wide); }
+}
+html.motion-reduce .opening__still { transition: none; }
+@media (prefers-reduced-motion: reduce) { html:not(.motion-on) .opening__still { transition: none; } }
+
+/* The opening's card is the title card before its time: the same name in the same place and, where 'Push off' will
+   stand, one word and a line. Its ink is the title card's own over this view (the tone is written with the stills). */
+.title--loading { overflow: hidden; pointer-events: none; }
+.title--loading .title__mark { opacity: 0; transition: opacity .9s var(--ease); }
+.title--loading .title__mark.is-drawn { opacity: 1; }
+.loading { display: grid; justify-items: center; align-content: start; row-gap: .7rem; width: min(100%, 15rem); min-height: 3.125rem; margin-top: clamp(1.35rem, 6vh - 1.1rem, 2.4rem); color: var(--text); }
+.loading__word { margin: 0; font: italic 500 1.3125rem/1.25 var(--serif); letter-spacing: .015em; text-wrap: balance; }
+.loading__rule { position: relative; width: 100%; height: .125rem; border-radius: .0625rem; overflow: hidden; background: rgb(128 128 128 / .4); background: color-mix(in srgb, currentColor 26%, transparent); }
+.loading__rule > i { position: absolute; inset: 0; border-radius: inherit; background: currentColor; transform-origin: 0 50%; transform: scaleX(var(--p, 0)); }
+/* (the first place is in: the line runs to its end and goes, with its word, as 'Push off' arrives in their place) */
+.title--loading.is-going .loading { opacity: 0; transition: opacity .5s var(--ease) .12s; }
+/* (it could not start: the words say why, and one quiet word tries again) */
+.title--loading.is-failed .loading { width: min(100%, 31rem); row-gap: .3rem; }
+.title--loading.is-failed .loading__rule { display: none; }
+.title--loading.is-failed .loading__again { pointer-events: auto; }
+@media (max-height: 40rem) { .loading { margin-top: 1.35rem; } }
+@media (max-height: 30rem) and (min-width: 36rem) { .loading { grid-column: 1 / -1; grid-row: 2; margin-top: 1rem; min-height: 2.875rem; } }
+/* When the first place is in, the title card takes the opening card's place (src/ui.js, showTitle): it waits out of
+   sight until its own name is drawn, then the name is simply there, where it was, and only the other pieces arrive. */
+.title.is-waiting { pointer-events: none; }
+.title.is-waiting .title__card > * { opacity: 0; transition: none; }
+.title.is-handed .title__name { animation: none; transition: none; }
+.title.is-arriving.is-handed .begin { animation-duration: 1.4s; animation-delay: .25s; }
+.title.is-arriving.is-handed .title__keys { animation-duration: 1.4s; animation-delay: .55s; }
+.title.is-arriving.is-handed .title__more { animation-duration: 1.4s; animation-delay: .85s; }
+
+/* --------------------------------------------------------------------------------------------- during the ride */
+/* the two corner buttons: small plates of smoked glass, always there and always readable; a thin ring of lantern
+   light comes up round them when something stirs */
+.hud { position: absolute; top: max(.5rem, env(safe-area-inset-top)); right: max(.5rem, env(safe-area-inset-right)); display: flex; gap: .125rem; pointer-events: auto; }
+.hud__btn { position: relative; isolation: isolate; display: grid; place-items: center; width: 2.75rem; height: 2.75rem; border-radius: 50%; color: var(--text); transition: color .5s var(--ease); }
+.hud__btn::before {
+  content: ""; position: absolute; z-index: -1; inset: .3125rem; border-radius: 50%;
+  background: rgb(var(--ink) / var(--corner-wash)); -webkit-backdrop-filter: var(--corner-filter); backdrop-filter: var(--corner-filter);
+  box-shadow: inset 0 0 0 1px rgb(var(--glow) / 0); transition: box-shadow 1.6s var(--ease);
+}
+.hud__btn svg { width: 1.125rem; height: 1.125rem; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+.hud.is-awake .hud__btn::before, .hud.has-focus .hud__btn::before, .hud:hover .hud__btn::before { box-shadow: inset 0 0 0 1px rgb(var(--glow) / .4); transition-duration: .35s; }
+.hud__btn:hover { color: var(--accent); }
+.hud__btn:hover::before, .hud__btn:focus-visible::before { box-shadow: inset 0 0 0 1px rgb(var(--glow) / .75); }
+/* over the bare picture the focus ring also gets a dark ring outside it, so that it reads on any sky */
+.hud__btn:focus-visible { outline-offset: -.125rem; border-radius: 50%; box-shadow: 0 0 0 .3125rem rgb(var(--ink) / .82); }
+#ui[data-hands="touch"] .hud__btn::before { inset: .1875rem; }       /* under a thumb: the plate a little larger (the box that takes the press is 44px either way) */
+.hud__btn .off { opacity: 0; transition: opacity .4s var(--ease); }
+.hud__btn[aria-pressed="false"] .off { opacity: 1; }
+/* (music off: the note keeps its full strength, and the stroke that crosses it has a little air cut out of the note on
+   either side, by the mask in the icon. At half strength the note stood at 2.0 to 1 on its plate over a bright sky.) */
+.hud__btn[aria-pressed="false"] .note { mask: url(style.css#music-off-gap); }      /* (the SVG property, unprefixed: a browser that does not know it shows the whole note under the stroke, which reads as well) */
+
+/* Buttons for steering and looking (an option, off unless asked for: WCAG 2.5.7, nothing in the ride needs a drag).
+   Four for the boat at the lower left (steer left, paddle, steer right, back water), five for the view at the
+   lower right (look left, up, ahead, down, right). Each is a corner button in every respect (it carries that
+   class): the same mark on the same plate of smoked glass, and so the same contrast over any picture (the table
+   at the top); the same ring of lantern light when something stirs; the same focus ring with its dark band.
+   One that is held on says so three ways, two of them not colour: its ring whole and heavier, one small light at
+   the foot of its plate, and its mark in lantern colour. */
+.pad {
+  position: absolute; left: max(.5rem, env(safe-area-inset-left)); right: max(.5rem, env(safe-area-inset-right)); bottom: max(.5rem, env(safe-area-inset-bottom));
+  display: flex; flex-wrap: wrap-reverse; align-items: flex-end; justify-content: space-between; gap: .25rem 1rem; pointer-events: none;
+}
+.pad:not([hidden]) { animation: appear 1.2s var(--ease) both; }
+.pad__group { display: flex; gap: .125rem; pointer-events: auto; }
+.pad__group:last-child { margin-left: auto; }
+/* (a finger held on one of them is a hold: not the start of a scroll, a selection or a menu) */
+.pad__btn { touch-action: none; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
+.hud.is-awake + .pad .pad__btn::before, .pad__group:hover .pad__btn::before { box-shadow: inset 0 0 0 1px rgb(var(--glow) / .4); transition-duration: .35s; }
+.pad__group:has(:focus-visible) .pad__btn::before { box-shadow: inset 0 0 0 1px rgb(var(--glow) / .4); transition-duration: .35s; }
+.pad .pad__btn:hover::before, .pad .pad__btn:focus-visible::before { box-shadow: inset 0 0 0 1px rgb(var(--glow) / .75); }
+.pad__btn::after {
+  content: ""; position: absolute; left: 50%; bottom: .4375rem; width: .3125rem; height: .3125rem; margin-left: -.15625rem; border-radius: 50%;
+  background: currentColor; opacity: 0; transition: opacity .3s var(--ease);
+}
+.pad__btn[aria-pressed="true"] { color: var(--accent); }
+.pad .pad__btn[aria-pressed="true"]::before { box-shadow: inset 0 0 0 1.5px rgb(var(--glow)); transition-duration: .2s; }
+.pad__btn[aria-pressed="true"]::after { opacity: 1; }
+/* (a screen that cannot hover leaves the last thing touched "under the pointer": there a mark is lantern-coloured only while its button is on) */
+@media (hover: none) { .pad__btn:hover:not([aria-pressed="true"]) { color: var(--text); } }
+/* the words of the ride stand above the buttons, never under them; so does 'Push off' at the mooring */
+#ui[data-pad="on"] .captions { padding-bottom: calc(max(.5rem, env(safe-area-inset-bottom)) + 3.5rem); }
+#ui[data-pad="on"] .moored { bottom: max(11vh, 4.25rem); }
+/* a column too narrow for the nine side by side (a phone held upright): the five for the view stand above the four for the boat */
+@container ui (max-width: 27.75rem) {
+  #ui[data-pad="on"] .captions { padding-bottom: calc(max(.5rem, env(safe-area-inset-bottom)) + 6.5rem); }
+  #ui[data-pad="on"] .moored { bottom: max(11vh, 7.25rem); }
+}
+
+/* The words during the ride: the name of a place, and one hint (or the waiting dots).
+   With a keyboard or a pad they lie along the bottom, lower than the horizon and clear of the bow lantern at every
+   shape of window: the name lower left, the hint lower centre. On a touch screen the bottom of the picture is where
+   the thumbs are (further down). The five rows: top, under it, the picture itself, low, lowest. */
+.captions {
+  position: absolute; inset: 0; display: grid;
+  /* (the name keeps to one line: where it and a long hint cannot both have their place, the hint gives way to the right) */
+  grid-template-columns: minmax(max-content, 1fr) auto minmax(0, 1fr); grid-template-rows: auto auto minmax(0, 1fr) auto auto; column-gap: 2.5rem;
+  padding: max(.5rem, env(safe-area-inset-top)) calc(var(--gutter-r) + 1.125rem) calc(max(1rem, env(safe-area-inset-bottom)) + 1.25rem) calc(var(--gutter-l) + 1.125rem);
+}
+.realm, .hint, .holding { position: relative; margin: 0; align-self: end; -webkit-user-select: none; user-select: none; }
+/* (pale lettering carries a breath of shadow close round each letter, as ink bleeds into paper: it keeps a thin
+   stroke whole where the picture behind it is only just dark enough. Ink carries none.) */
+.realm:not([data-tone="day"]) > span, .hint:not([data-tone="day"]) > span > .words, .hint:not([data-tone="day"]) .or { text-shadow: 0 0 .18em rgb(var(--ink) / .5), 0 0 .7em rgb(var(--ink) / .32); }
+/* (the words fade; their ground, in the layer under the interface, fades in step with them: .ground) */
+.realm > span, .hint > span, .holding > span { opacity: 0; transition: opacity 2.6s var(--ease); }
+.realm.is-on > span, .hint.is-on > span, .holding.is-on > span { opacity: 1; transition-duration: 1.8s; }
+.hint > span, .hint.is-on > span { transition-duration: 1.2s; }
+
+.realm { --name-size: clamp(1.5rem, 1.15rem + .9cqi, 1.875rem); grid-area: 5 / 1; justify-self: start; max-width: 100%; }
+.realm > span {
+  display: block; padding: .2rem .6rem .35rem 1rem;
+  font: 400 var(--name-size)/1.15 var(--serif); letter-spacing: .012em; color: var(--text); white-space: nowrap;
+  border-left: 1px solid var(--rule);
+}
+.hint { grid-area: 5 / 2; justify-self: center; max-width: min(36rem, 100%); }
+.hint > span {
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: .4rem .45rem; padding: .25rem .5rem .35rem; text-align: center;
+  font: 500 1.3125rem/1.4 var(--serif); letter-spacing: .01em; color: var(--text);
+}
+.hint .words { text-wrap: balance; }                    /* a hint that takes two lines breaks in the middle, never one word alone */
+/* the line of controls at the start of a ride (src/ui.js, LEGEND): two halves with air between them, each keeping its
+   key caps with its words; where the window is too narrow for one line it breaks between the halves */
+.hint.is-legend { max-width: min(50rem, 100%); }
+.hint.is-legend > span { column-gap: 1.9rem; }
+.hint .legend__half { display: inline-flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: .4rem .45rem; }
+.hint:not([data-tone="day"]) .legend__half .words { text-shadow: 0 0 .18em rgb(var(--ink) / .5), 0 0 .7em rgb(var(--ink) / .32); }
+/* (a key cap over the picture is a shade darker than its ground, not lighter: its letter must stand on it too) */
+.hint:not([data-tone="day"]) kbd { --key-fill: rgb(var(--ink) / .3); }
+/* waiting in the mist for the next waters: three small lights where a hint would be */
+.holding { grid-area: 5 / 2; justify-self: center; }
+.holding > span { display: flex; gap: .7rem; padding: .75rem .9rem; }
+.holding i { width: .4375rem; height: .4375rem; border-radius: 50%; background: var(--text); animation: breathe 3.6s ease-in-out infinite; }
+.holding i:nth-child(2) { animation-delay: .45s; }
+.holding i:nth-child(3) { animation-delay: .9s; }
+@keyframes breathe { 0%, 100% { opacity: .75; transform: scale(.8); } 50% { opacity: 1; transform: scale(1.15); } }
+/* a window that is not wide (a tablet on end, a narrow window): the hint above the name, both over the boat's
+   own boards. The name is never squeezed into a column beside the hint. */
+@container ui (max-width: 60rem) {
+  .captions { grid-template-columns: minmax(0, 1fr); padding-left: calc(var(--gutter-l) + .5rem); padding-right: calc(var(--gutter-r) + .5rem); }
+  .hint, .holding { grid-area: 4 / 1; margin-bottom: 2.5rem; }
+  .realm { grid-area: 5 / 1; }
+  .realm > span { white-space: normal; text-wrap: balance; }
+}
+/* a low, wide window: one line along the bottom, a size smaller. The name keeps to one line at the left and the
+   hint takes the middle of what is left, so nothing climbs toward the horizon. */
+@media (max-height: 30rem) and (min-width: 36rem) {
+  .captions { grid-template-columns: auto minmax(0, 1fr); column-gap: 1.75rem; padding-bottom: calc(max(.75rem, env(safe-area-inset-bottom)) + 1rem); }
+  .realm { --name-size: 1.5rem; grid-area: 5 / 1; }
+  .realm > span { white-space: nowrap; }
+  .hint, .holding { grid-area: 5 / 2; margin-bottom: 0; }
+  .hint > span { font-size: 1.25rem; }
+}
+/* Thumbs (src/ui.js sets data-hands when a finger touches the picture): they hold the lower corners, and on a
+   phone held upright the whole lower third. So the name goes to the top left corner, level with the two buttons,
+   and the hint to the bottom centre, between the thumbs; where the screen is too narrow to leave room between
+   them, under the name. Nothing the rider needs to read is under a hand, and the horizon and the lantern stay clear. */
+#ui[data-hands="touch"] .captions { grid-template-columns: minmax(0, 1fr); padding-left: calc(var(--gutter-l) + .5rem); padding-right: calc(var(--gutter-r) + .5rem); }
+#ui[data-hands="touch"] .realm {
+  grid-area: 1 / 1; align-self: start;
+  margin: max(0rem, (2.75rem - var(--name-size) * 1.15 - .55rem) / 2) 4.875rem 0 0;      /* beside the two buttons, on their middle line */
+}
+#ui[data-hands="touch"] .realm > span { white-space: normal; }
+#ui[data-hands="touch"] .hint, #ui[data-hands="touch"] .holding { grid-area: 5 / 1; margin-bottom: 0; }
+@container ui (max-width: 36rem) {
+  #ui[data-hands="touch"] .hint, #ui[data-hands="touch"] .holding { grid-area: 2 / 1; align-self: start; margin-top: 2.25rem; }
+}
+
+/* The left thumb's stick on a touch screen: a ring and its knob. At rest it stands at the lower left, where a thumb
+   falls, a little quieter; it goes to wherever the thumb comes down. The ring is a pale line between two dark ones
+   and the knob a small plate of smoked glass with a pale rim, so both show on any picture.
+   (in px, not rem: the engine reads a thumb 64px from the middle as full deflection, STICK_RADIUS) */
+.stick { position: absolute; left: 0; top: 0; width: 0; height: 0; opacity: 0; transition: opacity .5s var(--ease); }
+.stick.is-on { opacity: 1; }
+.stick.is-rest { left: calc(max(1.25rem, env(safe-area-inset-left)) + 76px); top: auto; bottom: calc(max(1.25rem, env(safe-area-inset-bottom)) + 84px); opacity: .62; transition-duration: 1.2s; }
+.stick::before {
+  content: ""; position: absolute; left: -64px; top: -64px; width: 128px; height: 128px; border-radius: 50%;
+  border: 1.5px solid rgb(var(--paper) / .9); background: rgb(var(--ink) / .16);
+  box-shadow: 0 0 0 1.5px rgb(var(--ink) / .6), inset 0 0 0 1.5px rgb(var(--ink) / .6);
+}
+.stick i {
+  position: absolute; left: -26px; top: -26px; width: 52px; height: 52px; border-radius: 50%;
+  background: rgb(var(--ink) / .5); border: 1.5px solid rgb(var(--paper) / .92);
+  box-shadow: 0 0 0 1.5px rgb(var(--ink) / .65), 0 0 1.1rem rgb(var(--ember) / .45), inset 0 0 0 5px rgb(var(--glow) / .16);
+  -webkit-backdrop-filter: var(--glass-filter); backdrop-filter: var(--glass-filter);
+}
+
+/* The way on (src/ui.js, updateWay): one chevron on a small plate of smoked glass at the picture's edge, on the side
+   the route lies; at the foot when it lies behind. It is there only for a rider who has turned from the route. */
+.way {
+  position: absolute; left: auto; right: max(1rem, env(safe-area-inset-right)); top: 50%; width: 3rem; height: 3rem; margin-top: -1.5rem;
+  display: grid; place-items: center; border-radius: 50%; color: rgb(var(--paper));
+  background: rgb(var(--ink) / var(--glass-wash)); border: 1px solid rgb(var(--glow) / .8);
+  box-shadow: 0 0 0 1.5px rgb(var(--ink) / .5), 0 0 1.6rem rgb(var(--ember) / .35);
+  -webkit-backdrop-filter: var(--glass-filter); backdrop-filter: var(--glass-filter);
+  opacity: 0; visibility: hidden; transition: opacity .9s var(--ease), visibility 0s linear .9s;
+}
+.way.is-on { opacity: 1; visibility: visible; transition: opacity .9s var(--ease), visibility 0s; }
+.way svg { width: 1.5rem; height: 1.5rem; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.way[data-side="left"] { right: auto; left: max(1rem, env(safe-area-inset-left)); }
+.way[data-side="left"] svg { transform: rotate(180deg); }
+.way[data-side="behind"] { right: auto; left: 50%; top: auto; bottom: calc(max(1rem, env(safe-area-inset-bottom)) + 4.5rem); margin: 0 0 0 -1.5rem; }
+.way[data-side="behind"] svg { transform: rotate(90deg); }
+.motion-on .way.is-on svg { animation: way-nudge 2.4s ease-in-out infinite; }
+.motion-on .way.is-on[data-side="left"] svg { animation-name: way-nudge-left; }
+.motion-on .way.is-on[data-side="behind"] svg { animation-name: way-nudge-down; }
+@keyframes way-nudge { 0%, 100% { transform: translateX(-1px); } 50% { transform: translateX(3px); } }
+@keyframes way-nudge-left { 0%, 100% { transform: rotate(180deg) translateX(-1px); } 50% { transform: rotate(180deg) translateX(3px); } }
+@keyframes way-nudge-down { 0%, 100% { transform: rotate(90deg) translateX(-1px); } 50% { transform: rotate(90deg) translateX(3px); } }
+
+/* keyboard focus on the picture itself: four small corners, each a pale line with a dark line outside it */
+/* (above the ending's paper, z-index 6: the picture still takes the keys under it, and its dark lines carry it there) */
+.focus-frame { position: absolute; inset: .5rem; z-index: 7; opacity: 0; transition: opacity .3s var(--ease); }
+.view-focus .focus-frame { opacity: 1; }
+.focus-frame i { position: absolute; width: 1.75rem; height: 1.75rem; border: 0 solid rgb(var(--glow)); }
+.focus-frame i::before { content: ""; position: absolute; inset: -4px; border: 0 solid rgb(var(--ink) / .88); }
+.focus-frame i:nth-child(1), .focus-frame i:nth-child(1)::before { border-top-width: 2px; border-left-width: 2px; }
+.focus-frame i:nth-child(2), .focus-frame i:nth-child(2)::before { border-top-width: 2px; border-right-width: 2px; }
+.focus-frame i:nth-child(3), .focus-frame i:nth-child(3)::before { border-bottom-width: 2px; border-left-width: 2px; }
+.focus-frame i:nth-child(4), .focus-frame i:nth-child(4)::before { border-bottom-width: 2px; border-right-width: 2px; }
+.focus-frame i:nth-child(1) { top: 0; left: 0; }
+.focus-frame i:nth-child(2) { top: 0; right: 0; }
+.focus-frame i:nth-child(3) { bottom: 0; left: 0; }
+.focus-frame i:nth-child(4) { bottom: 0; right: 0; }
+
+/* one flat colour over everything: the dark the title card comes out of, and the mist it leaves through */
+.dissolve { position: absolute; inset: 0; opacity: 0; background: #05060c; transition: opacity 1s var(--ease); }
+
+/* at the mooring again, after 'Ride again': one button, low, on its own plate of glass */
+.moored { position: absolute; left: 50%; bottom: max(11vh, 3.75rem); z-index: 5; transform: translateX(-50%); pointer-events: auto; }
+.moored .begin { margin: 0; border-color: transparent; background: none; }
+.moored .begin::before { content: ""; position: absolute; z-index: -1; inset: -1px; border-radius: inherit; border: 1px solid var(--btn-edge); transition: border-color .6s var(--ease), box-shadow .6s var(--ease); }
+.moored .begin:hover::before, .moored .begin:focus-visible::before { border-color: var(--accent); box-shadow: inset 0 0 0 1px rgb(var(--glow) / .35); }
+/* (its focus ring lies outside the plate, on the bare picture: like the corner buttons' it gets a dark band under it, so that it reads on any water) */
+.moored .begin:focus-visible { box-shadow: 0 0 0 .4375rem rgb(var(--ink) / .82); }
+
+/* ------------------------------------------------------------------------------------------------ the panel */
+/* One card of dark glass in the middle of the picture: the pause menu, and the options and the controls (which
+   the title card opens too). The card fades, not the dialog, so its glass keeps the picture behind it. */
+dialog.pause {
+  --edge-t: max(1rem, env(safe-area-inset-top)); --edge-b: max(1rem, env(safe-area-inset-bottom));
+  position: fixed; inset: 0; width: 100%; height: 100%; max-width: none; max-height: none; margin: 0; border: 0;
+  padding: var(--edge-t) max(1rem, env(safe-area-inset-right)) var(--edge-b) max(1rem, env(safe-area-inset-left));
+  background: transparent; color: var(--text); overflow: hidden auto; overscroll-behavior: contain; pointer-events: auto;
+  transition: display .6s allow-discrete, overlay .6s allow-discrete;
+  scrollbar-width: thin; scrollbar-color: rgb(244 239 230 / .22) transparent;
+}
+dialog.pause[open] { display: grid; }
+dialog.pause::backdrop { background: rgb(13 11 12 / .38); opacity: 0; transition: opacity .6s cubic-bezier(.33, 0, .2, 1), display .6s allow-discrete, overlay .6s allow-discrete; }
+dialog.pause[open]::backdrop { opacity: 1; }
+@starting-style { dialog.pause[open]::backdrop { opacity: 0; } }
+
+.pause__panel {
+  --pad-y: clamp(1.5rem, 5cqi, 2.5rem); --pad-x: clamp(1.125rem, 5cqi, 2.5rem);
+  width: min(27rem, 100%); margin: auto; padding: var(--pad-y) var(--pad-x); text-align: center;
+  background: rgb(var(--ink) / var(--panel-wash)); border: 1px solid rgb(var(--paper) / .16); border-radius: .5rem;
+  -webkit-backdrop-filter: var(--panel-filter); backdrop-filter: var(--panel-filter);
+  box-shadow: 0 2rem 6rem rgb(0 0 0 / .35);
+  opacity: 0; transition: opacity .6s var(--ease);
+}
+dialog.pause[open] .pause__panel { opacity: 1; }
+@starting-style { dialog.pause[open] .pause__panel { opacity: 0; } }
+.pause__panel[data-view="options"], .pause__panel[data-view="controls"] { width: min(38rem, 100%); }
+@container ui (min-width: 62rem) { .pause__panel[data-view="controls"] { width: min(64rem, 100%); } }
+
+.pause__view:not([hidden]) { animation: appear .7s var(--ease) both; }
+.pause__title { margin: 0; font: 300 clamp(2.25rem, 1.8rem + 2cqi, 2.875rem)/1.1 var(--serif); letter-spacing: .012em; }
+.pause__title--sub { font-size: clamp(2rem, 1.6rem + 1.6cqi, 2.375rem); outline: none; }
+.pause__line { margin: .35rem 0 0; font: italic 500 1.25rem/1.4 var(--serif); color: var(--text-soft); }
+.pause__body { margin-top: 1.5rem; }
+.pause__where { margin: 1.5rem 0 0; padding-top: 1.25rem; border-top: 1px solid var(--hair); font: italic 500 1.1875rem/1.4 var(--serif); color: var(--text-soft); }
+
+.menu { display: grid; gap: .375rem; margin-top: 1.75rem; }
+.menu__item {
+  display: flex; align-items: center; justify-content: center; width: 100%; min-height: 3rem; padding: .3rem 1rem .45rem;
+  font: 500 1.4375rem/1.2 var(--serif); letter-spacing: .03em; color: var(--text);
+  border: 1px solid transparent; border-radius: .1875rem; transition: background .5s var(--ease), border-color .5s var(--ease), color .5s var(--ease);
+}
+.menu__item:hover { color: var(--accent); background: rgb(var(--glow) / .07); }
+.menu__item--primary { margin-bottom: .5rem; border-color: var(--btn-edge); background: var(--plate); }
+.menu__item--primary:hover { color: var(--text); background: var(--plate-hover); border-color: var(--accent); }
+.menu__item--back { gap: .7rem; }
+.menu__item--back::before { content: ""; width: .45rem; height: .45rem; margin-top: .15rem; border: solid currentColor; border-width: 0 0 1px 1px; transform: rotate(45deg); }
+.menu__item--back::after { content: ""; width: .45rem; }
+/* the way out of the options and the controls ('Back', or 'Done' from the title card): a plate of its own */
+.menu__item--out { width: auto; min-width: 11rem; justify-self: center; padding-left: 2rem; padding-right: 2rem; border-color: var(--btn-edge); background: var(--plate); }
+.menu__item--out:hover { color: var(--text); background: var(--plate-hover); border-color: var(--accent); }
+/* The options and the controls never grow taller than the window: the heading and the way out stay in sight and
+   the list between them scrolls, thinning away at its two edges. (If even that cannot fit, the whole card scrolls.) */
+.pause__panel[data-view="options"], .pause__panel[data-view="controls"] {
+  display: flex; flex-direction: column;
+  max-height: max(22rem, calc(100vh - var(--edge-t) - var(--edge-b)));
+  max-height: max(22rem, calc(100dvh - var(--edge-t) - var(--edge-b)));
+}
+.pause__view--sub:not([hidden]) { display: flex; flex-direction: column; flex: 1 1 auto; min-height: 0; }
+.pause__view--sub .pause__title, .pause__view--sub .menu { flex: none; }
+.pause__view--sub .menu { margin-top: .75rem; }
+.pause__view--sub .pause__body {
+  flex: 1 1 auto; min-height: 0; overflow: hidden auto; overscroll-behavior: contain;
+  margin: .75rem calc(var(--pad-x) * -1) 0; padding: .75rem var(--pad-x) 1.25rem;
+  scrollbar-width: thin; scrollbar-color: rgb(var(--paper) / .3) transparent;
+  -webkit-mask-image: linear-gradient(to bottom, transparent, #000 .75rem, #000 calc(100% - 1.25rem), transparent);
+  mask-image: linear-gradient(to bottom, transparent, #000 .75rem, #000 calc(100% - 1.25rem), transparent);
+}
+.pause__view--sub .pause__body:focus-visible { outline-offset: -4px; }
+/* a low window (a phone on its side, or a small window at 200%): the card draws itself together so that the whole
+   pause menu is in sight, with 'Options' and 'Controls' side by side */
+@media (max-height: 30rem) {
+  dialog.pause { --edge-t: max(.75rem, env(safe-area-inset-top)); --edge-b: max(.75rem, env(safe-area-inset-bottom)); }
+  .pause__panel { --pad-y: 1.25rem; }
+  .pause__title { font-size: 2.125rem; }
+  .pause__title--sub { font-size: 2rem; }
+  .pause__line { margin-top: .1rem; }
+  .pause__view--menu .menu { grid-template-columns: 1fr 1fr; margin-top: 1rem; }
+  .pause__view--menu .menu__item--primary, .pause__view--menu .menu__item--wide { grid-column: 1 / -1; }
+  .pause__where { margin-top: .875rem; padding-top: .7rem; }
+}
+/* low and wide: the options and the controls put their heading and their way out in a column at the left, and
+   the list takes the whole height beside them */
+@media (max-height: 30rem) and (min-width: 36rem) {
+  .pause__panel[data-view="options"], .pause__panel[data-view="controls"] { width: min(50rem, 100%); }
+  .pause__view--sub:not([hidden]) { display: grid; grid-template-columns: 11.5rem minmax(0, 1fr); grid-template-rows: minmax(0, 1fr) auto; column-gap: 1.25rem; }
+  .pause__view--sub .pause__title { grid-column: 1; grid-row: 1; align-self: start; padding-top: .35rem; }
+  .pause__view--sub .menu { grid-column: 1; grid-row: 2; margin: 0; }
+  .pause__view--sub .menu__item--out { width: 100%; min-width: 0; }
+  .pause__view--sub .pause__body { grid-column: 2; grid-row: 1 / 3; margin: -.5rem calc(var(--pad-x) * -1) -.5rem 0; padding: .75rem var(--pad-x) 1.25rem .5rem; }
+}
+
+/* ---------------------------------------------------------------------------------------- the controls list */
+/* Four small groups, each under its own quiet heading, with air between the rows: what it does on the left, the
+   keys on the right. Side by side in pairs where the window is wide. */
+.controls { display: grid; gap: 2.75rem clamp(2.5rem, 5cqi, 4rem); margin: 0; text-align: left; }
+@container ui (min-width: 62rem) { .controls { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.controls__group { min-width: 0; }
+.controls__head { display: flex; align-items: center; gap: 1rem; margin: 0 0 .6rem; font: italic 500 1.25rem/1.2 var(--serif); color: var(--text-soft); }
+.controls__head::after { content: ""; flex: 1; height: 1px; background: linear-gradient(to right, var(--hair), rgb(var(--paper) / 0)); }
+.controls__list { margin: 0; }
+.control { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .55rem 2rem; min-height: 4rem; padding: .8rem 0; border-top: 1px solid var(--hair); }
+.control:first-child { border-top: 0; }
+/* (a name keeps to one line while it can: where its keys do not fit beside it, they go under it, to the right) */
+.control dt { flex: 1 0 auto; max-width: 100%; font: 500 1.25rem/1.3 var(--serif); color: var(--text); }
+.control dd { margin: 0 0 0 auto; display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: .4rem .45rem; font: 500 1.1875rem/1.3 var(--serif); color: var(--text); }
+/* a row told in words (touch, gamepad): the words under the name */
+.control--words { display: block; }
+.control--words dd { margin: .35rem 0 0; justify-content: flex-start; line-height: 1.4; color: var(--text-soft); }
+/* on a touch screen, the group about hands comes first */
+@media (hover: none) and (pointer: coarse) { .controls__group--hands { order: -1; } }
+#ui[data-hands="touch"] .controls__group--hands { order: -1; }
+
+/* ------------------------------------------------------------------------------------------------- options */
+.options { display: grid; text-align: left; }
+.option {
+  display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: .5rem 1.75rem;
+  min-height: 4.375rem; padding: .8rem 0; border-top: 1px solid var(--hair);
+}
+.option:first-child { border-top: 0; }
+.option__text { display: grid; gap: .1rem; min-width: 0; }
+.option__label { font: 500 1.25rem/1.3 var(--serif); color: var(--text); cursor: pointer; }
+.option__note { font: 500 1.1875rem/1.35 var(--serif); color: var(--text-soft); }
+.option__extra { grid-column: 1 / -1; display: flex; justify-content: flex-end; }
+@container ui (max-width: 34rem) {
+  .option--stack { grid-template-columns: minmax(0, 1fr); gap: .25rem; }
+  .option--stack .choice { justify-self: start; margin-top: .35rem; }
+  .option--stack .slider { width: 100%; }
+  .option--stack .option__extra { justify-content: flex-start; }
+}
+
+/* a switch: a thin outlined track and one small light (the track is drawn inside a box tall enough for a thumb) */
+.switch {
+  appearance: none; -webkit-appearance: none; position: relative; flex: none; width: 3.25rem; height: 2.75rem; margin: 0;
+  border: 0; border-radius: 1.5rem; background: none; cursor: pointer;
+}
+.switch::before {
+  content: ""; position: absolute; left: 0; right: 0; top: 50%; height: 1.75rem; margin-top: -.875rem;
+  border: 1px solid var(--edge); border-radius: 1rem; transition: background .5s var(--ease), border-color .5s var(--ease);
+}
+.switch::after {
+  content: ""; position: absolute; top: 50%; left: .3125rem; width: 1.125rem; height: 1.125rem; margin-top: -.5625rem; border-radius: 50%;
+  background: rgb(var(--paper) / .8); transition: transform .5s var(--ease), background .5s var(--ease), box-shadow .5s var(--ease);
+}
+.switch:checked::before { border-color: var(--accent); background: rgb(var(--glow) / .18); }
+.switch:checked::after { transform: translateX(1.5rem); background: var(--accent); box-shadow: 0 0 .7rem rgb(var(--ember) / .65); }
+.switch:focus-visible { outline-offset: -4px; }
+
+/* a slider: a line and one small light */
+.slider {
+  --fill: 50%;
+  appearance: none; -webkit-appearance: none; width: min(12.5rem, 40cqi); height: 2.75rem; margin: 0; background: transparent; cursor: pointer;
+}
+.slider::-webkit-slider-runnable-track { height: 3px; border-radius: 2px; background: linear-gradient(to right, var(--accent) var(--fill), rgb(var(--paper) / .55) var(--fill)); }
+.slider::-moz-range-track { height: 3px; border-radius: 2px; background: linear-gradient(to right, var(--accent) var(--fill), rgb(var(--paper) / .55) var(--fill)); }
+.slider::-webkit-slider-thumb { -webkit-appearance: none; width: 1.125rem; height: 1.125rem; margin-top: calc(1.5px - .5625rem); border: 0; border-radius: 50%; background: var(--accent); box-shadow: 0 0 .8rem rgb(var(--ember) / .55); }
+.slider::-moz-range-thumb { width: 1.125rem; height: 1.125rem; border: 0; border-radius: 50%; background: var(--accent); box-shadow: 0 0 .8rem rgb(var(--ember) / .55); }
+.slider:focus-visible { outline: none; }
+.slider:focus-visible::-webkit-slider-thumb { outline: 2px solid var(--focus); outline-offset: 3px; }
+.slider:focus-visible::-moz-range-thumb { outline: 2px solid var(--focus); outline-offset: 3px; }
+
+/* a choice of three: outlined tiles */
+.choice { display: inline-flex; flex-wrap: wrap; gap: .375rem; }
+.choice__item { position: relative; display: block; cursor: pointer; }
+.choice__item input { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; opacity: 0; cursor: pointer; }
+.choice__item span {
+  position: relative; display: inline-flex; align-items: center; justify-content: center; min-width: 4.75rem; min-height: 2.75rem; padding: 0 1.35rem .1rem;
+  font: 500 1.1875rem/1 var(--serif); color: var(--text-soft); border: 1px solid var(--edge); border-radius: .25rem;
+  transition: color .5s var(--ease), border-color .5s var(--ease), background .5s var(--ease);
+}
+.choice__item span::before { content: ""; position: absolute; left: .55rem; top: 50%; width: .3125rem; height: .3125rem; margin-top: -.15625rem; border-radius: 50%; background: transparent; transition: background .5s var(--ease); }
+.choice__item input:checked + span { color: var(--text); border-color: var(--accent); background: rgb(var(--glow) / .14); }
+.choice__item input:checked + span::before { background: var(--accent); box-shadow: 0 0 .5rem rgb(var(--ember) / .7); }
+.choice__item input:focus-visible + span { outline: 2px solid var(--focus); outline-offset: 3px; }
+.choice__item:hover span { color: var(--text); }
+
+.quiet-btn {
+  min-height: 2.75rem; padding: .3rem 1.2rem .4rem; font: 500 1.1875rem/1.2 var(--serif); letter-spacing: .02em; color: var(--text);
+  border: 1px solid var(--btn-edge); border-radius: .1875rem; background: var(--plate);
+  transition: background .5s var(--ease);
+}
+.quiet-btn:hover { background: var(--plate-hover); }
+
+/* ---------------------------------------------------------------------------------------------- the ending */
+/* The picture lifts slowly to pale paper. On it, as on the last page of a book: the name of the ride, the small
+   wave, and two quiet choices, above where the horizon and the lantern were. */
+.ending {
+  position: absolute; inset: 0; z-index: 6; display: grid; justify-items: center; align-content: start;
+  padding: clamp(3.5rem, 22vh, 14rem) 1.5rem 2rem; background: #f1d9c0; opacity: 0; pointer-events: none; transition: opacity 12s linear;
+}
+.ending.is-on { opacity: .86; pointer-events: auto; }
+.ending.is-full { opacity: 1; transition: opacity 1.6s ease; }
+.ending.is-off { opacity: 0; pointer-events: none; transition: opacity 2.4s ease; }
+.ending__card { display: grid; justify-items: center; width: min(100%, 44rem); text-align: center; }
+/* (the name, drawn: as on the title card) */
+.ending__mark { width: min(100%, clamp(19rem, 15rem + 24cqi, 36rem)); margin: -4% 0 -3% 2%; color: var(--text); --mark-lamp: #e2601a; opacity: 0; transition: opacity 4s ease 4s; }
+.ending.is-on .ending__mark { opacity: 1; }
+/* (the two choices cannot be tabbed to before they begin to show: a keyboard would find a button nobody can see) */
+.ending__choices { display: flex; flex-wrap: wrap; gap: 1rem 2rem; justify-content: center; margin-top: 1.9rem; opacity: 0; visibility: hidden; transition: opacity 2.5s ease 7s, visibility 0s linear 7s; }
+.ending.is-on .ending__choices { opacity: 1; visibility: visible; }
+.ending.is-full .ending__choices { opacity: 0; transition: opacity .8s ease; }
+.ending.is-still, .ending.is-still .ending__choices, .ending.is-still .ending__mark { transition: none; }
+.ending__btn {
+  min-width: 10.5rem; min-height: 3rem; padding: .45rem 2rem .6rem; font: 500 1.5rem/1.2 var(--serif); letter-spacing: .03em; color: var(--text);
+  background: rgb(255 255 255 / .42); border: 1px solid var(--btn-edge); border-radius: .1875rem; cursor: pointer; transition: background-color .3s ease;
+}
+.ending__btn:hover, .ending__btn:focus-visible { background: rgb(255 255 255 / .75); }
+.ending__btn:focus-visible { outline: 2px solid var(--focus); outline-offset: 4px; }
+@media (max-height: 34rem) {
+  .ending { padding-top: clamp(1.25rem, 10vh, 6rem); }
+  .ending__choices { margin-top: 1.25rem; }
+}
+
+/* ---------------------------------------------------------------------------------------------- less motion */
+/* Asked for (in the options here, or in the system's own settings): nothing in the interface fades, slides,
+   breathes or flickers. Every state is simply there. */
+html.motion-reduce #ui *, html.motion-reduce #ui *::before, html.motion-reduce #ui *::after, html.motion-reduce #ui .ending, html.motion-reduce .ground > b { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
+html.motion-reduce dialog.pause::backdrop { transition: none !important; }
+@media (prefers-reduced-motion: reduce) {
+  html:not(.motion-on) #ui *, html:not(.motion-on) #ui *::before, html:not(.motion-on) #ui *::after, html:not(.motion-on) .ground > b { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
+  html:not(.motion-on) dialog.pause::backdrop { transition: none !important; }
+}
+
+/* asked for more contrast: heavier grounds, firmer lines, and the corner buttons always at full strength */
+@media (prefers-contrast: more) {
+  :root { --dust: 232 228 236; --glass-wash: .86; --panel-wash: .95; --cap-night: 52 49 46; --cap-day: 214 207 196; }      /* (the grounds: 11 to 1 either way; src/ui.js does the same with the picture's hue) */
+  #ui { --hair: rgb(var(--paper) / .45); --edge: rgb(var(--paper) / .85); --key-edge: rgb(var(--paper) / .9); }
+  #ui .title[data-tone="day"] { --hair: rgb(var(--tea) / .6); --edge: rgb(var(--tea)); }
+  :root { --corner-wash: .8; }
+  .pause__panel { border-color: rgb(var(--paper) / .55); }
+  dialog.pause::backdrop { background: rgb(13 11 12 / .6); }
+}
+
+/* a picture that is forced to a few system colours: let the system draw the lines */
+@media (forced-colors: active) {
+  .begin, .menu__item--primary, .quiet-btn, .hud__btn, .ending__btn { border: 1px solid ButtonText !important; }
+  .ground__cap, .hud__btn::before, .pause__panel { background: Canvas !important; -webkit-mask-image: none; mask-image: none; }
+  .ground__cap { mix-blend-mode: normal !important; }
+  .switch::after, .choice__item input:checked + span::before, .holding i { background: CanvasText; forced-color-adjust: none; }
+}
+
+/* for measuring only (&uitest=ghost): every mark gone, every ground left */
+#ui.ghost, #ui.ghost * { color: transparent !important; text-decoration-color: transparent !important; }
+#ui.ghost .title__more i, #ui.ghost .holding i { background: transparent !important; }

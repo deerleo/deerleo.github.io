@@ -8,7 +8,7 @@
   {% include theme-init.html %}
   <link rel="stylesheet" href="{{ '/assets/css/theme.css' | relative_url }}?v=20261027">
   <script src="{{ '/assets/js/theme.js' | relative_url }}" defer></script>
-  <meta name="description" content="Claude Fable 5.2（2026-11-09 发布）一周内社区代表性作品盘点：12 件作品总表、成本与耗时数据、Saltline 详情、源代码可得性标注与镜像指引，附合规与出处说明。">
+  <meta name="description" content="Claude Fable 5.2（2026-11-09 发布）一周内社区代表性作品盘点：12 件作品总表、成本与耗时数据、Saltline 详情、源代码可得性标注；Saltline 与 What the Water Keeps 已获授权在本站镜像在线游玩。">
   <meta name="robots" content="index,follow">
   <title>Claude Fable 5.2 惊人作品专题 · 迷鹿 MiLu</title>
   <style>
@@ -80,13 +80,13 @@
   <link rel="canonical" href="https://lu.wiki/project/fable-52-showcase/">
 </head>
 <body id="top">
-  {% include subpage-shell.html identity="Fable 5.2 惊人作品专题" descriptor="作品盘点 × 源代码镜像指引" %}
+  {% include subpage-shell.html identity="Fable 5.2 惊人作品专题" descriptor="作品盘点 × 两件已镜像在线玩" %}
   <main class="wrap">
     <header class="hero">
       <p class="eyebrow">One week of Fable 5.2</p>
       <h1>Fable 5.2<br>惊人<em>作品专题</em></h1>
-      <p>2026 年 11 月 9 日，Anthropic 发布 Claude Fable 5.2。随后一周，社区交出了一批让人意外的作品：一次提示词生成的完整浏览器 FPS、一部 Blender 短片、一座可导航的 3D 城市。本页盘点其中代表性的 12 件，逐一标注成本与耗时，并重点给出每个作品的<strong>源代码可得性</strong>——能不能拿来跑、能改到什么程度，比「看起来很厉害」更值得先弄清楚；对已开源镜像的作品，本页给出获取与本地运行指引。</p>
-      <div class="tags"><span>作品盘点</span><span>源代码镜像指引</span><span>成本数据</span><span>合规出处</span></div>
+      <p>2026 年 11 月 9 日，Anthropic 发布 Claude Fable 5.2。随后一周，社区交出了一批让人意外的作品：一次提示词生成的完整浏览器 FPS、一部 Blender 短片、一座可导航的 3D 城市。本页盘点其中代表性的 12 件，逐一标注成本与耗时，并重点给出每个作品的<strong>源代码可得性</strong>——能不能拿来跑、能改到什么程度，比「看起来很厉害」更值得先弄清楚；其中 <a href="/apps/saltline/"><strong>Saltline</strong></a> 与 <a href="/apps/what-the-water-keeps/"><strong>What the Water Keeps</strong></a> 已获原作者授权在本站镜像，可直接在线游玩。</p>
+      <div class="tags"><span>作品盘点</span><span>2 件已镜像在线玩</span><span>成本数据</span><span>合规出处</span></div>
     </header>
 
     <section class="section" id="overview">
@@ -95,7 +95,7 @@
       <div class="stats">
         <div class="stat"><b>12</b><span>一周内代表性作品（本页收录）</span></div>
         <div class="stat"><b>8h / ~$550</b><span>Saltline：一次提示词的完整成本</span></div>
-        <div class="stat"><b>3</b><span>Saltline 相关开源仓库（见「镜像指引」）</span></div>
+        <div class="stat"><b>2 件</b><span>已获授权本站镜像，可在线游玩</span></div>
         <div class="stat"><b>95 万字</b><span>泄漏系统提示词，站内有逐行解剖图</span></div>
       </div>
       <div class="legend">
@@ -112,7 +112,7 @@
               <td class="w">Saltline</td>
               <td>Felix Rieseberg（Anthropic 工程师，Electron 维护者）</td>
               <td>浏览器 FPS</td>
-              <td>一次提示词零人工反馈：约 270 万输出 token + 4.45 亿输入 token；单文件约 1.42–1.43MB（两版本略有差异），Three.js r180 内联，模型/纹理/音效全程序化生成，零外部资源</td>
+              <td>一次提示词零人工反馈：约 270 万输出 token + 4.45 亿输入 token；单文件约 1.42–1.43MB（两版本略有差异），Three.js r180 内联，模型/纹理/音效全程序化生成，零外部资源。<a class="in" href="/apps/saltline/"><strong>本站已镜像 · 在线玩 ↗</strong></a></td>
               <td class="cost">8h / ~$550</td>
               <td><span class="badge b-yes">✅ 开源镜像多个</span></td>
               <td><a href="https://claude.ai/artifact/BGY1SztrAYcJQHSsnHHGmp" target="_blank" rel="noopener">原版 artifact ↗</a> · <a href="https://github.com/realcodebear/saltline-fable-5.2" target="_blank" rel="noopener">GitHub 镜像 ↗</a></td>
@@ -139,10 +139,10 @@
               <td class="w">What the Water Keeps</td>
               <td>Kevin Ngo</td>
               <td>浏览器泛舟游戏</td>
-              <td>乘小船穿越 8 个梦境世界，小王子绘本风；Tripo 3D 造模型 + Suno 配乐</td>
+              <td>乘小船穿越 8 个梦境世界，小王子绘本风；Tripo 3D 造模型 + Suno 配乐。<a class="in" href="/apps/what-the-water-keeps/"><strong>本站已镜像 · 在线玩 ↗</strong></a></td>
               <td class="cost">—</td>
-              <td><span class="badge b-part">⚠️ 在线可玩，源码未公开仓库</span></td>
-              <td><a href="https://what-the-water-keeps.vercel.app" target="_blank" rel="noopener">在线试玩 ↗</a></td>
+              <td><span class="badge b-yes">✅ 社区逆向重建开源</span></td>
+              <td><a href="https://what-the-water-keeps.vercel.app" target="_blank" rel="noopener">在线试玩 ↗</a> · <a href="https://github.com/dill-lk/What-the-Water-Keeps" target="_blank" rel="noopener">源码重建仓库 ↗</a></td>
             </tr>
             <tr>
               <td class="w">The Edge</td>
@@ -270,36 +270,40 @@
     </section>
 
     <section class="section" id="mirror">
-      <h2>三、本站镜像指引：可镜像的只有 Saltline</h2>
-      <p class="section-intro">逐条核对上表 12 件作品后，明确可在本站给出镜像指引的只有 Saltline——社区已有多个仓库实践。需要先说清楚本站的做法：<strong>本站仓库不复制游戏文件</strong>。原 artifact 没有独立的许可证声明，版权状态未明，所以本页只做外链与指引，这与本站「Fable 5.2 提示词解剖图」引用原文摘录的处理口径一致。</p>
+      <h2>三、本站镜像：两件作品已获授权转载</h2>
+      <p class="section-intro">经与原作者沟通，<strong>Saltline</strong>（作者 Felix Rieseberg）与 <strong>What the Water Keeps</strong>（作者 Kevin Ngo）已获转载授权，条件是<strong>署原作者名</strong>——两个镜像文件头部均带有完整署名与出处注释，游戏代码零改动。其余作品未见公开源码，仍只做外链指引。</p>
       <div class="repos">
         <div class="repo">
-          <span class="rk main">主推镜像</span>
-          <b>realcodebear/saltline-fable-5.2</b>
-          <p>代码零改动，仅去除 frame-runtime 并补加 doctype，仓库含在线 Demo。</p>
-          <a href="https://github.com/realcodebear/saltline-fable-5.2" target="_blank" rel="noopener">前往仓库 ↗</a>
+          <span class="rk main">本站镜像 · 已授权</span>
+          <b>Saltline</b>
+          <p>by Felix Rieseberg（Anthropic）。一次提示词生成的雨夜港区 FPS，1.42MB 单文件，零外部资源，浏览器直接开玩。文件头注释含完整署名与出处。</p>
+          <a href="/apps/saltline/">在本站游玩 →</a> · <a href="https://github.com/realcodebear/saltline-fable-5.2" target="_blank" rel="noopener" style="margin-left:8px">源仓库 ↗</a>
         </div>
         <div class="repo">
-          <span class="rk">中文存档</span>
-          <b>Megasu/jimao-3a-game</b>
-          <p>Saltline 中文存档版：1,425,707 字节单文件，离线可玩。即页底「几猫」事件所涉仓库。</p>
-          <a href="https://github.com/Megasu/jimao-3a-game" target="_blank" rel="noopener">前往仓库 ↗</a>
+          <span class="rk main">本站镜像 · 已授权</span>
+          <b>What the Water Keeps</b>
+          <p>by Kevin Ngo。小王子绘本风泛舟游戏，8 个梦境世界；基于社区逆向重建源码（dill-lk/What-the-Water-Keeps）镜像，93MB 含全部 3D 模型与配乐资产。</p>
+          <a href="/apps/what-the-water-keeps/">在本站游玩 →</a> · <a href="https://github.com/dill-lk/What-the-Water-Keeps" target="_blank" rel="noopener" style="margin-left:8px">源仓库 ↗</a>
         </div>
         <div class="repo">
-          <span class="rk">联机改造</span>
-          <b>wenzhengshi/fable5-2-salt-online</b>
-          <p>非官方联机版「盐线行动」：Node.js + WebSocket 多人混战 / 排行榜 / 语音。MIT 声明仅覆盖整理部分。</p>
-          <a href="https://github.com/wenzhengshi/fable5-2-salt-online" target="_blank" rel="noopener">前往仓库 ↗</a>
+          <span class="rk">社区仓库索引</span>
+          <b>Saltline 三个变体仓库</b>
+          <p>原版镜像 realcodebear/saltline-fable-5.2、中文存档 Megasu/jimao-3a-game、联机改造 wenzhengshi/fable5-2-salt-online（MIT 仅覆盖整理部分）。</p>
+          <a href="https://github.com/realcodebear/saltline-fable-5.2" target="_blank" rel="noopener">realcodebear ↗</a> · <a href="https://github.com/Megasu/jimao-3a-game" target="_blank" rel="noopener" style="margin-left:6px">Megasu ↗</a> · <a href="https://github.com/wenzhengshi/fable5-2-salt-online" target="_blank" rel="noopener" style="margin-left:6px">wenzhengshi ↗</a>
         </div>
       </div>
       <div class="run">
-        <header>本地运行（以仓库实际说明为准）</header>
-        <pre>git clone https://github.com/realcodebear/saltline-fable-5.2
-cd saltline-fable-5.2
-python3 -m http.server 8731
-<em># 浏览器打开 http://localhost:8731 即可离线游玩</em></pre>
+        <header>本地运行（可选——本站可直接在线玩，此节供想离线跑的人参考）</header>
+        <pre># Saltline（单文件）
+curl -o saltline.html https://lu.wiki/apps/saltline/
+<em># 浏览器打开 saltline.html 即可离线游玩</em>
+
+# What the Water Keeps（完整目录，含模型与音频）
+git clone https://github.com/dill-lk/What-the-Water-Keeps
+cd What-the-Water-Keeps && python3 -m http.server 8732
+<em># 浏览器打开 http://localhost:8732</em></pre>
       </div>
-      <div class="note">提醒：上述仓库均为社区第三方镜像，MIT 声明仅适用于整理者新增内容，不构成对原作的再授权；游戏本体的使用授权以 Anthropic 平台条款为准。</div>
+      <div class="note">授权说明：以上两件作品经站主与原作者沟通获得转载授权，条件为署原作者名；镜像文件内已带署名注释。Saltline 社区仓库的 MIT 声明仅适用于整理者新增内容；What the Water Keeps 原作发布形态为闭源构建，本站镜像基于社区逆向重建版本，版权归原作者 Kevin Ngo 所有。</div>
     </section>
 
     <section class="section" id="legal">
@@ -307,8 +311,8 @@ python3 -m http.server 8731
       <p class="section-intro">本页为公开资料盘点，立场上中立、数据上注明来源；以下四条适用于全页。</p>
       <div class="legal">
         <div>
-          <b>版权归属</b>
-          所有作品版权归原作者 / 平台所有。Saltline 等镜像仓库中的 MIT 声明仅适用于整理者新增内容，不构成对原作的再授权；原 artifact 的授权条款以 Anthropic 平台为准。
+          <b>版权与授权</b>
+          所有作品版权归原作者 / 平台所有。其中 Saltline 与 What the Water Keeps 两件经站主与原作者沟通获得转载授权（条件：署原作者名，镜像文件头部已附署名注释）；其余作品本页仅做外链指引。Saltline 社区镜像仓库的 MIT 声明仅适用于整理者新增内容；原 artifact 的授权条款以 Anthropic 平台为准。
         </div>
         <div>
           <b>「几猫」说明</b>
@@ -330,7 +334,7 @@ python3 -m http.server 8731
     </section>
 
     <footer class="footer">
-      <span>Fable 5.2 Showcase · 作品盘点与源代码镜像指引，数据来源见「合规与出处」</span>
+      <span>Fable 5.2 Showcase · 作品盘点与镜像指引，数据来源见「合规与出处」</span>
       <span>迷鹿 MiLu · lu.wiki</span>
     </footer>
   </main>

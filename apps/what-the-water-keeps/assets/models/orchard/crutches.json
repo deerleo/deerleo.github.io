@@ -1,0 +1,83 @@
+{
+ "about": "How each crutch stands, written by source-art/models/orchard/crutch.py. kind: single (a forked pole, modelled upright) or pair (shear legs: two poles crossed `cross` metres below the cradle, their feet apart along the bough's own line, each leaning `rake` radians from plumb: the first toward the bough's -X end at its foot, the second toward +X). reach: the highest cradle it is made for; down: how far below the cradle the model goes.",
+ "designs": {
+  "crutch_A": {
+   "kind": "single",
+   "reach": 3.9,
+   "down": 5.4,
+   "triangles": 1083
+  },
+  "crutch_B": {
+   "kind": "single",
+   "reach": 3.9,
+   "down": 5.4,
+   "triangles": 2208
+  },
+  "crutch_C": {
+   "kind": "pair",
+   "reach": 3.9,
+   "cross": 0.36,
+   "rake": [
+    0.2182,
+    0.1833
+   ],
+   "radius": 0.056,
+   "down": 5.35,
+   "triangles": 1444
+  },
+  "crutch_D": {
+   "kind": "pair",
+   "reach": 6.1,
+   "cross": 0.46,
+   "rake": [
+    0.2094,
+    0.2356
+   ],
+   "radius": 0.082,
+   "down": 7.55,
+   "triangles": 2322
+  },
+  "crutch_E": {
+   "kind": "pair",
+   "reach": 6.1,
+   "cross": 0.43,
+   "rake": [
+    0.2356,
+    0.192
+   ],
+   "radius": 0.078,
+   "down": 7.55,
+   "triangles": 2322
+  },
+  "crutch_F": {
+   "kind": "pair",
+   "reach": 4.7,
+   "cross": 0.55,
+   "rake": [
+    0.2269,
+    0.2618
+   ],
+   "radius": 0.112,
+   "down": 6.15,
+   "triangles": 1592
+  },
+  "crutch_G": {
+   "kind": "pair",
+   "reach": 4.7,
+   "cross": 0.5,
+   "rake": [
+    0.288,
+    0.2443
+   ],
+   "radius": 0.104,
+   "down": 6.15,
+   "triangles": 1592
+  },
+  "crutch_H": {
+   "kind": "single",
+   "reach": 6.1,
+   "down": 7.6,
+   "triangles": 1148
+  }
+ }
+}

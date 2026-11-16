@@ -1,0 +1,47 @@
+{
+ "cap": {
+  "a": {
+   "across": [
+    9.41,
+    9.94
+   ],
+   "crest": 3.51,
+   "seat": -2.02,
+   "triangles": 1268
+  },
+  "b": {
+   "across": [
+    12.15,
+    10.78
+   ],
+   "crest": 4.86,
+   "seat": -1.98,
+   "triangles": 1396
+  },
+  "c": {
+   "across": [
+    16.79,
+    13.34
+   ],
+   "crest": 5.35,
+   "seat": -1.96,
+   "triangles": 1614
+  }
+ },
+ "brow": {
+  "a": {
+   "along": 14.0,
+   "top": 15.0,
+   "crest": 16.34,
+   "front": 3.63,
+   "triangles": 1442
+  },
+  "b": {
+   "along": 14.0,
+   "top": 15.0,
+   "crest": 16.0,
+   "front": 3.28,
+   "triangles": 1174
+  }
+ }
+}

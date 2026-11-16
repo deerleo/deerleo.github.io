@@ -1,0 +1,69 @@
+{
+ "backcloth": {
+  "files": [
+   "backcloth_l",
+   "backcloth_r"
+  ],
+  "px": [
+   3840,
+   1808
+  ],
+  "note": "left and right halves of one picture, split down the middle seam"
+ },
+ "border": {
+  "file": "border",
+  "cells": [
+   [
+    0,
+    0.5031055900621118,
+    1,
+    1
+   ],
+   [
+    0,
+    0,
+    1,
+    0.49689440993788825
+   ]
+  ],
+  "aspect": 3.0,
+  "note": "two halves of one strip (left half above, right half below); each is 13 m of the backcloth's width by 4.34 m of its height; alpha is the cut edge"
+ },
+ "flycloths": {
+  "file": "flycloths",
+  "cells": {
+   "moon": [
+    0,
+    0.33665835411471323,
+    1,
+    1
+   ],
+   "snow": [
+    0,
+    0,
+    0.49789915966386555,
+    0.3316708229426434
+   ],
+   "sunrise": [
+    0.5021008403361344,
+    0,
+    1,
+    0.3316708229426434
+   ]
+  }
+ },
+ "clouds": {
+  "file": "clouds",
+  "px": [
+   1904,
+   1064
+  ]
+ },
+ "wings": {
+  "file": "wings_atlas",
+  "px": [
+   2541,
+   2787
+  ]
+ }
+}

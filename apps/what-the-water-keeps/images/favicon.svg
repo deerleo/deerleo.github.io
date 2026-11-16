@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <!-- The ride's tab icon: the kept lamp's flame and its stroke of light on the water (the lamp of the drawn mark,
+       src/logo.js, brought down to what sixteen pixels can hold). Drawn by hand; share/README.md says how the other
+       icons are made from this and from share/icon.svg. One pixel of a 16 px icon is 4 units here: the two strokes on
+       the water lie on whole rows of it. -->
+  <defs>
+    <linearGradient id="night" x1="0" y1="0" x2="0" y2="64" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#2a3474"/>
+      <stop offset=".625" stop-color="#1a2152"/>
+      <stop offset=".625" stop-color="#0c1130"/>
+      <stop offset="1" stop-color="#070a1c"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="32" cy="26" r="30" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#ffb45e" stop-opacity=".6"/>
+      <stop offset=".4" stop-color="#ffb45e" stop-opacity=".2"/>
+      <stop offset="1" stop-color="#ffb45e" stop-opacity="0"/>
+    </radialGradient>
+    <clipPath id="tile"><rect width="64" height="64" rx="14"/></clipPath>
+  </defs>
+  <g clip-path="url(#tile)">
+    <rect width="64" height="64" fill="url(#night)"/>
+    <rect width="64" height="40" fill="url(#glow)"/>
+    <path fill="#ffb45e" d="M32 8C37 15.5 42 20 42 27.5a10 10 0 0 1-20 0C22 20 27 15.5 32 8z"/>
+    <path fill="#fff3d8" d="M32 19c2.5 3.5 4.5 5.5 4.5 9.5a4.5 4.5 0 0 1-9 0c0-4 2-6 4.5-9.5z"/>
+    <rect x="20" y="44" width="24" height="4" rx="2" fill="#ffb45e"/>
+    <rect x="28" y="52" width="12" height="4" rx="2" fill="#ffb45e" opacity=".72"/>
+    <rect x="30" y="59" width="6" height="2.4" rx="1.2" fill="#ffb45e" opacity=".4"/>
+  </g>
+</svg>

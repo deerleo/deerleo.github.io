@@ -1,0 +1,38 @@
+{
+ "hang": {
+  "a": {
+   "length": 0.6,
+   "triangles": 168
+  },
+  "b": {
+   "length": 1.3,
+   "triangles": 252
+  },
+  "c": {
+   "length": 2.3,
+   "triangles": 370
+  },
+  "d": {
+   "length": 3.3,
+   "triangles": 396
+  }
+ },
+ "vault": {
+  "top": 18.6,
+  "edge": 11.2,
+  "half": 7.7,
+  "pow": 1.7,
+  "across": 16.0,
+  "along": 12.0,
+  "variants": {
+   "a": {
+    "ends": 146,
+    "triangles": 5758
+   },
+   "b": {
+    "ends": 146,
+    "triangles": 5760
+   }
+  }
+ }
+}

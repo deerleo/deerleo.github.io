@@ -1,0 +1,45 @@
+{
+ "files": {
+  "rung_snow": {
+   "file": "models/snow/rung_snow.glb",
+   "triangles": 508
+  },
+  "basket_snow": {
+   "file": "models/snow/basket_snow.glb",
+   "triangles": 77
+  },
+  "hive_caps": {
+   "file": "models/snow/hive_caps.glb",
+   "triangles": 900
+  },
+  "plank_snow_a": {
+   "file": "models/snow/plank_snow_a.glb",
+   "triangles": 154
+  },
+  "plank_snow_b": {
+   "file": "models/snow/plank_snow_b.glb",
+   "triangles": 160
+  },
+  "plank_snow_c": {
+   "file": "models/snow/plank_snow_c.glb",
+   "triangles": 16
+  },
+  "crate_snow": {
+   "file": "models/snow/crate_snow.glb",
+   "triangles": 116
+  },
+  "cart_drift": {
+   "file": "models/snow/cart_drift.glb",
+   "triangles": 1648
+  }
+ },
+ "lean": 20.0,
+ "crate": {
+  "rotation": [
+   0.16,
+   0.5,
+   0.06
+  ]
+ },
+ "about": "The snow on what was left for the night, written by source-art/models/snow/left_snow.py over the flood orchard's own files. Each file is in its piece's own space: place it exactly as the piece."
+}

@@ -1,0 +1,42 @@
+{
+ "top": 7.6,
+ "foot": -9.0,
+ "across": 0.78,
+ "variants": {
+  "a": {
+   "z0": 5.85,
+   "z1": 7.22,
+   "split": 6.535,
+   "sides": 6,
+   "triangles": 534
+  },
+  "b": {
+   "z0": 4.7,
+   "z1": 6.45,
+   "split": 5.575,
+   "sides": 5,
+   "triangles": 495
+  },
+  "c": {
+   "z0": 5.45,
+   "z1": 6.9,
+   "split": 6.175,
+   "sides": 7,
+   "triangles": 567
+  },
+  "d": {
+   "z0": 5.0,
+   "z1": 6.2,
+   "split": 5.6,
+   "sides": 6,
+   "triangles": 534
+  },
+  "e": {
+   "z0": 5.6,
+   "z1": 7.05,
+   "split": 6.325,
+   "sides": 6,
+   "triangles": 558
+  }
+ }
+}

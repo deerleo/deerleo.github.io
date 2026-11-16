@@ -1,0 +1,165 @@
+{
+ "models": {
+  "apple_A": {
+   "near": {
+    "file": "models/snow/apple_snow_A.glb",
+    "triangles": 4880,
+    "wood": "models/orchard/apple_A.glb",
+    "wood_triangles": 7776
+   },
+   "lo": {
+    "file": "models/snow/apple_snow_A_lo.glb",
+    "triangles": 2296,
+    "wood": "models/orchard/apple_A_lo.glb",
+    "wood_triangles": 1938
+   },
+   "far": {
+    "file": "models/snow/apple_snow_A_far.glb",
+    "triangles": 280,
+    "wood": "models/orchard/apple_A_far.glb",
+    "wood_triangles": 587
+   }
+  },
+  "apple_B": {
+   "near": {
+    "file": "models/snow/apple_snow_B.glb",
+    "triangles": 4572,
+    "wood": "models/orchard/apple_B.glb",
+    "wood_triangles": 7686
+   },
+   "lo": {
+    "file": "models/snow/apple_snow_B_lo.glb",
+    "triangles": 2248,
+    "wood": "models/orchard/apple_B_lo.glb",
+    "wood_triangles": 1786
+   },
+   "far": {
+    "file": "models/snow/apple_snow_B_far.glb",
+    "triangles": 210,
+    "wood": "models/orchard/apple_B_far.glb",
+    "wood_triangles": 585
+   }
+  },
+  "apple_C": {
+   "near": {
+    "file": "models/snow/apple_snow_C.glb",
+    "triangles": 5816,
+    "wood": "models/orchard/apple_C.glb",
+    "wood_triangles": 7815
+   },
+   "lo": {
+    "file": "models/snow/apple_snow_C_lo.glb",
+    "triangles": 2422,
+    "wood": "models/orchard/apple_C_lo.glb",
+    "wood_triangles": 1907
+   },
+   "far": {
+    "file": "models/snow/apple_snow_C_far.glb",
+    "triangles": 274,
+    "wood": "models/orchard/apple_C_far.glb",
+    "wood_triangles": 551
+   }
+  },
+  "apple_D": {
+   "near": {
+    "file": "models/snow/apple_snow_D.glb",
+    "triangles": 4640,
+    "wood": "models/orchard/apple_D.glb",
+    "wood_triangles": 7890
+   },
+   "lo": {
+    "file": "models/snow/apple_snow_D_lo.glb",
+    "triangles": 2342,
+    "wood": "models/orchard/apple_D_lo.glb",
+    "wood_triangles": 1827
+   },
+   "far": {
+    "file": "models/snow/apple_snow_D_far.glb",
+    "triangles": 256,
+    "wood": "models/orchard/apple_D_far.glb",
+    "wood_triangles": 585
+   }
+  },
+  "apple_E": {
+   "near": {
+    "file": "models/snow/apple_snow_E.glb",
+    "triangles": 5380,
+    "wood": "models/orchard/apple_E.glb",
+    "wood_triangles": 7738
+   },
+   "lo": {
+    "file": "models/snow/apple_snow_E_lo.glb",
+    "triangles": 2511,
+    "wood": "models/orchard/apple_E_lo.glb",
+    "wood_triangles": 1943
+   },
+   "far": {
+    "file": "models/snow/apple_snow_E_far.glb",
+    "triangles": 274,
+    "wood": "models/orchard/apple_E_far.glb",
+    "wood_triangles": 581
+   }
+  },
+  "apple_F": {
+   "near": {
+    "file": "models/snow/apple_snow_F.glb",
+    "triangles": 5648,
+    "wood": "models/orchard/apple_F.glb",
+    "wood_triangles": 7744
+   },
+   "lo": {
+    "file": "models/snow/apple_snow_F_lo.glb",
+    "triangles": 2238,
+    "wood": "models/orchard/apple_F_lo.glb",
+    "wood_triangles": 1941
+   },
+   "far": {
+    "file": "models/snow/apple_snow_F_far.glb",
+    "triangles": 198,
+    "wood": "models/orchard/apple_F_far.glb",
+    "wood_triangles": 544
+   }
+  },
+  "apple_low_A": {
+   "near": {
+    "file": "models/snow/apple_low_snow_A.glb",
+    "triangles": 6806,
+    "wood": "models/orchard/apple_low_A.glb",
+    "wood_triangles": 9225
+   },
+   "lo": {
+    "file": "models/snow/apple_low_snow_A_lo.glb",
+    "triangles": 2697,
+    "wood": "models/orchard/apple_low_A_lo.glb",
+    "wood_triangles": 1933
+   },
+   "far": {
+    "file": "models/snow/apple_low_snow_A_far.glb",
+    "triangles": 258,
+    "wood": "models/orchard/apple_low_A_far.glb",
+    "wood_triangles": 587
+   }
+  },
+  "apple_low_B": {
+   "near": {
+    "file": "models/snow/apple_low_snow_B.glb",
+    "triangles": 6316,
+    "wood": "models/orchard/apple_low_B.glb",
+    "wood_triangles": 8887
+   },
+   "lo": {
+    "file": "models/snow/apple_low_snow_B_lo.glb",
+    "triangles": 2763,
+    "wood": "models/orchard/apple_low_B_lo.glb",
+    "wood_triangles": 1946
+   },
+   "far": {
+    "file": "models/snow/apple_low_snow_B_far.glb",
+    "triangles": 290,
+    "wood": "models/orchard/apple_low_B_far.glb",
+    "wood_triangles": 589
+   }
+  }
+ },
+ "about": "The snow that lies on the flood orchard's apple trees, written by source-art/models/snow/apple_snow.py: one snow file for every wood file (near, lo, far; the mote weight carries none), each laid on that very file. Run the script again whenever the wood changes."
+}

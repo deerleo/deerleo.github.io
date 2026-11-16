@@ -1,0 +1,5 @@
+{
+  "tracks": [
+    { "id": "a", "file": "music_a.m4a", "title": "The Quiet Current", "seconds": 194.0, "key": "D minor", "pulse": "6/8, about 52 dotted crotchets per minute", "scale": [62, 64, 65, 67, 69, 70, 72] }
+  ]
+}
