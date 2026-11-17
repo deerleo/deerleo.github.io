@@ -3,6 +3,7 @@ title: "在浏览器里焊电路板：Robotics Bench 把电子入门门槛打到
 description: "Movez 用 Claude 做的 3D 电子实验室：13 块真实开发板，从贴片、回流焊到烙铁焊全程可上手，还能故意接反电容看它爆。本站提供镜像学习版。"
 tags: [Vibe Coding, 电子学, 教育, Claude]
 series: "哟哟鹿鸣"
+podcast: /assets/audio/2026-11-15-robotics-bench-movez.mp3
 ---
 
 ![在浏览器里焊电路板：Robotics Bench 把电子入门门槛打到了零（缩略图）](/assets/images/profile-share.jpg)
