@@ -3,6 +3,7 @@ title: "说好的自律，48 天就被检察官上门对账"
 description: "一份没有罚则、没有执法机关的白宫自我监管协议，总统说它只有「道德约束力」。48 天后，加州总检察长把签约方 OpenAI 告上法庭，指控的失控与披露缺口，恰是协议白纸黑字承诺要防的事。没有剑的契约，只是一堆词。"
 tags: [AI安全, OpenAI, 自我监管]
 series: "哟哟鹿鸣"
+podcast: /assets/audio/accord-48-days-stress-test.mp3
 ---
 
 ![白宫东厅，特朗普与科技高管同框（资料图，白宫官方摄影，摄于 2025 年 9 月 AI 峰会）。这个场景里的「自我监管」气氛，是那份 48 天后被起诉书对账的协议的底色](/assets/images/accord-48-days-stress-test/final_01_whitehouse.jpg)
