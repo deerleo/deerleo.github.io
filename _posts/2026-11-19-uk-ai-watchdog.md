@@ -7,6 +7,9 @@ series: "哟哟鹿鸣"
 
 ![威斯敏斯特宫（资料图）：11 月 18 日凌晨，要求给 AI 安全设立法定监管者的报告，从这座楼里的下议院委员会发出](/assets/images/2026-11-19-uk-ai-watchdog/final_01_westminster.jpg)
 
+<video controls preload="metadata" style="display:block;max-width:100%;width:720px;margin:0 auto;" poster="/assets/videos/2026-11-19-uk-ai-watchdog-cover.jpg" src="/assets/videos/2026-11-19-uk-ai-watchdog.mp4"></video>
+*同一件事的视频版：四十六页报告，没人有权叫停不安全的 AI*
+
 王婆卖瓜，自卖自夸。这句老话损了一千年，损的其实不是卖瓜的，是没人能掀她的秤。
 
 11 月 18 日凌晨 00:01，英国议会下议院商务创新和贸易委员会把一份 46 页的报告挂上官网：《Guardrails for Growth: Making AI Safe》，编号 HC 689，11 名三党议员一致通过。问的对象是 OpenAI、Google DeepMind、Anthropic 和 Meta，四家都把"安全"当核心卖点的公司。
