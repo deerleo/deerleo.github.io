@@ -1,0 +1,58 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 1150" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei',sans-serif">
+  <rect width="900" height="1150" fill="#F7F4EE"/>
+  <rect x="0" y="0" width="900" height="8" fill="#B02418"/>
+
+  <text x="60" y="72" font-size="30" font-weight="700" fill="#1A1A1A">一个综合单价的追溯链</text>
+  <text x="60" y="104" font-size="16" fill="#6B6B6B">从清单项点进去，每一层都有出处——黑盒在造价行当活不过一个结算季</text>
+  <line x1="60" y1="130" x2="840" y2="130" stroke="#D8D4CC" stroke-width="1"/>
+
+  <!-- L1 -->
+  <rect x="60" y="165" width="780" height="120" rx="10" fill="#B02418"/>
+  <text x="92" y="203" font-size="13" font-weight="600" fill="#FFFFFF" letter-spacing="2" opacity="0.85">L1 · 清单项</text>
+  <text x="92" y="238" font-size="21" font-weight="700" fill="#FFFFFF">现浇混凝土矩形柱 C30  ·  综合单价 486.52 元/m³</text>
+  <text x="92" y="266" font-size="14.5" fill="#FFD9D4">点开这个数字，能看到下面每一层</text>
+
+  <!-- arrow -->
+  <path d="M 450 289 L 450 316" stroke="#8A8578" stroke-width="2" marker-end="url(#arr2)"/>
+
+  <!-- L2 -->
+  <rect x="60" y="322" width="780" height="110" rx="10" fill="#FFFFFF" stroke="#E2DDD3" stroke-width="1.5"/>
+  <text x="92" y="358" font-size="13" font-weight="600" fill="#B02418" letter-spacing="2">L2 · 定额子目</text>
+  <text x="92" y="390" font-size="16.5" fill="#1A1A1A">A4-20 柱浇筑 C30（泵送）  ×1.000　+　A16-45 垂直运输  ×0.087</text>
+  <text x="92" y="415" font-size="14.5" fill="#55554E">匹配依据：清单项目特征 + 当地计量规则；匹配不确定的项进「待确认」</text>
+  <path d="M 450 436 L 450 463" stroke="#8A8578" stroke-width="2" marker-end="url(#arr2)"/>
+
+  <!-- L3 -->
+  <rect x="60" y="469" width="780" height="110" rx="10" fill="#FFFFFF" stroke="#E2DDD3" stroke-width="1.5"/>
+  <text x="92" y="505" font-size="13" font-weight="600" fill="#B02418" letter-spacing="2">L3 · 人材机组成</text>
+  <text x="92" y="537" font-size="16.5" fill="#1A1A1A">人工费 68.40　材料费 352.17（C30 商品砼 2.845m³×118.5）　机械费 21.05</text>
+  <text x="92" y="562" font-size="14.5" fill="#55554E">混凝土用量 = 定额消耗量 × 工程量，损耗系数按定额说明取</text>
+  <path d="M 450 583 L 450 610" stroke="#8A8578" stroke-width="2" marker-end="url(#arr2)"/>
+
+  <!-- L4 -->
+  <rect x="60" y="616" width="780" height="110" rx="10" fill="#FFFFFF" stroke="#E2DDD3" stroke-width="1.5"/>
+  <text x="92" y="652" font-size="13" font-weight="600" fill="#B02418" letter-spacing="2">L4 · 价格出处</text>
+  <text x="92" y="684" font-size="16.5" fill="#1A1A1A">C30 商品砼：信息价 2026 年第 3 期 · 商砼 C30（泵送）118.5 元/m³</text>
+  <text x="92" y="709" font-size="14.5" fill="#55554E">期次、地区、档位三要素由人先定死，AI 才能执行取数</text>
+  <path d="M 450 730 L 450 757" stroke="#8A8578" stroke-width="2" marker-end="url(#arr2)"/>
+
+  <!-- L5 -->
+  <rect x="60" y="763" width="780" height="110" rx="10" fill="#1A1A1A"/>
+  <text x="92" y="799" font-size="13" font-weight="600" fill="#F2C94C" letter-spacing="2">L5 · 取费依据</text>
+  <text x="92" y="831" font-size="16.5" fill="#FFFFFF">管理费费率、规费、税金：按费用定额相应章节 + 招标文件约定</text>
+  <text x="92" y="856" font-size="14.5" fill="#B8B4AA">每一条费率都能回指到具体的定额条文或合同条款</text>
+
+  <!-- 三问检验 -->
+  <text x="60" y="930" font-size="19" font-weight="700" fill="#1A1A1A">看任何「自动计价」演示，别看鼠标多丝滑，看三处：</text>
+  <text x="60" y="972" font-size="16" fill="#55554E">① 有没有「待确认项」输出——全绿的结果反而该警惕</text>
+  <text x="60" y="1004" font-size="16" fill="#55554E">② 价格来源能不能点回出处——点不回去就手工抽查</text>
+  <text x="60" y="1036" font-size="16" fill="#55554E">③ 异常单价是标红还是被悄悄抹平——标红才是为你好</text>
+
+  <line x1="60" y1="1075" x2="840" y2="1075" stroke="#D8D4CC" stroke-width="1"/>
+  <text x="60" y="1106" font-size="13" fill="#999488">可解释性设计：广联达 GBRAIN 公开材料 · 千条清单五分钟审核：浙江建航公开报道（数字供参考）</text>
+  <defs>
+    <marker id="arr2" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
+      <path d="M0,0 L8,4 L0,8 Z" fill="#8A8578"/>
+    </marker>
+  </defs>
+</svg>

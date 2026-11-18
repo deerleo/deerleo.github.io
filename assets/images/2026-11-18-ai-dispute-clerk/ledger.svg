@@ -1,0 +1,82 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 1150" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei',sans-serif">
+  <rect width="900" height="1150" fill="#F7F4EE"/>
+  <rect x="0" y="0" width="900" height="8" fill="#B02418"/>
+
+  <text x="60" y="72" font-size="30" font-weight="700" fill="#1A1A1A">一张争议台账长什么样</text>
+  <text x="60" y="104" font-size="16" fill="#6B6B6B">每个争议点后面挂着双方主张与证据出处，全部可点回原文</text>
+  <line x1="60" y1="130" x2="840" y2="130" stroke="#D8D4CC" stroke-width="1"/>
+
+  <!-- 表头 -->
+  <rect x="60" y="160" width="780" height="52" rx="8" fill="#1A1A1A"/>
+  <text x="88" y="193" font-size="16" font-weight="700" fill="#FFFFFF">争议事项</text>
+  <text x="320" y="193" font-size="16" font-weight="700" fill="#FFFFFF">甲方主张</text>
+  <text x="470" y="193" font-size="16" font-weight="700" fill="#FFFFFF">乙方主张</text>
+  <text x="620" y="193" font-size="16" font-weight="700" fill="#FFFFFF">证据出处</text>
+
+  <!-- 行1 -->
+  <rect x="60" y="220" width="780" height="130" rx="8" fill="#FFFFFF" stroke="#E2DDD3" stroke-width="1.5"/>
+  <text x="88" y="252" font-size="15.5" font-weight="700" fill="#B02418">D-01</text>
+  <text x="88" y="278" font-size="15.5" fill="#1A1A1A">基坑支护</text>
+  <text x="88" y="304" font-size="15.5" fill="#1A1A1A">赶工措施费</text>
+  <text x="88" y="330" font-size="13.5" fill="#999488">是否属于合同外新增</text>
+  <text x="320" y="272" font-size="16" font-weight="700" fill="#1A1A1A">0 元</text>
+  <text x="320" y="298" font-size="13" fill="#55554E">已含在措施费包干</text>
+  <text x="470" y="272" font-size="16" font-weight="700" fill="#B02418">86.4 万</text>
+  <text x="470" y="298" font-size="13" fill="#55554E">有监理签认的赶工令</text>
+  <text x="620" y="266" font-size="13.5" fill="#55554E">▸ 合同 12.3 条</text>
+  <text x="620" y="292" font-size="13.5" fill="#55554E">▸ 签证单 VZ-017</text>
+  <text x="620" y="318" font-size="13.5" fill="#55554E">▸ 监理例会纪要 04-11</text>
+
+  <!-- 行2 -->
+  <rect x="60" y="360" width="780" height="130" rx="8" fill="#FFFFFF" stroke="#E2DDD3" stroke-width="1.5"/>
+  <text x="88" y="392" font-size="15.5" font-weight="700" fill="#B02418">D-02</text>
+  <text x="88" y="418" font-size="15.5" fill="#1A1A1A">外墙保温</text>
+  <text x="88" y="444" font-size="15.5" fill="#1A1A1A">材料调差</text>
+  <text x="88" y="470" font-size="13.5" fill="#999488">调差基期与幅度</text>
+  <text x="320" y="412" font-size="16" font-weight="700" fill="#1A1A1A">调增 12.7 万</text>
+  <text x="320" y="438" font-size="13" fill="#55554E">按信息价公式</text>
+  <text x="470" y="412" font-size="16" font-weight="700" fill="#B02418">调增 31.5 万</text>
+  <text x="470" y="438" font-size="13" fill="#55554E">含三次认价差</text>
+  <text x="620" y="406" font-size="13.5" fill="#55554E">▸ 合同专用条款 7.1</text>
+  <text x="620" y="432" font-size="13.5" fill="#55554E">▸ 认价单 RJ-03/05/09</text>
+  <text x="620" y="458" font-size="13.5" fill="#55554E">▸ 信息价 2025 第 5-8 期</text>
+
+  <!-- 行3 -->
+  <rect x="60" y="500" width="780" height="130" rx="8" fill="#FFFFFF" stroke="#E2DDD3" stroke-width="1.5"/>
+  <text x="88" y="532" font-size="15.5" font-weight="700" fill="#B02418">D-03</text>
+  <text x="88" y="558" font-size="15.5" fill="#1A1A1A">零星签证</text>
+  <text x="88" y="584" font-size="15.5" fill="#1A1A1A">重复计量疑点</text>
+  <text x="88" y="610" font-size="13.5" fill="#999488">AI 标注的「疑似」</text>
+  <text x="320" y="552" font-size="16" font-weight="700" fill="#1A1A1A">不认可</text>
+  <text x="320" y="578" font-size="13" fill="#55554E">主张已含清单内</text>
+  <text x="470" y="552" font-size="16" font-weight="700" fill="#B02418">23.8 万</text>
+  <text x="470" y="578" font-size="13" fill="#55554E">两份签证内容重叠</text>
+  <text x="620" y="546" font-size="13.5" fill="#55554E">▸ 签证单 VZ-089</text>
+  <text x="620" y="572" font-size="13.5" fill="#55554E">▸ 签证单 VZ-147</text>
+  <text x="620" y="598" font-size="13.5" fill="#F2A61D" font-weight="600">⚠ 待核实：AI 提示疑似重复</text>
+
+  <!-- 底部说明 -->
+  <rect x="60" y="676" width="780" height="120" rx="10" fill="#1A1A1A"/>
+  <rect x="60" y="676" width="8" height="120" rx="4" fill="#F2C94C"/>
+  <text x="104" y="716" font-size="13" font-weight="600" fill="#F2C94C" letter-spacing="2">关键区别</text>
+  <text x="104" y="748" font-size="18" font-weight="700" fill="#FFFFFF">人工台账漏一份认价单，整场调解口径都歪。</text>
+  <text x="104" y="778" font-size="15" fill="#B8B4AA">AI 版本在「找全」上不加班、不走神；每一行点得回原文。</text>
+
+  <!-- 多口径测算 -->
+  <text x="60" y="850" font-size="19" font-weight="700" fill="#1A1A1A">同一笔争议，三种口径并排一摆</text>
+  <rect x="60" y="876" width="240" height="150" rx="10" fill="#FFFFFF" stroke="#E2DDD3" stroke-width="1.5"/>
+  <text x="180" y="916" font-size="14" font-weight="600" fill="#55554E" text-anchor="middle">按合同口径</text>
+  <text x="180" y="970" font-size="34" font-weight="700" fill="#1A1A1A" text-anchor="middle">38.2 万</text>
+  <text x="180" y="1004" font-size="13" fill="#999488" text-anchor="middle">严格按条款字面</text>
+  <rect x="330" y="876" width="240" height="150" rx="10" fill="#FFFFFF" stroke="#E2DDD3" stroke-width="1.5"/>
+  <text x="450" y="916" font-size="14" font-weight="600" fill="#55554E" text-anchor="middle">按定额口径</text>
+  <text x="450" y="970" font-size="34" font-weight="700" fill="#B02418" text-anchor="middle">64.7 万</text>
+  <text x="450" y="1004" font-size="13" fill="#999488" text-anchor="middle">按计价规则重算</text>
+  <rect x="600" y="876" width="240" height="150" rx="10" fill="#FFFFFF" stroke="#E2DDD3" stroke-width="1.5"/>
+  <text x="720" y="916" font-size="14" font-weight="600" fill="#55554E" text-anchor="middle">按市场价口径</text>
+  <text x="720" y="970" font-size="34" font-weight="700" fill="#1A1A1A" text-anchor="middle">52.9 万</text>
+  <text x="720" y="1004" font-size="13" fill="#999488" text-anchor="middle">按当期市场水平</text>
+
+  <line x1="60" y1="1075" x2="840" y2="1075" stroke="#D8D4CC" stroke-width="1"/>
+  <text x="60" y="1106" font-size="13" fill="#999488">示例数据为脱敏演示场景 · 口径并排可视化本身就在推动调解</text>
+</svg>

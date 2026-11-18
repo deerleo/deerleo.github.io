@@ -1,0 +1,71 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 1150" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei',sans-serif">
+  <rect width="900" height="1150" fill="#F7F4EE"/>
+  <rect x="0" y="0" width="900" height="8" fill="#B02418"/>
+
+  <text x="60" y="72" font-size="30" font-weight="700" fill="#1A1A1A">同一份结算审核，谁干什么</text>
+  <text x="60" y="104" font-size="16" fill="#6B6B6B">分析归 AI，判断和签字归人——分工不是替代</text>
+  <line x1="60" y1="130" x2="840" y2="130" stroke="#D8D4CC" stroke-width="1"/>
+
+  <!-- AI 侧 -->
+  <rect x="60" y="165" width="360" height="46" rx="8" fill="#B02418"/>
+  <text x="240" y="195" font-size="20" font-weight="700" fill="#FFFFFF" text-anchor="middle">AI 负责的三段</text>
+
+  <rect x="60" y="232" width="360" height="150" rx="10" fill="#FFFFFF" stroke="#E2DDD3" stroke-width="1.5"/>
+  <text x="84" y="268" font-size="17" font-weight="700" fill="#1A1A1A">分流整理</text>
+  <text x="84" y="298" font-size="15" fill="#55554E">两百份签证按专业归类</text>
+  <text x="84" y="324" font-size="15" fill="#55554E">合同 / 结算书 / 认价单自动分类</text>
+  <text x="84" y="350" font-size="15" fill="#55554E">送审量 vs 清单量逐条比对</text>
+
+  <rect x="60" y="404" width="360" height="150" rx="10" fill="#FFFFFF" stroke="#E2DDD3" stroke-width="1.5"/>
+  <text x="84" y="440" font-size="17" font-weight="700" fill="#1A1A1A">线索标注</text>
+  <text x="84" y="470" font-size="15" fill="#55554E">重复计量「疑似」标记</text>
+  <text x="84" y="496" font-size="15" fill="#55554E">漏项、口径不一致提示</text>
+  <text x="84" y="522" font-size="15" fill="#55554E">每处差异挂上证据来源</text>
+
+  <rect x="60" y="576" width="360" height="150" rx="10" fill="#FFFFFF" stroke="#E2DDD3" stroke-width="1.5"/>
+  <text x="84" y="612" font-size="17" font-weight="700" fill="#1A1A1A">底稿生成</text>
+  <text x="84" y="642" font-size="15" fill="#55554E">差异清单、询疑问题清单</text>
+  <text x="84" y="668" font-size="15" fill="#55554E">核查底稿、报告初稿</text>
+  <text x="84" y="694" font-size="15" fill="#55554E">全程留痕，供审计追溯</text>
+
+  <!-- 人侧 -->
+  <rect x="480" y="165" width="360" height="46" rx="8" fill="#1A1A1A"/>
+  <text x="660" y="195" font-size="20" font-weight="700" fill="#FFFFFF" text-anchor="middle">人负责的三段</text>
+
+  <rect x="480" y="232" width="360" height="150" rx="10" fill="#FFFFFF" stroke="#E2DDD3" stroke-width="1.5"/>
+  <text x="504" y="268" font-size="17" font-weight="700" fill="#1A1A1A">资料把关</text>
+  <text x="504" y="298" font-size="15" fill="#55554E">确认资料版本有效性</text>
+  <text x="504" y="324" font-size="15" fill="#55554E">合同用错版 = 全盘作废</text>
+  <text x="504" y="350" font-size="15" fill="#55554E">送审稿 / 审定稿要分清</text>
+
+  <rect x="480" y="404" width="360" height="150" rx="10" fill="#FFFFFF" stroke="#E2DDD3" stroke-width="1.5"/>
+  <text x="504" y="440" font-size="17" font-weight="700" fill="#1A1A1A">专业判断</text>
+  <text x="504" y="470" font-size="15" fill="#55554E">签认有效吗？口径适用吗？</text>
+  <text x="504" y="496" font-size="15" fill="#55554E">「疑似重复」要回到证据</text>
+  <text x="504" y="522" font-size="15" fill="#55554E">认定要走程序，不是猜</text>
+
+  <rect x="480" y="576" width="360" height="150" rx="10" fill="#FFFFFF" stroke="#E2DDD3" stroke-width="1.5"/>
+  <text x="504" y="612" font-size="17" font-weight="700" fill="#1A1A1A">结论与签发</text>
+  <text x="504" y="642" font-size="15" fill="#55554E">核减核增的最终判定</text>
+  <text x="504" y="668" font-size="15" fill="#55554E">审核报告审定签发</text>
+  <text x="504" y="694" font-size="15" fill="#55554E">签字的人负责到底</text>
+
+  <!-- 中间连接箭头 -->
+  <path d="M 424 307 L 476 307" stroke="#B02418" stroke-width="2" marker-end="url(#arr)"/>
+  <path d="M 424 479 L 476 479" stroke="#B02418" stroke-width="2" marker-end="url(#arr)"/>
+  <path d="M 424 651 L 476 651" stroke="#B02418" stroke-width="2" marker-end="url(#arr)"/>
+  <defs>
+    <marker id="arr" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
+      <path d="M0,0 L8,4 L0,8 Z" fill="#B02418"/>
+    </marker>
+  </defs>
+
+  <!-- 底部结论 -->
+  <rect x="60" y="790" width="780" height="120" rx="10" fill="#1A1A1A"/>
+  <rect x="60" y="790" width="8" height="120" rx="4" fill="#F2C94C"/>
+  <text x="104" y="840" font-size="22" font-weight="700" fill="#FFFFFF">AI 接管九成体力活，人专注一成判断。</text>
+  <text x="104" y="878" font-size="15.5" fill="#B8B4AA">结论只占审核报告一页，支撑结论的底稿占九成——那九成就是 AI 的价值所在。</text>
+
+  <line x1="60" y1="960" x2="840" y2="960" stroke="#D8D4CC" stroke-width="1"/>
+  <text x="60" y="995" font-size="13" fill="#999488">数据佐证：重庆住建「编-审-管一体化」造价智能体官方案例——自动审核错误率降 30%（2026-01）</text>
+</svg>

@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 1150" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei',sans-serif">
+  <rect width="900" height="1150" fill="#F7F4EE"/>
+  <rect x="0" y="0" width="900" height="8" fill="#B02418"/>
+
+  <text x="60" y="72" font-size="30" font-weight="700" fill="#1A1A1A">纠纷处理的三层分工</text>
+  <text x="60" y="104" font-size="16" fill="#6B6B6B">AI 理资料出台账，专业人员核查判断，有权主体认定签字</text>
+  <line x1="60" y1="130" x2="840" y2="130" stroke="#D8D4CC" stroke-width="1"/>
+
+  <!-- 层1 AI -->
+  <rect x="60" y="165" width="780" height="230" rx="10" fill="#B02418"/>
+  <text x="92" y="203" font-size="13" font-weight="600" fill="#FFD9D4" letter-spacing="2">第一层 · AI</text>
+  <text x="92" y="236" font-size="21" font-weight="700" fill="#FFFFFF">理资料，出台账</text>
+  <text x="92" y="270" font-size="15.5" fill="#FFE9E6">▸ 资料分类、证据目录、各方主张结构化提取</text>
+  <text x="92" y="298" font-size="15.5" fill="#FFE9E6">▸ 争议点 ↔ 合同条款 ↔ 签证变更逐一挂接</text>
+  <text x="92" y="326" font-size="15.5" fill="#FFE9E6">▸ 计价依据与历史案例检索（保留出处）</text>
+  <text x="92" y="354" font-size="15.5" fill="#FFE9E6">▸ 多口径测算对比、争议台账、证据缺口清单</text>
+  <text x="700" y="236" font-size="26" font-weight="700" fill="#FFFFFF" opacity="0.25">书记员</text>
+
+  <path d="M 450 399 L 450 426" stroke="#8A8578" stroke-width="2" marker-end="url(#arr4)"/>
+  <text x="470" y="420" font-size="13.5" fill="#8A8578">输出供核查的材料</text>
+
+  <!-- 层2 专业人员 -->
+  <rect x="60" y="432" width="780" height="230" rx="10" fill="#1A1A1A"/>
+  <text x="92" y="470" font-size="13" font-weight="600" fill="#F2C94C" letter-spacing="2">第二层 · 专业人员</text>
+  <text x="92" y="503" font-size="21" font-weight="700" fill="#FFFFFF">核查，判断</text>
+  <text x="92" y="537" font-size="15.5" fill="#D8D4CC">▸ 台账逐条核实：出处对不对、提取有没有走样</text>
+  <text x="92" y="565" font-size="15.5" fill="#D8D4CC">▸ 「疑似重复」回到证据，走程序认定</text>
+  <text x="92" y="593" font-size="15.5" fill="#D8D4CC">▸ 口径选择、测算复核、专业问题清单定稿</text>
+  <text x="92" y="621" font-size="15.5" fill="#D8D4CC">▸ 争议焦点归纳、调解策略的专业把关</text>
+  <text x="700" y="503" font-size="26" font-weight="700" fill="#FFFFFF" opacity="0.25">审查者</text>
+
+  <path d="M 450 666 L 450 693" stroke="#8A8578" stroke-width="2" marker-end="url(#arr4)"/>
+  <text x="470" y="687" font-size="13.5" fill="#8A8578">形成专业意见</text>
+
+  <!-- 层3 有权主体 -->
+  <rect x="60" y="699" width="780" height="200" rx="10" fill="#FFFFFF" stroke="#B02418" stroke-width="2"/>
+  <text x="92" y="737" font-size="13" font-weight="600" fill="#B02418" letter-spacing="2">第三层 · 有权主体</text>
+  <text x="92" y="770" font-size="21" font-weight="700" fill="#1A1A1A">认定，签字，负责</text>
+  <text x="92" y="804" font-size="15.5" fill="#55554E">▸ 争议事实认定 → 鉴定人 / 鉴定机构</text>
+  <text x="92" y="832" font-size="15.5" fill="#55554E">▸ 鉴定意见出具 → 依法依规签发</text>
+  <text x="92" y="860" font-size="15.5" fill="#55554E">▸ 调解结果确认 → 各方与调解组织</text>
+  <text x="700" y="770" font-size="26" font-weight="700" fill="#1A1A1A" opacity="0.15">法官</text>
+
+  <!-- 底部警句 -->
+  <text x="60" y="960" font-size="17" fill="#55554E">谁见过让软件在鉴定意见上签字的？</text>
+  <text x="60" y="994" font-size="17" fill="#1A1A1A" font-weight="600">这条线不是技术妥协，是这个行当能运转的前提。</text>
+
+  <line x1="60" y1="1050" x2="840" y2="1050" stroke="#D8D4CC" stroke-width="1"/>
+  <text x="60" y="1082" font-size="13" fill="#999488">分工参照：工程纠纷调解智能体通行落地路径（2026）· 事实认定与签发责任不可移交</text>
+  <defs>
+    <marker id="arr4" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
+      <path d="M0,0 L8,4 L0,8 Z" fill="#8A8578"/>
+    </marker>
+  </defs>
+</svg>

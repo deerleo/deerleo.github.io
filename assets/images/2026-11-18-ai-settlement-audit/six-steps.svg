@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 1150" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei',sans-serif">
+  <rect width="900" height="1150" fill="#F7F4EE"/>
+  <rect x="0" y="0" width="900" height="8" fill="#B02418"/>
+
+  <text x="60" y="72" font-size="30" font-weight="700" fill="#1A1A1A">结算审核智能体的六步</text>
+  <text x="60" y="104" font-size="16" fill="#6B6B6B">前五步 AI 走完，最后一步停在人工验收门口</text>
+  <line x1="60" y1="130" x2="840" y2="130" stroke="#D8D4CC" stroke-width="1"/>
+
+  <!-- 纵向主轴 -->
+  <line x1="92" y1="170" x2="92" y2="920" stroke="#C9C3B8" stroke-width="2" stroke-dasharray="1 6" stroke-linecap="round"/>
+
+  <!-- Step 1 -->
+  <circle cx="92" cy="190" r="27" fill="#B02418"/>
+  <text x="92" y="197" font-size="18" font-weight="700" fill="#FFFFFF" text-anchor="middle">01</text>
+  <text x="146" y="185" font-size="20" font-weight="700" fill="#1A1A1A">接收审核任务</text>
+  <text x="146" y="212" font-size="15.5" fill="#55554E">识别项目基本信息、资料范围与审核要求</text>
+
+  <!-- Step 2 -->
+  <circle cx="92" cy="310" r="27" fill="#B02418"/>
+  <text x="92" y="317" font-size="18" font-weight="700" fill="#FFFFFF" text-anchor="middle">02</text>
+  <text x="146" y="305" font-size="20" font-weight="700" fill="#1A1A1A">自动分类资料</text>
+  <text x="146" y="332" font-size="15.5" fill="#55554E">合同 / 招投标文件 / 结算书 / 签证变更 / 认价单</text>
+
+  <!-- Step 3 -->
+  <circle cx="92" cy="430" r="27" fill="#B02418"/>
+  <text x="92" y="437" font-size="18" font-weight="700" fill="#FFFFFF" text-anchor="middle">03</text>
+  <text x="146" y="425" font-size="20" font-weight="700" fill="#1A1A1A">提取合同条款</text>
+  <text x="146" y="452" font-size="15.5" fill="#55554E">结算原则、计价方式、风险范围、调整约定</text>
+
+  <!-- Step 4 -->
+  <circle cx="92" cy="550" r="27" fill="#B02418"/>
+  <text x="92" y="557" font-size="18" font-weight="700" fill="#FFFFFF" text-anchor="middle">04</text>
+  <text x="146" y="545" font-size="20" font-weight="700" fill="#1A1A1A">按审核清单逐项核查</text>
+  <text x="146" y="572" font-size="15.5" fill="#55554E">工程量、综合单价、材料价、措施费、变更费用</text>
+
+  <!-- Step 5 -->
+  <circle cx="92" cy="670" r="27" fill="#B02418"/>
+  <text x="92" y="677" font-size="18" font-weight="700" fill="#FFFFFF" text-anchor="middle">05</text>
+  <text x="146" y="665" font-size="20" font-weight="700" fill="#1A1A1A">形成差异与询疑清单</text>
+  <text x="146" y="692" font-size="15.5" fill="#55554E">差异事项、证据来源、待核实问题，全部带出处</text>
+
+  <!-- Step 6: 人工验收门 -->
+  <rect x="56" y="780" width="788" height="150" rx="10" fill="#1A1A1A"/>
+  <rect x="56" y="780" width="8" height="150" rx="4" fill="#B02418"/>
+  <text x="100" y="830" font-size="13" font-weight="600" fill="#F2C94C" letter-spacing="2">STEP 06 · 人工验收</text>
+  <text x="100" y="868" font-size="22" font-weight="700" fill="#FFFFFF">专业复核与签认</text>
+  <text x="100" y="902" font-size="15.5" fill="#B8B4AA">差异清单 + 核查底稿 + 审核报告初稿，交人验收后才能对外</text>
+
+  <text x="60" y="995" font-size="15" fill="#55554E">注意最后两步的措辞：差异「事项」、询疑「清单」、底稿、初稿。</text>
+  <text x="60" y="1022" font-size="15" fill="#55554E">没有一个词是结论——结论是签完字才存在的。</text>
+
+  <line x1="60" y1="1075" x2="840" y2="1075" stroke="#D8D4CC" stroke-width="1"/>
+  <text x="60" y="1106" font-size="13" fill="#999488">流程参考：造价 AI 实践公开案例（2026）· 六步为通行落地路径</text>
+</svg>

@@ -1,0 +1,73 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 1150" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei',sans-serif">
+  <rect width="900" height="1150" fill="#F7F4EE"/>
+  <rect x="0" y="0" width="900" height="8" fill="#B02418"/>
+
+  <text x="60" y="72" font-size="30" font-weight="700" fill="#1A1A1A">三件朴素的事，撑起「自动计价」</text>
+  <text x="60" y="104" font-size="16" fill="#6B6B6B">传清单、出工作簿中间发生的一切：定额匹配、价格取定、计算可追溯</text>
+  <line x1="60" y1="130" x2="840" y2="130" stroke="#D8D4CC" stroke-width="1"/>
+
+  <!-- 输入 -->
+  <rect x="60" y="165" width="300" height="106" rx="10" fill="#FFFFFF" stroke="#E2DDD3" stroke-width="1.5"/>
+  <text x="84" y="201" font-size="13" font-weight="600" fill="#B02418" letter-spacing="2">输入</text>
+  <text x="84" y="231" font-size="16.5" fill="#1A1A1A">工程量清单（Excel）</text>
+  <text x="84" y="254" font-size="14" fill="#55554E">+ 计价体系 / 地区期次确认</text>
+
+  <path d="M 364 213 L 400 213" stroke="#B02418" stroke-width="2.5" marker-end="url(#arr3)"/>
+
+  <!-- 三件事 -->
+  <rect x="406" y="152" width="434" height="140" rx="10" fill="#B02418"/>
+  <text x="430" y="188" font-size="13" font-weight="600" fill="#FFD9D4" letter-spacing="2">第一件 · 定额匹配</text>
+  <text x="430" y="220" font-size="17" font-weight="700" fill="#FFFFFF">清单特征 → 定额子目</text>
+  <text x="430" y="248" font-size="14.5" fill="#FFE9E6">有把握的直接挂，没把握的进「待确认」</text>
+  <text x="430" y="273" font-size="14.5" fill="#FFE9E6">新工艺、描述模糊的项，标出来等人</text>
+
+  <rect x="406" y="310" width="434" height="140" rx="10" fill="#FFFFFF" stroke="#E2DDD3" stroke-width="1.5"/>
+  <text x="430" y="346" font-size="13" font-weight="600" fill="#B02418" letter-spacing="2">第二件 · 价格取定</text>
+  <text x="430" y="378" font-size="17" font-weight="700" fill="#1A1A1A">哪一期 · 哪个地区 · 哪一档</text>
+  <text x="430" y="406" font-size="14.5" fill="#55554E">三月底的项目用三月还是四月信息价？</text>
+  <text x="430" y="431" font-size="14.5" fill="#55554E">合同约定基准价怎么调——条件人先定死</text>
+
+  <rect x="406" y="468" width="434" height="140" rx="10" fill="#1A1A1A"/>
+  <text x="430" y="504" font-size="13" font-weight="600" fill="#F2C94C" letter-spacing="2">第三件 · 计算可追溯</text>
+  <text x="430" y="536" font-size="17" font-weight="700" fill="#FFFFFF">每个单价都能点回出处</text>
+  <text x="430" y="564" font-size="14.5" fill="#B8B4AA">审计要查、争议要对、复核要追</text>
+  <text x="430" y="589" font-size="14.5" fill="#B8B4AA">这是计价软件和计价玩具的分界线</text>
+
+  <!-- 输出 -->
+  <path d="M 406 538 L 364 538" stroke="#B02418" stroke-width="2.5" marker-end="url(#arr3)"/>
+  <rect x="60" y="490" width="300" height="130" rx="10" fill="#FFFFFF" stroke="#E2DDD3" stroke-width="1.5"/>
+  <text x="84" y="526" font-size="13" font-weight="600" fill="#B02418" letter-spacing="2">输出</text>
+  <text x="84" y="556" font-size="16.5" fill="#1A1A1A">清单计价 Excel 工作簿</text>
+  <text x="84" y="580" font-size="14" fill="#55554E">+ 复核问题清单</text>
+  <text x="84" y="604" font-size="14" fill="#55554E">+ 价格来源说明页</text>
+
+  <!-- 数字对照 -->
+  <text x="60" y="680" font-size="19" font-weight="700" fill="#1A1A1A">速度的公开数字，和它前面的前提</text>
+
+  <rect x="60" y="710" width="240" height="170" rx="10" fill="#FFFFFF" stroke="#E2DDD3" stroke-width="1.5"/>
+  <text x="180" y="790" font-size="44" font-weight="700" fill="#B02418" text-anchor="middle">5 分钟</text>
+  <text x="180" y="830" font-size="14.5" fill="#55554E" text-anchor="middle">千条清单审核</text>
+  <text x="180" y="856" font-size="13" fill="#999488" text-anchor="middle">浙江建航公开报道</text>
+
+  <rect x="330" y="710" width="240" height="170" rx="10" fill="#FFFFFF" stroke="#E2DDD3" stroke-width="1.5"/>
+  <text x="450" y="790" font-size="44" font-weight="700" fill="#B02418" text-anchor="middle">7→1.5 天</text>
+  <text x="450" y="830" font-size="14.5" fill="#55554E" text-anchor="middle">编制周期（某央企试点）</text>
+  <text x="450" y="856" font-size="13" fill="#999488" text-anchor="middle">广联达 GBRAIN 公开材料</text>
+
+  <rect x="600" y="710" width="240" height="170" rx="10" fill="#FFFFFF" stroke="#E2DDD3" stroke-width="1.5"/>
+  <text x="720" y="790" font-size="44" font-weight="700" fill="#1A1A1A" text-anchor="middle">≠ 免检</text>
+  <text x="720" y="830" font-size="14.5" fill="#55554E" text-anchor="middle">前提：人定死取数条件</text>
+  <text x="720" y="856" font-size="13" fill="#999488" text-anchor="middle">结果：人复核确认</text>
+
+  <text x="60" y="940" font-size="16" fill="#55554E">计算这一步 AI 比人快、比人稳——不会漏加一行，不会按错期次。</text>
+  <text x="60" y="968" font-size="16" fill="#55554E">但取数的前提、特征的确认、结果的复核，还是人的活。</text>
+  <text x="60" y="996" font-size="16" fill="#1A1A1A" font-weight="600">工具越自动，人的确认点越要清楚。</text>
+
+  <line x1="60" y1="1050" x2="840" y2="1050" stroke="#D8D4CC" stroke-width="1"/>
+  <text x="60" y="1082" font-size="13" fill="#999488">注：公开报道数字未独立核验，供趋势参考；各案例口径不同，不可直接横向比较</text>
+  <defs>
+    <marker id="arr3" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
+      <path d="M0,0 L8,4 L0,8 Z" fill="#B02418"/>
+    </marker>
+  </defs>
+</svg>
