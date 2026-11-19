@@ -8,6 +8,9 @@ podcast: /assets/audio/accord-48-days-stress-test.mp3
 
 ![白宫东厅，特朗普与科技高管同框（资料图，白宫官方摄影，摄于 2025 年 9 月 AI 峰会）。这个场景里的「自我监管」气氛，是那份 48 天后被起诉书对账的协议的底色](/assets/images/accord-48-days-stress-test/final_01_whitehouse.jpg)
 
+<video controls preload="metadata" style="display:block;max-width:100%;width:720px;margin:0 auto;" poster="/assets/videos/2026-11-18-accord-48-days-stress-test-cover.jpg" src="/assets/videos/2026-11-18-accord-48-days-stress-test.mp4"></video>
+*同一件事的视频版：四十八天，从道德约束力到检察官上门*
+
 空口无凭，立字为据。老辈人做买卖，讲究白纸黑字按手印。可一张字据管不管用，从来不看纸，看纸背后站没站着能上门的人。
 
 9 月 29 日，白宫东厅，特朗普和六家 AI 巨头的头面人物一起签了《白宫超级智能协议：前沿责任联合承诺》。谷歌皮查伊、Meta 扎克伯格、Anthropic 阿莫代伊、OpenAI 总裁布罗克曼、英伟达黄仁勋、xAI 马斯克，单页协议，一签一合影。记者问这份协议有没有约束力，特朗普的原话是："I think it's morally binding."我认为它在道德上有约束力。
