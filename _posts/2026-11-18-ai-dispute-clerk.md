@@ -2,6 +2,7 @@
 title: "造价纠纷里，AI 当不了法官，但当得好书记员"
 description: "工程造价纠纷最耗人的不是算账，是翻资料：两百页合同、几十份签证、两套各说各话的结算文件。AI 在这件事上的正确姿势，是把书记员的活全接了，把法官的活干干净净让出来。"
 tags: [AI造价, 工程纠纷, 智能体, 工程咨询]
+podcast: /assets/audio/2026-11-18-ai-dispute-clerk.mp3
 ---
 
 ![造价纠纷鉴定：AI 当不了法官，但当得好书记员（缩略图）](/assets/images/profile-share.jpg)
