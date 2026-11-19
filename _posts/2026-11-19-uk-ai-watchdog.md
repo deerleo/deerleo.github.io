@@ -3,6 +3,7 @@ title: "卖安全的公司，最怕统一考卷"
 description: "英国议会委员会 11 月 18 日发布 46 页报告：目前没有任何监管者有权叫停不安全的 AI 模型，安全与否的决定权仍在厂商手里。四家拿安全当卖点的巨头，用的不是同一把尺子。这篇拆一拆统一考卷为什么迟迟发不下来，以及把 Agent 接进生产环境的买家该认什么。"
 tags: [AI监管, AI安全, 英国议会, OpenAI, Anthropic]
 series: "哟哟鹿鸣"
+podcast: /assets/audio/uk-ai-watchdog.mp3
 ---
 
 ![威斯敏斯特宫（资料图）：11 月 18 日凌晨，要求给 AI 安全设立法定监管者的报告，从这座楼里的下议院委员会发出](/assets/images/2026-11-19-uk-ai-watchdog/final_01_westminster.jpg)
