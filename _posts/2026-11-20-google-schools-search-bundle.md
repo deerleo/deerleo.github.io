@@ -7,6 +7,9 @@ series: "哟哟鹿鸣"
 
 ![纽约市公立学校课堂（资料图）：全美最大学区 9 月刚给课堂 AI 踩了刹车，11 月发现自己连搜索都要一起交代](/assets/images/2026-11-20-google-schools-search-bundle/final_01_nyc_classroom.jpg)
 
+<video controls preload="metadata" style="display:block;max-width:100%;width:720px;margin:0 auto;" poster="/assets/videos/2026-11-20-google-schools-search-bundle-cover.jpg" src="/assets/videos/2026-11-20-google-schools-search-bundle.mp4"></video>
+*同一件事的视频版：想关 AI 就得连搜索一起关，这笔账拆开算*
+
 1998 年，美国司法部把微软告上法庭，罪名之一是把 IE 浏览器捆进 Windows 卖：想要我的操作系统，就顺带收下我的浏览器。官司打了几年，以和解收场，"捆绑"从此成了美国反垄断词典里的老词。
 
 二十八年过去，老词有了新用法。据《纽约时报》11 月 18 日报道，谷歌已经通知学校：从明年起，想关闭由 Gemini 驱动的 AI 功能，就得连谷歌搜索一起关，没有单独关掉 AI、留下搜索的选项。谷歌教育副总裁克里斯·菲利普斯对《纽约时报》说得明白："搜索和 AI 已经深度整合"，关掉 AI 功能的学校"将无法使用搜索"。纽约、洛杉矶、芝加哥三个学区的反应是：开始找别家搜索。
