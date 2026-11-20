@@ -3,6 +3,7 @@ title: "搜索成了人质，赎金是 Gemini"
 description: "谷歌通知学校：明年起想关闭 Gemini 驱动的 AI 功能，就得连谷歌搜索一起关，没有单独选项。纽约、洛杉矶、芝加哥三大学区开始找别家。卖点是帮助学生学习，行为是把课堂必需品当成捆绑销售的筹码，这篇把这笔账拆开算。"
 tags: [AI教育, 谷歌, Gemini, AI治理]
 series: "哟哟鹿鸣"
+podcast: /assets/audio/google-schools-search-bundle.mp3
 ---
 
 ![纽约市公立学校课堂（资料图）：全美最大学区 9 月刚给课堂 AI 踩了刹车，11 月发现自己连搜索都要一起交代](/assets/images/2026-11-20-google-schools-search-bundle/final_01_nyc_classroom.jpg)
