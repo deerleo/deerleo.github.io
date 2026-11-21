@@ -43,7 +43,7 @@
 
     <rect x="465" y="92" width="130" height="150" rx="9" fill="#eef4ea" stroke="#5c8a4e" stroke-width="1.2"/>
     <text x="530" y="114" text-anchor="middle" font-weight="700" fill="#3d6631">泛化/专属分离</text>
-    <text x="530" y="138" text-anchor="middle" fill="#4a5c40">马桶车标认出=泛化生效</text>
+    <text x="530" y="138" text-anchor="middle" fill="#4a5c40">车标类视觉=泛化生效</text>
     <text x="530" y="156" text-anchor="middle" fill="#4a5c40">品牌梗看不懂=语境缺失</text>
     <text x="530" y="174" text-anchor="middle" fill="#4a5c40">裁决：策略只放泛行业</text>
     <text x="530" y="192" text-anchor="middle" fill="#4a5c40">规则，品牌知识进图谱</text>

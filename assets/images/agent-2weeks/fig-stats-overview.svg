@@ -6,11 +6,11 @@
   <g>
     <text x="80" y="56" font-size="12" font-weight="700" fill="#2d5a8e">对话通道消息量</text>
     <g font-size="10" fill="#6b5f4e">
-      <text x="78" y="86" text-anchor="end">AILU 单聊</text>
+      <text x="78" y="86" text-anchor="end">数字员工单聊</text>
       <rect x="86" y="76" width="215" height="14" rx="3" fill="#4a7ab5"/>
       <text x="308" y="87" font-size="9.5" fill="#4a7ab5">1026</text>
 
-      <text x="78" y="116" text-anchor="end">声誉大模型产品组</text>
+      <text x="86" y="116" text-anchor="end" font-size="9">声誉大模型产品组</text>
       <rect x="86" y="106" width="116" height="14" rx="3" fill="#7d9bc4"/>
       <text x="209" y="117" font-size="9.5" fill="#4a7ab5">554</text>
 
@@ -18,11 +18,11 @@
       <rect x="86" y="136" width="106" height="14" rx="3" fill="#7d9bc4"/>
       <text x="199" y="147" font-size="9.5" fill="#4a7ab5">509</text>
 
-      <text x="78" y="176" text-anchor="end">MaaS 产品迭代群</text>
+      <text x="78" y="176" text-anchor="end">平台产品迭代群</text>
       <rect x="86" y="166" width="97" height="14" rx="3" fill="#7d9bc4"/>
       <text x="190" y="177" font-size="9.5" fill="#4a7ab5">464</text>
 
-      <text x="78" y="206" text-anchor="end">理想 Agent 测试</text>
+      <text x="78" y="206" text-anchor="end">车企项目测试群</text>
       <rect x="86" y="196" width="76" height="14" rx="3" fill="#7d9bc4"/>
       <text x="169" y="207" font-size="9.5" fill="#4a7ab5">363</text>
 
