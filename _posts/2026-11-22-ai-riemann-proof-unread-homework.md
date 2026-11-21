@@ -3,6 +3,7 @@ title: "167 年的数学难题，交上来一份没人读完的作业"
 description: "11 月 20 日，数学家 Alpöge 声称与 Claude 找到黎曼猜想的证明，论文超 25 万页，他自己都没读完，公开的只有 1700 万行 Lean 代码。11 月 21 日清华博士后张凯羿 8 小时 22 分跑完独立验证，175,187 个模块全部编译通过。但编译通过只证明逻辑自洽，证的是不是黎曼猜想本身，数学界还在打问号。"
 tags: [AI, 数学, 黎曼猜想, Lean]
 series: "哟哟鹿鸣"
+podcast: /assets/audio/ai-riemann-proof-unread-homework.mp3
 ---
 
 ![黎曼 ζ 函数三维曲面（资料图）：临界线附近的尖峰是 167 年来数学家反复凝视的地带，本文讨论的证明声称与这片起伏有关](/assets/images/2026-11-22-ai-riemann-proof-unread-homework/final_01_zeta.jpg)
