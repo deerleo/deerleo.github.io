@@ -1,0 +1,73 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 680 420" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">
+  <defs>
+    <marker id="arr" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
+      <path d="M0,0 L8,4 L0,8 Z" fill="#8a6d3b"/>
+    </marker>
+    <marker id="arrb" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
+      <path d="M0,0 L8,4 L0,8 Z" fill="#4a7ab5"/>
+    </marker>
+  </defs>
+
+  <!-- 背景 -->
+  <rect width="680" height="420" fill="#faf8f2"/>
+
+  <!-- 标题 -->
+  <text x="340" y="28" text-anchor="middle" font-size="16" font-weight="700" fill="#3d3325">三层指挥体系：一条指令如何变成一次受控执行</text>
+
+  <!-- 第一层：指挥官 -->
+  <rect x="230" y="46" width="220" height="58" rx="10" fill="#fdf6e3" stroke="#c9a227" stroke-width="1.5"/>
+  <text x="340" y="70" text-anchor="middle" font-size="13" font-weight="700" fill="#7a5d0e">指挥官（人）</text>
+  <text x="340" y="90" text-anchor="middle" font-size="10.5" fill="#8a6d3b">目标 · 拍板 · 授权 · 终验收</text>
+
+  <!-- 第二层：主控/数字员工 -->
+  <rect x="200" y="146" width="280" height="74" rx="10" fill="#eaf1f8" stroke="#4a7ab5" stroke-width="1.5"/>
+  <text x="340" y="170" text-anchor="middle" font-size="13" font-weight="700" fill="#2d5a8e">主控层 · 数字员工 + 调度器</text>
+  <text x="340" y="190" text-anchor="middle" font-size="10.5" fill="#4a7ab5">需求拆解 · 工单生成 · 派发调度</text>
+  <text x="340" y="206" text-anchor="middle" font-size="10.5" fill="#4a7ab5">进度跟踪 · 独立复核 · 回执汇报</text>
+
+  <!-- 第三层：执行 Agent -->
+  <rect x="60" y="268" width="180" height="66" rx="10" fill="#eef4ea" stroke="#5c8a4e" stroke-width="1.5"/>
+  <text x="150" y="292" text-anchor="middle" font-size="12.5" font-weight="700" fill="#3d6631">执行 Agent ×N</text>
+  <text x="150" y="310" text-anchor="middle" font-size="10" fill="#5c8a4e">写码 / 建模 / 跑批 / 测试</text>
+  <text x="150" y="324" text-anchor="middle" font-size="10" fill="#5c8a4e">串行队列 · 独立端口</text>
+
+  <!-- 质检 -->
+  <rect x="270" y="268" width="180" height="66" rx="10" fill="#f9ece9" stroke="#b55a4a" stroke-width="1.5"/>
+  <text x="360" y="292" text-anchor="middle" font-size="12.5" font-weight="700" fill="#8e3d2d">零信任质检</text>
+  <text x="360" y="310" text-anchor="middle" font-size="10" fill="#b55a4a">独立量测 · 截图目检</text>
+  <text x="360" y="324" text-anchor="middle" font-size="10" fill="#b55a4a">断言回归 · 不采信自报</text>
+
+  <!-- 生产环境 -->
+  <rect x="480" y="268" width="150" height="66" rx="10" fill="#f3eef7" stroke="#7d5ba6" stroke-width="1.5"/>
+  <text x="555" y="292" text-anchor="middle" font-size="12.5" font-weight="700" fill="#5d3d8e">生产环境</text>
+  <text x="555" y="310" text-anchor="middle" font-size="10" fill="#7d5ba6">三实例 · 构建门禁</text>
+  <text x="555" y="324" text-anchor="middle" font-size="10" fill="#7d5ba6">审批卡放行</text>
+
+  <!-- 箭头：指令 -->
+  <line x1="340" y1="104" x2="340" y2="142" stroke="#8a6d3b" stroke-width="1.6" marker-end="url(#arr)"/>
+  <text x="352" y="128" font-size="9.5" fill="#8a6d3b">指令 / 拍板（两周 597 条）</text>
+
+  <!-- 箭头：工单派发 -->
+  <line x1="268" y1="220" x2="163" y2="264" stroke="#4a7ab5" stroke-width="1.6" marker-end="url(#arrb)"/>
+  <text x="150" y="240" font-size="9.5" fill="#4a7ab5" text-anchor="end">工单派发 ×382</text>
+
+  <!-- 箭头：交付质检 -->
+  <line x1="240" y1="301" x2="266" y2="301" stroke="#b55a4a" stroke-width="1.6" marker-end="url(#arr)"/>
+  <text x="253" y="294" font-size="9.5" fill="#b55a4a" text-anchor="middle">交付</text>
+
+  <!-- 箭头：质检不过打回 -->
+  <path d="M 330 268 Q 320 236 300 224" fill="none" stroke="#b55a4a" stroke-width="1.3" stroke-dasharray="4,3" marker-end="url(#arr)"/>
+  <text x="312" y="242" font-size="9" fill="#b55a4a">打回返工（14 轮记录）</text>
+
+  <!-- 箭头：质检过 → 部署 -->
+  <line x1="450" y1="301" x2="476" y2="301" stroke="#7d5ba6" stroke-width="1.6" marker-end="url(#arr)"/>
+  <text x="463" y="294" font-size="9.5" fill="#7d5ba6" text-anchor="middle">过门</text>
+
+  <!-- 箭头：部署回执 -->
+  <path d="M 555 268 Q 520 210 430 190" fill="none" stroke="#7d5ba6" stroke-width="1.3" stroke-dasharray="4,3" marker-end="url(#arr)"/>
+  <text x="512" y="216" font-size="9" fill="#7d5ba6">回执 ×55（等验收）</text>
+
+  <!-- 底部注 -->
+  <text x="340" y="376" text-anchor="middle" font-size="10" fill="#8b8070">人的介入点被严格收敛在四类：设目标、拍方案、给权限、验结果 —— 其余流转全部由主控层完成</text>
+  <text x="340" y="396" text-anchor="middle" font-size="9.5" fill="#b0a691">数据周期：2026-11-07 ~ 11-21 真实工作留痕</text>
+</svg>

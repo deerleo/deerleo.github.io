@@ -1,0 +1,72 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 680 380" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">
+  <rect width="680" height="380" fill="#faf8f2"/>
+  <text x="340" y="28" text-anchor="middle" font-size="15" font-weight="700" fill="#3d3325">"看懂视频"策略五日演进（Day 1 → Day 5）</text>
+
+  <!-- 时间轴主线 -->
+  <line x1="70" y1="70" x2="630" y2="70" stroke="#c9bfa8" stroke-width="2"/>
+  <g>
+    <circle cx="100" cy="70" r="7" fill="#4a7ab5"/><text x="100" y="50" text-anchor="middle" font-size="11" font-weight="700" fill="#2d5a8e">Day 1-2</text>
+    <circle cx="230" cy="70" r="7" fill="#4a7ab5"/><text x="230" y="50" text-anchor="middle" font-size="11" font-weight="700" fill="#2d5a8e">Day 2 夜</text>
+    <circle cx="360" cy="70" r="7" fill="#c9a227"/><text x="360" y="50" text-anchor="middle" font-size="11" font-weight="700" fill="#7a5d0e">Day 3</text>
+    <circle cx="490" cy="70" r="7" fill="#5c8a4e"/><text x="490" y="50" text-anchor="middle" font-size="11" font-weight="700" fill="#3d6631">Day 4</text>
+    <circle cx="600" cy="70" r="7" fill="#b55a4a"/><text x="600" y="50" text-anchor="middle" font-size="11" font-weight="700" fill="#8e3d2d">Day 5</text>
+  </g>
+
+  <!-- 每日卡片 -->
+  <g font-size="10.5">
+    <rect x="30" y="92" width="130" height="150" rx="9" fill="#eaf1f8" stroke="#4a7ab5" stroke-width="1.2"/>
+    <text x="95" y="114" text-anchor="middle" font-weight="700" fill="#2d5a8e">诊断与方向</text>
+    <text x="95" y="138" text-anchor="middle" fill="#4a5c66">逐帧 VLM 丢关键信息</text>
+    <text x="95" y="156" text-anchor="middle" fill="#4a5c66">提出抽帧加密+裁剪放大</text>
+    <text x="95" y="174" text-anchor="middle" fill="#4a5c66">自我否定裁剪方案：</text>
+    <text x="95" y="192" text-anchor="middle" fill="#4a5c66">"不知道目标在哪"</text>
+    <text x="95" y="210" text-anchor="middle" fill="#4a5c66">转向网格粗识别</text>
+    <text x="95" y="228" text-anchor="middle" fill="#4a5c66">粗定位→细看</text>
+
+    <rect x="175" y="92" width="130" height="150" rx="9" fill="#eaf1f8" stroke="#4a7ab5" stroke-width="1.2"/>
+    <text x="240" y="114" text-anchor="middle" font-weight="700" fill="#2d5a8e">思考开关边界</text>
+    <text x="240" y="138" text-anchor="middle" fill="#4a5c66">参数化 vlm_thinking</text>
+    <text x="240" y="156" text-anchor="middle" fill="#4a5c66">硬约束：单帧 ≤5 分钟</text>
+    <text x="240" y="174" text-anchor="middle" fill="#4a5c66">"未越线才判正常"</text>
+    <text x="240" y="192" text-anchor="middle" fill="#4a5c66">= 指向性表述会误导</text>
+    <text x="240" y="210" text-anchor="middle" fill="#4a5c66">提示词的每个导向词</text>
+    <text x="240" y="228" text-anchor="middle" fill="#4a5c66">都是偏见来源</text>
+
+    <rect x="320" y="92" width="130" height="150" rx="9" fill="#fdf6e3" stroke="#c9a227" stroke-width="1.2"/>
+    <text x="385" y="114" text-anchor="middle" font-weight="700" fill="#7a5d0e">策略隔离</text>
+    <text x="385" y="138" text-anchor="middle" fill="#5c5140">新建 car 策略做实验</text>
+    <text x="385" y="156" text-anchor="middle" fill="#5c5140">default 策略零风险</text>
+    <text x="385" y="174" text-anchor="middle" fill="#5c5140">BGM 声纹上线：</text>
+    <text x="385" y="192" text-anchor="middle" fill="#5c5140">品牌广告曲入声纹库</text>
+    <text x="385" y="210" text-anchor="middle" fill="#5c5140">BGM 本身是"梗"</text>
+    <text x="385" y="228" text-anchor="middle" fill="#5c5140">的一部分</text>
+
+    <rect x="465" y="92" width="130" height="150" rx="9" fill="#eef4ea" stroke="#5c8a4e" stroke-width="1.2"/>
+    <text x="530" y="114" text-anchor="middle" font-weight="700" fill="#3d6631">泛化/专属分离</text>
+    <text x="530" y="138" text-anchor="middle" fill="#4a5c40">马桶车标认出=泛化生效</text>
+    <text x="530" y="156" text-anchor="middle" fill="#4a5c40">品牌梗看不懂=语境缺失</text>
+    <text x="530" y="174" text-anchor="middle" fill="#4a5c40">裁决：策略只放泛行业</text>
+    <text x="530" y="192" text-anchor="middle" fill="#4a5c40">规则，品牌知识进图谱</text>
+    <text x="530" y="210" text-anchor="middle" fill="#4a5c40">黑称/别称/梗带背景</text>
+    <text x="530" y="228" text-anchor="middle" fill="#4a5c40">入库，研判前先检索</text>
+
+    <rect x="545" y="256" width="0" height="0" fill="none"/>
+    <rect x="380" y="256" width="270" height="100" rx="9" fill="#f9ece9" stroke="#b55a4a" stroke-width="1.2"/>
+    <text x="515" y="278" text-anchor="middle" font-weight="700" fill="#8e3d2d">收敛：黄金测试集</text>
+    <text x="515" y="300" text-anchor="middle" fill="#5c3a52">7 条人工标注 + 42 条存量 = 49 条固定集</text>
+    <text x="515" y="318" text-anchor="middle" fill="#5c3a52">目标准确率 90% · 评测口径先洗分母：</text>
+    <text x="515" y="336" text-anchor="middle" fill="#5c3a52">已下架剔除 · 采集失败动态剔除</text>
+    <text x="515" y="352" text-anchor="middle" fill="#5c3a52">防"改好一处、劣化另一处"</text>
+  </g>
+
+  <!-- Day5 竖线连接 -->
+  <line x1="600" y1="77" x2="600" y2="90" stroke="#b55a4a" stroke-width="1.2" stroke-dasharray="3,2"/>
+  <path d="M 600 90 Q 600 240 515 254" fill="none" stroke="#b55a4a" stroke-width="1.2" stroke-dasharray="3,2"/>
+
+  <!-- 左下补充 -->
+  <rect x="30" y="256" width="330" height="100" rx="9" fill="#f3eef7" stroke="#7d5ba6" stroke-width="1.2"/>
+  <text x="195" y="278" text-anchor="middle" font-weight="700" fill="#5d3d8e">成果与分工</text>
+  <text x="195" y="300" text-anchor="middle" fill="#4a3a5e">5 个正式版本 · 12 次构建部署 · 40+ 条指令</text>
+  <text x="195" y="318" text-anchor="middle" fill="#4a3a5e">7 条人工标注 · 3 次方向纠偏</text>
+  <text x="195" y="336" text-anchor="middle" fill="#4a3a5e">人出业务判断与品味，AI 出迭代速度与执行力</text>
+</svg>
