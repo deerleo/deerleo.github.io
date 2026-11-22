@@ -8,6 +8,9 @@ podcast: /assets/audio/ai-riemann-proof-unread-homework.mp3
 
 ![黎曼 ζ 函数三维曲面（资料图）：临界线附近的尖峰是 167 年来数学家反复凝视的地带，本文讨论的证明声称与这片起伏有关](/assets/images/2026-11-22-ai-riemann-proof-unread-homework/final_01_zeta.jpg)
 
+<video controls preload="metadata" style="display:block;max-width:100%;width:720px;margin:0 auto;" poster="/assets/videos/2026-11-22-ai-riemann-proof-unread-homework-cover.jpg" src="/assets/videos/2026-11-22-ai-riemann-proof-unread-homework.mp4"></video>
+*同一件事的视频版：一份没人读完的作业，和一份被挑出错的作业*
+
 从 1859 年到 2026 年，黎曼猜想挂了 167 年。数学界对「什么算证明」有条不成文的老规矩：写下来，让同行读得懂，读过了才算数。
 
 11 月 20 日，这条规矩被撞了一下。34 岁的数学家 Levent Alpöge 在个人网站声明：「我相信，我和 Claude 一起找到了黎曼猜想的一个证明。」他是哈佛本科、剑桥硕士、普林斯顿博士，导师是菲尔兹奖得主 Bhargava，2026 年入职 Anthropic。证明论文超过 25 万页，Alpöge 自己承认没读完，交出来的作业是约 1700 万行 Lean 形式化代码，压缩包分了 14 个分卷。
