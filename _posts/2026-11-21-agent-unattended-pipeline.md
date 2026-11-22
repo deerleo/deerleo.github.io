@@ -3,6 +3,7 @@ title: "两周、三千条对话、六十个应用：我的 Agent 无人值守�
 description: "382 次受控派发、55 份交付回执、99 个 3D 教学实验、60 个实训应用工厂、17 分钟生产事故闭环——这两周我把 AI Agent 用成了生产力系统。本文用真实留痕数据，把数字员工治理、无人值守执行、零信任质检三套机制的方法讲透。"
 tags: [Agent, 数字员工, AI工程化, 质检, 自动化]
 series: "AI 实战"
+podcast: /assets/audio/agent-unattended-pipeline.mp3
 ---
 
 ## 一、全景：一个人的"研发部"，两周干了什么
