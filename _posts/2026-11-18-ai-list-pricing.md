@@ -2,6 +2,7 @@
 title: "上传一份清单，吐出一份 Excel，中间的钱从哪来"
 description: "自动清单计价最容易讲成魔法：传清单、出工作簿。拆开看其实是三件朴素的事：定额怎么匹配、价格从哪来、每一分钱能不能点回出处。能追溯才是计价软件和计价玩具的分界线。"
 tags: [AI造价, 清单计价, 智能体, 工程咨询]
+podcast: /assets/audio/ai-list-pricing.mp3
 ---
 
 ![自动清单计价：上传一份清单，吐出一份 Excel 工作簿（缩略图）](/assets/images/profile-share.jpg)
