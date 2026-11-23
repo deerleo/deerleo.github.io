@@ -3,6 +3,7 @@ title: "管公平的人，把公平弄丢了"
 description: "韩国高考前的 72 小时，教育部门把 55 万考生全员当嫌疑人：纽扣贴贴纸、没收橡皮、灾难短信当搜身用。可真正的 AI 作弊者一个没拦住，最后靠 1 亿韩元举报奖金破案。11 月 22 日教育部长崔教振辞职，这纸辞呈背后，是程序与公平的双重失守。"
 tags: [韩国高考, AI作弊, 教育]
 series: "哟哟鹿鸣"
+podcast: /assets/audio/2026-11-23-korea-csat-ai-cheating.mp3
 ---
 
 <video controls preload="metadata" style="display:block;max-width:100%;width:720px;margin:0 auto;" poster="/assets/videos/2026-11-23-korea-csat-ai-cheating-cover.jpg" src="/assets/videos/2026-11-23-korea-csat-ai-cheating.mp4"></video>
