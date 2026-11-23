@@ -2,6 +2,7 @@
 title: "AI 审结算，交的不是结论，是底稿"
 description: "三十万平米的住宅项目，两百多份变更签证，甲方要求七天出审核意见。行业公开案例把平均周期从五天压到一点五天。但 AI 真正交付的不是审核结论，是差异清单、询疑问题和核查底稿。这条边界为什么画得对，聊聊我的理解。"
 tags: [AI造价, 结算审核, 智能体, 工程咨询]
+podcast: /assets/audio/2026-11-18-ai-settlement-audit.mp3
 ---
 
 ![AI 审结算，交的不是结论，是底稿（缩略图）](/assets/images/profile-share.jpg)
