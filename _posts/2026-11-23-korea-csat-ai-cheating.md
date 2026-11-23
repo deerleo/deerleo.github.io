@@ -5,6 +5,9 @@ tags: [韩国高考, AI作弊, 教育]
 series: "哟哟鹿鸣"
 ---
 
+<video controls preload="metadata" style="display:block;max-width:100%;width:720px;margin:0 auto;" poster="/assets/videos/2026-11-23-korea-csat-ai-cheating-cover.jpg" src="/assets/videos/2026-11-23-korea-csat-ai-cheating.mp4"></video>
+*同一件事的视频版：五十五万考生全员成了嫌疑人的七十二小时*
+
 ![韩国高考考场资料图：考生在座位上伏案答题（资料图）](/assets/images/2026-11-23-korea-csat-ai-cheating/final_01_csat_exam_room.jpg)
 
 老话讲，正人先正己。
