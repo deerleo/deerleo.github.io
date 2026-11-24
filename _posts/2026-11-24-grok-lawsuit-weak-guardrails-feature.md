@@ -3,6 +3,7 @@ title: "弱防护不是失守，是特性"
 description: "俄勒冈与弗吉尼亚两州检察长起诉 SpaceX/X.AI，起诉书核心指控翻译成大白话就是：Grok 的护栏不是塌了的，是出图的时候就没画。从系统提示词、调查员实测到九成废纸的举报通道，把这纸指控里的证据捋一遍。安全不是做砸了，是按增长需要砍掉的。"
 tags: [Grok, AI安全, 诉讼]
 series: "哟哟鹿鸣"
+podcast: /assets/audio/2026-11-24-grok-lawsuit-weak-guardrails-feature.mp3
 ---
 
 <video controls preload="metadata" style="display:block;max-width:100%;width:720px;margin:0 auto;" poster="/assets/videos/2026-11-24-grok-lawsuit-weak-guardrails-feature-cover.jpg" src="/assets/videos/2026-11-24-grok-lawsuit-weak-guardrails-feature.mp4"></video>
