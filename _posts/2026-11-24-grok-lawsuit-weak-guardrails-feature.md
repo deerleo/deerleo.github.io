@@ -5,6 +5,9 @@ tags: [Grok, AI安全, 诉讼]
 series: "哟哟鹿鸣"
 ---
 
+<video controls preload="metadata" style="display:block;max-width:100%;width:720px;margin:0 auto;" poster="/assets/videos/2026-11-24-grok-lawsuit-weak-guardrails-feature-cover.jpg" src="/assets/videos/2026-11-24-grok-lawsuit-weak-guardrails-feature.mp4"></video>
+*同一件事的视频版：从起诉书原话到调查员实测，把「弱防护是特性」这纸指控捋一遍*
+
 ![xAI 的 Grok 发布会现场，屏幕上是标志性的白色机器人面孔（资料图，摄于 Grok 系列模型发布活动）](/assets/images/2026-11-24-grok-lawsuit-weak-guardrails-feature/final_01_grok_launch.jpg)
 
 装修过房子的人都知道，砸墙分两种。一种是事故，墙塌了；一种是图纸，这面墙在图纸上本来就画成了虚线。塌墙追责施工，虚线墙要问出图的人。
