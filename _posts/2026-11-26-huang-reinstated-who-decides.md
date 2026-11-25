@@ -3,6 +3,7 @@ title: "董事会请你走用了调查，请你回来只用了白宫一句话"
 description: "英伟达董事会 11 天内两度全票反转：先全票接受黄仁勋辞职，六天后全票听美国政府高层意见请他回来。这事的关键不是黄仁勋该不该回来，是回来这件事由谁拍板、依据是什么、谁担责。"
 tags: [英伟达, 黄仁勋, 公司治理]
 series: "哟哟鹿鸣"
+podcast: /assets/audio/2026-11-26-huang-reinstated-who-decides.mp3
 ---
 
 ![纽交所交易大厅。11 月 23 日复职公告后英伟达单日回补近一万亿美元市值，这笔账算在了谁的功劳簿上（资料图）](/assets/images/2026-11-26-huang-reinstated-who-decides/final_01_nyse.jpg)
