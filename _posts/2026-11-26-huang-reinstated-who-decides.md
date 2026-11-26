@@ -10,6 +10,9 @@ podcast: /assets/audio/2026-11-26-huang-reinstated-who-decides.mp3
 
 老话讲，请神容易送神难。英伟达董事会把这话反着演了一遍：送神用了调查，请神只用了六天。
 
+<video controls preload="metadata" style="display:block;max-width:100%;width:720px;margin:0 auto;" poster="/assets/videos/2026-11-26-huang-reinstated-who-decides-cover.jpg" src="/assets/videos/2026-11-26-huang-reinstated-who-decides.mp4"></video>
+*同一件事的视频版：两次全票，一个依据，担责的没人*
+
 2026 年 11 月 12 日，董事会全票接受黄仁勋辞去总裁、CEO 和董事职务，即刻生效。11 月 17 日，董事长哈维·琼斯在财报电话会上把话说死：董事会一致接受辞呈，无意恢复其 CEO 职务。11 月 22 日晚上，还是这十个董事，再次全票，把总裁、CEO 和董事的职务原样还给他，即刻生效，事先没征询高管意见，临时 CEO 克雷斯事先不知情。11 月 23 日公告里写着复职的依据：「在作出该决定的过程中，董事会听取了美国政府高层的意见。基于相关意见，董事会确信，黄仁勋复职不会带来国家安全风险。」
 
 所以这事说的不是黄仁勋能不能回来。是说回来这件事由谁拍板、依据是什么、谁来担责。
