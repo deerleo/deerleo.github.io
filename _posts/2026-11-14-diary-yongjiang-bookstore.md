@@ -3,6 +3,7 @@ title: "书没看进去几页，甬江倒是看了个够"
 description: "在宁波甬江天地的单向空间·水手书店点了一杯咖啡：外表是黑白克制的浙江老民居，里头书少得像装饰。书没看进去几页，倒是隔着玻璃把奔涌的甬江看了个够；出门时高楼的上半截全没进云雾里，街上几乎没有行人。"
 tags: [日记, 宁波, 书店]
 series: "日记"
+podcast: /assets/audio/2026-11-14-diary-yongjiang-bookstore.mp3
 ---
 
 ![单向空间·水手书店外观实拍：白墙黑瓦，招牌上是"单向空间"与"水手书店"字样](/assets/images/2026-11-14-diary-yongjiang-bookstore/bookstore-facade.jpg)
