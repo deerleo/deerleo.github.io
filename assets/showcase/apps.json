@@ -1327,7 +1327,7 @@
    "教育"
   ],
   "desc": "Movez 做的浏览器 3D 电子实验室：13 块真实开发板从贴片、回流焊到烙铁焊全程可上手，本站镜像仅供学习，版权归原作者。",
-  "credit": "原作者 Movez（@0xMovez）· 镜像学习版",
+  "credit": "原作者 Movez（@0xMovez）",
   "thumb": "/assets/showcase/thumbs/robotics-bench.jpg",
   "shot": true
  },
@@ -1343,7 +1343,7 @@
    "程序化生成"
   ],
   "desc": "港务局潜行游戏：剪断三处监控链路再乘船撤离，画面与音效全部在浏览器内程序化生成。",
-  "credit": "原作者 Felix Rieseberg（Anthropic）· Claude Fable 5.2 生成 · 已获授权署名转载",
+  "credit": "原作者 Felix Rieseberg（Anthropic）",
   "thumb": "/assets/showcase/thumbs/saltline.jpg",
   "shot": true
  },
@@ -1358,7 +1358,7 @@
    "叙事互动"
   ],
   "desc": "提一盏灯驾小船沿宽阔水道穿行风格迥异的连续场景，也可以任由水流带你漂。",
-  "credit": "原作者 Kevin Ngo（@kevin_t_ngo）· 已获授权署名转载",
+  "credit": "原作者 Kevin Ngo（@kevin_t_ngo）",
   "thumb": "/assets/showcase/thumbs/what-the-water-keeps.jpg",
   "shot": true
  },
@@ -1451,7 +1451,7 @@
    "Fable 5.2"
   ],
   "desc": "雾都题材的 3D 开放世界：穿行雾街探索，含大规模 glb/hdr 场景资产。",
-  "credit": "原作者 Rikinshah787 · Claude Fable 5.2 生成 · 已获授权署名转载",
+  "credit": "原作者 Rikinshah787",
   "shot": true
  },
  {
@@ -1466,7 +1466,7 @@
    "Fable 5.2"
   ],
   "desc": "尘暴废土题材的 three.js 开放世界，浏览器直接进入探索。",
-  "credit": "原作者 webKing021 · Claude Fable 5.2 生成 · 已获授权署名转载",
+  "credit": "原作者 webKing021",
   "shot": true
  },
  {
@@ -1481,7 +1481,7 @@
    "Fable 5.2"
   ],
   "desc": "海滨湾镇 Bayhaven 的 three.js 开放世界，自由漫游式探索。",
-  "credit": "原作者 fablestar · Claude Fable 5.2 生成 · 已获授权署名转载",
+  "credit": "原作者 fablestar",
   "shot": true
  },
  {
@@ -1496,7 +1496,7 @@
    "Fable 5.2"
   ],
   "desc": "Aquila：3D 开放世界探索小品，与 Dawnward 同仓（作者连作）。",
-  "credit": "原作者 GavinLOrio · Claude Fable 5.2 生成 · 已获授权署名转载",
+  "credit": "原作者 GavinLOrio",
   "shot": true
  },
  {
@@ -1511,7 +1511,7 @@
    "Fable 5.2"
   ],
   "desc": "低多边形风格的短篇 3D 冒险，作者连作之一。",
-  "credit": "原作者 GavinLOrio · Claude Fable 5.2 生成 · 已获授权署名转载",
+  "credit": "原作者 GavinLOrio",
   "shot": true
  },
  {
@@ -1526,7 +1526,7 @@
    "Fable 5.2"
   ],
   "desc": "Ironvale 铁谷 RTS：浏览器上的采集、建设与军团对阵。",
-  "credit": "原作者 SharpWizard · Claude Fable 5.2 生成 · 已获授权署名转载",
+  "credit": "原作者 SharpWizard",
   "shot": true
  },
  {
@@ -1541,7 +1541,7 @@
    "Fable 5.2"
   ],
   "desc": "The Long Climb（Thirty Days）：三十天攀登长路的开放世界叙事。",
-  "credit": "原作者 HILAYTRIVEDI · Claude Fable 5.2 生成 · 已获授权署名转载",
+  "credit": "原作者 HILAYTRIVEDI",
   "shot": true
  },
  {
@@ -1556,7 +1556,7 @@
    "Fable 5.2"
   ],
   "desc": "《The Boondocks》同人 2D 动作游戏：Woodcrest 街区冒险（fan game）。",
-  "credit": "原作者 Achraf921 · Claude Fable 5.2 生成 · 已获授权署名转载",
+  "credit": "原作者 Achraf921",
   "shot": true
  },
  {
@@ -1571,7 +1571,7 @@
    "Fable 5.2"
   ],
   "desc": "Duel Knights：中世纪骑士一对一 3D 对决，格挡闪避见招拆招。",
-  "credit": "原作者 bitofastickler · Claude Fable 5.2 生成 · 已获授权署名转载",
+  "credit": "原作者 bitofastickler",
   "shot": true
  },
  {
@@ -1586,7 +1586,7 @@
    "Fable 5.2"
   ],
   "desc": "盐线行动 Online：多人港口 FPS 的单机前端镜像，联机模式需自建服务端。",
-  "credit": "原作者 wenzhengshi · Claude Fable 5.2 生成 · 已获授权署名转载",
+  "credit": "原作者 wenzhengshi",
   "shot": true
  },
  {
@@ -1601,7 +1601,7 @@
    "Fable 5.2"
   ],
   "desc": "SUBLEVEL 07：地下设施 FPS，首页为作者的复现说明页，点入即玩。",
-  "credit": "原作者 wquguru · Claude Fable 5.2 生成 · 已获授权署名转载",
+  "credit": "原作者 wquguru",
   "shot": true
  },
  {
@@ -1616,7 +1616,7 @@
    "Fable 5.2"
   ],
   "desc": "WebGL FPS 射击游戏，加载即战；原仓库另带可选成绩榜单服务。",
-  "credit": "原作者 Petyok · Claude Fable 5.2 生成 · 已获授权署名转载",
+  "credit": "原作者 Petyok",
   "shot": true
  },
  {
@@ -1631,7 +1631,7 @@
    "Fable 5.2"
   ],
   "desc": "边哨据点防守射击：在沙尘哨站抵御一波波进攻。",
-  "credit": "原作者 systemsluke · Claude Fable 5.2 生成 · 已获授权署名转载",
+  "credit": "原作者 systemsluke",
   "shot": true
  },
  {
@@ -1646,7 +1646,7 @@
    "Fable 5.2"
   ],
   "desc": "Last Return：单文件构建产物的 WebGL FPS，加载即玩。",
-  "credit": "原作者 StefanKnol · Claude Fable 5.2 生成 · 已获授权署名转载",
+  "credit": "原作者 StefanKnol",
   "shot": true
  },
  {
@@ -1661,7 +1661,7 @@
    "Fable 5.2"
   ],
   "desc": "Riftline FPS：PeerJS 浏览器联机对战，单人也可直接开玩。",
-  "credit": "原作者 wongh26 · Claude Fable 5.2 生成 · 已获授权署名转载",
+  "credit": "原作者 wongh26",
   "shot": true
  },
  {
@@ -1676,7 +1676,7 @@
    "Fable 5.2"
   ],
   "desc": "丧尸夜班守卫射击：WebGL 画面里撑过一波波夜袭。",
-  "credit": "原作者 ethanplusai · Claude Fable 5.2 生成 · 已获授权署名转载",
+  "credit": "原作者 ethanplusai",
   "shot": true
  },
  {
@@ -1691,7 +1691,7 @@
    "Fable 5.2"
   ],
   "desc": "潮钟 Tidebell：海边题材的 three.js 探索小品。",
-  "credit": "原作者 hahaliu1029 · Claude Fable 5.2 生成 · 已获授权署名转载",
+  "credit": "原作者 hahaliu1029",
   "shot": true
  },
  {
@@ -1706,7 +1706,7 @@
    "Fable 5.2"
   ],
   "desc": "MOTHLIGHT // Vesper-9：驾驶飞行器夜航穿行的驾驶类小品。",
-  "credit": "原作者 hahaliu1029 · Claude Fable 5.2 生成 · 已获授权署名转载",
+  "credit": "原作者 hahaliu1029",
   "shot": true
  },
  {
@@ -1721,7 +1721,7 @@
    "Fable 5.2"
   ],
   "desc": "青云宗 · 御剑采灵：中文仙侠题材，御剑飞行采集灵韵。",
-  "credit": "原作者 hahaliu1029 · Claude Fable 5.2 生成 · 已获授权署名转载",
+  "credit": "原作者 hahaliu1029",
   "shot": true
  },
  {
@@ -1736,7 +1736,7 @@
    "Fable 5.2"
   ],
   "desc": "MISREMEMBER：心理恐怖题材的第一人称短篇。",
-  "credit": "原作者 hahaliu1029 · Claude Fable 5.2 生成 · 已获授权署名转载",
+  "credit": "原作者 hahaliu1029",
   "shot": true
  },
  {
@@ -1751,7 +1751,7 @@
    "Fable 5.2"
   ],
   "desc": "崖地聚落建造：在 Hanford Reach 河岸选址、规划并扩建定居点。",
-  "credit": "原作者 chzbloom123 · Claude Fable 5.2 生成 · 已获授权署名转载",
+  "credit": "原作者 chzbloom123",
   "shot": true
  },
  {
@@ -1766,7 +1766,7 @@
    "Fable 5.2"
   ],
   "desc": "旧金山湾区公共交通线路规划模拟：让城市通勤运转起来。",
-  "credit": "原作者 jakozaur · Claude Fable 5.2 生成 · 已获授权署名转载",
+  "credit": "原作者 jakozaur",
   "shot": true
  },
  {
@@ -1781,7 +1781,7 @@
    "Fable 5.2"
   ],
   "desc": "SHUTTERPINE：松林小镇题材的叙事恐怖短篇。",
-  "credit": "原作者 DQuanBui · Claude Fable 5.2 生成 · 已获授权署名转载",
+  "credit": "原作者 DQuanBui",
   "shot": true
  },
  {
@@ -1796,7 +1796,7 @@
    "Fable 5.2"
   ],
   "desc": "3D 高塔收集探索：逐层向上、边走边收集的小品。",
-  "credit": "原作者 cdurgun · Claude Fable 5.2 生成 · 已获授权署名转载",
+  "credit": "原作者 cdurgun",
   "shot": true
  },
  {
@@ -1811,7 +1811,7 @@
    "Fable 5.2"
   ],
   "desc": "One Prompt Worlds 系列：身后的埴轮——第一人称日式解谜。",
-  "credit": "原作者 shioa2006-game · Claude Fable 5.2 生成 · 已获授权署名转载",
+  "credit": "原作者 shioa2006-game",
   "shot": true
  },
  {
@@ -1826,7 +1826,7 @@
    "Fable 5.2"
   ],
   "desc": "Pocket Soccer 3D：自绘 3D 渲染的足球对抗，支持 PWA 安装。",
-  "credit": "原作者 ShaunPrice · Claude Fable 5.2 生成 · 已获授权署名转载",
+  "credit": "原作者 ShaunPrice",
   "shot": true
  },
  {
@@ -1841,7 +1841,7 @@
    "Fable 5.2"
   ],
   "desc": "开嘟嘟车街头载客的驾驶小品（阿拉伯语界面）。",
-  "credit": "原作者 basemazab · Claude Fable 5.2 生成 · 已获授权署名转载",
+  "credit": "原作者 basemazab",
   "shot": true
  },
  {
@@ -1856,7 +1856,7 @@
    "Fable 5.2"
   ],
   "desc": "Emberdeep 余烬深坑：地底矿道冒险。",
-  "credit": "原作者 DNDNoob · Claude Fable 5.2 生成 · 已获授权署名转载",
+  "credit": "原作者 DNDNoob",
   "shot": true
  },
  {
@@ -1871,7 +1871,7 @@
    "Fable 5.2"
   ],
   "desc": "DAEDALUS：迷宫逃脱解谜，单文件 121KB 轻量开玩。",
-  "credit": "原作者 S77FFY · Claude Fable 5.2 生成 · 已获授权署名转载",
+  "credit": "原作者 S77FFY",
   "shot": true
  },
  {
@@ -1886,7 +1886,7 @@
    "Fable 5.2"
   ],
   "desc": "Sternenjäger（星猎手）：德语界面的太空射击。",
-  "credit": "原作者 oldzitterhand · Claude Fable 5.2 生成 · 已获授权署名转载",
+  "credit": "原作者 oldzitterhand",
   "shot": true
  },
  {
@@ -1901,7 +1901,7 @@
    "Fable 5.2"
   ],
   "desc": "Shuttle Strike：摄像头手势追踪的羽毛球体感游戏。",
-  "credit": "原作者 fedifianto · Claude Fable 5.2 生成 · 已获授权署名转载",
+  "credit": "原作者 fedifianto",
   "shot": true
  },
  {
@@ -1916,7 +1916,7 @@
    "Fable 5.2"
   ],
   "desc": "NEON RUNNER：霓虹赛博风的 Canvas 2D 跑酷。",
-  "credit": "原作者 Ilias-AK · Claude Fable 5.2 生成 · 已获授权署名转载",
+  "credit": "原作者 Ilias-AK",
   "shot": true
  },
  {
@@ -1931,7 +1931,7 @@
    "Fable 5.2"
   ],
   "desc": "Becario del Universo（宇宙实习生）：西语休闲五分钟小品。",
-  "credit": "原作者 masugus · Claude Fable 5.2 生成 · 已获授权署名转载",
+  "credit": "原作者 masugus",
   "shot": true
  },
  {
@@ -1946,7 +1946,7 @@
    "Fable 5.2"
   ],
   "desc": "Harvest Standoff：农场丰收季的竞技对抗。",
-  "credit": "原作者 andreteow · Claude Fable 5.2 生成 · 已获授权署名转载",
+  "credit": "原作者 andreteow",
   "shot": true
  },
  {
@@ -1961,7 +1961,7 @@
    "Fable 5.2"
   ],
   "desc": "潮汐战线（Tidemark）：中文原创战棋游戏，回合制策略对阵。",
-  "credit": "原作者 CocoSgt · Claude Fable 5.2 生成 · 已获授权署名转载",
+  "credit": "原作者 CocoSgt",
   "shot": true
  },
  {
@@ -1976,7 +1976,7 @@
    "Fable 5.2"
   ],
   "desc": "县镇经营：从马铃薯田开始的模拟经营小品。",
-  "credit": "原作者 TheMizeGuy · Claude Fable 5.2 生成 · 已获授权署名转载",
+  "credit": "原作者 TheMizeGuy",
   "shot": true
  },
  {
@@ -1991,7 +1991,7 @@
    "Fable 5.2"
   ],
   "desc": "MAKINAMON · Versión Pulso：西语界面的 Canvas 2D 复古 RPG。",
-  "credit": "原作者 gavilanbe · Claude Fable 5.2 生成 · 已获授权署名转载",
+  "credit": "原作者 gavilanbe",
   "shot": true
  },
  {
@@ -2006,7 +2006,7 @@
    "Fable 5.2"
   ],
   "desc": "Liquid Labyrinth：液体物理解谜，引导流体找到迷宫出口。",
-  "credit": "原作者 tuki0918 · Claude Fable 5.2 生成 · 已获授权署名转载",
+  "credit": "原作者 tuki0918",
   "shot": true
  },
  {
@@ -2021,7 +2021,7 @@
    "Fable 5.2"
   ],
   "desc": "Mini RPG：自带原声音乐的复古 RPG，内容量远超「迷你」之名。",
-  "credit": "原作者 ertertwert · Claude Fable 5.2 生成 · 已获授权署名转载",
+  "credit": "原作者 ertertwert",
   "shot": true
  },
  {
@@ -2036,7 +2036,7 @@
    "Fable 5.2"
   ],
   "desc": "Rufus Crush：Rust→WASM 的小狗三消，手机端友好。",
-  "credit": "原作者 bhoult · Claude Fable 5.2 生成 · 已获授权署名转载",
+  "credit": "原作者 bhoult",
   "shot": true
  },
  {
@@ -2051,7 +2051,7 @@
    "Fable 5.2"
   ],
   "desc": "One Prompt Worlds 系列：拨动光点点亮森林的物理探索小品。",
-  "credit": "原作者 shioa2006-game · Claude Fable 5.2 生成 · 已获授权署名转载",
+  "credit": "原作者 shioa2006-game",
   "shot": true
  },
  {
@@ -2066,7 +2066,7 @@
    "Fable 5.2"
   ],
   "desc": "One Prompt Worlds 系列：一粒种子造就的粒子庭园解谜。",
-  "credit": "原作者 shioa2006-game · Claude Fable 5.2 生成 · 已获授权署名转载",
+  "credit": "原作者 shioa2006-game",
   "shot": true
  },
  {
@@ -2081,7 +2081,7 @@
    "Fable 5.2"
   ],
   "desc": "One Prompt Worlds 系列：灯守坑道的动作 RPG 探险。",
-  "credit": "原作者 shioa2006-game · Claude Fable 5.2 生成 · 已获授权署名转载",
+  "credit": "原作者 shioa2006-game",
   "shot": true
  },
  {
@@ -2096,7 +2096,7 @@
    "Fable 5.2"
   ],
   "desc": "One Prompt Worlds 系列：转动灯台开启三条海路的解谜。",
-  "credit": "原作者 shioa2006-game · Claude Fable 5.2 生成 · 已获授权署名转载",
+  "credit": "原作者 shioa2006-game",
   "shot": true
  },
  {
@@ -2111,7 +2111,7 @@
    "Fable 5.2"
   ],
   "desc": "One Prompt Worlds 系列：回转迷宫三人旅的地牢解谜。",
-  "credit": "原作者 shioa2006-game · Claude Fable 5.2 生成 · 已获授权署名转载",
+  "credit": "原作者 shioa2006-game",
   "shot": true
  },
  {
@@ -2126,7 +2126,7 @@
    "Fable 5.2"
   ],
   "desc": "One Prompt Worlds 系列：以剪刀修剪春日盆栽的解谜。",
-  "credit": "原作者 shioa2006-game · Claude Fable 5.2 生成 · 已获授权署名转载",
+  "credit": "原作者 shioa2006-game",
   "shot": true
  },
  {
@@ -2141,7 +2141,7 @@
    "Fable 5.2"
   ],
   "desc": "One Prompt Worlds 系列：牧羊犬コロ的一天，赶羊入圈的动作小品。",
-  "credit": "原作者 shioa2006-game · Claude Fable 5.2 生成 · 已获授权署名转载",
+  "credit": "原作者 shioa2006-game",
   "shot": true
  },
  {
@@ -2156,7 +2156,7 @@
    "Fable 5.2"
   ],
   "desc": "MAPLE RUN · 紅葉ラン：WebGPU 渲染的 3D 枫叶跑酷。",
-  "credit": "原作者 nanha0130 · Claude Fable 5.2 生成 · 已获授权署名转载",
+  "credit": "原作者 nanha0130",
   "shot": true
  },
  {
@@ -2171,7 +2171,7 @@
    "Fable 5.2"
   ],
   "desc": "Escape the Fable：密室线索解谜逃脱。",
-  "credit": "原作者 ai-gamez-r-funz · Claude Fable 5.2 生成 · 已获授权署名转载",
+  "credit": "原作者 ai-gamez-r-funz",
   "shot": true
  },
  {
@@ -2186,7 +2186,7 @@
    "Fable 5.2"
   ],
   "desc": "环形棋盘井字棋：首尾相连的四连棋，可挑战 AI 或双人对弈。",
-  "credit": "原作者 muhammad-sayed-mahdy · Claude Fable 5.2 生成 · 已获授权署名转载",
+  "credit": "原作者 muhammad-sayed-mahdy",
   "shot": true
  },
  {
@@ -2201,7 +2201,7 @@
    "Fable 5.2"
   ],
   "desc": "EarthFM 听音辨识：收听各地电台实况音频，猜猜这是哪里（NASA Space Apps 作品）。",
-  "credit": "原作者 Aarosunn · Claude Fable 5.2 生成 · 已获授权署名转载",
+  "credit": "原作者 Aarosunn",
   "shot": true
  },
  {
@@ -2216,7 +2216,7 @@
    "Fable 5.2"
   ],
   "desc": "T-Minus 多人任务规划：WebRTC 实时协作的发射倒计时推演（NASA Space Apps 作品）。",
-  "credit": "原作者 XDracam · Claude Fable 5.2 生成 · 已获授权署名转载",
+  "credit": "原作者 XDracam",
   "shot": true
  },
  {
@@ -2231,7 +2231,7 @@
    "Fable 5.2"
   ],
   "desc": "摄像头派对游戏：MediaPipe 体感识别，跟随节奏做出搞怪动作。",
-  "credit": "原作者 aaron-sulbaran · Claude Fable 5.2 生成 · 已获授权署名转载",
+  "credit": "原作者 aaron-sulbaran",
   "shot": true
  },
  {
@@ -2246,7 +2246,7 @@
    "Fable 5.2"
   ],
   "desc": "复古 2D 平台跳跃：SID 芯片音效的姊妹冒险。",
-  "credit": "原作者 rob0511-777 · Claude Fable 5.2 生成 · 已获授权署名转载",
+  "credit": "原作者 rob0511-777",
   "shot": true
  },
  {
@@ -2261,7 +2261,7 @@
    "Fable 5.2"
   ],
   "desc": "Rawza Ring：绕蓝色清真寺街区的 3D 街头竞速。",
-  "credit": "原作者 Hashmatullahzaher · Claude Fable 5.2 生成 · 已获授权署名转载",
+  "credit": "原作者 Hashmatullahzaher",
   "shot": true
  },
  {
@@ -2276,7 +2276,7 @@
    "Fable 5.2"
   ],
   "desc": "给高个子的礼物：猫咪题材的收集探索小游戏。",
-  "credit": "原作者 eyeb0l · Claude Fable 5.2 生成 · 已获授权署名转载",
+  "credit": "原作者 eyeb0l",
   "shot": true
  }
 ]

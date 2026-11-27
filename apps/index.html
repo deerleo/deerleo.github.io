@@ -10,7 +10,7 @@ layout: null
   {% include theme-init.html %}
   <link rel="stylesheet" href="{{ '/assets/css/theme.css' | relative_url }}?v=20261027">
   <script src="{{ '/assets/js/theme.js' | relative_url }}" defer></script>
-  <meta name="description" content="迷鹿 MiLu 交互应用总览：Edulab 3D 教学实验、独立应用、Fable 5.2 镜像游戏、互动实验与专题页，共 150+ 个可直接在浏览器里玩的交互作品，支持按学科与类别筛选。">
+  <meta name="description" content="迷鹿 MiLu 交互应用总览：Edulab 3D 教学实验、独立应用、社区作品镜像、互动实验与专题页，共 150+ 个可直接在浏览器里玩的交互作品，支持按学科与类别筛选。">
   <meta name="robots" content="index,follow">
   <title>交互应用 · 迷鹿 MiLu</title>
   <link rel="stylesheet" href="{{ '/assets/css/subpage-shell.css?v=20261112' | relative_url }}">
@@ -28,12 +28,32 @@ layout: null
     .showcase-scope .hero p{max-width:720px;color:var(--muted);font-size:16px;margin:0}
     .showcase-scope .statline{display:flex;gap:18px;flex-wrap:wrap;margin-top:14px;color:var(--ink-3);font-size:13px;font-weight:650}
     .showcase-scope .statline b{color:var(--cyan);font-size:15px;font-weight:850}
-    /* 筛选条 */
-    .showcase-scope .filters{display:flex;gap:8px;flex-wrap:wrap;margin:26px 0 8px}
+    /* 筛选条：默认单行跑马灯，可展开为静态平铺 */
+    .showcase-scope .filters-bar{display:flex;align-items:stretch;gap:10px;margin:26px 0 8px}
+    .showcase-scope .filters{display:flex;flex:1;min-width:0;margin:0}
+    .showcase-scope .filters-viewport{flex:1;min-width:0;overflow:hidden;-webkit-mask-image:linear-gradient(90deg,transparent,#000 20px,#000 calc(100% - 20px),transparent);mask-image:linear-gradient(90deg,transparent,#000 20px,#000 calc(100% - 20px),transparent)}
+    .showcase-scope .filters-track{display:flex;width:max-content}
+    .showcase-scope .filters-half{display:flex;align-items:stretch;gap:8px;padding-right:8px;flex:none}
+    .showcase-scope .filters.is-animated .filters-track{animation:showcase-marquee var(--marquee-duration,80s) linear infinite}
+    .showcase-scope .filters.is-animated .filters-viewport:hover .filters-track,
+    .showcase-scope .filters.is-animated .filters-track:focus-within{animation-play-state:paused}
+    .showcase-scope .filters.is-animated.is-paused .filters-track{animation-play-state:paused}
+    .showcase-scope .filters.is-expanded .filters-viewport{overflow:visible;-webkit-mask-image:none;mask-image:none}
+    .showcase-scope .filters.is-expanded .filters-track{flex-wrap:wrap;width:auto;animation:none;transform:none}
+    .showcase-scope .filters.is-expanded .filters-half{flex-wrap:wrap;flex:auto;padding-right:0}
+    .showcase-scope .filters.is-expanded .filters-clone{display:none}
+    .showcase-scope .filters.is-expanded .fsep{display:none}
     .showcase-scope .filters button{appearance:none;border:1px solid var(--line);background:var(--panel-soft);color:var(--ink-2);border-radius:999px;padding:7px 15px;font:inherit;font-size:13px;font-weight:700;cursor:pointer;transition:border-color .15s ease,background .15s ease,color .15s ease}
     .showcase-scope .filters button:hover{border-color:var(--line-strong)}
     .showcase-scope .filters button[aria-pressed="true"]{background:var(--mint);border-color:var(--mint);color:#fff}
     .showcase-scope .filters .fsep{width:1px;background:var(--line);margin:4px 6px}
+    .showcase-scope .filters-toggle{appearance:none;flex:none;align-self:flex-start;border:1px solid var(--line);background:var(--panel-soft);color:var(--ink-2);border-radius:999px;padding:7px 14px;font:inherit;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap;transition:border-color .15s ease,color .15s ease}
+    .showcase-scope .filters-toggle:hover{border-color:var(--line-strong)}
+    @keyframes showcase-marquee{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+    @media (prefers-reduced-motion:reduce){
+      .showcase-scope .filters.is-animated .filters-track{animation:none}
+      .showcase-scope .filters-viewport{overflow-x:auto;-webkit-mask-image:none;mask-image:none}
+    }
     .showcase-scope .shown-count{color:var(--ink-3);font-size:12.5px;margin:6px 2px 18px}
     /* 卡片网格 */
     .showcase-scope .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
@@ -69,16 +89,23 @@ layout: null
     <div class="hero">
       <div class="eyebrow">Interactive Apps</div>
       <h1>交互应用<em>总览</em></h1>
-      <p>这里是本站全部可直接在浏览器里打开的交互作品：Edulab 3D 教学实验、独立应用、Fable 5.2 社区镜像游戏、互动实验与专题页。点击卡片即可在新标签页游玩。</p>
+      <p>这里是本站全部可直接在浏览器里打开的交互作品：Edulab 3D 教学实验、独立应用、社区作品镜像、互动实验与专题页。点击卡片即可在新标签页游玩。</p>
       <div class="statline" id="statline" hidden><span><b id="stat-total">–</b> 个应用</span><span>覆盖 <b id="stat-subjects">–</b> 大学科</span><span><b id="stat-cats">–</b> 类内容</span></div>
     </div>
-    <nav class="filters" id="filters" aria-label="按标签筛选"></nav>
+    <div class="filters-bar">
+      <nav class="filters" id="filters" aria-label="按标签筛选">
+        <div class="filters-viewport" id="filters-viewport">
+          <div class="filters-track" id="filters-track"></div>
+        </div>
+      </nav>
+      <button type="button" class="filters-toggle" id="filters-toggle" aria-expanded="false" aria-controls="filters-track">展开标签</button>
+    </div>
     <div class="shown-count" id="shown-count"></div>
     <div class="grid" id="grid"></div>
     <div class="empty" id="empty" hidden>该标签下暂无应用</div>
     <footer class="subpage-footer">
       <span>数据来自站内各应用档案 · 缩略图为真实渲染截图</span>
-      <span>镜像作品版权归原作者所有，仅作学习交流展示；镜像游戏均为 Claude Fable 5.2 社区作品，已获原作者授权署名转载</span>
+      <span>作品版权归原作者所有</span>
     </footer>
   </main>
   <script>
@@ -112,7 +139,7 @@ layout: null
       grid.innerHTML = list.map(cardHTML).join('');
       emptyEl.hidden = list.length>0;
       countEl.textContent = current==='全部' ? '显示全部 '+items.length+' 个应用' : '「'+current+'」下 '+list.length+' / '+items.length+' 个应用';
-      document.querySelectorAll('#filters button').forEach(b=>b.setAttribute('aria-pressed', String(b.dataset.tag===current)));
+      document.querySelectorAll('#filters button[data-tag]').forEach(b=>b.setAttribute('aria-pressed', String(b.dataset.tag===current)));
     }
     function setTag(tag, updateHash){
       current = tag;
@@ -125,17 +152,49 @@ layout: null
       const cats = CATS.filter(c=>items.some(it=>it.category===c));
       const subjects = ORDER.filter(s=>tags.has(s));
       const extras = [...tags].filter(t=>!ORDER.includes(t) && !CATS.includes(t) && t!=='Fable 5.2');
-      const btn = (t,cls)=>'<button type="button" data-tag="'+t+'" aria-pressed="false">'+t+'</button>';
+      const btn = (t)=>'<button type="button" data-tag="'+t+'" aria-pressed="false">'+t+'</button>';
       const fsep = '<div class="fsep" role="separator"></div>';
       let html = btn('全部');
       cats.forEach(c=>html += btn(c));
       if(extras.length || subjects.length) html += fsep;
       subjects.forEach(s=>html += btn(s));
       if(extras.length){ html += fsep + btn('Fable 5.2'); extras.forEach(t=>html += btn(t)); }
-      filtersEl.innerHTML = html;
+      const trackEl = document.getElementById('filters-track');
+      // 正本 + 装饰性副本（无缝循环）；副本无 data-tag、不可聚焦，点击委托只认 data-tag
+      trackEl.innerHTML = '<div class="filters-half">'+html+'</div>'
+        + '<div class="filters-half filters-clone" aria-hidden="true">'+html+'</div>';
+      trackEl.querySelectorAll('.filters-clone button').forEach(b=>{
+        b.removeAttribute('data-tag');
+        b.removeAttribute('aria-pressed');
+        b.setAttribute('tabindex','-1');
+      });
       filtersEl.addEventListener('click', e=>{
         const b = e.target.closest('button[data-tag]');
         if(b) setTag(b.dataset.tag, true);
+      });
+      // 跑马灯：内容超宽才滚动，按内容宽度定速；reduced-motion 下保持静态
+      const viewport = document.getElementById('filters-viewport');
+      const half = trackEl.querySelector('.filters-half');
+      const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      const halfW = half.offsetWidth;
+      if(!reduced && halfW > viewport.clientWidth + 24){
+        filtersEl.classList.add('is-animated');
+        trackEl.style.setProperty('--marquee-duration', Math.max(15, Math.round(halfW/70))+'s');
+      }
+      // 悬停 / 触摸 / 键盘聚焦时暂停
+      const pause = ()=>filtersEl.classList.add('is-paused');
+      const resume = ()=>filtersEl.classList.remove('is-paused');
+      viewport.addEventListener('pointerenter', pause);
+      viewport.addEventListener('pointerleave', resume);
+      viewport.addEventListener('pointercancel', resume);
+      trackEl.addEventListener('focusin', pause);
+      trackEl.addEventListener('focusout', e=>{ if(!trackEl.contains(e.relatedTarget)) resume(); });
+      // 展开 / 收起
+      const toggleEl = document.getElementById('filters-toggle');
+      toggleEl.addEventListener('click', ()=>{
+        const expanded = filtersEl.classList.toggle('is-expanded');
+        toggleEl.setAttribute('aria-expanded', String(expanded));
+        toggleEl.textContent = expanded ? '收起' : '展开标签';
       });
       window.addEventListener('hashchange', ()=>{
         const mm = location.hash.match(/^#tag=(.+)$/);
