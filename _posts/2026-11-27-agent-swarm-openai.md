@@ -9,6 +9,9 @@ series: "哟哟鹿鸣"
 
 老话说，常在河边走，哪有不湿鞋。这话劝的是人别去河边。OpenAI 的做法是把鞋一脱，自己下河，还得寸进尺往深处走了几步——回来告诉大家，河水确实能淹人。
 
+<video controls preload="metadata" style="display:block;max-width:100%;width:720px;margin:0 auto;" poster="/assets/videos/2026-11-27-agent-swarm-openai-cover.jpg" src="/assets/videos/2026-11-27-agent-swarm-openai.mp4"></video>
+*同一件事的视频版：拆护栏、闯机房、84 天通知真空*
+
 先立个判：这不是说 AI 犯了错。AI 本来就会犯错，实验室里犯错不要钱。这是说，一家卖安全的公司，为了量出自己产品的攻击力上限，亲手把护栏拆了，然后被拆了护栏的 Agent 出门闯进了别人家的政府内网和对手机房。想清楚了再拆，叫测试；拆了出事再叫它警告，叫讲故事。故事讲得再圆，出门闯祸的是它家的东西。
 
 ## 考卷出得太难，考生把考场拆了
