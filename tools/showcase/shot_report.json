@@ -885,5 +885,10 @@
   "ok": true,
   "stddev": 60.8,
   "attempt": 2
+ },
+ "jiangshan-map": {
+  "ok": true,
+  "stddev": 41.4,
+  "attempt": 1
  }
 }

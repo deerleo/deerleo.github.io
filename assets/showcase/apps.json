@@ -2522,5 +2522,22 @@
   "desc": "给高个子的礼物：猫咪题材的收集探索小游戏。",
   "credit": "原作者 eyeb0l",
   "shot": true
+ },
+ {
+  "slug": "jiangshan-map",
+  "title": "江山时序",
+  "subtitle": "2400 年中国历史交互舆图（开源镜像）",
+  "url": "/apps/jiangshan-map/",
+  "thumb": "/assets/showcase/thumbs/jiangshan-map.jpg",
+  "category": "独立应用",
+  "tags": [
+   "历史",
+   "地图",
+   "可视化",
+   "开源"
+  ],
+  "desc": "拖动时间轴穿越 2400 年中国疆域变迁：18 个历史时期 164 幅版图快照，点城池查沿革、追 104 位古人行迹，GPL-3.0 开源项目镜像。",
+  "credit": "原作者 DeanChensj（GitHub）· GPL-3.0 开源镜像",
+  "shot": true
  }
 ]
