@@ -160,12 +160,10 @@ layout: null
       subjects.forEach(s=>html += btn(s));
       if(extras.length){ html += fsep + btn('Fable 5.2'); extras.forEach(t=>html += btn(t)); }
       const trackEl = document.getElementById('filters-track');
-      // 正本 + 装饰性副本（无缝循环）；副本无 data-tag、不可聚焦，点击委托只认 data-tag
+      // 正本 + 装饰性副本（无缝循环）；副本保留 data-tag 以便点击筛选生效，但不可被键盘聚焦、对辅助技术隐藏
       trackEl.innerHTML = '<div class="filters-half">'+html+'</div>'
         + '<div class="filters-half filters-clone" aria-hidden="true">'+html+'</div>';
       trackEl.querySelectorAll('.filters-clone button').forEach(b=>{
-        b.removeAttribute('data-tag');
-        b.removeAttribute('aria-pressed');
         b.setAttribute('tabindex','-1');
       });
       filtersEl.addEventListener('click', e=>{

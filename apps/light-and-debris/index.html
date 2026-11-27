@@ -1,0 +1,1367 @@
+<!doctype html>
+<!--
+  Light & Debris — by Nkondo_funtech（https://nkondo-ft.github.io/light-and-debris/），created with Claude Fable 5.2.
+  Original work by Nkondo_funtech. Mirrored on milulab.com for learning and demo.
+-->
+
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>光と破片</title>
+<style>
+  :root { --bg:#040404; --fg:#d8d4cc; --dim:rgba(216,212,204,.5); --accent:#ff6a00; }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --bg:#040404; --fg:#d8d4cc; } }
+  :root[data-theme="dark"] { --bg:#040404; --fg:#d8d4cc; }
+  html,body { margin:0; height:100%; background:var(--bg); color:var(--fg); overflow:hidden; user-select:none; -webkit-user-select:none; font:12px/1.5 system-ui,sans-serif; }
+  canvas { display:block; touch-action:none; cursor:none; }
+  #hud { position:fixed; left:14px; bottom:12px; color:var(--dim); pointer-events:none; white-space:pre; font-variant-numeric:tabular-nums; }
+  /* 見た目を変えるボタン：画面の下の真ん中。どちらの見た目の上でも読めるよう、暗いすりガラスの丸い板に白い文字 */
+  #look { position:fixed; left:50%; bottom:calc(26px + env(safe-area-inset-bottom, 0px)); transform:translateX(-50%); z-index:5;
+          display:flex; align-items:center; gap:14px; padding:12px 20px 12px 16px; border-radius:999px; cursor:pointer;
+          background:rgba(12,11,14,.62); color:#f2efe9; border:1px solid rgba(255,255,255,.22);
+          -webkit-backdrop-filter:blur(10px); backdrop-filter:blur(10px); box-shadow:0 8px 30px rgba(0,0,0,.35);
+          font:600 14px/1.2 system-ui,sans-serif; letter-spacing:.04em; transition:background .2s, border-color .2s, transform .2s; }
+  #look:hover { background:rgba(24,22,28,.75); border-color:rgba(255,255,255,.4); }
+  #look:active { transform:translateX(-50%) scale(.97); }
+  #look:focus-visible { outline:2px solid var(--accent); outline-offset:3px; }
+  #look .ic { width:30px; height:30px; border-radius:50%; display:grid; place-items:center; background:var(--accent); color:#fff; flex:none; }
+  #look .tx { display:grid; gap:3px; text-align:left; }
+  #look .dots { display:flex; gap:5px; margin-left:4px; }
+  #look .dots i { width:6px; height:6px; border-radius:50%; background:rgba(255,255,255,.3); }
+  #look .dots i.on { background:#fff; }
+  #fade { position:fixed; inset:0; background:#000; opacity:0; pointer-events:none; transition:opacity .25s; z-index:6; }
+  #fade.on { opacity:1; }
+  #msg { position:fixed; inset:0; display:none; place-items:center; text-align:center; padding:24px; color:var(--fg); z-index:10; background:var(--bg); }
+  #msg .box { max-width:38em; display:grid; gap:14px; }
+  #msg p { text-wrap:balance; word-break:keep-all; overflow-wrap:anywhere; }
+  #msg h1 { margin:0; font:700 20px/1.5 system-ui,sans-serif; }
+  #msg p { margin:0; color:rgba(216,212,204,.72); font-size:14px; line-height:1.9; }
+  #msg .dot { width:10px; height:10px; border-radius:50%; background:var(--accent); margin:0 auto 4px; }
+  /* 読み込み中：画面を隠しておき、2つの見た目と輪の準備が全部済んで、なめらかに動き出してから、ふわっと消す（途中で固まるところを見せない） */
+  #loading { position:fixed; inset:0; display:grid; place-items:center; pointer-events:none; z-index:7; background:var(--bg); transition:opacity 1.6s cubic-bezier(.4,0,.2,1); }
+  #loading span { font:500 13px/1 system-ui,sans-serif; letter-spacing:.2em; color:rgba(216,212,204,.75); animation:pulse 1.6s ease-in-out infinite; }
+  #loading { opacity:.995; }   /* 完全に不透明だと、Chromeが下の3Dの画面を描かずに止めてしまい、見せた瞬間に1秒固まった。ほんの少し透かして、裏でも画面に出させておく */
+  #loading.done { opacity:0; }
+  @keyframes pulse { 50% { opacity:.35; } }
+  @media (prefers-reduced-motion: reduce) { #loading span { animation:none; } }
+  .lil-gui { --width: 270px; }
+</style>
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.187.0/build/three.webgpu.js",
+  "three/webgpu": "https://cdn.jsdelivr.net/npm/three@0.187.0/build/three.webgpu.js",
+  "three/tsl": "https://cdn.jsdelivr.net/npm/three@0.187.0/build/three.tsl.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.187.0/examples/jsm/",
+  "lil-gui": "https://cdn.jsdelivr.net/npm/lil-gui@0.20.0/dist/lil-gui.esm.js"
+} }
+</script>
+</head>
+<body>
+<div id="hud"></div>
+<div id="loading"><span>読み込み中</span></div>
+<div id="msg"></div>
+<button id="look" type="button" aria-label="見た目を変える"></button>
+<div id="fade"></div>
+<script type="module">
+import * as THREE from 'three/webgpu';
+import { Fn, instancedArray, instanceIndex, uniform, vec2, vec3, vec4, float, hash, normalize, length, dot,
+         exp, pow, abs, sign, sin, time, positionLocal, rotate, pass, uv, Loop, select, mix, smoothstep,
+         perspectiveDepthToViewZ, screenSize, color, If, mx_fractal_noise_float, positionWorld,
+         normalLocal, positionGeometry, mx_noise_float, texture3D, mrt, output, normalView, packNormalToRGB, unpackRGBToNormal, sample, screenUV, wgslFn, convertToTexture } from 'three/tsl';
+import { bloom } from 'three/addons/tsl/display/BloomNode.js';
+import { dof } from 'three/addons/tsl/display/DepthOfFieldNode.js';
+import { mergeGeometries, mergeVertices } from 'three/addons/utils/BufferGeometryUtils.js';
+import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
+import { ssao } from 'three/addons/tsl/display/SSAONode.js';
+import GUI from 'lil-gui';
+// ---- 回し方のガイド（site/guide.js と同じ中身。公開ページでは別ファイルを読めないことがあったので、ここに直接書く）
+// 「カーソルを回すと切り替わる」ガイド（画面の真ん中に重ねる。光の邪魔をしないよう細い線と小さな文字だけ）
+// createGuide() → { setVariant(n), show(), hide(), setProgress(p 0〜1) }
+// 1 軌道：点線の円を、尾を引く光がぐるぐる回る
+// 2 目盛り：計器の目盛りの輪。回すと目盛りがオレンジに埋まっていく
+// 3 光の粒：輪の上の光の粒に、明るさの波が回る（サークルの粒と同じ色）
+// 4 手本：カーソルの形が円を描いて、回し方を見せる
+const CSS = `
+.pg { position:fixed; left:50%; top:50%; width:min(29vh, 52vw); aspect-ratio:1; transform:translate(-50%,-50%) scale(.94);
+      pointer-events:none; z-index:4; opacity:0; filter:blur(6px); transition:opacity 1.4s ease, transform 1.6s cubic-bezier(.2,.7,.2,1), filter 1.4s ease; }
+.pg.on { opacity:1; transform:translate(-50%,-50%) scale(1); filter:blur(0); }
+.pg.out { transition:opacity .45s ease, transform .6s ease, filter .45s ease; }
+.pg svg { position:absolute; inset:0; width:100%; height:100%; overflow:visible; }
+.pg .cap { position:absolute; left:50%; top:calc(100% + 18px); transform:translateX(-50%); white-space:nowrap; text-align:center;
+           font:500 13px/1.6 system-ui,"Noto Sans JP",sans-serif; letter-spacing:.28em; color:rgba(245,242,250,.82); text-shadow:0 0 12px rgba(0,0,0,.6); }
+.pg .cap small { display:block; font:500 9.5px/1.6 ui-monospace,Consolas,monospace; letter-spacing:.32em; color:rgba(245,242,250,.45); margin-top:2px; }
+.pg .spin { transform-origin:0 0; animation:pg-spin var(--dur,3.2s) linear infinite; }
+.pg .spin.ease { animation-timing-function:cubic-bezier(.45,.05,.55,.95); }
+@keyframes pg-spin { to { transform:rotate(360deg); } }
+.pg .dot3 { animation:pg-pulse 2.4s ease-in-out infinite; }
+@keyframes pg-pulse { 0%,100% { opacity:.16; } 12% { opacity:.95; } 40% { opacity:.16; } }
+@media (prefers-reduced-motion: reduce) { .pg .spin, .pg .dot3 { animation:none; } }
+`;
+const C = 2 * Math.PI * 88;                               // 輪の長さ（半径88）
+const arcPath = (r, a0, a1) => {                            // 角度（度・時計回り・上が0）で円弧
+  const p = (a) => [Math.sin(a * Math.PI / 180) * r, -Math.cos(a * Math.PI / 180) * r];
+  const [x0, y0] = p(a0), [x1, y1] = p(a1);
+  return `M${x0.toFixed(2)} ${y0.toFixed(2)} A${r} ${r} 0 ${a1 - a0 > 180 ? 1 : 0} 1 ${x1.toFixed(2)} ${y1.toFixed(2)}`;
+};
+const DEFS = `<defs>
+  <filter id="pgGlow" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="1.6" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+  <filter id="pgSoft" x="-100%" y="-100%" width="300%" height="300%"><feGaussianBlur stdDeviation="2.6"/></filter>
+</defs>`;
+// 尾を引く光（短い円弧を細かく分けて、後ろほど薄く・細く）
+const tail = (r, len, w, col) => [...Array(14)].map((_, i) => {
+  const a0 = -len + i * len / 14, a1 = a0 + len / 14 + 0.6, k = (i + 1) / 14;
+  return `<path d="${arcPath(r, a0, a1)}" stroke="${col}" stroke-opacity="${(k * k * 0.9).toFixed(3)}" stroke-width="${(w * (0.35 + 0.65 * k)).toFixed(2)}" fill="none" stroke-linecap="round"/>`;
+}).join('');
+const progRing = (col, w) => '';   // 回した分の線は描かない（ガイドは軌道を見せるだけ。2026-11-21 近藤さん）
+const progRingOld = (col, w) => `<circle class="prog" r="88" fill="none" stroke="${col}" stroke-width="${w}" stroke-linecap="round" transform="rotate(-90)" stroke-dasharray="0 ${C}" filter="url(#pgGlow)"/>`;
+const CURSOR = `<path d="M0 0 L0 13.5 L3.4 10.4 L5.9 16 L8.2 15 L5.7 9.5 L10.3 9.3 Z" fill="rgba(250,248,255,.95)" stroke="rgba(10,8,16,.55)" stroke-width=".7" stroke-linejoin="round"/>`;
+
+const VARIANTS = {
+  1: { name: '軌道', build: () => `${DEFS}
+      <circle r="88" fill="none" stroke="rgba(255,255,255,.3)" stroke-width=".55" stroke-dasharray=".5 3.4" stroke-linecap="round"/>
+      ${progRing('#fff', 1.3)}
+      <g class="spin" style="--dur:3.2s" filter="url(#pgGlow)">${tail(88, 70, 1.4, '#f4f0ff')}<circle cx="0" cy="-88" r="2.1" fill="#fff"/></g>`,
+      cap: 'クリックしたまま円を描く<small>HOLD &amp; DRAW A CIRCLE</small>' },
+  2: { name: '目盛り', build: () => `${DEFS}
+      ${[...Array(72)].map((_, i) => { const long = i % 6 === 0, a = i * 5 * Math.PI / 180, r0 = long ? 77 : 82, r1 = 88;
+        return `<line class="tk" x1="${(Math.sin(a) * r0).toFixed(2)}" y1="${(-Math.cos(a) * r0).toFixed(2)}" x2="${(Math.sin(a) * r1).toFixed(2)}" y2="${(-Math.cos(a) * r1).toFixed(2)}" stroke="rgba(255,255,255,${long ? .5 : .28})" stroke-width="${long ? .7 : .45}"/>`; }).join('')}
+      <circle r="94" fill="none" stroke="rgba(255,255,255,.12)" stroke-width=".4"/>
+      <g class="spin" style="--dur:5s">${[0, 180].map(a => `<path transform="rotate(${a}) translate(0,-94)" d="M-2.6 -2.2 L2.4 0 L-2.6 2.2" fill="none" stroke="#ff6a00" stroke-width=".9" stroke-linejoin="round"/>`).join('')}</g>
+      <text class="pct" x="0" y="-102" text-anchor="middle" font-family="ui-monospace,Consolas,monospace" font-size="5.2" letter-spacing="1.2" fill="rgba(255,255,255,.55)">000%</text>`,
+      cap: 'カーソルを回して切り替え<small>◜ ROTATE TO SWITCH ◞</small>' },
+  3: { name: '光の粒', build: () => `${DEFS}
+      ${[...Array(40)].map((_, i) => { const a = i / 40 * Math.PI * 2, r = 0.7 + ((i * 37) % 7) / 7 * 0.9;
+        return `<g class="dot3" style="animation-delay:${(i / 40 * 2.4 - 2.4).toFixed(3)}s"><circle cx="${(Math.sin(a) * 88).toFixed(2)}" cy="${(-Math.cos(a) * 88).toFixed(2)}" r="${(r * 2.6).toFixed(2)}" fill="#c9b8ff" opacity=".55" filter="url(#pgSoft)"/><circle class="pd" cx="${(Math.sin(a) * 88).toFixed(2)}" cy="${(-Math.cos(a) * 88).toFixed(2)}" r="${r.toFixed(2)}" fill="#f6f2ff"/></g>`; }).join('')}`,
+      cap: 'ぐるっと回して、向こう側へ<small>CIRCLE YOUR CURSOR</small>' },
+  4: { name: '手本', build: () => `${DEFS}
+      <circle r="88" fill="none" stroke="rgba(255,255,255,.18)" stroke-width=".5"/>
+      ${progRing('#fff', 1.3)}
+      <g class="spin ease" style="--dur:2.8s"><g filter="url(#pgGlow)">${tail(88, 110, 1.6, '#ece6ff')}</g><g transform="translate(0,-88) rotate(18) scale(.82)" filter="url(#pgGlow)">${CURSOR}</g></g>`,
+      cap: 'カーソルをぐるぐる回す<small>SPIN TO ENTER THE OTHER SIDE</small>' },
+};
+
+function createGuide(root = document.body) {
+  if (!document.getElementById('pg-style')) { const st = document.createElement('style'); st.id = 'pg-style'; st.textContent = CSS; document.head.appendChild(st); }
+  const el = document.createElement('div'); el.className = 'pg'; el.setAttribute('aria-hidden', 'true');
+  root.appendChild(el);
+  let v = 1, prog = 0;
+  const g = {
+    el, get variant() { return v; }, names: Object.fromEntries(Object.entries(VARIANTS).map(([k, x]) => [x.name, +k])),
+    setVariant(n) {
+      v = VARIANTS[n] ? +n : 1;
+      el.innerHTML = `<svg viewBox="-100 -100 200 200">${VARIANTS[v].build()}</svg><div class="cap">${VARIANTS[v].cap}</div>`;
+      g.setProgress(prog, true);
+    },
+    show() { el.classList.remove('out'); el.classList.add('on'); },
+    hide() { el.classList.add('out'); el.classList.remove('on'); },
+    // 回した分だけ埋まる（0〜1）
+    setProgress(p, force) {
+      p = Math.max(0, Math.min(1, p));
+      if (!force && Math.abs(p - prog) < 0.004) return;
+      prog = p;
+      const ring = el.querySelector('.prog'); if (ring) ring.setAttribute('stroke-dasharray', `${(p * C).toFixed(1)} ${C}`);
+      const tk = el.querySelectorAll('.tk'); if (tk.length) { const n = Math.round(p * tk.length); tk.forEach((t, i) => t.setAttribute('stroke', i < n ? '#ff6a00' : (i % 6 === 0 ? 'rgba(255,255,255,.5)' : 'rgba(255,255,255,.28)'))); }
+      const pct = el.querySelector('.pct'); if (pct) pct.textContent = String(Math.round(p * 100)).padStart(3, '0') + '%';
+      const pd = el.querySelectorAll('.dot3'); if (pd.length) { const n = Math.round(p * pd.length); pd.forEach((d, i) => { d.style.animation = i < n ? 'none' : ''; d.style.opacity = i < n ? '1' : ''; }); }
+    },
+  };
+  g.setVariant(1);
+  return g;
+}
+
+
+const q = new URLSearchParams(location.search);
+let COUNT = Math.max(1000, Math.min(+(q.get('n') || 150000), 1000000));   // 画質が決まったら、性能に合わせて決め直す（下の「画質」）
+const hud = document.getElementById('hud');
+const store = { get(k) { try { return JSON.parse(localStorage.getItem(k)); } catch { return null; } },
+                set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} } };
+
+// ---------- 調整できる値（初期値は 2026-11-20 に近藤さんが調整した値） ----------
+const DEFAULTS = {
+  押す強さ: 200, 光の届く範囲: 4.82, 空気の抵抗: 0.86, 元に戻る力: 0.41,
+  ゆらぎ: 0.33, 回転: 0.96, 光の明るさ: 64, 光の奥行き: 3.36, 光の追従: 10.2, 放置で自動で動く: false,
+  光の色: '#ffe9d2', 光の筋: 0.9, 光のもや: 0.55, にじみ: 0.35, ピントの幅: 7, ぼけの強さ: 1.1,
+  オレンジの割合: 1, 粒子感: 0.025, 奥まで届く: 0.7, 色の割合: 0.03, 床の明るさ: 1, 金属の割合: 0.06, 金属の映り込み: 1, 陰り: 0.8, 色のにじみ: 0.35,
+};
+// ---------- 見た目の候補（2026-11-20：メカっぽさ・カオスさの方向を試す） ----------
+// tag の倍率で形の割合を変える：rock=石, basic=立方体や板, weird=変わった形, mech=機械部品
+const LOOKS = {
+  hud:   { name: 'B 計器の画面', p: { 光の色: '#e8f0ff', 光の明るさ: 70, 金属の割合: 0.5, 色の割合: 0.035, オレンジの割合: 0.5 },
+           tag: { rock: 0.3, basic: 0.6, weird: 1, mech: 3.5 },
+           metal: ['#9aa0aa', '#d8dce2', '#5a5f68', '#3a3d44', '#c9a45a', '#9aa0aa', '#d8dce2', '#5a5f68', '#3a3d44', '#c9a45a', '#2f6bff'],   // 青い金属は11色中1色
+           pal: ['#2f6bff', '#4fa3ff', '#1f3fae', '#7fc4ff'],                                       // 色の付いた破片は青系
+           bg: 0x07060c, fog: 0x0d0a16, floor: 0x1e1c22, panels: q.get('bp') ? 'bp' + q.get('bp') : 'grey', hud: true },   // 奥は斜めの赤い板（元のまま）。B を変える案（?bp=1〜4）は近藤さん「全部微妙」で見送り、C の方を変える（2026-11-21）
+  white: { name: 'E 白い工場', p: { 光の色: '#fff4e6', 光の明るさ: 80, 金属の割合: 0.2, 色の割合: 0, オレンジの割合: 2.2 },
+           tag: { rock: 0.15, basic: 1.4, weird: 0.8, mech: 2.2 }, metal: ['#c8ccd2', '#2a2b2e', '#8a8e96'], baseColor: 0xd8d4cc,
+           dark: { share: 0.07, colors: ['#2b2b2e', '#3c3d41', '#18181a'] },                       // ほんの少しだけ濃いグレーと黒
+           bg: 0x17171c, fog: 0x1d1d23, floor: 0x7a7770, panels: 'white' },
+  // 2026-11-21 追加：候補C「赤い警告」（一度オレンジにしたが、近藤さん「やっぱりオレンジ微妙そうだから赤にしましょう」。斜めの赤い板は C に残し、B の奥の板を横の帯に変えた）
+  alarm: { name: 'C 赤い警告', p: { 光の色: '#ff7a6a', 光の明るさ: 120, 金属の割合: 0.55, 色の割合: 0, オレンジの割合: 0 },
+           tag: { rock: 0.4, basic: 0.7, weird: 1, mech: 3.5 }, metal: ['#3a3c40', '#55585e', '#1f2023', '#8a8e96', '#b8bcc4'], tint: 0.45,   // 黒い鉄の部品（明るい鉄を少し混ぜて形が見えるように）
+           glow: { color: '#ff2a1a', share: 0.018, power: 1.0 },
+           dark: { share: 0.35, colors: ['#6a6d73', '#7d8087', '#585a5f', '#8e9198', '#4a4c50'] },   // 濃いグレーの部品を3割（赤と黒だけで寂しくならないように）                                               // 一部の部品が警告灯のように赤く明滅
+           bg: 0x0a0202, fog: 0x1c0404, floor: 0x1a1212, panels: q.get('cp') ? 'cp' + q.get('cp') : 'redglow' },   // 奥：候補を ?cp=1〜4 で（決まるまでは斜めの板が赤く光る）
+};
+// 1つの見た目だけの版（solo.html、または ?solo=hud）：ほかの見た目・見た目を変えるボタン・輪の切り替えを一切なくす（2026-11-21 近藤さん「B…だけのサイト…どれくらい軽いのか」）
+const SOLO = LOOKS[window.__SOLO || q.get('solo')] ? (window.__SOLO || q.get('solo')) : null;
+if (SOLO) for (const k of Object.keys(LOOKS)) if (k !== SOLO) delete LOOKS[k];
+const START_KEY = SOLO || (LOOKS[q.get('look')] ? q.get('look') : (LOOKS[store.get('hikari-hahen-look')] ? store.get('hikari-hahen-look') : 'hud'));
+const LOOK_KEYS = Object.keys(LOOKS);
+const otherKey = (k) => LOOK_KEYS[(LOOK_KEYS.indexOf(k) + 1) % LOOK_KEYS.length];
+const nextKey = otherKey;                                  // 輪の向こうに見えるのは、いつも次の見た目（B→E→C→B…）
+let curKey = START_KEY;                                  // いま表に出ている見た目（サークルで切り替わる）
+// 見た目を変えるボタン：押すと画面の真ん中にサークルが開き、向こう側の見た目に切り替わる（読み直さない）
+const lookBtn = document.getElementById('look');
+function drawLookBtn() {
+  const idx = LOOK_KEYS.indexOf(curKey);
+  lookBtn.innerHTML = `<span class="ic" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h13l-3-3M20 17H7l3 3"/></svg></span>
+    <span class="tx"><span>見た目を変える</span></span>
+    <span class="dots" aria-hidden="true">${LOOK_KEYS.map((k, i) => `<i class="${i === idx ? 'on' : ''}"></i>`).join('')}</span>`;
+}
+drawLookBtn();
+lookBtn.addEventListener('pointerdown', (e) => e.stopPropagation());   // ボタンを押しても光が飛んでこないように
+lookBtn.addEventListener('click', () => window.__portalGo?.());
+if (q.get('gui') === '0' || SOLO) lookBtn.style.display = 'none';
+const SOFT = q.get('soft') !== '0';                    // チカチカ対策（?soft=0 で外して比べられる）
+const P = { ...DEFAULTS, ...(store.get('hikari-hahen-params') || {}), ...LOOKS[START_KEY].p };
+P.放置で自動で動く = q.get('idle') === '1';                // 放置で勝手に動くのは初期オフ（2026-11-21 近藤さん）。パネルで一時的に入れられる
+const QUALITY = q.get('q') || store.get('hikari-hahen-q') || 'auto';   // high / mid / low / auto
+
+// ---------- renderer ----------
+function showUnsupported(detail) {
+  document.getElementById('loading').style.display = 'none';
+  document.getElementById('look').style.display = 'none';
+  const m = document.getElementById('msg'); m.style.display = 'grid';
+  m.innerHTML = `<div class="box"><div class="dot"></div><h1>このブラウザでは表示できません</h1>
+    <p>このサイトは、WebGPU という新しい3D表示の仕組みを使っています。<br>パソコンの Google Chrome または Microsoft Edge の最新版で開いてください。</p>
+    ${detail ? `<p style="font-size:12px;opacity:.6">${detail}</p>` : ''}</div>`;
+}
+// WebGPU があるか確かめる（?gl=1 は「WebGPU が無いブラウザ」の確認用）
+let adapter = null;
+try { adapter = q.get('gl') === '1' ? null : await navigator.gpu?.requestAdapter(); } catch {}
+if (!adapter) { showUnsupported(''); throw new Error('WebGPU が使えません'); }
+const renderer = new THREE.WebGPURenderer({ antialias: false });
+renderer.setSize(innerWidth, innerHeight);
+renderer.toneMapping = THREE.NeutralToneMapping;   // ACESだとオレンジが赤に寄るため
+renderer.toneMappingExposure = 1.0;
+document.body.appendChild(renderer.domElement);
+try { await renderer.init(); } catch (e) { showUnsupported('（くわしく：' + e.message + '）'); throw e; }
+if (!renderer.backend.isWebGPUBackend) { showUnsupported(''); throw new Error('WebGPU が使えません'); }
+const backend = renderer.backend.isWebGPUBackend ? 'WebGPU' : 'WebGL2';
+let gpuName = '';
+gpuName = adapter?.info?.vendor || '';
+// 画質：auto は内蔵GPU（intel・amdの内蔵）なら「中」、それ以外は「高」から始め、遅ければ下げる
+// さらに、前に開いたとき遅かったPCは、測った結果を覚えておいて1段下げた画質から始める（hikari-hahen-autoq）
+const AUTOQ = QUALITY === 'auto' ? store.get('hikari-hahen-autoq') : null;
+let quality = QUALITY === 'auto' ? (AUTOQ || (/intel/i.test(gpuName) ? 'mid' : 'high')) : QUALITY;
+if (!q.get('n')) COUNT = { high: 150000, mid: 90000, low: 60000 }[quality];   // 破片の数も性能に合わせる（2026-11-21 近藤さん）
+const Q = {
+  high: { dpr: 1.1, shadow: true,  raySteps: 40, dof: true, aa: 2, seg: 2, ao: true, detail: true },   // 2026-11-21：MSAA 4→2倍・細かさ上限1.5→1.1（見た目ほぼ同じで約1.75倍速い。近藤さん「両方やって」）
+  mid:  { dpr: 1.0, shadow: false, raySteps: 28, dof: true, aa: 0, seg: 1, ao: false, detail: true },
+  low:  { dpr: 0.75, shadow: false, raySteps: 16, dof: false, aa: 0, seg: 1, ao: false, detail: false },
+}[quality];
+// 試す用：?seg= ?sh=0/1 ?ao=0/1 ?det=0 で画質の中身を個別に変える
+if (q.get('seg')) Q.seg = +q.get('seg');
+if (q.get('sh')) Q.shadow = q.get('sh') === '1';
+if (q.get('ao')) Q.ao = q.get('ao') === '1';
+if (q.get('det') === '0') Q.detail = false;
+if (q.get('dof')) Q.dof = q.get('dof') === '1';
+if (q.get('rs')) Q.raySteps = +q.get('rs');
+if (q.get('dpr')) Q.dpr = +q.get('dpr');
+if (q.get('aa')) Q.aa = +q.get('aa');
+renderer.setPixelRatio(Math.min(devicePixelRatio, Q.dpr));
+renderer.shadowMap.enabled = Q.shadow;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
+const camera = new THREE.PerspectiveCamera(38, innerWidth / innerHeight, 0.5, 80);
+camera.position.set(0, 0.6, 20);
+camera.lookAt(0, -0.4, 0);
+
+// ---------- uniforms ----------
+const uLight = uniform(new THREE.Vector3());
+const uDt = uniform(0);
+const uPush = uniform(P.押す強さ), uRadius = uniform(P.光の届く範囲), uDrag = uniform(P.空気の抵抗);
+const uReturn = uniform(P.元に戻る力), uDrift = uniform(P.ゆらぎ), uSpin = uniform(P.回転);
+const FLOOR = -4.6;                                     // 床の高さ
+const BOX_CY = 1.0;                                     // 境界の中心の高さ（下の端が床）
+// カーソルの視線（カメラ→光）。奥や手前の破片にも、画面上でカーソルの近くなら力を届ける
+const uCam = uniform(new THREE.Vector3()), uRayDir = uniform(new THREE.Vector3(0, 0, -1)), uLightDist = uniform(16);
+const uReach = uniform(P.奥まで届く);
+const uBox = uniform(new THREE.Vector3(14, BOX_CY - FLOOR, 8));   // 目に見えない境界（半分の大きさ）
+// 破片が浮かんでいる範囲（床との間を少しあけて、床が見えるように）
+const HOME_CY = 1.7, HOME_HY = 4.0;
+const uFloor = uniform(P.床の明るさ);
+const uDim = uniform(1);                                  // カーソルの光の強さの倍率（回し始めると弱める）
+// 仕上げで使う値（2つの見た目で共通）
+const uLightUV = uniform(new THREE.Vector2(0.5, 0.5));
+const uLightVZ = uniform(-10);
+const uAspect = uniform(1);
+const uNear = uniform(camera.near), uFar = uniform(camera.far);
+const uRay = uniform(P.光の筋), uHaze = uniform(P.光のもや), uGrain = uniform(P.粒子感);
+const uFocus = uniform(18), uFocal = uniform(P.ピントの幅), uBokeh = uniform(P.ぼけの強さ);
+const uAO = uniform(P.陰り);
+const uCA = uniform(P.色のにじみ);
+const STEPS = Q.raySteps;
+let shadowFrame = 0;
+const SHADOW_EVERY = +(q.get('shev') ?? 2);
+{  // 点光源の影の処理だけを差し替える（親の処理を二重に止めないよう、1か所だけ）
+  const C = Object.prototype.hasOwnProperty.call(THREE.PointShadowNode.prototype, 'updateBefore') ? THREE.PointShadowNode : THREE.ShadowNode;
+  const ub = C?.prototype && Object.prototype.hasOwnProperty.call(C.prototype, 'updateBefore') ? C.prototype.updateBefore : null;
+  if (ub) C.prototype.updateBefore = function (frame) { if (this.__drawn && (shadowFrame + (this.light?.userData.shOff || 0)) % (this.light?.userData.shEvery || SHADOW_EVERY) !== 0) return; this.__drawn = true; return ub.call(this, frame); };   // 2つの見た目の影は交互のコマで描く（同じコマに重なると、重いコマと軽いコマが交互になってカクつく）
+}
+// 金属に映り込む周りの景色：ほぼ真っ暗な部屋に、細い明かりの帯が数本あるだけ（金属以外はほとんど明るくならない）。2つの見た目で共通
+const ENV_TEX = (() => {
+  const env = new THREE.Scene();
+  env.background = new THREE.Color(0x000000);
+  const strip = (w, h, x, y, z, c, k) => { const m = new THREE.MeshBasicNodeMaterial({ side: THREE.DoubleSide });
+    m.colorNode = color(c).mul(k); const s = new THREE.Mesh(new THREE.PlaneGeometry(w, h), m); s.position.set(x, y, z); s.lookAt(0, 0, 0); env.add(s); };
+  strip(6, 0.6, 0, 6, -3, 0xfff1e0, 18);
+  strip(0.5, 5, -7, 1, 2, 0xffe2c4, 12);
+  strip(0.5, 5, 7, 0, -2, 0xdfe8ff, 10);
+  strip(4, 0.4, 2, -4, 6, 0xffb070, 8);
+  return new THREE.PMREMGenerator(renderer).fromScene(env, 0.02).texture;
+})();
+
+// ================= 1つの見た目の世界（破片・物理・床・光・奥の板）を作る =================
+// 2つの見た目を同時に持ち、サークルの向こう側にもう1つを映す。カーソル・動きの設定は共通、形・色・部屋は見た目ごと
+const PG = P;                                            // 共通の設定（関数の中では見た目ごとの P を使う）
+function buildWorld(LOOK_KEY) {
+const LOOK = LOOKS[LOOK_KEY];
+const anims = [];                                        // 背景の動くもの（表と次の見た目のときだけ、毎コマ動かす）
+
+const P = { ...PG, ...LOOK.p };                          // この見た目の値（光の色・明るさ・金属や色の割合・オレンジの割合）
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(LOOK.bg ?? 0x040404);
+scene.fog = new THREE.FogExp2(LOOK.fog ?? 0x040404, 0.03);
+const uColorShare = uniform(P.色の割合);
+const uDimW = uniform(1);                                 // この見た目のカーソルの光の強さ（手前の世界だけ弱める）
+const uMetal = uniform(P.金属の割合);
+
+// ---------- GPU buffers ----------
+const pos = instancedArray(COUNT, 'vec3');
+const vel = instancedArray(COUNT, 'vec3');
+const home = instancedArray(COUNT, 'vec3');
+const rot = instancedArray(COUNT, 'vec4');
+const quat = instancedArray(COUNT, 'vec4');  // 向きを回転の4つの数（クォータニオン）にしたもの。破片1個につき毎コマ1回だけ計算し、頂点では使い回す   // xyz = 向き（オイラー角）, w = 大きさ
+
+// ---------- 形（12種類：岩・立方体・板・棒・三角の欠片・多面体・大きな塊・FunTechのオレンジ） ----------
+// 画面で大きく見える破片だけ細かい形にする（LOD）。HI=true の間に作った形が「細かい形」
+let LV = 1;                                             // 0=ごく小さい 1=ふつう 2=大きい
+const L = (lo, hi) => LV === 2 ? hi : lo;
+const LOD_SIZE = ({ high: 0.15, mid: 0.25, low: 9 })[quality];                                  // これより大きい破片は細かい形で描く
+const TINY_SIZE = ({ high: 0.035, mid: 0.06, low: 0.07 })[quality];                                // これより小さい破片は単純な形で描く（画面で数ピクセル）
+function rockGeometry(detail, seed, flat = true) {
+  // 細かく分割した球を、つながった頂点にしてから、なめらかなでこぼこを付ける（カクカクの多面体に見せない）
+  let g = new THREE.IcosahedronGeometry(1, LV === 0 ? 0 : detail);
+  g.deleteAttribute('normal'); g.deleteAttribute('uv');
+  g = mergeVertices(g);
+  const p = g.attributes.position;
+  const v = new THREE.Vector3();
+  const h = (x) => { const s = Math.sin(x * 127.1 + seed * 311.7) * 43758.5453; return s - Math.floor(s); };
+  // 大きなうねり（数個のこぶ）＋小さなでこぼこ
+  const bumps = [...Array(7)].map((_, j) => new THREE.Vector3(h(j * 3.1) - 0.5, h(j * 5.7 + 1) - 0.5, h(j * 9.3 + 2) - 0.5).normalize());
+  for (let i = 0; i < p.count; i++) {
+    v.fromBufferAttribute(p, i);
+    const n = v.clone().normalize();
+    let r = 1;
+    for (const [j, b] of bumps.entries()) r += Math.pow(Math.max(0, n.dot(b)), 3) * (h(j + 20) * 0.5 - 0.2);
+    r += (h(n.x * 13.1 + n.y * 17.7 + n.z * 23.3) - 0.5) * 0.06;
+    v.copy(n).multiplyScalar(r);
+    if (flat) v.y *= 0.55 + h(seed) * 0.4;             // 平たい石
+    p.setXYZ(i, v.x, v.y, v.z);
+  }
+  g.computeVertexNormals();
+  return g;
+}
+// 変わった形
+function spikyGeometry(seed) {                          // トゲトゲ（頂点ごとに長さを大きく変える）
+  const g = new THREE.IcosahedronGeometry(1, 1);
+  const p = g.attributes.position, v = new THREE.Vector3();
+  const h = (x) => { const s = Math.sin(x * 127.1 + seed * 311.7) * 43758.5453; return s - Math.floor(s); };
+  for (let i = 0; i < p.count; i++) {
+    v.fromBufferAttribute(p, i);
+    const k = h(v.x * 3.1 + v.y * 7.7 + v.z * 13.3);
+    v.multiplyScalar(0.45 + Math.pow(k, 4) * 1.9);
+    p.setXYZ(i, v.x, v.y, v.z);
+  }
+  return flat(g);
+}
+function twistedBar() {                                  // ねじれた棒
+  const g = new THREE.BoxGeometry(0.5, 2.8, 0.5, 1, L(6, 32), 1);
+  const p = g.attributes.position;
+  for (let i = 0; i < p.count; i++) {
+    const x = p.getX(i), y = p.getY(i), z = p.getZ(i), a = y * 1.3;
+    p.setXYZ(i, x * Math.cos(a) - z * Math.sin(a), y, x * Math.sin(a) + z * Math.cos(a));
+  }
+  return flat(g);
+}
+// 本物の物は角がわずかに丸く、そこに光が当たって輪郭が光る。箱は全部角を丸める
+const rbox = (w, h, d) => (LV === 0 || (LV === 1 && quality !== 'high')) ? new THREE.BoxGeometry(w, h, d) : new RoundedBoxGeometry(w, h, d, L(1, Q.seg), Math.min(w, h, d) * 0.14);
+const bar = (w, h, d, x, y, z) => rbox(w, h, d).translate(x, y, z);
+// 多面体・石・六角などは面ごとに平らな陰影にする（頂点を面ごとに分けて法線を計算）
+const flat = (g) => { const n = g.index ? g.toNonIndexed() : g; n.deleteAttribute('normal'); n.computeVertexNormals(); return n; };
+const lShape = () => mergeGeometries([bar(2.2, 0.5, 0.5, 0, 0, 0), bar(0.5, 1.6, 0.5, -0.85, 1.05, 0)]).translate(0, -0.4, 0);
+const crossShape = () => mergeGeometries([bar(2.4, 0.42, 0.42, 0, 0, 0), bar(0.42, 2.4, 0.42, 0, 0, 0), bar(0.42, 0.42, 2.4, 0, 0, 0)]);
+const frameShape = () => mergeGeometries([bar(2, 0.3, 0.3, 0, 0.85, 0), bar(2, 0.3, 0.3, 0, -0.85, 0), bar(0.3, 1.4, 0.3, 0.85, 0, 0), bar(0.3, 1.4, 0.3, -0.85, 0, 0)]);
+const stairShape = () => mergeGeometries([bar(1.8, 0.5, 0.6, 0, -0.5, 0), bar(1.2, 0.5, 0.6, -0.3, 0, 0), bar(0.6, 0.5, 0.6, -0.6, 0.5, 0)]);
+// 機械部品
+function gearGeometry(teeth, rOut, rIn, hole, depth) {   // 歯車
+  const sh = new THREE.Shape();
+  const n = teeth * 4;
+  for (let i = 0; i <= n; i++) {
+    const a = i / n * Math.PI * 2, r = (i % 4 < 2) ? rOut : rIn;
+    i === 0 ? sh.moveTo(Math.cos(a) * r, Math.sin(a) * r) : sh.lineTo(Math.cos(a) * r, Math.sin(a) * r);
+  }
+  const hp = new THREE.Path(); hp.absarc(0, 0, hole, 0, Math.PI * 2, true); sh.holes.push(hp);
+  return new THREE.ExtrudeGeometry(sh, { depth, bevelEnabled: false, curveSegments: L(3, 12) }).center();
+}
+function plateWithHoles() {                               // 穴の開いた板
+  const sh = new THREE.Shape(); sh.moveTo(-1.2, -0.6); sh.lineTo(1.2, -0.6); sh.lineTo(1.2, 0.6); sh.lineTo(-0.6, 0.6); sh.lineTo(-1.2, 0.1); sh.closePath();
+  for (const x of [-0.6, 0.1, 0.8]) { const h = new THREE.Path(); h.absarc(x, 0, 0.22, 0, Math.PI * 2, true); sh.holes.push(h); }
+  return new THREE.ExtrudeGeometry(sh, { depth: 0.18, bevelEnabled: false, curveSegments: L(5, 10) }).center();
+}
+function nutGeometry() {                                 // 六角ナット（外は六角、穴は丸）
+  const sh = new THREE.Shape();
+  for (let i = 0; i <= 6; i++) { const a = i / 6 * Math.PI * 2; i ? sh.lineTo(Math.cos(a), Math.sin(a)) : sh.moveTo(Math.cos(a), Math.sin(a)); }
+  const hp = new THREE.Path(); hp.absarc(0, 0, 0.5, 0, Math.PI * 2, true); sh.holes.push(hp);
+  return new THREE.ExtrudeGeometry(sh, { depth: 0.8, bevelEnabled: true, bevelThickness: 0.06, bevelSize: 0.05, bevelSegments: 2, curveSegments: 20 }).center();
+}
+const cyl = (r1, r2, h, seg, y) => new THREE.CylinderGeometry(r1, r2, h, seg).translate(0, y, 0);
+const piston = () => mergeGeometries([cyl(0.36, 0.36, 1.5, L(8, 24), -0.3), cyl(0.55, 0.55, 0.5, L(8, 24), 0.6), cyl(0.15, 0.15, 1.2, L(5, 12), 1.4)]).translate(0, -0.4, 0);
+const iBeam = () => mergeGeometries([bar(2.6, 0.12, 0.8, 0, 0.45, 0), bar(2.6, 0.12, 0.8, 0, -0.45, 0), bar(2.6, 0.8, 0.14, 0, 0, 0)]);
+class Helix extends THREE.Curve { getPoint(t, v = new THREE.Vector3()) { const a = t * Math.PI * 2 * 5; return v.set(Math.cos(a) * 0.6, (t - 0.5) * 2.6, Math.sin(a) * 0.6); } }
+const spring = () => new THREE.TubeGeometry(new Helix(), L(24, 96), 0.11, L(4, 8), false);
+function cable(seed) {                                    // くねった電線
+  const h = (x) => { const s = Math.sin(x * 91.7 + seed * 47.3) * 43758.5453; return s - Math.floor(s); };
+  const pts = []; for (let i = 0; i < 6; i++) pts.push(new THREE.Vector3((i - 2.5) * 0.55, (h(i) - 0.5) * 1.4, (h(i + 9) - 0.5) * 1.4));
+  return new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts), L(12, 40), 0.09, L(3, 8), false);
+}
+const elbow = () => new THREE.TorusGeometry(1, 0.3, L(4, 10), L(5, 14), Math.PI / 2);
+const chainLink = () => new THREE.TorusGeometry(1, 0.22, L(4, 8), L(8, 24)).scale(1, 1.7, 1);
+const bearing = () => mergeGeometries([new THREE.TorusGeometry(1, 0.32, L(4, 10), L(8, 28)), cyl(0.62, 0.62, 0.5, L(8, 24), 0).rotateX(Math.PI / 2)]);
+const orange = new THREE.Color('#ff6a00');
+const oF = Math.max(0, P.オレンジの割合);
+// size: [最小, 最大, かたより]。かたよりが大きいほど「ほとんど小さく、たまに大きい」
+const shapes = [
+  { name: '小石A', tag: 'rock',     geo: () => rockGeometry(L(1, 2), 1), share: 0.17, size: [0.004, 0.10, 7], color: 0x8e8880, rough: 0.9 },
+  { name: '小石B', tag: 'rock',     geo: () => rockGeometry(L(1, 2), 2), share: 0.14, size: [0.004, 0.10, 7], color: 0x6f6b65, rough: 0.9 },
+  { name: '丸い石', tag: 'rock',    geo: () => rockGeometry(L(1, 2), 4, false), share: 0.05, size: [0.006, 0.10, 6], color: 0x7d7870, rough: 0.85 },
+  { name: '立方体', tag: 'basic',     geo: () => rbox(1.3, 1.3, 1.3), share: 0.24, size: [0.004, 0.16, 6], color: 0x5c5955, rough: 0.7 },
+  { name: '板', tag: 'basic',         geo: () => rbox(1.9, 0.32, 1.4), share: 0.08, size: [0.006, 0.16, 5], color: 0x66625c, rough: 0.75 },
+  { name: '棒', tag: 'basic',         geo: () => rbox(2.6, 0.38, 0.38), share: 0.05, size: [0.006, 0.14, 5], color: 0x58554f, rough: 0.7 },
+  { name: '三角の欠片', tag: 'basic', geo: () => flat(new THREE.CylinderGeometry(1.1, 1.1, 0.22, 3)), share: 0.08, size: [0.005, 0.13, 6], color: 0x77726a, rough: 0.8 },
+  { name: '四面体', tag: 'basic',     geo: () => new THREE.TetrahedronGeometry(1.25, 0), share: 0.05, size: [0.005, 0.12, 6], color: 0x6a665f, rough: 0.8 },
+  { name: '八面体', tag: 'basic',     geo: () => new THREE.OctahedronGeometry(1.1, 0), share: 0.04, size: [0.005, 0.12, 6], color: 0x807b73, rough: 0.75 },
+  { name: '大きな岩', tag: 'rock',   geo: () => rockGeometry(L(1, 2), 3), share: 0.025, size: [0.06, 0.34, 2.5], color: 0x7a746c, rough: 0.85 },
+  { name: '大きな立方体', tag: 'basic', geo: () => rbox(1.3, 1.3, 1.3), share: 0.012, size: [0.10, 0.44, 2.5], color: 0x4f4c48, rough: 0.65 },
+  { name: 'トゲトゲ', tag: 'weird',     geo: () => spikyGeometry(5), tiny: () => new THREE.TetrahedronGeometry(1.2, 0), share: 0.025, size: [0.012, 0.3, 4], color: 0x6c6862, rough: 0.8 },
+  { name: 'ねじれた結び目', tag: 'weird', geo: () => new THREE.TorusKnotGeometry(0.8, 0.28, L(32, 96), L(4, 10)), tiny: () => new THREE.IcosahedronGeometry(1, 0), share: 0.012, size: [0.012, 0.3, 4], color: 0x77736c, rough: 0.6 },
+  { name: '輪', tag: 'weird',         geo: () => new THREE.TorusGeometry(1, 0.33, L(4, 10), L(10, 28)), tiny: () => new THREE.TorusGeometry(1, 0.33, 3, 6), share: 0.02, size: [0.012, 0.3, 4], color: 0x6e6a64, rough: 0.7 },
+  { name: 'L字', tag: 'weird',        geo: () => lShape(), share: 0.02, size: [0.012, 0.3, 4], color: 0x625e58, rough: 0.7 },
+  { name: '十字', tag: 'weird',       geo: () => crossShape(), share: 0.015, size: [0.012, 0.3, 4], color: 0x6a665f, rough: 0.7 },
+  { name: '枠', tag: 'weird',         geo: () => frameShape(), share: 0.012, size: [0.012, 0.3, 4], color: 0x5f5b55, rough: 0.7 },
+  { name: '階段', tag: 'weird',       geo: () => stairShape(), share: 0.012, size: [0.012, 0.3, 4], color: 0x6b675f, rough: 0.75 },
+  { name: 'ねじれた棒', tag: 'weird', geo: () => twistedBar(), tiny: () => new THREE.BoxGeometry(0.5, 2.8, 0.5), share: 0.02, size: [0.012, 0.3, 4], color: 0x5c5852, rough: 0.7 },
+  { name: '六角ボルト', tag: 'mech', geo: () => flat(new THREE.CylinderGeometry(0.7, 0.7, 1.7, 6)), share: 0.015, size: [0.01, 0.22, 3], color: 0xb8bcc4, rough: 0.3, metalAlways: true },
+  { name: 'ナット', tag: 'mech',     geo: () => L(flat(new THREE.TorusGeometry(1, 0.5, 4, 6)), nutGeometry()), tiny: () => new THREE.CylinderGeometry(1, 1, 0.8, 6), share: 0.012, size: [0.01, 0.22, 3], color: 0xb8bcc4, rough: 0.3, metalAlways: true },
+  { name: '歯車',       tag: 'mech', geo: () => gearGeometry(12, 1.1, 0.9, 0.35, 0.3), tiny: () => new THREE.CylinderGeometry(1, 1, 0.3, 8), share: 0.012, size: [0.012, 0.3, 4], color: 0x8a8e96, rough: 0.4, metalLean: true },
+  { name: '小さな歯車', tag: 'mech', geo: () => gearGeometry(8, 1.0, 0.75, 0.3, 0.45), tiny: () => new THREE.CylinderGeometry(0.9, 0.9, 0.45, 8), share: 0.01, size: [0.012, 0.3, 4], color: 0x8a8e96, rough: 0.4, metalLean: true },
+  { name: '穴の開いた板', tag: 'mech', geo: () => plateWithHoles(), tiny: () => new THREE.BoxGeometry(2.4, 0.18, 1.2), share: 0.01, size: [0.012, 0.3, 4], color: 0x8a8e96, rough: 0.4 },
+  { name: 'ピストン',   tag: 'mech', geo: () => piston(), tiny: () => new THREE.CylinderGeometry(0.45, 0.45, 2, 6), share: 0.008, size: [0.012, 0.3, 4], color: 0x8a8e96, rough: 0.4, metalLean: true },
+  { name: 'H形の鉄骨', tag: 'mech', geo: () => iBeam(), tiny: () => new THREE.BoxGeometry(2.6, 0.9, 0.8), share: 0.008, size: [0.012, 0.3, 4], color: 0x8a8e96, rough: 0.4 },
+  { name: 'ばね',       tag: 'mech', geo: () => spring(), tiny: () => new THREE.CylinderGeometry(0.65, 0.65, 2.6, 6), share: 0.006, size: [0.012, 0.3, 4], color: 0x8a8e96, rough: 0.4, metalLean: true },
+  { name: '電線A',      tag: 'mech', geo: () => cable(1), tiny: () => new THREE.BoxGeometry(2.8, 0.18, 0.18), share: 0.006, size: [0.012, 0.3, 4], color: 0x2a2a2e, rough: 0.5 },
+  { name: '電線B',      tag: 'mech', geo: () => cable(2), tiny: () => new THREE.BoxGeometry(2.8, 0.18, 0.18), share: 0.006, size: [0.012, 0.3, 4], color: 0x3a2a24, rough: 0.5 },
+  { name: '曲がった管', tag: 'mech', geo: () => elbow(), tiny: () => new THREE.TorusGeometry(1, 0.3, 3, 4, Math.PI / 2), share: 0.008, size: [0.012, 0.3, 4], color: 0x8a8e96, rough: 0.4, metalLean: true },
+  { name: '鎖の輪',     tag: 'mech', geo: () => chainLink(), tiny: () => new THREE.TorusGeometry(1, 0.22, 3, 6).scale(1, 1.7, 1), share: 0.006, size: [0.012, 0.3, 4], color: 0x8a8e96, rough: 0.4, metalLean: true },
+  { name: '軸受け',     tag: 'mech', geo: () => bearing(), tiny: () => new THREE.TorusGeometry(1, 0.4, 3, 6), share: 0.006, size: [0.012, 0.3, 4], color: 0x8a8e96, rough: 0.4, metalLean: true },
+  { name: 'オレンジの塊', geo: () => rbox(1.4, 1.4, 1.4), share: 0.014 * oF, size: [0.02, 0.16, 4], color: orange, rough: 0.32, metal: 0.15, glossy: true },
+  { name: 'オレンジの光', geo: () => new THREE.OctahedronGeometry(1, 0), share: 0.003 * oF, size: [0.01, 0.04, 3], color: orange, rough: 0.4, glow: 3.0 },
+];
+// たまに混ぜる色（ピンク・水色・ミント・黄色・紫・白）
+// 金属の色（鉄・銀・金・銅・黒い鉄）
+const METAL = (LOOK.metal || ['#b8bcc4', '#eceef2', '#e0ad52', '#d07a4a', '#5a5e66']).map(c => color(c));
+const pickFrom = (arr, h) => { const k = h.mul(arr.length).floor(); let c = arr[arr.length - 1];
+  for (let j = arr.length - 2; j >= 0; j--) c = select(k.lessThan(j + 1), arr[j], c); return c; };
+const PAL = (LOOK.pal || ['#ff4f8b', '#3fd0ff', '#6dffb0', '#ffd23f', '#8c7bff', '#f4f1ea']).map(c => color(c));
+const pickPal = (h) => { const k = h.mul(PAL.length).floor(); let c = PAL[PAL.length - 1];
+  for (let j = PAL.length - 2; j >= 0; j--) c = select(k.lessThan(j + 1), PAL[j], c); return c; };
+const FLOOR_SHARE = 0.09;
+const NEAR_FLOOR_SHARE = +(q.get('nf') ?? 0.11);          // ふだんのカメラより手前の地面の破片の割合                                // 床に落ちて積もっている破片の割合
+for (const sh of shapes) { if (sh.tag) sh.share *= (LOOK.tag?.[sh.tag] ?? 1); }
+const shareSum = shapes.reduce((a, s) => a + s.share, 0);
+// ---------- 材質 ----------
+// ふつうの破片は全部で1つの材質を使う（形ごとに作ると、最初の表示までの準備に20秒近くかかったため）。
+// 形ごとに違う値は、描く物ごとに切り替わる値（onObjectUpdate）で渡す
+const oOff = uniform(0, 'uint').onObjectUpdate(({ object }) => object.userData.off);
+const oCol = uniform(new THREE.Color()).onObjectUpdate(({ object }) => object.userData.col);
+const oRough = uniform(0.8).onObjectUpdate(({ object }) => object.userData.rough);
+const oMA = uniform(0).onObjectUpdate(({ object }) => object.userData.ma);      // 1 = いつも金属（ボルト・ナット）
+const oLean = uniform(0).onObjectUpdate(({ object }) => object.userData.lean);  // 1 = 金属になりやすい（歯車など）
+function placeNode(id) {
+  return Fn(() => {
+    const qn = quat.element(id).toVar();
+    // クォータニオンで回す：v + 2·q×(q×v + w·v)（頂点ごとの sin・cos と行列づくりが要らない）
+    const qrot = (v) => v.add(qn.xyz.cross(qn.xyz.cross(v).add(v.mul(qn.w))).mul(2));
+    normalLocal.assign(qrot(normalLocal));                // 面の向きも同じだけ回す（なめらかな陰影のため）
+    return qrot(positionLocal.mul(rot.element(id).w)).add(pos.element(id));
+  })();
+}
+// 表面の汚れ・傷・はげ用の立体の模様（起動時に1回だけ作る。画素ごとにノイズを計算するより内蔵GPUで約2割速い）
+// R=くすみ G=すり傷 B=塗装のはげ。繰り返してもつなぎ目が出ないよう、周期8の格子のなめらかな乱数を32の細かさで埋める
+const NOISE_TEX = (() => {
+  const N = 32, G = 8, data = new Uint8Array(N * N * N * 4);
+  const lat = [0, 1, 2].map(c => Float32Array.from({ length: G * G * G }, (_, i) => { const x = Math.sin(i * 12.9898 + c * 78.233) * 43758.5453; return x - Math.floor(x); }));
+  const sm = (t) => t * t * (3 - 2 * t);
+  for (let z = 0; z < N; z++) for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) {
+    const fx = x / N * G, fy = y / N * G, fz = z / N * G, x0 = Math.floor(fx), y0 = Math.floor(fy), z0 = Math.floor(fz);
+    const tx = sm(fx - x0), ty = sm(fy - y0), tz = sm(fz - z0);
+    const o = (x + y * N + z * N * N) * 4;
+    for (let c = 0; c < 3; c++) {
+      const L = lat[c], at = (i, j, k) => L[((i % G) + ((j % G) * G) + ((k % G) * G * G))];
+      const a = at(x0, y0, z0) * (1 - tx) + at(x0 + 1, y0, z0) * tx, b = at(x0, y0 + 1, z0) * (1 - tx) + at(x0 + 1, y0 + 1, z0) * tx;
+      const c2 = at(x0, y0, z0 + 1) * (1 - tx) + at(x0 + 1, y0, z0 + 1) * tx, d = at(x0, y0 + 1, z0 + 1) * (1 - tx) + at(x0 + 1, y0 + 1, z0 + 1) * tx;
+      data[o + c] = Math.round(((a * (1 - ty) + b * ty) * (1 - tz) + (c2 * (1 - ty) + d * ty) * tz) * 255);
+    }
+    data[o + 3] = 255;
+  }
+  const t = new THREE.Data3DTexture(data, N, N, N);
+  t.format = THREE.RGBAFormat; t.minFilter = t.magFilter = THREE.LinearFilter;
+  t.wrapS = t.wrapT = t.wrapR = THREE.RepeatWrapping; t.needsUpdate = true;
+  return t;
+})();
+const nz = (p) => texture3D(NOISE_TEX, p).mul(2).sub(1);   // -1〜1
+let _shared = null;
+function sharedMaterial() {
+  if (_shared) return _shared;
+  const mat = new THREE.MeshStandardNodeMaterial();
+  const id = instanceIndex.add(oOff);
+  const vary = hash(id.add(999)).mul(0.7).add(0.55);    // 1個ずつ明るさを少しばらつかせる
+  const hc = hash(id.add(4242));
+  const isCol = hc.lessThan(uColorShare);                // 一部だけ色を付ける
+  const pc = pickPal(hash(id.add(555)));
+  const thr = mix(mix(uMetal, uMetal.mul(1.6).add(0.25), oLean), float(2), oMA);
+  const isMet = hash(id.add(6060)).lessThan(thr).and(isCol.not().or(oMA.greaterThan(0.5)));
+  const mc = pickFrom(METAL, hash(id.add(7171)));
+  let plain = oCol.mul(vary);
+  if (LOOK.tint) plain = plain.mul(LOOK.tint);            // 部品全体を暗く（黒い鉄）
+  if (LOOK.dark) plain = select(hash(id.add(1313)).lessThan(LOOK.dark.share), pickFrom(LOOK.dark.colors.map(c => color(c)), hash(id.add(1414))), plain);
+  const base = select(isCol, pc.mul(hash(id.add(88)).mul(0.4).add(0.6)), plain);
+  let col = select(isMet, mc, base);
+  // つや：小さい破片ほど弱める（チカチカ対策）
+  const rough0 = select(isMet, hash(id.add(321)).mul(0.25).add(0.3), select(isCol, float(0.4), oRough));
+  let rough = SOFT ? rough0.max(float(0.7).sub(rot.element(id).w.mul(2.5))) : rough0;
+  let metal = select(isMet, float(1), float(0));
+  if (Q.detail) {
+    // 表面の汚れ・すり傷・塗装のはげ（物の形の座標で計算するので、回っても模様が物に付いたまま）
+    const pg = positionGeometry, sd = hash(id.add(4321)).mul(50);
+    const grime = smoothstep(0.0, 0.5, nz(pg.mul(0.33).add(sd)).r).mul(0.45);                  // くすみ・汚れ
+    const scratch = smoothstep(0.5, 0.8, nz(pg.mul(vec3(3.3, 0.2, 0.2)).add(sd)).g);            // 一方向のすり傷
+    const chip = smoothstep(0.62, 0.7, nz(pg.mul(0.56).add(sd.add(0.37))).b);                  // 塗装のはげ
+    const painted = isCol.or(oCol.r.greaterThan(0.5).and(isMet.not()));
+    col = mix(col, color(0x8c9096), select(painted, chip, float(0))).mul(float(1).sub(grime)).mul(select(isMet, scratch.mul(0.25).add(1), float(1)));
+    metal = select(isMet, float(1), select(painted, chip, float(0)));
+    rough = rough.add(grime.mul(0.35)).sub(select(isMet, scratch.mul(0.18), float(0))).clamp(0.08, 1);
+  }
+  mat.colorNode = col; mat.roughnessNode = rough; mat.metalnessNode = metal;
+  if (LOOK.glow) {                                       // 一部の部品が警告灯のように明滅する
+    const gc = color(LOOK.glow.color);
+    mat.emissiveNode = select(hash(id.add(8080)).lessThan(LOOK.glow.share), gc.mul(sin(time.mul(2.2).add(hash(id).mul(30))).mul(0.5).add(1.0).mul(LOOK.glow.power ?? 1.6)), vec3(0));
+  }
+  mat.positionNode = placeNode(id);
+  return (_shared = mat);
+}
+// オレンジの塊・光る粒は数が少ないので、それぞれの材質
+function ownMaterial(sh, off) {
+  const mat = new THREE.MeshStandardNodeMaterial({ roughness: sh.rough, metalness: sh.metal ?? 0 });
+  const id = instanceIndex.add(off);
+  mat.colorNode = color(sh.color).mul(hash(id.add(77)).mul(0.3).add(0.85));
+  if (sh.glow) mat.emissiveNode = color(sh.color).mul(sh.glow).mul(sin(time.mul(1.7).add(hash(id).mul(40))).mul(0.35).add(0.75));
+  mat.positionNode = placeNode(id);
+  return mat;
+}
+let offset = 0;
+const initComputes = [];
+for (const [k, sh] of shapes.entries()) {
+  const n = k === shapes.length - 1 ? COUNT - offset : Math.floor(COUNT * sh.share / shareSum);
+  const off = offset; sh.count = n; sh.offset = off;
+  const [smin, smax, spow] = sh.size;
+  initComputes.push(Fn(() => {
+    const i = instanceIndex.add(off);
+    const u = float(instanceIndex).add(0.5).div(n);       // 0〜1：番号が後ろほど大きい（大きい物だけ細かい形で描くため）
+    const s = pow(u, spow).mul(smax - smin).add(smin);     // 小さい物が多く、たまに大きい
+    const r = vec3(hash(i), hash(i.add(7919)), hash(i.add(15485))).mul(2).sub(1);
+    // 真ん中ほど密に、外側ほどまばらに（床や手前に空きができる）
+    const p = sign(r).mul(pow(abs(r), vec3(1.7))).mul(vec3(14, HOME_HY, 8)).add(vec3(0, HOME_CY, 0)).toVar();
+    if (!sh.glow) {
+      // 一部は床の上に転がっている
+      If(hash(i.add(2024)).lessThan(FLOOR_SHARE), () => {
+        p.assign(vec3(r.x.mul(15), float(FLOOR).add(s.mul(0.5)), r.z.mul(9)));
+      });
+      If(hash(i.add(5151)).lessThan(NEAR_FLOOR_SHARE), () => {
+        p.assign(vec3(r.x.mul(14), float(FLOOR).add(s.mul(0.5)).add(pow(hash(i.add(5454)), 4).mul(2.2)), hash(i.add(5353)).mul(35).add(-1)));   // 奥の破片の足元から手前まで切れ目なく（少しだけ浮いた物も混ぜる）
+      });
+    }
+    pos.element(i).assign(p);
+    home.element(i).assign(p);
+    vel.element(i).assign(vec3(0));
+    rot.element(i).assign(vec4(hash(i.add(3)).mul(6.283), hash(i.add(5)).mul(6.283), hash(i.add(9)).mul(6.283), s));
+  })().compute(n));
+
+  const own = sh.glossy || sh.glow;
+  const mat = own ? ownMaterial(sh, off) : sharedMaterial();
+  // 大きさの順に並んでいるので、しきい値の大きさになる番号で3つに分ける
+  const uAt = (size) => own ? 0 : Math.min(1, Math.max(0, Math.pow(Math.max(0, (size - smin) / (smax - smin)), 1 / spow)));
+  const nTiny = Math.min(n, Math.round(n * uAt(TINY_SIZE)));
+  const nLow = Math.max(nTiny, Math.min(n, Math.round(n * uAt(LOD_SIZE))));
+  const addMesh = (geo, start, cnt) => {
+    if (cnt <= 0) return;
+    const mesh = new THREE.InstancedMesh(geo, mat, cnt);
+    mesh.count = cnt;
+    mesh.userData = { name: sh.name + ['小','中','大'][geo === geoTiny ? 0 : geo === geoLo ? 1 : 2], off: start, col: new THREE.Color(LOOK.baseColor ?? sh.color), rough: sh.rough, ma: sh.metalAlways ? 1 : 0, lean: sh.metalLean ? 1 : 0 };
+    mesh.frustumCulled = false;
+    // 影を落とすのは大きい破片だけ（小さい破片の影はほとんど見えず、点光源の影は6方向描くので一番重い）
+    mesh.castShadow = !sh.glow && (geo === geoHi || own || q.get('shlo') === '1'); mesh.receiveShadow = true;
+    scene.add(mesh);
+  };
+  LV = 0; const geoTiny = nTiny > 0 ? (sh.tiny || sh.geo)() : null;
+  LV = 1; const geoLo = nLow - nTiny > 0 ? sh.geo() : null;
+  LV = 2; const geoHi = n - nLow > 0 ? sh.geo() : null;
+  addMesh(geoTiny, off, nTiny);
+  addMesh(geoLo, off + nTiny, nLow - nTiny);
+  addMesh(geoHi, off + nLow, n - nLow);
+  sh.nHi = n - nLow;
+  offset += n;
+}
+
+// ---------- 物理（毎コマ） ----------
+const computeUpdate = Fn(() => {
+  const i = instanceIndex;
+  const p = pos.element(i), v = vel.element(i), h = home.element(i), r = rot.element(i);
+  const s = r.w;
+  const d = p.sub(uLight);                                 // 光からの向き（立体の距離）
+  // 視線からの距離：奥の破片ほど同じ画面上の距離でも遠いので、奥行きの比で割って画面上の距離にそろえる
+  const dc = p.sub(uCam);
+  const along = dot(dc, uRayDir);
+  const sc = along.div(uLightDist).max(0.3);
+  const perp = dc.sub(uRayDir.mul(along)).div(sc);
+  const dd = mix(d, perp, uReach);                         // 奥まで届く：0=光のまわりの球だけ、1=画面上でカーソルの近く全部
+  const dist = length(dd).max(0.001);
+  const fall = float(1).sub(dist.div(uRadius)).max(0);
+  const mass = s.mul(4).add(0.5);                          // 大きい破片ほど重い（重すぎて動かない破片が出ないよう差を小さく）
+  const f = normalize(dd).mul(fall.mul(fall).mul(uPush).mul(mix(float(1), sc, uReach))).div(mass).toVar();
+  f.addAssign(h.sub(p).mul(uReturn));                      // ゆっくり元の場所へ
+  const t = time.mul(0.15);
+  f.addAssign(vec3(                                        // 空間のゆるい流れ
+    sin(p.y.mul(0.6).add(t)), sin(p.z.mul(0.7).add(t.mul(1.3))), sin(p.x.mul(0.5).add(t.mul(0.7)))
+  ).mul(uDrift));
+  const rel = p.sub(vec3(0, BOX_CY, 0));
+  const over = abs(rel).sub(uBox).max(0).mul(vec3(1, 1, select(h.z.greaterThan(8.5), float(0), float(1))));   // 境界の外に出たら押し戻す（手前の地面の破片は奥行きだけ自由）
+  f.subAssign(sign(rel).mul(over).mul(25));
+  // 床に積もっていた破片には重さ（落ちて戻る）
+  f.y.subAssign(select(h.y.lessThan(FLOOR + 0.6), float(9), float(0)));
+  const nv = v.add(f.mul(uDt)).mul(exp(uDrag.negate().mul(uDt))).toVar();
+  const np = p.add(nv.mul(uDt)).toVar();
+  const fy = float(FLOOR).add(s.mul(0.5));                 // 床より下には行かない（少し跳ねて止まる）
+  If(np.y.lessThan(fy), () => {
+    np.y.assign(fy);
+    nv.y.assign(abs(nv.y).mul(0.2));
+    nv.x.mulAssign(0.85); nv.z.mulAssign(0.85);
+  });
+  v.assign(nv);
+  p.assign(np);
+  const spin = length(nv).mul(uDt).mul(uSpin).div(s.add(0.03)).mul(0.35);
+  const ang = r.xyz.add(vec3(spin, spin.mul(0.7), spin.mul(0.4)));
+  r.assign(vec4(ang, s));
+  const hx = ang.x.mul(0.5), hy = ang.y.mul(0.5), hz = ang.z.mul(0.5);
+  const cx = hx.cos(), sx = hx.sin(), cy = hy.cos(), sy = hy.sin(), cz = hz.cos(), sz = hz.sin();
+  quat.element(i).assign(vec4(
+    sx.mul(cy).mul(cz).add(cx.mul(sy).mul(sz)), cx.mul(sy).mul(cz).sub(sx.mul(cy).mul(sz)),
+    cx.mul(cy).mul(sz).add(sx.mul(sy).mul(cz)), cx.mul(cy).mul(cz).sub(sx.mul(sy).mul(sz))));
+})().compute(COUNT);
+
+// ---------- 床（コンクリートのような、まだらで少しつやのある床） ----------
+const floorMat = new THREE.MeshStandardNodeMaterial({ roughness: 0.85 });
+const fn1 = mx_fractal_noise_float(positionWorld.xz.mul(0.35), 3, 2, 0.5);
+const fn2 = mx_fractal_noise_float(positionWorld.xz.mul(3.0), 1, 2, 0.5);
+floorMat.colorNode = color(LOOK.floor ?? 0x3d3934).mul(fn1.mul(0.45).add(0.9)).mul(fn2.mul(0.18).add(1)).mul(uFloor);
+floorMat.roughnessNode = fn1.mul(0.25).add(0.62);           // ところどころ少しつやがあり、光が映る
+const floor = new THREE.Mesh(new THREE.PlaneGeometry(200, 200), floorMat);
+floor.rotation.x = -Math.PI / 2; floor.position.y = FLOOR; floor.receiveShadow = true;
+scene.add(floor);
+
+// ---------- 光 ----------
+const light = new THREE.PointLight(P.光の色, P.光の明るさ, 0, 2);
+light.castShadow = Q.shadow;
+light.shadow.mapSize.set(1024, 1024);
+light.shadow.radius = 6;
+light.shadow.bias = -0.002;
+light.shadow.camera.near = 0.2; light.shadow.camera.far = 40;
+scene.add(light);
+scene.add(new THREE.HemisphereLight(0x8a8f99, 0x050505, 0.03));
+scene.environment = ENV_TEX;
+scene.environmentIntensity = P.金属の映り込み;
+// 奥の大きな板（参考の赤い斜めの板・白い板のような背景の形）
+if (LOOK.panels?.startsWith('bp')) {
+  // B 計器の画面の奥の背景（候補・2回目）。1 回るジャイロ／2 巨大な歯車／3 逆光の柱／4 走る光の壁。赤は使わない
+  const v = +LOOK.panels.slice(2);
+  const C0 = new THREE.Vector3(0, 1.2, -15);
+  const dark = () => new THREE.MeshStandardNodeMaterial({ color: 0x23262c, metalness: 1, roughness: 0.32 });   // 暗い金属（周りの明かりが細く映る）
+  const glow = (c, e) => { const m = new THREE.MeshStandardNodeMaterial({ roughness: 0.5, metalness: 0 }); m.colorNode = color(c).mul(0.2); m.emissiveNode = color(c).mul(e); return m; };
+  const backWall = (e, z = -21) => {   // 奥一面の逆光（真ん中の高さほど明るい）。手前の形が黒い影になって浮かぶ
+    const w = new THREE.Mesh(new THREE.PlaneGeometry(70, 36), glow(0x9cc4ff, 1.0));
+    w.material.emissiveNode = color(0x7fb2ff).mul(float(e).sub(positionWorld.y.sub(1).abs().mul(e * 0.056)).max(e * 0.1));
+    w.position.set(0, 1, z); scene.add(w);
+  };
+  if (v === 1 || v === 2) backWall(v === 1 ? 0.6 : 0.9);
+  if (v === 1) {            // 回るジャイロ：太い金属の輪が3重に、別々の向きでゆっくり回る。輪の上に青く光る目盛り
+    const g = new THREE.Group(); g.position.set(0, -0.2, -15); scene.add(g);
+    [[4.4, 0.2], [3.6, 0.16], [2.8, 0.13]].forEach(([r, tb], i) => {
+      const ring = new THREE.Group(); g.add(ring);
+      ring.add(new THREE.Mesh(new THREE.TorusGeometry(r, tb, 12, 160), dark()));
+      const gm = glow(i === 1 ? 0xd9b46a : 0x4f9bff, i === 1 ? 2.2 : 2.6);
+      for (let k = 0; k < 36; k++) { if (k % 9 === 4) continue; const a = k / 36 * Math.PI * 2; const b = new THREE.Mesh(new THREE.BoxGeometry(0.06, k % 3 ? 0.35 : 0.7, 0.06), gm); b.position.set(Math.cos(a) * (r - tb - 0.2), Math.sin(a) * (r - tb - 0.2), 0); b.rotation.z = a + Math.PI / 2; ring.add(b); }
+      const sp = [0.11, -0.16, 0.23][i];
+      anims.push((t) => { ring.rotation.set(Math.sin(t * sp * 2 + i) * 0.55, Math.cos(t * sp * 1.6 + i * 2) * 0.55, t * sp * 1.5); });   // 正面を向いたまま、首を振りながら回る
+    });
+  } else if (v === 2) {     // 巨大な歯車：大小2つの暗い鉄の歯車が、かみ合うように逆向きに回る。縁に青い光の線
+    const gear = (R, teeth, x, y, z, sp) => {
+      const g = new THREE.Group(); g.position.set(x, y, z); scene.add(g);
+      const m = dark();
+      const disk = new THREE.Mesh(new THREE.CylinderGeometry(R, R, 0.5, 96), m); disk.rotation.x = Math.PI / 2; g.add(disk);
+      for (let k = 0; k < teeth; k++) { const a = k / teeth * Math.PI * 2; const tth = new THREE.Mesh(new THREE.BoxGeometry(R * 0.16, 0.9, 0.5), m); tth.position.set(Math.cos(a) * (R + 0.4), Math.sin(a) * (R + 0.4), 0); tth.rotation.z = a - Math.PI / 2; g.add(tth); }
+      for (let k = 0; k < 6; k++) { const a = k / 6 * Math.PI * 2; const hole = new THREE.Mesh(new THREE.CylinderGeometry(R * 0.17, R * 0.17, 0.56, 32), glow(0x0a1430, 0.4)); hole.rotation.x = Math.PI / 2; hole.position.set(Math.cos(a) * R * 0.58, Math.sin(a) * R * 0.58, 0); g.add(hole); }
+      const rim = new THREE.Mesh(new THREE.TorusGeometry(R * 0.86, 0.05, 6, 128), glow(0x4f9bff, 3)); rim.position.z = 0.3; g.add(rim);
+      const hub = new THREE.Mesh(new THREE.TorusGeometry(R * 0.22, 0.07, 6, 64), glow(0xd9b46a, 2.5)); hub.position.z = 0.3; g.add(hub);
+      anims.push((t) => { g.rotation.z = t * sp; });
+    };
+    gear(5.6, 34, -3.2, 2.2, -16.5, 0.07);
+    gear(3.2, 20, 5.3, -0.9, -16.5, -0.07 * 5.6 / 3.2);
+  } else if (v === 3) {     // 逆光の柱：奥一面が青白く光り、その手前に太い柱と梁が黒い影になって並ぶ（映画のような逆光）
+    backWall(1.6);
+    const m = dark();
+    [[-13, 2.2], [-8.2, 1.4], [-4.1, 1.8], [3.6, 1.5], [8.5, 2.4], [13.5, 1.6]].forEach(([x, w]) => { const p = new THREE.Mesh(new THREE.BoxGeometry(w, 26, 1.2), m); p.position.set(x, 1, -18.5); scene.add(p); });
+    [[6.8, 34], [-3.5, 34]].forEach(([y, w]) => { const b = new THREE.Mesh(new THREE.BoxGeometry(w, 0.8, 1.2), m); b.position.set(0, y, -18.4); scene.add(b); });
+    const line = glow(0xd9b46a, 2.2);
+    [[-6.15, 1.0], [6.05, -0.6]].forEach(([x, y]) => { const s = new THREE.Mesh(new THREE.BoxGeometry(0.05, 9, 0.05), line); s.position.set(x, y, -17.8); scene.add(s); });
+  } else {                  // 走る光の壁：細い縦の板が奥に並び、青い光の波が横へ走り抜ける。上下に動く走査線も
+    const m = new THREE.MeshStandardNodeMaterial({ color: 0x1c1f25, metalness: 0.9, roughness: 0.35 });
+    const px = positionWorld.x, py = positionWorld.y;
+    const wave = smoothstep(0.85, 1.0, sin(px.mul(0.35).sub(time.mul(2.2))).mul(0.5).add(0.5));
+    const scan = exp(py.sub(sin(time.mul(0.7)).mul(6).add(1)).abs().mul(-3.5));
+    m.emissiveNode = color(0x3f8bff).mul(wave.mul(4).add(scan.mul(2.2)).add(0.08));
+    for (let i = 0; i < 44; i++) { const h = 14 + ((i * 29) % 7); const s = new THREE.Mesh(new THREE.BoxGeometry(0.42, h, 0.3), m); s.position.set(-22 + i, 1 + ((i * 17) % 5) * 0.3 - 0.6, -16.5 - ((i * 7) % 3) * 0.5); scene.add(s); }
+  }
+} else if (LOOK.panels?.startsWith('cp')) {
+  // C 赤い警告の奥の背景（候補）。1 回る警告灯／2 赤い光が漏れるシャッター／3 赤い日食／4 明滅する六角の壁
+  const v = +LOOK.panels.slice(2);
+  const dark = () => new THREE.MeshStandardNodeMaterial({ color: 0x1e1f23, metalness: 1, roughness: 0.35 });
+  const glow = (c, e) => { const m = new THREE.MeshStandardNodeMaterial({ roughness: 0.5, metalness: 0 }); m.colorNode = color(c).mul(0.2); m.emissiveNode = color(c).mul(e); return m; };
+  const beamMat = (c, e) => { const m = new THREE.MeshBasicNodeMaterial({ transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide }); m.colorNode = color(c).mul(pow(uv().y, 2.2).mul(e)); return m; };
+  if (v === 1) {            // 回る警告灯：奥の高い所に赤い回転灯が並び、光の筋が霧の中をぐるぐる掃く
+    [[-4.2, 1.6, -15], [0.6, 2.8, -18], [4.6, 0.6, -14.5]].forEach(([x, y, z], i) => {
+      const g = new THREE.Group(); g.position.set(x, y, z); scene.add(g);
+      const base = new THREE.Mesh(new THREE.CylinderGeometry(0.45, 0.55, 0.7, 24), glow(0xff2a1a, 3)); g.add(base);
+      const rot = new THREE.Group(); g.add(rot);
+      for (const s of [1, -1]) { const cone = new THREE.Mesh(new THREE.ConeGeometry(2.6, 16, 32, 1, true), beamMat(0xff3020, 1.1)); cone.rotation.z = s * Math.PI / 2; cone.position.x = s * 8; rot.add(cone); }
+      anims.push((t) => { rot.rotation.y = t * (1.6 + i * 0.25) + i * 2; });
+    });
+  } else if (v === 2) {     // シャッター：奥一面が赤く光り、手前の分厚いシャッターのすき間から赤い光が漏れる
+    const wall = new THREE.Mesh(new THREE.PlaneGeometry(70, 36), glow(0xff2a1a, 1));
+    wall.material.emissiveNode = color(0xff2a14).mul(float(1.5).sub(positionWorld.y.sub(1.5).abs().mul(0.085)).max(0.12));
+    wall.position.set(0, 1, -21); scene.add(wall);
+    const m = dark();
+    for (let k = -6; k <= 9; k++) { const sl = new THREE.Mesh(new THREE.BoxGeometry(44, 0.78, 0.5), m); sl.position.set(0, k * 1.05, -19.5); sl.rotation.x = 0.25; scene.add(sl); }
+    [[-9.5, 1.6], [9.5, 1.6]].forEach(([x, w]) => { const p = new THREE.Mesh(new THREE.BoxGeometry(w, 26, 1.4), m); p.position.set(x, 1, -18.6); scene.add(p); });
+  } else if (v === 3) {     // 赤い日食：奥に巨大な黒い円と、その縁が赤く燃える輪。外側に目盛りの輪がゆっくり回る
+    const g = new THREE.Group(); g.position.set(0, 0.9, -18); g.scale.setScalar(0.62); scene.add(g);
+    const halo = new THREE.Mesh(new THREE.CircleGeometry(13, 96), new THREE.MeshBasicNodeMaterial({ transparent: true, depthWrite: false, blending: THREE.AdditiveBlending }));
+    const rr = uv().sub(0.5).length().mul(2);
+    halo.material.colorNode = color(0xff2a14).mul(exp(rr.sub(0.5).abs().mul(-9)).mul(1.4)); g.add(halo);
+    const disk = new THREE.Mesh(new THREE.CircleGeometry(6.4, 96), new THREE.MeshBasicNodeMaterial({ color: 0x050101 })); disk.position.z = 0.05; g.add(disk);
+    const ring = new THREE.Mesh(new THREE.TorusGeometry(6.5, 0.12, 8, 160), glow(0xff3a20, 5)); ring.position.z = 0.1; g.add(ring);
+    const ticks = new THREE.Group(); ticks.position.z = 0.1; g.add(ticks);
+    const tm = glow(0xff4a30, 2.4);
+    for (let k = 0; k < 72; k++) { if (k % 12 > 9) continue; const a = k / 72 * Math.PI * 2; const b = new THREE.Mesh(new THREE.BoxGeometry(0.08, k % 6 ? 0.45 : 0.9, 0.05), tm); b.position.set(Math.cos(a) * 7.6, Math.sin(a) * 7.6, 0); b.rotation.z = a + Math.PI / 2; ticks.add(b); }
+    anims.push((t) => { ticks.rotation.z = t * 0.08; });
+  } else {                  // 明滅する六角の壁：暗い金属の六角形がびっしり並び、ところどころ赤く明滅しながら波のように光る
+    const m = new THREE.MeshStandardNodeMaterial({ color: 0x1c1d21, metalness: 0.9, roughness: 0.4 });
+    const cell = positionWorld.xy.mul(0.62).floor();
+    const ph = hash(cell.x.mul(13.7).add(cell.y.mul(71.3)));
+    const pulse = smoothstep(0.35, 1.0, sin(time.mul(1.3).add(ph.mul(40)).add(positionWorld.x.mul(0.25))).mul(0.5).add(0.5));
+    m.emissiveNode = color(0xff2412).mul(pulse.mul(select(ph.greaterThan(0.4), float(3.2), float(0.9))).add(0.3));
+    const geo = new THREE.CylinderGeometry(0.82, 0.82, 0.5, 6); geo.rotateX(Math.PI / 2);
+    for (let r = -6; r <= 8; r++) for (let c = -14; c <= 14; c++) {
+      const hx = c * 1.5, hy = r * 1.73 + (c % 2 ? 0.865 : 0);
+      const h = new THREE.Mesh(geo, m); h.position.set(hx, hy + 1, -16 - ((c * 7 + r * 3) % 3 === 0 ? 0.25 : 0)); scene.add(h);
+    }
+  }
+} else if (LOOK.panels === 'redbars') {
+  // B 計器の画面：奥に、横に走る細い赤い帯（計器の目盛り・走査線のよう）。高さと奥行きをずらして重ね、ところどころ途切れさせる
+  const bars = [[-2.6, -13, 26], [-0.4, -15.5, 30], [1.7, -12.2, 22], [3.9, -14.6, 28], [6.2, -16.5, 32], [0.7, -18, 36]];
+  for (const [y, z, w] of bars) {
+    for (let j = 0; j < 3; j++) {
+      const seg = w / 3 - 1.2 - (j === 1 ? 1.5 : 0);
+      const m = new THREE.MeshStandardNodeMaterial({ roughness: 0.6, metalness: 0 });
+      m.colorNode = color(0x9a1410); m.emissiveNode = color(0xc0180f).mul(0.5);
+      const b = new THREE.Mesh(new THREE.BoxGeometry(seg, 0.22, 0.15), m);
+      b.position.set(-w / 2 + (j + 0.5) * w / 3 + ((y * 7) % 1.6), y, z);
+      scene.add(b);
+    }
+  }
+} else if (LOOK.panels) {
+  const k = LOOK.panels;
+  for (let i = 0; i < 7; i++) {
+    const m = new THREE.MeshStandardNodeMaterial({ roughness: 0.6, metalness: 0 });
+    if (k === 'white') m.colorNode = color(0xe8e4dc); else if (k === 'grey') m.colorNode = color(0x3a3c41); else m.colorNode = color(0x9a1410);   // grey：B の斜めの板は濃いグレー（C の赤い板と被らないように。2026-11-21 近藤さん）
+    if (k === 'redglow') m.emissiveNode = color(0xff2010).mul(0.9);   // C：奥の斜めの板が赤く光る
+    if (k === 'red') m.emissiveNode = color(0xc0180f).mul(0.25);
+    const w = k === 'white' ? 2.2 : 1.1, hgt = k === 'white' ? 11 : 13;
+    const p = new THREE.Mesh(new THREE.BoxGeometry(w, hgt, 0.15), m);
+    const x = -15 + i * 5 + (i % 2) * 1.3;
+    p.position.set(x, k === 'white' ? 0.9 : 1.5, -12 - (i % 3) * 1.5);
+    p.rotation.z = k === 'white' ? (i % 2 ? 0.06 : -0.04) : 0.42;
+    p.rotation.y = k === 'white' ? (i % 3 - 1) * 0.25 : 0;
+    p.receiveShadow = true;
+    scene.add(p);
+  }
+}
+const uLightCol = uniform(new THREE.Color(P.光の色));
+// 光の芯：縁のくっきりした円に見えないよう、正面ほど明るく縁に向かって0になる光り方にし、重ねると明るくなる描き方（加算）にする
+const bulb = new THREE.Mesh(new THREE.SphereGeometry(0.16, 32, 16), new THREE.MeshBasicNodeMaterial({ transparent: true, depthWrite: false, blending: THREE.AdditiveBlending }));
+bulb.material.colorNode = uLightCol.mul(uDimW).mul(pow(normalView.z.max(0), 3.5).mul(9)).add(pow(normalView.z.max(0), 24).mul(14));
+scene.add(bulb);
+
+// ---------- 仕上げの材料（この見た目の画面・奥行き・すき間の陰り） ----------
+const cam = camera.clone();                              // この見た目を写すカメラ（ふだんは共通のカメラと同じ。入り込む演出のときだけ別々に動く）
+const uLightUV = uniform(new THREE.Vector2(0.5, 0.5)), uLightVZ = uniform(-10);   // このカメラから見た光の位置
+const scenePass = pass(scene, cam, { samples: +(q.get('aa') ?? Q.aa) });
+if (Q.ao) scenePass.setMRT(mrt({ output, normal: packNormalToRGB(normalView) }));   // 輪郭をなめらかに（細かい光の点のチカチカを抑える）
+const sceneColor = scenePass.getTextureNode('output');
+const sceneDepth = scenePass.getTextureNode('depth');
+const viewZ = scenePass.getViewZNode();
+// 画面上で光に向かって点をたどり、光より手前の破片にさえぎられた分だけ暗くする（影の筋）。st＝読む場所（サークルの中は少しゆがめて読む）
+const uSteps = uniform(STEPS, 'int');                     // 光の筋をたどる回数（輪の中の見た目のときは少なく）
+const godRaysAt = Fn(([st]) => {
+  const delta = uLightUV.sub(st).mul(0.85).div(float(uSteps));
+  const coord = st.add(delta.mul(hash(st.mul(screenSize)).mul(0.9))).toVar();  // ずらして縞を消す
+  const acc = float(0).toVar();
+  const w = float(1).toVar();
+  Loop(uSteps, () => {
+    const vz = perspectiveDepthToViewZ(sceneDepth.sample(coord).r, uNear, uFar);
+    const open = select(vz.lessThan(uLightVZ.add(0.3)), float(1), float(0));  // 光より奥（または何もない）なら光が通る
+    const dd = coord.sub(uLightUV).mul(vec2(uAspect, 1));
+    const g = exp(dot(dd, dd).mul(-30.0));
+    acc.addAssign(open.mul(g).mul(w));
+    w.mulAssign(0.965);
+    coord.addAssign(delta);
+  });
+  return acc.div(float(uSteps));
+});
+const haloAt = (st) => {                                   // 光のまわりの霧の光り
+  const dd = st.sub(uLightUV).mul(vec2(uAspect, 1));
+  const r2 = dot(dd, dd);
+  return exp(r2.mul(-1400)).mul(0.5).add(exp(r2.mul(-150)).mul(0.35)).add(exp(r2.mul(-10)).mul(0.06));   // 中心のなだらかな芯＋もや
+};
+// 物と物のすき間・重なりにできる自然な陰り（SSAO）
+let aoNode = null;
+if (Q.ao) {
+  const nTex = scenePass.getTextureNode('normal');
+  const sceneN = sample((st) => unpackRGBToNormal(nTex.sample(st)));
+  aoNode = ssao(sceneDepth, sceneN, cam);
+  aoNode.resolutionScale = 1;                           // 半分の細かさだと物の輪郭に黒い縁取りが出た
+  aoNode.radius.value = 0.22;
+}
+// 光の筋・もや・陰り・レンズの色のにじみまで入れた、この見た目の画面
+const litAt = (st) => {
+  const aoMul = aoNode ? mix(float(1), aoNode.getTextureNode().sample(st).r, uAO) : float(1);
+  const caOff = st.sub(0.5).mul(uCA.mul(0.006));          // レンズの色収差：画面の外側ほど赤と青が少しずれる
+  const sceneCA = Q.detail ? vec4(sceneColor.sample(st.add(caOff)).r, sceneColor.sample(st).g, sceneColor.sample(st.sub(caOff)).b, 1) : sceneColor.sample(st);
+  return (SOFT ? sceneCA.min(vec4(4)) : sceneCA).mul(aoMul).add(uLightCol.mul(uDimW).mul(godRaysAt(st).mul(uRay).mul(0.5).add(haloAt(st).mul(uHaze))));
+};
+return { key: LOOK_KEY, LOOK, P, scene, light, lightBase: P.光の明るさ, bulb, uColorShare, uMetal, uLightCol, computeUpdate, initComputes, pos, home, sceneColor, viewZ, litAt, cam, uLightUV, uLightVZ, uDimW, scenePass, uSteps, aoNode, anims };
+}
+
+// ================= 2つの見た目と、仕上げ =================
+const W = {};
+W[START_KEY] = buildWorld(START_KEY);
+const cw = () => W[curKey];
+const nw = () => SOLO ? null : W[nextKey(curKey)];                      // 次の見た目（輪の向こう）。まだ作っていなければ undefined                              // いま表に出ている見た目
+const vig = Fn(() => { const d = uv().sub(0.5).mul(vec2(uAspect, 1)); return smoothstep(1.1, 0.25, length(d)); })();
+const grain = hash(dot(uv().mul(screenSize).floor(), vec2(1, 1733)).add(time.mul(60).floor().mul(7919))).sub(0.5).mul(uGrain);
+const blooms = [];
+// ぼけ → にじみ → （サークル：自分の光を持っているので、にじみの後に重ねる）→ 周辺減光・フィルムの粒
+function finish(img0, viewZNode, ring) {
+  const img = Q.dof ? dof(img0, viewZNode, uFocus, uFocal, uBokeh) : img0;
+  const bl = bloom(img, P.にじみ, 0.55, 0.6); blooms.push(bl);
+  let out = img.add(bl);
+  if (ring) out = ring(out);
+  return out.mul(vig).add(grain);
+}
+function makePipe(w) { const p = new THREE.RenderPipeline(renderer); p.outputNode = finish(w.litAt(uv()), w.viewZ); return p; }
+W[START_KEY].pipe = makePipe(W[START_KEY]);
+
+// ---------- サークル（向こう側の見た目が見える輪。2026-11-21 近藤さんが選んだ A'：白い炎の縁・紫寄り） ----------
+// 見た目の試作（サークル/portal.html?v=E）と同じ計算を WGSL で書いたもの。p は画面の高さを1とした座標（真ん中が0、上が＋）
+const uPR = uniform(0), uPT = uniform(0), uFlip = uniform(0);   // 半径・時間・どちらが外か（0＝最初の見た目が外）
+const ptH13 = wgslFn(`fn pt_h13(q: vec3<f32>) -> f32 { var p = fract(q * 0.1031); p = p + dot(p, p.zyx + 31.32); return fract((p.x + p.y) * p.z); }`);
+const ptH22 = wgslFn(`fn pt_h22(q: vec2<f32>) -> vec2<f32> { var a = fract(vec3f(q.x, q.y, q.x) * vec3f(0.1031, 0.1030, 0.0973)); a = a + dot(a, a.yzx + 33.33); return fract((a.xx + a.yz) * a.zy); }`);
+const ptVn = wgslFn(`fn pt_vn(p: vec3<f32>) -> f32 {
+  let i = floor(p); var f = fract(p); f = f * f * (3.0 - 2.0 * f);
+  return mix(mix(mix(pt_h13(i), pt_h13(i + vec3f(1.0, 0.0, 0.0)), f.x), mix(pt_h13(i + vec3f(0.0, 1.0, 0.0)), pt_h13(i + vec3f(1.0, 1.0, 0.0)), f.x), f.y),
+             mix(mix(pt_h13(i + vec3f(0.0, 0.0, 1.0)), pt_h13(i + vec3f(1.0, 0.0, 1.0)), f.x), mix(pt_h13(i + vec3f(0.0, 1.0, 1.0)), pt_h13(i + vec3f(1.0, 1.0, 1.0)), f.x), f.y), f.z);
+}`, [ptH13]);
+const ptFbm = wgslFn(`fn pt_fbm(q: vec3<f32>) -> f32 { var p = q; var s = 0.0; var a = 0.5; for (var i = 0; i < 5; i++) { s += a * pt_vn(p); p = p * 2.03 + 17.1; a *= 0.5; } return s / 0.97; }`, [ptVn]);
+// 大きなうねり用の軽いノイズ（3段。細かい段は弱すぎて見えないので省く）
+const ptFbm3 = wgslFn(`fn pt_fbm3(q: vec3<f32>) -> f32 { var p = q; var s = 0.0; var a = 0.5; for (var i = 0; i < 3; i++) { s += a * pt_vn(p); p = p * 2.03 + 17.1; a *= 0.5; } return 0.5 + (s / 0.875 - 0.5) * 1.05; }`, [ptVn]);
+// 輪の縁からの距離：x＝なめらかな輪から、y＝内側の縁（細かく破れる）から。外向きが＋
+const ptDist = wgslFn(`fn pt_dist(p: vec2<f32>, t: f32, r0: f32) -> vec2<f32> {
+  let r = length(p); let dir = p / max(r, 1e-4);
+  // 形の揺らぎ：大きなうねりをゆっくり不規則に（向きもノイズでずらして形が崩れていくように）。細かい揺れは小さく遅く（プルプル震えないように）
+  let wa = (pt_fbm3(vec3f(dir * 0.9, t * 0.09 + 11.0)) - 0.5) * 2.4;
+  let dw = vec2f(dir.x * cos(wa) - dir.y * sin(wa), dir.x * sin(wa) + dir.y * cos(wa));
+  let wob = (pt_fbm3(vec3f(dw * 1.2, t * 0.13)) - 0.5) * 0.46 + (pt_fbm3(vec3f(dw * 2.6, t * 0.18 + 5.0)) - 0.5) * 0.2 + (pt_fbm3(vec3f(dir * 5.0, t * 0.12 + 9.0)) - 0.5) * 0.06;
+  let d = r - r0 * (1.0 + wob);
+  var tear = 0.0;
+  if (abs(d) < 0.12) { tear = (pt_fbm(vec3f(p * 22.0, t * 0.22)) - 0.5) * 0.07; }
+  return vec2f(d, d + tear);
+}`, [ptFbm, ptFbm3]);
+// 中かどうか（x）と、中を読む場所のずれ（zw。縁の近くほどレンズのように引き伸ばしてゆらす）
+// 軽くする工夫：縁のゆらぎは最大でも半径の±37%（＋破れ0.04）なので、それより明らかに内側・外側の画素は、重いノイズを計算せずに答えを返す（見た目は同じ）
+const ptMask = wgslFn(`fn pt_mask(p: vec2<f32>, t: f32, r0: f32, aspect: f32) -> vec4<f32> {
+  let rq = length(p);
+  if (rq < r0 * 0.63 - 0.245) { return vec4f(1.0, 0.0, 0.0, 0.0); }
+  if (rq > r0 * 1.37 + 0.045) { return vec4f(0.0, 0.0, 0.0, 0.0); }
+  let dd = pt_dist(p, t, r0); let din = dd.y;
+  let inside = 1.0 - smoothstep(-0.0025, 0.0025, din);
+  if (din < -0.2 || din > 0.0) { return vec4f(inside, 0.0, 0.0, 0.0); }
+  let lens = smoothstep(-0.2, 0.0, din);
+  let wv = vec2f(pt_fbm(vec3f(p * 6.0, t * 0.3)), pt_fbm(vec3f(p * 6.0 + 9.0, t * 0.3))) - 0.5;
+  let pin = p * (1.0 - 0.07 * lens * lens) + wv * 0.03 * lens;
+  return vec4f(inside, lens, (pin - p) * vec2f(1.0 / aspect, -1.0));
+}`, [ptDist]);
+// 輪の光の強さ（s＝内側の縁からの距離）：内側へはすぐ消え、白く飛ぶ芯・外へ広がる短い光・ごく薄く広い光
+const ptGlow = wgslFn(`fn pt_glow(s: f32, fibs: f32) -> f32 {
+  let inward = exp(min(s, 0.0) / 0.006);
+  let hot = exp(-max(s, 0.0) / 0.028) * 9.0;
+  let tail = exp(-max(s, 0.0) / 0.045) * 2.2;
+  let halo = exp(-max(s, 0.0) / 0.22) * 0.22;
+  return inward * (hot + tail * fibs + halo);
+}`);
+// 輪を重ねる：内側の紫の帯 → 白い縁（けば立ち・色のにじみ）→ 内側の縁の明るい線 → 光の粒
+const ptRing = wgslFn(`fn pt_ring(col: vec3<f32>, p: vec2<f32>, t: f32, r0: f32, white: f32) -> vec3<f32> {
+  let rq = length(p);
+  if (rq < r0 * 0.63 - 0.345 || rq > r0 * 1.37 + 0.495) { return col; }   // 縁から遠い画素はそのまま（下の din の範囲外と同じ結果）
+  let dd = pt_dist(p, t, r0); let d = dd.x; let din = dd.y;
+  if (din < -0.3 || din > 0.45) { return col; }
+  let r = length(p); let dir = p / max(r, 1e-4);
+  let inside = 1.0 - smoothstep(-0.0025, 0.0025, din);
+  let band = exp(min(din, 0.0) / 0.045) * inside;          // 紫の帯は縁の近くだけ
+  var bn = 0.0; if (band > 0.004) { bn = pt_fbm(vec3f(p * 11.0, t * 0.5)); }   // 紫の帯のむらは帯のある所だけ
+  // 試作は画面の明るさ（表示される値）で計算したので、同じ見え方になるよう、ここでも表示の明るさに直してから重ねる
+  let hi = max(col - vec3f(1.0), vec3f(0.0));
+  var c = pow(min(max(col, vec3f(0.0)), vec3f(1.0)), vec3f(1.0 / 2.2));
+  c = mix(c, c * 0.45 + vec3f(0.64, 0.18, 0.86) * (0.12 + 0.45 * bn * bn), band * 0.75 * smoothstep(0.0, 0.15, r0));
+  let fl = t * 0.5;
+  var f1 = 0.5; var f2 = 0.5;                              // 細い筋は縁の近くでしか見えないので、そこだけ計算（遠くは平均の値）
+  if (din < 0.16) { f1 = pt_fbm(vec3f(dir * 22.0, d * 5.0 - fl)); f2 = pt_fbm(vec3f(dir * 52.8 + 3.0, d * 12.0 - fl * 1.6)); }
+  let fibs = mix(1.0, clamp((f1 * f2 * 4.0) * (f1 * f2 * 4.0), 0.0, 3.0), 0.5);
+  var smoke = 0.5;                                         // 煙のむらは縁の外側でしか効かない（内側は0倍）ので、外側だけ計算
+  if (din > 0.0) { let wp = p * 6.0 + vec2f(pt_fbm(vec3f(p * 5.0, t * 0.25)), pt_fbm(vec3f(p * 5.0 + 4.0, t * 0.25))) * 1.5 + dir * fl * 0.3; smoke = pt_fbm(vec3f(wp, t * 0.2)); }
+  let s = din - ((smoke - 0.5) * 0.144 + (f1 - 0.5) * 0.048) * smoothstep(0.0, 0.05, din);
+  let ca = 0.005;
+  let grow = smoothstep(0.02, 0.45, r0);                  // 輪の育ち具合（0＝開き始め → 1＝十分大きい）
+  let th = 0.3 + 0.7 * grow;                               // 光の太さ：開き始めは細く、育つにつれて太く
+  let g0 = pt_glow(s / th, fibs);
+  let g = vec3f(pt_glow((s - ca) / th, fibs), g0, mix(g0, pt_glow((s + ca) / th, fibs), 0.55));
+  var gc = g * vec3f(1.0, 0.95, 0.88);
+  let rim = exp(-abs(din) / 0.004) * 1.5 + exp(min(din, 0.0) / 0.03) * inside * 0.5;
+  gc += rim * vec3f(0.95, 0.7, 1.0);
+  var sp = vec3f(0.0);
+  for (var l = 0; l < 5; l++) {
+    let fl2 = f32(l); let sz = 0.006 + fl2 * 0.005;
+    let ang = t * (0.03 + 0.02 * fl2) * ((fl2 % 2.0) * 2.0 - 1.0);
+    let cs = cos(ang); let sn = sin(ang);
+    let pr = vec2f(cs * p.x + sn * p.y, -sn * p.x + cs * p.y) * (1.0 + 0.02 * sin(t * 0.5 + fl2));
+    let gq = pr / sz; let cell = floor(gq); let lc = fract(gq) - 0.5;
+    let hh = pt_h22(cell + fl2 * 31.7); let off = (hh - 0.5) * 0.6;
+    let hr = pt_h13(vec3f(cell, fl2 + 7.0));
+    let w = exp(min(din, 0.0) / 0.035) * step(-0.1, din) * inside + 0.25 * exp(-max(din, 0.0) / 0.07) * (1.0 - inside);   // 内側は縁から近い範囲だけ
+    if (hr < 0.4 * w * (1.3 - 0.2 * fl2)) {
+      let tw = 0.5 + 0.5 * sin(t * (2.0 + hh.x * 4.0) + hh.y * 6.28);
+      let rad = (0.06 + 0.12 * pt_h13(vec3f(cell, fl2 + 3.0))) * (1.0 + fl2 * 0.12);
+      let cdir = dir * ca * 8.0;
+      let e = lc - off;
+      let dist = vec3f(length(e - cdir), length(e), length(e + cdir));
+      let core = exp(-(dist * dist) / (rad * rad * 0.25));
+      let x = (dist - rad * 0.7) / (rad * 0.25);
+      let rg = exp(-(x * x)) * 0.35;
+      sp += (core + rg) * tw * (1.3 - 0.25 * fl2) * vec3f(0.95, 0.9, 1.0);
+    }
+  }
+  gc += sp * 2.2;
+  let ap = smoothstep(0.0, 0.15, r0);                     // 出てくるとき：光も紫の帯も0からふわっと現れる（いきなりパッと出ないように）
+  gc *= (0.18 + 0.82 * grow * grow) * ap * ap;                         // 光の強さ：開き始めは弱く、育つにつれて強く（小さな点から放射状の光が出て見えないように）
+  // 光を足す（明るいところは白く飛ぶ）。白は少しだけ1より上へ（最後の明るさの調整で白に見えるよう）
+  let k = 1.0 - exp(-gc);
+  let od = 1.0 - (1.0 - c) * exp(-gc);
+  return pow(od, vec3f(2.2)) * (1.0 + (white - 1.0) * k) + hi * (1.0 - k);
+}`, [ptDist, ptGlow, ptFbm, ptH13, ptH22]);
+const uPWhite = uniform(+(q.get('pw') ?? 1.15));
+const uZoom = uniform(0);                                 // 放射状のぶれの強さ（入り込む演出の一番速いところで強く）
+let portalPipe = null;
+// サークルの中と外を合わせた画面：uFlip＝0 なら外が最初の見た目(A)・中がもう1つ(B)。1 なら逆
+function makePortalPipe(A, B) {
+  const st = uv();
+  const p = vec2(st.x.sub(0.5).mul(uAspect), float(0.5).sub(st.y));
+  const m = ptMask({ p, t: uPT, r0: uPR, aspect: uAspect });
+  const stIn = st.add(m.zw);
+  const wB = mix(m.x, m.x.oneMinus(), uFlip);             // もう1つの見た目(B)の割合
+  const uInBoost = float(1.3);                             // 中の世界は少し明るく（はっきり見えるように）
+  const lit = mix(A.litAt(mix(st, stIn, uFlip)).mul(mix(float(1), uInBoost, uFlip)), B.litAt(mix(stIn, st, uFlip)).mul(mix(uInBoost, float(1), uFlip)), wB);
+  const vz = mix(A.viewZ, B.viewZ, wB);
+  const pp = new THREE.RenderPipeline(renderer);
+  pp.outputNode = finish(lit, vz, (img) => vec4(ptRing({ col: img.rgb, p, t: uPT, r0: uPR, white: uPWhite }), 1));
+  return pp;
+}
+window.__renderer = renderer; window.__scene = cw().scene;
+
+// ---------- pointer ----------
+const target = new THREE.Vector3(), cur = new THREE.Vector3();
+const ndc = new THREE.Vector2(), ray = new THREE.Raycaster(), plane = new THREE.Plane(new THREE.Vector3(0, 0, 1), 0);
+let lastMove = -1e9;
+function setPointer(x, y) { ndc.set(x / innerWidth * 2 - 1, -(y / innerHeight) * 2 + 1); lastMove = performance.now(); spinTrack(x, y); }
+// サークル：クリックしたまま、画面の真ん中のまわりでカーソルを回すと、回った角度がたまって輪が開く。回し続けると切り替わる
+const PT = { circ: 0, lastAng: null, lastT: -1e9, R: 0, vR: 0, v0: 0, turnsS: 0, mode: 'idle', t0: 0, R0: 0, cool: 0 };
+let pressing = false;                                    // クリック（指で触れている）しながら回したときだけ、輪が開く（2026-11-21 近藤さん）
+addEventListener('pointerdown', (e) => { if (e.button === 0 || e.pointerType !== 'mouse') { pressing = true; PT.lastAng = null; } });
+for (const ev of ['pointerup', 'pointercancel', 'blur']) addEventListener(ev, () => { pressing = false; PT.lastAng = null; });
+function spinTrack(x, y) {
+  if (!pressing || SOLO) return;
+  if (PT.mode !== 'idle' || performance.now() < PT.cool) return;   // 切り替えた直後の1.5秒は数えない（回し続けても行ったり来たりしないように）
+  const dx = x - innerWidth / 2, dy = y - innerHeight / 2, rr = Math.hypot(dx, dy) / innerHeight;
+  if (rr < 0.02 || rr > 0.8) { PT.lastAng = null; return; }   // 真ん中すぎ・外すぎは数えない（速く回すと円が大きくなるので広めに）
+  const a = Math.atan2(dy, dx);
+  if (PT.lastAng !== null) {
+    let da = a - PT.lastAng; da -= Math.round(da / (Math.PI * 2)) * Math.PI * 2;
+    if (Math.abs(da) < 2.6) { PT.circ += da; PT.lastT = performance.now(); }   // 半周近い飛びまでは数える（以前は1.2で、速く回すと捨てていた）
+  }
+  PT.lastAng = a;
+}
+addEventListener('pointermove', e => {
+  // 速く動かすと1回の通知で大きく飛ぶので、間の細かい動き（getCoalescedEvents）も回った角度に数える
+  const ev = e.getCoalescedEvents ? e.getCoalescedEvents() : [];
+  for (const c of ev) spinTrack(c.clientX, c.clientY);
+  setPointer(e.clientX, e.clientY);
+});
+addEventListener('pointerdown', e => setPointer(e.clientX, e.clientY));
+function updateTarget(now) {
+  if (P.放置で自動で動く && now - lastMove > 3000) {
+    const t = now / 1000;
+    target.set(Math.sin(t * 0.37) * 7, Math.sin(t * 0.53 + 1) * 3.2, P.光の奥行き + Math.sin(t * 0.29) * 1.5);
+    return;
+  }
+  plane.constant = -P.光の奥行き;
+  ray.setFromCamera(ndc, camera);
+  ray.ray.intersectPlane(plane, target);
+}
+
+// ---------- 調整パネル ----------
+const save = () => store.set('hikari-hahen-params', Object.fromEntries(Object.entries(P).filter(([k]) => !(k in LOOKS[curKey].p))));
+const gui = new GUI({ title: '調整' });
+const fM = gui.addFolder('動き');
+fM.add(P, '押す強さ', 0, 500).onChange(v => { uPush.value = v; save(); });
+fM.add(P, '光の届く範囲', 0.5, 10).onChange(v => { uRadius.value = v; save(); });
+fM.add(P, '空気の抵抗', 0.1, 6).onChange(v => { uDrag.value = v; save(); });
+fM.add(P, '元に戻る力', 0, 1.5).onChange(v => { uReturn.value = v; save(); });
+fM.add(P, 'ゆらぎ', 0, 1.5).onChange(v => { uDrift.value = v; save(); });
+fM.add(P, '回転', 0, 4).onChange(v => { uSpin.value = v; save(); });
+fM.add(P, '奥まで届く', 0, 1).onChange(v => { uReach.value = v; save(); });
+fM.add(P, '光の追従', 1, 30).onChange(save);
+fM.add(P, '放置で自動で動く').onChange(save);
+const fL = gui.addFolder('光');
+fL.add(P, '光の明るさ', 0, 300).onChange(v => { cw().lightBase = v; save(); });
+fL.addColor(P, '光の色').onChange(v => { cw().light.color.set(v); cw().uLightCol.value.set(v); save(); });
+fL.add(P, '光の奥行き', -6, 6).onChange(save);
+fL.add(P, '光の筋', 0, 3).onChange(v => { uRay.value = v; save(); });
+fL.add(P, '光のもや', 0, 2).onChange(v => { uHaze.value = v; save(); });
+const fV = gui.addFolder('見た目');
+fV.add(P, 'にじみ', 0, 2).onChange(v => { for (const b of blooms) b.strength.value = v; save(); });
+fV.add(P, 'ピントの幅', 0.5, 20).onChange(v => { uFocal.value = v; save(); });
+fV.add(P, 'ぼけの強さ', 0, 6).onChange(v => { uBokeh.value = v; save(); });
+fV.add(P, '粒子感', 0, 0.2).onChange(v => { uGrain.value = v; save(); });
+fV.add(P, '色の割合', 0, 0.4).onChange(v => { cw().uColorShare.value = v; save(); });
+fV.add(P, '金属の割合', 0, 0.4).onChange(v => { cw().uMetal.value = v; save(); });
+fV.add(P, '金属の映り込み', 0, 3).onChange(v => { for (const w of Object.values(W)) w.scene.environmentIntensity = v; save(); });
+fV.add(P, '陰り', 0, 1).name('すき間の陰り（高画質）').onChange(v => { uAO.value = v; save(); });
+fV.add(P, '色のにじみ', 0, 3).name('レンズの色のにじみ').onChange(v => { uCA.value = v; save(); });
+fV.add(P, '床の明るさ', 0, 3).onChange(v => { uFloor.value = v; save(); });
+fV.add(P, 'オレンジの割合', 0, 4).name('オレンジの割合（読み直し）').onFinishChange(() => { save(); softReload(); });
+// 読み直すとき：その場で固まって見えないよう、先に「読み込み中」の覆いをすっとかけ、描くのを止めてから読み直す（2026-11-21 近藤さん）
+function softReload(url) {
+  const ld = document.getElementById('loading');
+  ld.style.display = ''; ld.style.transition = 'opacity .35s ease'; void ld.offsetWidth; ld.classList.remove('done');
+  setTimeout(() => { renderer.setAnimationLoop(null); setTimeout(() => { url ? (location.href = url) : location.reload(); }, 60); }, 380);
+}
+const fS = gui.addFolder('個数・画質');
+const opt = { 個数: COUNT, 画質: QUALITY };
+fS.add(opt, '個数', { '3万': 30000, '7万': 70000, '15万': 150000, '30万': 300000, '50万': 500000 })
+  .onChange(v => { const u = new URL(location.href); u.searchParams.set('n', v); softReload(u.href); });
+fS.add(opt, '画質', { '自動': 'auto', '高（影あり）': 'high', '中': 'mid', '低': 'low' })
+  .onChange(v => { store.set('hikari-hahen-q', v); store.set('hikari-hahen-autoq', null); const u = new URL(location.href); u.searchParams.delete('q'); softReload(u.href); });
+gui.add({ コピー() {
+  const txt = JSON.stringify(P, null, 1);
+  navigator.clipboard?.writeText(txt).then(() => alert('今の設定をコピーしました。チャットに貼り付けて送れます。'), () => prompt('この設定をコピーしてください', txt));
+} }, 'コピー').name('今の設定をコピー');
+gui.add({ 戻す() { store.set('hikari-hahen-params', null); softReload(); } }, '戻す').name('初期値に戻す');
+// 回し方のガイド（候補を見比べる間だけ、ここで切り替えられるようにしておく）
+const guide = createGuide();
+guide.setVariant(+(q.get('guide') || 1));                // 2026-11-21 近藤さんが「軌道」に決定（?guide=2〜4 で他の案も見られる）
+fV.close(); fS.close();
+if (innerWidth < 700) gui.close();
+if (q.get('gui') === '0') { gui.hide(); hud.style.display = 'none'; }
+
+// ---------- 計器の画面（B の候補だけ）：画面の縁の線・文字と、光を追う照準 ----------
+let hudOv = null;
+{
+  const st = document.createElement('style');
+  st.textContent = `
+  .ov { position:fixed; inset:0; pointer-events:none; font:10px/1.35 ui-monospace,Consolas,monospace; color:rgba(235,230,240,.72); letter-spacing:.06em; }
+  .ov .fr { position:absolute; inset:18px; border:1px solid rgba(255,255,255,.14); }
+  .ov .c { position:absolute; width:14px; height:14px; border-color:rgba(255,255,255,.7); border-style:solid; }
+  .ov .t { position:absolute; white-space:pre; }
+  .ov .big { font:700 22px/1 system-ui,sans-serif; letter-spacing:.02em; color:#fff; }
+  .ov .red { color:#ff4a3a; }
+  .ov .bar { position:absolute; height:2px; background:rgba(255,255,255,.18); }
+  .ov .bar i { display:block; height:100%; background:#ff4a3a; width:40%; }
+`;
+  document.head.appendChild(st);
+  const ov = document.createElement('div'); ov.className = 'ov';
+  ov.innerHTML = `<div class="fr"></div>
+  <div class="c" style="left:12px;top:12px;border-width:1px 0 0 1px"></div><div class="c" style="right:12px;top:12px;border-width:1px 1px 0 0"></div>
+  <div class="c" style="left:12px;bottom:12px;border-width:0 0 1px 1px"></div><div class="c" style="right:12px;bottom:12px;border-width:0 1px 1px 0"></div>
+  <div class="t big" style="left:34px;top:34px">FUNTECH<span class="red">.</span></div>
+  <div class="t" style="left:34px;top:62px">KINETIC DEBRIS FIELD\nSECTOR 07 / CHAMBER B</div>
+  <div class="t" style="left:220px;top:36px">STATUS   <span class="red">ACTIVE</span>\nMODE     REPULSE\nLINK     STABLE</div>
+  <div class="t" id="ovR" style="right:34px;top:36px;text-align:right"></div>
+  <div class="t" id="ovL" style="left:34px;bottom:34px"></div>
+  <div class="t" style="right:34px;bottom:34px;text-align:right">FT-UNIT 2026.11\n<span class="red">///</span> LIGHT-DRIVEN</div>
+  <div class="bar" style="left:34px;bottom:96px;width:180px"><i id="ovBar"></i></div>`;
+  ov.style.transition = 'opacity .5s';
+  document.body.appendChild(ov);
+  const $ = (id) => ov.querySelector('#' + id);
+  hudOv = { el: ov, update(now, fps) {
+    $('ovR').textContent = `UNITS  ${COUNT.toLocaleString()}\nFPS    ${fps}\nT+     ${(now / 1000).toFixed(1)}`;
+    $('ovL').textContent = `FORCE  ${P.押す強さ.toFixed(0)}\nRADIUS ${P.光の届く範囲.toFixed(2)}\nDRAG   ${P.空気の抵抗.toFixed(2)}`;
+    $('ovBar').style.width = (50 + Math.sin(now / 700) * 30) + '%';
+  } };
+}
+const showHud = () => { hudOv.el.style.opacity = cw().LOOK.hud && q.get('gui') !== '0' ? '1' : '0'; };
+showHud();
+
+// ---------- loop ----------
+for (const c of W[START_KEY].initComputes) await renderer.computeAsync(c);
+window.__dbg = { pos: W[START_KEY].pos, home: W[START_KEY].home, camera, uReach, uDrift, uRay, uHaze, uGrain, uBokeh, bl: blooms[0], uLightUV, uLightVZ, light: W[START_KEY].light, pipeline: W[START_KEY].pipe, sceneColor: W[START_KEY].sceneColor, PT, uPR, W, uDim };
+// もう1つの見た目は、最初の画面が出てから裏で作る（読み込みを遅くしないため）
+let other = null, warm = 0, warmList = [], prepared = false;
+const PP = {};                                           // 輪の画面：「表の見た目>次の見た目」ごとに1つ（3つの見た目で3通り）
+window.__mk = (n) => (window.__marks ||= []).push(n + "@" + Math.round(performance.now()));
+async function buildOther() {
+  // 残りの見た目を全部、隠している間に作る（次の見た目から順に）。動かすのは表と次の2つだけなので、3つにしても動いている間の重さは同じ
+  __mk("bo0");
+  if (SOLO) { prepared = true; return; }                  // 1つだけの版は、作り足す物がない
+  await new Promise(r => setTimeout(r, 30));
+  for (let k = nextKey(START_KEY); k !== START_KEY; k = nextKey(k)) {
+    W[k] = buildWorld(k); __mk("built-" + k);
+    for (const c of W[k].initComputes) await renderer.computeAsync(c);
+    W[k].pipe = makePipe(W[k]);
+    W[k].scene.environmentIntensity = P.金属の映り込み;
+    try { await renderer.compileAsync(W[k].scene, camera); } catch {}
+    __mk("compiled-" + k);
+  }
+  for (const a of LOOK_KEYS) PP[a] = makePortalPipe(W[a], W[nextKey(a)]);
+  setInRes();
+  // 表に出る前の見た目の画面と、3通りの輪の画面を、1コマずつ一度描いて準備する（隠している間なので見えない）
+  warmList = [...LOOK_KEYS.filter(k => k !== START_KEY).map(k => W[k].pipe), ...LOOK_KEYS.map(k => PP[k]), PP[START_KEY]];
+  other = nw(); warm = warmList.length; prepared = true;
+}
+// 切り替え：表と裏を入れ替えるだけ（読み直さない）
+const IN_GLOW = +(q.get('ing') ?? 0.3);                  // 輪の中の世界のカーソルの光の芯の明るさ
+let dimL = 1;                                             // 手前の世界の光の強さの倍率（芯の明るさ uDim とは別。入れ替えで跳ねないように）
+const IN_RES = +(q.get('inres') ?? 0.7), IN_RES_LITE = +(q.get('inresl') ?? 0.5);              // 輪の中の見た目は、細かさを下げて描く（ぼけと輪越しに見るので目立たない。開いている間の重さを減らす）
+function setInRes() {   // 表の見た目はそのまま。輪の中の見た目だけ、細かさ・光の筋・陰りを軽く
+  for (const w of Object.values(W)) {
+    const me = w === cw();
+    const lite = quality !== 'high';                       // 中・低（内蔵GPUなど）は、輪の中をさらに軽く（輪越し・ぼけ越しなので見た目はほぼ同じ）
+    w.scenePass.setResolutionScale(me ? 1 : (lite ? IN_RES_LITE : IN_RES));
+    w.uSteps.value = me ? STEPS : Math.min(STEPS, lite ? 6 : 12);
+    if (w.aoNode) w.aoNode.resolutionScale = me ? 1 : 0.5;
+  }
+}
+function swapWorld() {
+  uDim.value = Math.max(uDim.value, IN_GLOW); dimL = 1;   // 入れ替わった瞬間、中で見えていた明るさのまま引き継ぐ
+  curKey = otherKey(curKey);
+  PT.R = 0; PT.vR = 0; PT.turnsS = 0; PT.circ = 0; PT.mode = 'idle'; PT.lastAng = null; PT.cool = performance.now() + 1500;
+  store.set('hikari-hahen-look', curKey);
+  Object.assign(P, LOOKS[curKey].p);
+  gui.controllersRecursive().forEach(c => c.updateDisplay());
+  drawLookBtn(); showHud(); swappedAt = performance.now(); setInRes();
+  window.__scene = cw().scene;
+}
+const ease = (x) => x * x * (3 - 2 * x);
+// ---- 輪の中へ入り込む演出：外の世界のカメラは輪へ向かって前へ吸い込まれ（少し広角に）、中の世界のカメラは奥から近づいて、最後にふだんの位置にぴったり重なる
+const COMMIT_MS = 1700;
+const FWD = new THREE.Vector3(0, -0.4, 0).sub(camera.position).normalize();
+const IN_BACK = 14, OUT_PUSH = 9;
+function placeCams(now) {
+  const k = PT.mode === 'commit' ? Math.min(1, (now - PT.t0) / (PT.dur || COMMIT_MS)) : 0;
+  const open = PT.R > 0 || PT.mode !== 'idle';
+  let fOut = 16, fIn = 16;
+  for (const w of Object.values(W)) {
+    const c = w.cam;
+    c.copy(camera);
+    if (open && w === nw()) c.position.addScaledVector(FWD, -IN_BACK * (1 - ease(k)));        // 中：奥から近づく
+    if (k > 0 && w === cw()) { c.position.addScaledVector(FWD, OUT_PUSH * k * k); c.fov = camera.fov + 16 * k * k; c.updateProjectionMatrix(); }   // 外：吸い込まれる
+    c.updateMatrixWorld();
+    const fd = 0.03 * 16 / (16 + c.position.distanceTo(camera.position));   // 遠くから見ている間は霧を薄く（向こうがかすまないように）
+    if (Math.abs(w.scene.fog.density - fd) > 1e-5) w.scene.fog.density = fd;   // 毎コマ入れると重くなるので、変わったときだけ
+    v3.copy(cur).project(c); w.uLightUV.value.set(v3.x * 0.5 + 0.5, 0.5 - v3.y * 0.5);
+    v3.copy(cur).applyMatrix4(c.matrixWorldInverse); w.uLightVZ.value = v3.z;
+    if (w === cw()) fOut = -v3.z; else if (w === nw()) fIn = -v3.z;
+  }
+  uFocus.value = fOut + (fIn - fOut) * ease(k);            // ピントは光に合わせる（入り込むにつれて中の世界の光へ）
+}
+let loadedAt = 0, swappedAt = -1e9;
+const GUIDE_ON = !SOLO && (q.get('gui') !== '0' || q.has('guide'));
+function updateGuide(now) {
+  // 開いて（または切り替えて）5秒後にふわっと出して、5秒たったら消す
+  const from = Math.max(loadedAt, swappedAt) + 5000;
+  const ready = other && loaded && now >= from && now < from + 8000;   // 8秒出す（2026-11-21 近藤さん）
+  const want = GUIDE_ON && ready && PT.mode === 'idle' && PT.R < 0.02;
+  if (want !== updateGuide.on) { updateGuide.on = want; want ? guide.show() : guide.hide(); }
+  // ガイドは軌道を見せるだけ（回した分の白い線は重ねない。2026-11-21 近藤さん）
+}
+function portalMaxR() { return Math.hypot(camera.aspect / 2, 0.5) / 0.8 + 0.12; }   // 画面の隅まで中になる大きさ
+// 見た目を変えるボタン：輪を開いて、そのまま広げて切り替える
+// ボタン：途中で止まらず、0から一つの曲線で、広がるほど速くなって画面を覆う（2026-11-21 近藤さん）
+window.__portalGo = () => { if (!other || PT.mode !== 'idle') return; PT.mode = 'commit'; PT.t0 = performance.now(); PT.R0 = PT.R; PT.v0 = 0; PT.dur = BUTTON_MS; };
+const BUTTON_MS = +(q.get('bms') ?? 2300);
+function updatePortal(now, dt) {
+  if (PT.mode === 'idle') {
+    const still = now - PT.lastT > 350;                    // 回すのをやめたら、早めに閉じていく
+    PT.circ *= Math.exp(-dt * (still ? 1.4 : 0.05));   // 回している間はほとんど減らさない（終わりに向けて伸びが鈍らないように）
+    const turns = Math.abs(PT.circ) / (Math.PI * 2);
+    PT.turnsS += (turns - PT.turnsS) * (1 - Math.exp(-dt * 3));   // 回した量もなだらかにしてから使う（手の速さのむらを拾わない）
+    const tt = Math.max(0, PT.turnsS - 0.8);                    // 0.8回から開き始め、最初は速く・小さめ（0.2あたり）からゆるやかに、でも止まらずに広がり続ける
+    const tgt = other && PT.turnsS > 0.8 ? 0.2 * (1 - Math.exp(-2.8 * tt)) + 0.15 * tt + 0.2 * Math.max(0, tt - 0.6) ** 2 : 0;   // 途中から加速して、広がりきるところ（一気に開く）へつなぐ
+    PT.turns = turns;
+    // バネのように追いかける（大きさだけでなく、広がる速さもなめらかに変わる。行き過ぎない強さ）
+    const om = 3.2, acc = om * om * (tgt - PT.R) - 2 * om * PT.vR;
+    PT.vR += acc * dt; PT.R += PT.vR * dt;
+    if (PT.R < 0) { PT.R = 0; PT.vR = 0; }
+    if (PT.R < 0.002 && tgt === 0) { PT.R = 0; PT.vR = 0; }
+    if (other && turns >= 2.3) { PT.mode = 'commit'; PT.t0 = now; PT.R0 = PT.R; PT.v0 = Math.max(0, PT.vR); PT.dur = COMMIT_MS; }
+  } else if (PT.mode === 'button') {                        // 0.6秒で輪が開き、そのまま広がる
+    const k = Math.min(1, (now - PT.t0) / 600);
+    PT.R = PT.R0 + (0.42 - PT.R0) * (1 - Math.pow(1 - k, 3));
+    if (k >= 1) { PT.mode = 'commit'; PT.t0 = now; PT.R0 = PT.R; PT.v0 = 0.25; }
+  } else if (PT.mode === 'commit') {                        // 輪の中へ入り込みながら、画面いっぱいまで広げて、入れ替える
+    const k = Math.min(1, (now - PT.t0) / (PT.dur || COMMIT_MS));
+    const T = (PT.dur || COMMIT_MS) / 1000, lin = Math.min(PT.v0 * T, (portalMaxR() - PT.R0) * 0.5);
+    PT.R = PT.R0 + lin * k + (portalMaxR() - PT.R0 - lin) * (0.45 * k * k + 0.55 * k * k * k);   // 加速を早めに始めて、広がりきるところへ向けて速く   // 直前の広がる速さのまま続けて、そこから一気に広がる（途中で止まって見えないように）
+    if (k >= 1) swapWorld();
+  }
+  uPR.value = PT.R; uPT.value = now / 1000;
+  return PT.R > 0 || PT.mode !== 'idle';
+}
+function resize() {
+  camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix();
+  renderer.setSize(innerWidth, innerHeight); uAspect.value = camera.aspect;
+}
+addEventListener('resize', resize); resize();
+
+const v3 = new THREE.Vector3();
+let prev = performance.now(), frames = 0, tw = prev;
+window.__stats = { fps: 0, count: COUNT, backend, quality, scale: 1 };
+// 遅いときだけ、描く画面の細かさを自動で下げる（ぼけとフィルムの粒があるので少し下げても目立たない）。速ければ戻す
+const DPR_MAX = Math.min(devicePixelRatio, Q.dpr), DPR_MIN = Math.min(DPR_MAX, 0.6);
+let dpr = DPR_MAX, lowCount = 0, highCount = 0;
+const AUTO_RES = q.get('autores') !== '0';
+let slowSec = 0, fastSec = 0;
+function rememberQuality(fps) {
+  if (QUALITY !== 'auto' || q.get('n') || !loaded || performance.now() - loadedAt < 4000 || performance.now() - portalAt < 1500 || document.hidden) return;
+  const atMin = dpr <= DPR_MIN + 0.01, atMax = dpr >= DPR_MAX - 0.01;
+  slowSec = fps < 28 && atMin ? slowSec + 1 : 0;
+  fastSec = fps > 70 && atMax ? fastSec + 1 : 0;
+  const lower = { high: 'mid', mid: 'low' }[quality], upper = AUTOQ ? { low: 'mid', mid: 'high' }[quality] : null;
+  if (slowSec >= 6 && lower) { store.set('hikari-hahen-autoq', lower); slowSec = -1e9; }        // 次に開いたときは1段下げる
+  if (fastSec >= 10 && upper) { store.set('hikari-hahen-autoq', upper === 'high' ? null : upper); fastSec = -1e9; }   // 余裕があれば戻す
+}
+function adaptResolution(fps) {
+  rememberQuality(fps);
+  if (!AUTO_RES || document.hidden || fps < 5) return;     // 隠れている間（コマが間引かれる）は判断しない
+  // サークルが開いている間と閉じた直後は判断しない（2つの見た目を描くので一時的に遅いだけ。途中で細かさを変えると、その一瞬の画面が崩れた）
+  if (performance.now() - portalAt < 1500) { lowCount = highCount = 0; return; }
+  if (!loaded || performance.now() - loadedAt < 1500) { lowCount = highCount = 0; return; }   // 準備中（隠している間）は重いのが当たり前なので判断しない（細かさを下げたまま始まらないように）
+  if (fps < 50) { lowCount++; highCount = 0; } else if (fps > 72) { highCount++; lowCount = 0; } else { lowCount = highCount = 0; }
+  let next = dpr;
+  if (lowCount >= 2) { next = Math.max(DPR_MIN, dpr * (fps < 30 ? 0.8 : 0.9)); lowCount = 0; }
+  if (highCount >= 4) { next = Math.min(DPR_MAX, dpr * 1.1); highCount = 0; }
+  if (Math.abs(next - dpr) > 0.01) { window.__mk?.('res' + next.toFixed(2)); dpr = next; renderer.setPixelRatio(dpr); resize(); window.__stats.scale = +(dpr / DPR_MAX).toFixed(2); }
+}
+let loaded = false, building = false, drawn = 0, smooth = 0, portalAt = -1e9;
+const bootAt = performance.now();
+renderer.setAnimationLoop(() => {
+  const now = performance.now();
+  const dt = Math.min((now - prev) / 1000, 1 / 30); prev = now;
+  updateTarget(now);
+  cur.lerp(target, 1 - Math.exp(-P.光の追従 * dt));
+  uLight.value.copy(cur);
+  // 回し始めたら光を弱め（すっと）、切り替えが終わったらゆっくり戻す
+  const circling = PT.mode !== 'idle' || PT.R > 0 || (PT.turns || 0) > 0.12;
+  const dimT = circling ? 0.16 : 1;
+  const kd = (tg, v) => (tg - v) * (1 - Math.exp(-dt * (tg < v ? 5 : 1.2)));
+  uDim.value += kd(dimT, uDim.value); dimL += kd(dimT, dimL);
+  for (const w of Object.values(W)) {
+    w.light.position.copy(cur); w.bulb.position.copy(cur);
+    const me = w === cw();
+    w.light.userData.shOff = me ? 0 : 1;                   // 表と次の見た目の影は、交互のコマで描く
+    w.light.userData.shEvery = me ? SHADOW_EVERY : SHADOW_EVERY * 4;   // 輪の中の見た目の影は、更新を半分に（遠くから見るだけなので目立たない。開いている間のカクつきを減らす）
+                                                            // 弱めるのは手前の世界の光だけ。向こうの世界は明るいまま（光の芯ともやは少しだけ弱める）
+    w.light.intensity = w.lightBase * (me ? dimL : 1);
+    w.uDimW.value = me ? uDim.value : Math.max(uDim.value, IN_GLOW);   // 輪の中のカーソルの光（芯・もや・筋）は控えめに
+  }
+  uCam.value.copy(camera.position); uRayDir.value.copy(cur).sub(camera.position); uLightDist.value = uRayDir.value.length(); uRayDir.value.normalize();
+  v3.copy(cur).project(camera); uLightUV.value.set(v3.x * 0.5 + 0.5, 0.5 - v3.y * 0.5);   // 仕上げの uv は上が0
+  v3.copy(cur).applyMatrix4(camera.matrixWorldInverse); uLightVZ.value = v3.z;
+  placeCams(now);                                          // 見た目ごとのカメラ（輪の中へ入るときは、外は前へ吸い込まれ、中は奥から近づく）
+  uDt.value = dt;
+  renderer.compute(cw().computeUpdate);                    // 表の見た目と、
+  if (nw()) renderer.compute(nw().computeUpdate);
+  for (const w of [cw(), nw()]) if (w) for (const f of w.anims) f(now / 1000);   // 背景の動くもの          // 次の見た目（輪の向こうが自然に見えるよう）だけ動かす。3つ目は止めておく（重さを2つ分のままに）
+  shadowFrame++;
+  const open = updatePortal(now, dt);
+  if (open) portalAt = now;
+  updateGuide(now);
+  if (warm > 0) { warmList[warmList.length - warm].render(); warm--; __mk('warm'); }   // 準備：まだ描いていない画面を1つずつ
+  else if (PP[curKey] && open) PP[curKey].render();
+  else cw().pipe.render();
+  if (window.__afterRender) window.__afterRender();          // 計測用（描いた直後に画面を読む）
+  frames++;
+  if (!building && ++drawn >= 3) { building = true; buildOther(); }   // 最初の画面が描けたら、隠したまま、もう1つの見た目と輪を準備する
+  if (!loaded && ((prepared && warm === 0 && ++smooth >= (+q.get('sm') || 24)) || now - bootAt > 15000)) {   // 準備が済んで、しばらくなめらかに動いてから見せる（準備に失敗しても15秒で見せる）
+    loaded = true; loadedAt = now; __mk('loaded'); const ld = document.getElementById('loading'); ld.classList.add('done');
+    setTimeout(() => { ld.style.display = 'none'; }, 1800);   // 消え終わったら取り除く（透明でも画面全体に重なっていると重くなるため）
+  }
+  if (frames % 3 === 0) hudOv.update(now, window.__stats.fps);
+  if (now - tw > 1000) {
+    const fps = frames * 1000 / (now - tw); frames = 0; tw = now;
+    window.__stats.fps = Math.round(fps);
+    adaptResolution(fps);
+    hud.textContent = `${backend}  ·  破片 ${COUNT.toLocaleString()}個  ·  画質 ${({ high: '高', mid: '中', low: '低' })[quality]}  ·  細かさ ${Math.round(dpr / DPR_MAX * 100)}%  ·  ${Math.round(fps)} fps`;
+  }
+});
+</script>
+</body>
+</html>

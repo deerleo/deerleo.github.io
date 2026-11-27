@@ -1,0 +1,21 @@
+#view {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    touch-action: none;
+}
+
+#sorry {
+    position: fixed;
+    inset: 0;
+    margin: 0;
+    display: grid;
+    place-items: center;
+}
+
+#sorry[hidden] { display: none; }
+
+#bar .gap { margin-left: 14px; }
+#volume { padding: 14px 16px; }
+#volume input { width: 170px; margin: 0; accent-color: var(--punch); cursor: pointer; }

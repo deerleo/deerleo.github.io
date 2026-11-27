@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Tennis</title>
+<!-- The link preview. One line, the same in both descriptions. Make og.jpg with bin/og. -->
+<meta name="description" content="I asked Fable 5.2, the world's most advanced AI, to make a game. You won't BELIEVE what happened next! (Pong. Honestly, that's all it did.)">
+<meta property="og:title" content="Tennis">
+<meta property="og:description" content="I asked Fable 5.2, the world's most advanced AI, to make a game. You won't BELIEVE what happened next! (Pong. Honestly, that's all it did.)">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://tennis.sixfingerpunch.com/">
+<meta property="og:image" content="https://tennis.sixfingerpunch.com/og.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#2a2a2f">
+<link rel="icon" href="sfp.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;500;700&display=swap">
+<link rel="stylesheet" href="shell.css">
+<link rel="stylesheet" href="game.css">
+<!-- Fathom analytics, one site for all of sixfingerpunch.com. It only counts on the live domain. -->
+<script src="https://cdn.usefathom.com/script.js" data-site="KJMGTPJG" data-included-domains="tennis.sixfingerpunch.com" defer></script>
+</head>
+<body>
+<div id="loader"><div class="mark"><img src="sfp.svg" alt=""></div><div class="hazard"><i></i></div></div>
+<!-- Streamline Sharp Solid. Add more from the same set with the Streamline connector. -->
+<svg hidden>
+    <symbol id="i-again" viewBox="0 0 24 24"><path d="m17.9141 0.5 -2.4143 0 0 3 -3.0002 0C6.70062 3.5 1.99961 8.20101 1.99961 14c-0.00001 5.5228 4.47715 10 9.99999 10 5.5229 0 10 -4.4772 10 -10l-3 0c0 3.866 -3.134 7 -7 7 -3.86599 0 -7 -3.134 -6.99999 -7 0 -4.14214 3.35786 -7.5 7.49999 -7.5l3.0002 0 0 3 2.4143 0 4.5 -4.5 -4.5 -4.5Z"/></symbol>
+    <symbol id="i-sound" viewBox="0 0 24 24"><path fill-rule="evenodd" d="M13.0001 2.99983V1.05664L11.4189 2.1861 4.67964 6.99983 2 6.99983H1v9.99997l1 0 2.67964 0 6.73926 4.8138 1.5812 1.1294V2.99983ZM20.75 12c0 -3.17564 -2.5744 -5.75 -5.75 -5.75v-2.5c4.5563 0 8.25 3.69365 8.25 8.25 0 4.5563 -3.6937 8.25 -8.25 8.25v-2.5c3.1756 0 5.75 -2.5744 5.75 -5.75ZM15 10.6709c0.7339 0 1.3289 0.5949 1.3289 1.3289 0 0.7339 -0.595 1.3288 -1.3289 1.3288v2.5c2.1146 0 3.8289 -1.7142 3.8289 -3.8288 0 -2.11466 -1.7143 -3.8289 -3.8289 -3.8289v2.5Z"/></symbol>
+    <symbol id="i-mute" viewBox="0 0 24 24"><path fill-rule="evenodd" d="M0 1.41421 22.5859 24.0002l1.4143 -1.4143 -7 -6.9999V1.05672l-1.5813 1.12945 -6.73919 4.81374h-0.26559L1.41421 0 0 1.41421ZM5.00008 15.9999V9.27767L17.0002 21.2778v1.6653l-1.5813 -1.1295 -6.73919 -4.8137 -2.67963 0 -1 0v-1Z"/></symbol>
+    <symbol id="i-done" viewBox="0 0 24 24"><path d="M23.7722 4.24328 9.27164 22.5045l-9.028476 -9.096L3.0821 10.5906l5.85677 5.9006L20.6397 1.75586l3.1325 2.48742Z"/></symbol>
+    <symbol id="i-failed" viewBox="0 0 24 24"><path d="M9.17172 12.0002 0.585938 20.5859l2.828422 2.8285 8.58584 -8.5858 8.5857 8.5858 2.8285 -2.8285 -8.5858 -8.5857 8.5858 -8.58584L20.5859 0.585938 12.0002 9.17172 3.41436 0.585938 0.585938 3.41436 9.17172 12.0002Z"/></symbol>
+</svg>
+<canvas id="view"></canvas>
+<p id="sorry" hidden>Needs WebGL2</p>
+<a id="badge" href="https://sixfingerpunch.com" aria-label="Six Finger Punch"><img src="sfp.svg" alt=""></a>
+<nav id="bar" class="frame">
+    <button id="again" class="icon" aria-label="Again" title="Again"><svg><use href="#i-again"/></svg></button>
+    <button id="mute" class="icon gap" aria-label="Sound"><svg><use href="#i-sound"/></svg></button>
+</nav>
+<div id="volume" class="frame menu" hidden><input type="range" min="0" max="1" step="0.01" aria-label="Volume"></div>
+<div id="about" hidden>
+    <div class="frame window" role="dialog" aria-modal="true" aria-labelledby="about-title"><div class="inner">
+        <header>
+            <h1 id="about-title">Tennis</h1>
+            <img class="wordmark" src="wordmark.svg" alt="Six Finger Punch">
+        </header>
+        <p class="version">Version 1.1 · 11 November 2026</p>
+        <p>I asked the world's smartest AI to re-create Pong. And then it got weird. I'm blaming whatever was in the Beatles' tea in 1967.</p>
+        <p>Mouse, finger or arrow keys move your bat. This one goes to eleven, so turn it up.</p>
+        <p class="sign">Richard Davey<br><a href="https://sixfingerpunch.com">sixfingerpunch.com</a></p>
+    </div></div>
+</div>
+<script type="module" src="main.js"></script>
+</body>
+</html>

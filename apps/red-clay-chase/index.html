@@ -1,0 +1,220 @@
+<!doctype html>
+<!--
+  Red Clay Chase — by noclipepe（https://noclipepe.pages.dev/chase），created with Claude Fable 5.2.
+  Original work by noclipepe. Mirrored on milulab.com for learning and demo.
+-->
+
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>Red Clay Chase</title>
+<link rel="icon" href="data:,">
+<style>
+  html, body { margin: 0; height: 100%; background: #000; overflow: hidden; }
+  body { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; touch-action: none; font-family: "Bahnschrift", "Segoe UI", "Helvetica Neue", Arial, sans-serif; }
+  body { cursor: none; } body.menu { cursor: default; } /* no mouse cursor while driving, it returns with the settings menu */
+  #view { position: fixed; inset: 0; width: 100%; height: 100%; display: block; }
+  #minimap { position: fixed; left: 26px; bottom: 26px; width: 232px; height: 132px; border-radius: 12px;
+    border: 2px solid rgba(255,255,255,0.5); box-shadow: 0 4px 18px rgba(0,0,0,0.4); }
+  #speedo { position: fixed; right: 22px; bottom: 18px; width: 130px; height: 56px; }
+  #compass { position: fixed; top: 14px; left: 50%; transform: translateX(-50%); width: 420px; max-width: 64vw; height: 40px; }
+  #fade { position: fixed; inset: 0; background: #000; opacity: 1; transition: opacity 1.0s ease; pointer-events: none;
+    color: #777; font-size: 13px; letter-spacing: 0.32em; text-transform: uppercase; display: flex; align-items: center; justify-content: center; }
+  #fade.gone { opacity: 0; }
+  .tc { display: none; position: fixed; width: 68px; height: 68px; border-radius: 50%; background: rgba(20,24,28,0.34);
+    border: 1.5px solid rgba(255,255,255,0.38); color: rgba(255,255,255,0.9); font-size: 26px; line-height: 68px; text-align: center; }
+  .tc.on { background: rgba(255,255,255,0.3); }
+  body.touch .tc { display: block; }
+  #tL { left: 22px; bottom: 190px; } #tR { left: 104px; bottom: 190px; }
+  #tG { right: 24px; bottom: 236px; } #tB { right: 106px; bottom: 164px; }
+  #tH { right: 24px; bottom: 154px; width: 56px; height: 56px; line-height: 56px; font-size: 14px; font-weight: 700; }
+  #tX { right: 16px; top: 14px; width: 44px; height: 44px; line-height: 44px; font-size: 20px; }
+  #tA { right: 70px; top: 14px; width: 44px; height: 44px; line-height: 44px; font-size: 18px; }
+  #tV { right: 178px; top: 14px; width: 44px; height: 44px; line-height: 42px; font-size: 19px; }
+  #tM { right: 124px; top: 14px; width: 44px; height: 44px; line-height: 42px; font-size: 19px; }
+  #fps { display: none; position: fixed; left: 28px; top: 16px; color: rgba(255,255,255,0.92); font-size: 14px; font-weight: 600; letter-spacing: 0.08em; text-shadow: 0 1px 4px rgba(0,0,0,0.7); pointer-events: none; }
+  body.over { cursor: default; }
+  #hp { position: fixed; right: 26px; bottom: 82px; width: 122px; height: 7px; border-radius: 4px; background: rgba(0,0,0,0.42); box-shadow: 0 1px 6px rgba(0,0,0,0.45); overflow: hidden; }
+  #hpFill { height: 100%; width: 100%; background: rgba(255,255,255,0.92); border-radius: 4px; transition: width 0.18s ease-out, background 0.3s; }
+  #hp.low #hpFill { background: #e5482f; }
+  /* wanted level: five stars, top right */
+  #stars { display: none; position: fixed; top: 20px; right: 26px; gap: 5px; filter: drop-shadow(0 1px 3px rgba(0,0,0,0.7)); pointer-events: none; transition: opacity 0.5s; }
+  #stars.on { display: flex; }
+  #stars i { width: 27px; height: 27px; background: rgba(255,255,255,0.22); clip-path: polygon(50% 2%, 61.5% 36.5%, 98% 36.5%, 68.5% 58%, 79.5% 93%, 50% 71.5%, 20.5% 93%, 31.5% 58%, 2% 36.5%, 38.5% 36.5%); }
+  #stars i.on { background: #fff; } #stars i.new { animation: starIn 0.42s steps(1) 5; }
+  @keyframes starIn { 0% { background: #fff; } 50% { background: rgba(255,255,255,0.22); } }
+  body.touch #stars { top: 68px; right: 18px; }
+  #title { display: none; position: fixed; left: 0; right: 0; bottom: 17vh; text-align: center; color: #fff; z-index: 2; pointer-events: none; text-shadow: 0 2px 14px rgba(0,0,0,0.75); }
+  body.attract #title { display: block; }
+  #title h1 { margin: 0 0 14px; font-size: 46px; font-weight: 700; letter-spacing: 0.34em; text-indent: 0.34em; text-transform: uppercase; }
+  #titleKey { font-size: 14px; font-weight: 600; letter-spacing: 0.34em; text-indent: 0.34em; text-transform: uppercase; animation: keyBlink 1.5s ease-in-out infinite; }
+  @keyframes keyBlink { 50% { opacity: 0.25; } }
+  body.attract { cursor: default; }
+  @media (max-width: 700px), (max-height: 520px) { #title h1 { font-size: 26px; } #title { bottom: 20vh; } }
+  #home { display: none; position: fixed; left: 22px; top: 16px; z-index: 6; padding: 7px 14px; color: #fff; font-size: 12px; font-weight: 600; letter-spacing: 0.16em; text-decoration: none; cursor: pointer;
+    background: rgba(13,16,19,0.6); border: 1.5px solid rgba(255,255,255,0.45); border-radius: 999px; }
+  #home:hover { background: rgba(255,255,255,0.16); }
+  html.web body.attract #home { display: block; }
+  .homeIn { display: none; color: rgba(255,255,255,0.7); font-size: 12px; font-weight: 600; letter-spacing: 0.16em; text-decoration: none; }
+  .homeIn:hover { color: #fff; } html.web .homeIn { display: block; }
+  #overPanel .homeIn { margin-top: 16px; }
+  /* what is left to do at five stars */
+  #goal { display: none; position: fixed; top: 54px; right: 26px; z-index: 1; color: #fff; font-size: 13px; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; text-shadow: 0 1px 4px rgba(0,0,0,0.75); pointer-events: none; font-variant-numeric: tabular-nums; }
+  #goal.on { display: block; }
+  #titleTip { display: none; margin-top: 14px; font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: rgba(255,255,255,0.7); }
+  /* opening shot: cinema bars, no HUD */
+  #bars::before, #bars::after { content: ""; position: fixed; left: 0; right: 0; height: 10.5vh; background: #000; transition: transform 0.7s ease; z-index: 3; pointer-events: none; }
+  #bars::before { top: 0; transform: translateY(-101%); } #bars::after { bottom: 0; transform: translateY(101%); }
+  body.intro #bars::before, body.intro #bars::after { transform: none; transition: none; }
+  #minimap, #speedo, #compass, #hp, .tc { transition: opacity 0.6s; }
+  body.intro #minimap, body.intro #speedo, body.intro #compass, body.intro #hp, body.intro .tc, body.intro #fps { opacity: 0; }
+  #dmg { position: fixed; inset: 0; pointer-events: none; opacity: 0; background: radial-gradient(ellipse at center, rgba(150,0,0,0) var(--r, 66%), rgba(175,6,0,0.5) calc(var(--r, 66%) + 26%), rgba(165,0,0,0.9) 118%); }
+  #minimap, #speedo, #compass, #hp, #stars { z-index: 1; } /* the HUD stays readable on top of the red */
+  #dmgL, #dmgR { position: fixed; top: 0; bottom: 0; width: 36vw; pointer-events: none; opacity: 0; }
+  #dmgL { left: 0; background: linear-gradient(90deg, rgba(215,12,0,0.8), rgba(200,8,0,0.3) 38%, rgba(190,0,0,0)); }
+  #dmgR { right: 0; background: linear-gradient(270deg, rgba(215,12,0,0.8), rgba(200,8,0,0.3) 38%, rgba(190,0,0,0)); }
+  #over { display: none; position: fixed; inset: 0; z-index: 4; align-items: center; justify-content: center; background: rgba(0,0,0,0.42); color: #fff; }
+  #over.on { display: flex; }
+  #overPanel { text-align: center; padding: 26px 44px 24px; background: rgba(13,16,19,0.84); border: 2px solid rgba(255,255,255,0.5); border-radius: 12px; box-shadow: 0 8px 34px rgba(0,0,0,0.55); max-width: calc(100vw - 24px); box-sizing: border-box; }
+  #overPanel h1 { margin: 0 0 8px; font-size: 34px; font-weight: 700; letter-spacing: 0.3em; text-indent: 0.3em; text-transform: uppercase; }
+  #overStats { font-size: 14px; letter-spacing: 0.06em; color: rgba(255,255,255,0.75); margin-bottom: 20px; }
+  #overBtn { display: inline-block; height: 40px; line-height: 40px; padding: 0 30px; font-size: 13px; font-weight: 600; letter-spacing: 0.16em; text-transform: uppercase; cursor: pointer; background: rgba(255,255,255,0.92); color: #101214; border-radius: 8px; }
+  #overBtn:hover { background: #fff; }
+  #overBtn2 { display: none; height: 37px; line-height: 37px; padding: 0 22px; margin-left: 10px; font-size: 13px; font-weight: 600; letter-spacing: 0.16em; text-transform: uppercase; cursor: pointer; border: 1.5px solid rgba(255,255,255,0.5); border-radius: 8px; vertical-align: top; }
+  #overBtn2:hover { background: rgba(255,255,255,0.14); } #over.win #overBtn2 { display: inline-block; }
+  #overKeys { margin-top: 12px; font-size: 12px; letter-spacing: 0.06em; color: rgba(255,255,255,0.45); } body.touch #overKeys { display: none; }
+  #menu { display: none; position: fixed; inset: 0; z-index: 5; color: #fff; background: linear-gradient(90deg, rgba(0,0,0,0.6), rgba(0,0,0,0.22) 52%, rgba(0,0,0,0.04)); }
+  #menu.open { display: block; }
+  #menuPanel { position: absolute; left: 44px; top: 50%; transform: translateY(-50%); width: 440px; max-width: calc(100vw - 24px); max-height: calc(100vh - 20px); box-sizing: border-box;
+    overflow-y: auto; touch-action: pan-y; background: rgba(13,16,19,0.84); border: 2px solid rgba(255,255,255,0.5); border-radius: 12px; box-shadow: 0 8px 34px rgba(0,0,0,0.55); padding: 18px 0 12px; }
+  .mpage { display: none; } #menu[data-page="root"] #menuRoot, #menu[data-page="settings"] #menuSet, #menu[data-page="controls"] #menuCtl { display: block; }
+  #menuRoot { padding: 6px 0 4px; }
+  .mbtn { display: block; margin: 8px 24px; height: 44px; line-height: 44px; text-align: center; font-size: 14px; font-weight: 600; letter-spacing: 0.18em; text-transform: uppercase; cursor: pointer;
+    color: #fff; text-decoration: none; border: 1.5px solid rgba(255,255,255,0.4); border-radius: 8px; }
+  .mbtn.sel { background: rgba(255,255,255,0.92); color: #101214; border-color: transparent; }
+  .homeBtn { display: none; margin-top: 20px; border-style: dashed; } html.web .homeBtn { display: block; }
+  .crow { display: flex; align-items: baseline; gap: 16px; padding: 7px 24px; font-size: 14px; } .crow:nth-child(odd) { background: rgba(255,255,255,0.05); }
+  .ckey { flex: none; width: 122px; font-weight: 700; letter-spacing: 0.04em; } .cdesc { color: rgba(255,255,255,0.82); }
+  #menuBtns2 { margin: 14px 24px 6px; } .mback { height: 38px; line-height: 38px; text-align: center; font-size: 13px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; cursor: pointer; border: 1.5px solid rgba(255,255,255,0.45); border-radius: 8px; }
+  .mback:hover { background: rgba(255,255,255,0.14); }
+  #menuPanel h1 { margin: 0 24px 8px; font-size: 22px; font-weight: 700; letter-spacing: 0.22em; text-transform: uppercase; }
+  #menuPanel h2 { margin: 0 24px 12px; font-size: 12px; font-weight: 400; letter-spacing: 0.2em; text-transform: uppercase; color: rgba(255,255,255,0.55); }
+  .mrow { display: flex; align-items: center; justify-content: space-between; height: 38px; padding: 0 12px 0 24px; font-size: 15px; cursor: pointer; border-left: 3px solid transparent; }
+  .mrow.sel { background: rgba(255,255,255,0.13); border-left-color: #fff; }
+  .mlab { color: rgba(255,255,255,0.9); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .mbox { display: flex; align-items: center; flex: none; }
+  .mval { width: 86px; text-align: center; font-weight: 600; }
+  .marr { width: 34px; height: 34px; line-height: 31px; text-align: center; font-size: 24px; border-radius: 6px; color: rgba(255,255,255,0.85); }
+  .marr:hover { background: rgba(255,255,255,0.16); } .marr.off { color: rgba(255,255,255,0.22); }
+  #menuBtns { display: flex; gap: 10px; margin: 14px 24px 10px; }
+  #menuBtns div { flex: 1; height: 38px; line-height: 38px; text-align: center; font-size: 13px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; cursor: pointer;
+    border: 1.5px solid rgba(255,255,255,0.45); border-radius: 8px; }
+  #menuBtns div:hover { background: rgba(255,255,255,0.14); }
+  #menuInfo, #menuKeys { margin: 0 24px; font-size: 12px; letter-spacing: 0.06em; color: rgba(255,255,255,0.6); }
+  #menuKeys { margin-top: 4px; color: rgba(255,255,255,0.4); } body.touch #menuKeys { display: none; }
+  @media (max-height: 520px) {
+    #menuPanel { left: 12px; padding: 10px 0 8px; } #menuPanel h1 { font-size: 16px; } .mbtn { height: 34px; line-height: 34px; margin: 5px 24px; } .crow { padding: 4px 24px; font-size: 13px; }
+    .mrow { height: 29px; font-size: 13px; } .marr { height: 27px; line-height: 24px; } #menuBtns { margin: 8px 24px 6px; } #menuBtns div { height: 32px; line-height: 32px; }
+    #minimap { width: 158px; height: 90px; left: 12px; bottom: 12px; border-radius: 10px; }
+    #compass { width: 280px; top: 6px; }
+    #speedo { transform: scale(0.72); transform-origin: right bottom; right: 8px; bottom: 0; }
+    #hp { right: 12px; bottom: 50px; width: 90px; } #stars i { width: 20px; height: 20px; } #stars { top: 12px; } body.touch #stars { top: 62px; }
+    #tL { left: 14px; bottom: 132px; } #tR { left: 94px; bottom: 132px; }
+    #tG { right: 16px; bottom: 176px; } #tB { right: 96px; bottom: 112px; } #tH { right: 18px; bottom: 106px; }
+  }
+  /* ================= phones and tablets (body.touch): one layout, nothing overlaps =================
+     top left: map · top right: small buttons, stars and goal under them · bottom left: steering · bottom right: brake and gas · bottom middle: speed and damage */
+  body.touch { --sl: env(safe-area-inset-left, 0px); --sr: env(safe-area-inset-right, 0px); --sb: env(safe-area-inset-bottom, 0px); --st: env(safe-area-inset-top, 0px); }
+  body.touch #compass { display: none; }
+  body.touch #minimap { left: calc(12px + var(--sl)); top: calc(12px + var(--st)); bottom: auto; width: 150px; height: 85px; border-radius: 10px; }
+  body.touch #fps { left: calc(14px + var(--sl)); top: calc(104px + var(--st)); font-size: 12px; }
+  body.touch #speedo { right: auto; left: 50%; bottom: calc(4px + var(--sb)); transform: translateX(-50%) scale(0.8); transform-origin: center bottom; }
+  body.touch #hp { right: auto; left: 50%; transform: translateX(-50%); bottom: calc(54px + var(--sb)); width: 110px; }
+  body.touch #stars { top: calc(64px + var(--st)); right: calc(14px + var(--sr)); gap: 4px; } body.touch #stars i { width: 20px; height: 20px; }
+  body.touch #goal { top: calc(90px + var(--st)); right: calc(14px + var(--sr)); font-size: 11px; }
+  body.touch #tM, body.touch #tX, body.touch #tV, body.touch #tA { top: calc(12px + var(--st)); width: 42px; height: 42px; line-height: 40px; font-size: 18px; }
+  body.touch #tM { right: calc(12px + var(--sr)); } body.touch #tX { right: calc(62px + var(--sr)); } body.touch #tV { right: calc(112px + var(--sr)); } body.touch #tA { right: calc(162px + var(--sr)); }
+  body.touch #tL, body.touch #tR, body.touch #tB, body.touch #tG { width: 78px; height: 78px; line-height: 78px; font-size: 28px; bottom: calc(20px + var(--sb)); }
+  body.touch #tL { left: calc(14px + var(--sl)); } body.touch #tR { left: calc(102px + var(--sl)); }
+  body.touch #tG { right: calc(14px + var(--sr)); } body.touch #tB { right: calc(102px + var(--sr)); }
+  body.touch #tH { right: calc(26px + var(--sr)); bottom: calc(110px + var(--sb)); width: 54px; height: 54px; line-height: 54px; }
+  body.touch.menu .tc, body.touch.over .tc, body.touch.attract .tc { opacity: 0; pointer-events: none; }
+  body.touch.menu #minimap, body.touch.menu #speedo, body.touch.menu #hp, body.touch.menu #stars, body.touch.menu #goal, body.touch.menu #fps { opacity: 0; } /* nothing shows through the settings panel */
+  body.touch #menuPanel { left: 50%; transform: translate(-50%, -50%); padding: 12px 0 10px; -webkit-overflow-scrolling: touch; }
+  body.touch .mbtn { height: 44px; line-height: 44px; margin: 7px 20px; } body.touch .ckey { width: 64px; } body.touch .crow { padding: 6px 20px; font-size: 13px; }
+  body.touch .mrow { height: 40px; font-size: 14px; } body.touch .marr { width: 40px; height: 38px; line-height: 34px; } body.touch .mval { width: 74px; }
+  body.touch #menuBtns div { height: 40px; line-height: 40px; }
+  body.touch #overPanel { padding: 20px 22px 18px; } body.touch #overPanel h1 { font-size: 24px; } body.touch #overStats { font-size: 12px; }
+  @media (orientation: portrait) {
+    body.touch #minimap { width: 130px; height: 74px; } body.touch #fps { top: calc(92px + var(--st)); }
+    body.touch #tL, body.touch #tR, body.touch #tB, body.touch #tG { width: 70px; height: 70px; line-height: 70px; }
+    body.touch #tL { left: calc(10px + var(--sl)); } body.touch #tR { left: calc(86px + var(--sl)); }
+    body.touch #tG { right: calc(10px + var(--sr)); } body.touch #tB { right: calc(86px + var(--sr)); }
+    body.touch #tH { right: calc(18px + var(--sr)); bottom: calc(100px + var(--sb)); }
+    body.touch #speedo { bottom: calc(100px + var(--sb)); } body.touch #hp { bottom: calc(150px + var(--sb)); }
+    body.touch #over.win #overBtn2 { display: block; margin: 10px 0 0; }
+    body.touch #titleTip { display: block; }
+  }
+  @media (orientation: portrait) and (max-width: 380px) { body.touch #tA { display: none; } }
+</style>
+</head>
+<body>
+<canvas id="view"></canvas>
+<canvas id="minimap"></canvas>
+<canvas id="speedo"></canvas>
+<canvas id="compass"></canvas>
+<div class="tc" id="tL" data-k="left">&#9664;</div>
+<div class="tc" id="tR" data-k="right">&#9654;</div>
+<div class="tc" id="tG" data-k="up">&#9650;</div>
+<div class="tc" id="tB" data-k="down">&#9660;</div>
+<div class="tc" id="tH" data-k="hand">HB</div>
+<div class="tc" id="tX" data-k="reset">&#8634;</div>
+<div class="tc" id="tA" data-k="anim">&#9834;</div>
+<div class="tc" id="tV" data-k="look">&#8645;</div>
+<div class="tc" id="tM" data-k="menu">&#9776;</div>
+<div id="fps"></div>
+<div id="dmg"></div><div id="dmgL"></div><div id="dmgR"></div>
+<div id="hp"><div id="hpFill"></div></div>
+<div id="stars"><i></i><i></i><i></i><i></i><i></i></div>
+<div id="goal"></div>
+<div id="bars"></div>
+<a id="home" href="https://noclipepe.com/" aria-label="Back to all games">&larr; GAMES</a>
+<div id="title"><h1>Red Clay Chase</h1><div id="titleKey">Press any key</div><div id="titleTip">Turn the phone sideways for a wider view</div></div>
+<div id="over"><div id="overPanel"><h1 id="overTitle">Wrecked</h1><div id="overStats"></div><div id="overBtn">Restart</div><div id="overBtn2">Keep driving</div><div id="overKeys">Enter or R</div><a class="homeIn" href="https://noclipepe.com/">&larr; ALL GAMES</a></div></div>
+<div id="menu" data-page="root"><div id="menuPanel">
+  <h1 id="menuTitle">Paused</h1>
+  <div id="menuRoot" class="mpage">
+    <div class="mbtn" data-a="resume">Resume</div>
+    <div class="mbtn" data-a="restart">Restart</div>
+    <div class="mbtn" data-a="controls">Controls</div>
+    <div class="mbtn" data-a="settings">Settings</div>
+    <a class="mbtn homeBtn" data-a="home" href="https://noclipepe.com/">Back to all games</a>
+  </div>
+  <div id="menuSet" class="mpage">
+    <div id="menuRows"></div>
+    <div id="menuBtns"><div class="mback">Back</div><div id="menuAuto">Reset to auto</div></div>
+    <div id="menuInfo"></div>
+    <div id="menuKeys">&#8593;&#8595; select &nbsp;&middot;&nbsp; &#8592;&#8594; change &nbsp;&middot;&nbsp; Esc back</div>
+  </div>
+  <div id="menuCtl" class="mpage">
+    <div id="ctlRows"></div>
+    <div id="menuBtns2"><div class="mback">Back</div></div>
+  </div>
+</div></div>
+<div id="fade">Loading</div>
+<script>if (location.protocol !== "file:") document.documentElement.classList.add("web");</script>
+<script src="js/three.min.js"></script>
+<script src="js/util.js"></script>
+<script src="js/textures.js"></script>
+<script src="js/world.js"></script>
+<script src="js/veg.js"></script>
+<script src="js/props.js"></script>
+<script src="js/car.js"></script>
+<script src="js/traffic.js"></script>
+<script src="js/people.js"></script>
+<script src="js/game.js"></script>
+<script src="js/menu.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,7 @@
+# Little City: a peaceful, hand-drawn city builder. Every page is open to crawlers
+# except the developers' gallery of parts.
+User-agent: *
+Allow: /
+Disallow: /gallery/
+
+Sitemap: https://littlecity.io/sitemap.xml

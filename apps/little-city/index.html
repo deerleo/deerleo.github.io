@@ -1,0 +1,131 @@
+<!doctype html>
+<!--
+  Little City — by sprezzyyy（https://littlecity.io），created with Claude Fable 5.2.
+  Original work by sprezzyyy. Mirrored on milulab.com for learning and demo.
+-->
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+    <meta name="theme-color" content="#f2ede3" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <title>Little City: A hand-drawn city builder in your browser</title>
+    <meta name="description" content="A hand-drawn town diorama builder, free in your browser. Place a few blocks, watch them turn into a town, then watch it come to life." />
+    <meta name="robots" content="index, follow, max-image-preview:large, max-video-preview:-1" />
+    <meta name="application-name" content="Little City" />
+    <meta name="author" content="Derek Yao" />
+    <meta name="apple-mobile-web-app-title" content="Little City" />
+    <!-- Link previews (iMessage, Discord, Slack, X). Crawlers need absolute URLs and do not run scripts,
+         so every link shows this one picture, whichever town the link carries. -->
+    <link rel="canonical" href="https://littlecity.io/" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Little City" />
+    <meta property="og:title" content="Little City: A hand-drawn city builder in your browser" />
+    <meta property="og:description" content="A hand-drawn town diorama builder, free in your browser. Place a few blocks, watch them turn into a town, then watch it come to life." />
+    <meta property="og:url" content="https://littlecity.io/" />
+    <meta property="og:image" content="https://littlecity.io/og.jpg" />
+    <meta property="og:image:type" content="image/jpeg" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="A hand-drawn island town with a castle, a harbour, a chapel and a lighthouse." />
+    <!-- The preview is the promo video: apps that play link videos (Discord, Slack, iMessage, Telegram) show it; X shows the still. -->
+    <meta property="og:video" content="https://littlecity.io/preview.mp4" />
+    <meta property="og:video:secure_url" content="https://littlecity.io/preview.mp4" />
+    <meta property="og:video:type" content="video/mp4" />
+    <meta property="og:video:width" content="1280" />
+    <meta property="og:video:height" content="720" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Little City: A hand-drawn city builder in your browser" />
+    <meta name="twitter:description" content="A hand-drawn town diorama builder, free in your browser. Place a few blocks, watch them turn into a town, then watch it come to life." />
+    <meta name="twitter:image" content="https://littlecity.io/og.jpg" />
+    <link rel="icon" type="image/svg+xml" href="/apps/little-city/favicon.svg" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/apps/little-city/favicon-32.png" />
+    <link rel="icon" type="image/png" sizes="48x48" href="/apps/little-city/favicon.png" />
+    <link rel="icon" type="image/png" sizes="96x96" href="/apps/little-city/favicon-96.png" />
+    <link rel="icon" type="image/png" sizes="192x192" href="/apps/little-city/icon-192.png" />
+    <link rel="shortcut icon" href="/apps/little-city/favicon.ico" />
+    <link rel="apple-touch-icon" href="/apps/little-city/apple-touch-icon.png" />
+    <link rel="manifest" href="/apps/little-city/manifest.webmanifest" />
+    <!-- seo:data (the game and the site as structured data: tools/seo/site.ts writes them in on deploy) -->
+    <style>html,body{overscroll-behavior:none;color:#3a2f2a;background:#f2ede3;height:100%;margin:0;overflow:hidden}body{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;position:fixed;inset:0}.lc-about{clip:rect(0 0 0 0);clip-path:inset(50%);white-space:nowrap;border:0;width:1px;height:1px;margin:-1px;padding:0;position:absolute;overflow:hidden}#town{touch-action:none;outline:none;width:100%;height:100%;display:block;position:absolute;inset:0}.lc-loading{pointer-events:none;opacity:1;flex-direction:column;justify-content:center;align-items:center;gap:14px;transition:opacity .4s;display:flex;position:fixed;inset:0}.lc-loading[data-state=done]{opacity:0}.lc-loading svg{fill:none;stroke:#3a2f2a;stroke-width:2px;stroke-linecap:round;stroke-linejoin:round;width:min(200px,60vw);height:auto;overflow:visible}.lc-loading path{stroke-dasharray:1 2;stroke-dashoffset:0;animation:.45s ease-out backwards lc-draw;animation-delay:calc(var(--i) * .2s)}.lc-loading-line{letter-spacing:.02em;opacity:.75;text-align:center;margin:0;padding:0 16px;font:600 14px/1.2 ui-rounded,SF Pro Rounded,Hiragino Maru Gothic ProN,Nunito,Varela Round,system-ui,-apple-system,Segoe UI,sans-serif}:lang(zh) .lc-loading-line{font-family:ui-rounded,SF Pro Rounded,PingFang SC,Hiragino Sans GB,Microsoft YaHei,system-ui,sans-serif}@keyframes lc-draw{0%{stroke-dashoffset:1px}to{stroke-dashoffset:0}}.lc-loading[data-state=failed] path{animation:none}@media (prefers-reduced-motion:reduce){.lc-loading path{animation:none}.lc-loading{transition:none}}</style>
+    <script type="module" crossorigin src="/apps/little-city/assets/app-C1sDwvW7.js"></script>
+    <link rel="modulepreload" crossorigin href="/apps/little-city/assets/modulepreload-polyfill-P2Xu9kJm.js">
+    <link rel="modulepreload" crossorigin href="/apps/little-city/assets/save-BApVmNqL.js">
+    <link rel="modulepreload" crossorigin href="/apps/little-city/assets/L75.shipyard.scenario-D4Rlmw1B.js">
+    <link rel="modulepreload" crossorigin href="/apps/little-city/assets/pointer-C5pqias5.js">
+    <link rel="modulepreload" crossorigin href="/apps/little-city/assets/towns-BAnLRT6g.js">
+    <link rel="stylesheet" crossorigin href="/apps/little-city/assets/pointer-CDxmrgFt.css">
+    <link rel="stylesheet" crossorigin href="/apps/little-city/assets/app-D5wnnS8v.css">
+  </head>
+  <body>
+    <canvas id="town" aria-label="Little City: your town, drawn in ink and pencil"></canvas>
+    <!-- What the page is, for search engines and screen readers: the game itself is the canvas above.
+         Kept true to the game (tools/seo/site.ts has the long version, published at /about/). -->
+    <main class="lc-about">
+      <h1>Little City: a hand-drawn city builder in your browser</h1>
+      <p>A hand-drawn town diorama builder, free in your browser. Place a few blocks, watch them turn into a town, then watch it come to life.</p>
+      <p>A house beside a tall tower becomes a chapel. Four blocks stacked by the sea become a lighthouse. Then people move in: the miller carries flour to the bakery, boats go out for fish, and some days there's a market or a wedding on the square. The seasons turn and the lamps come on at dusk.</p>
+      <p>Or grow a whole town on a new island, a harbour town, a castle town or a farming village, and just watch it.</p>
+      <p>Works on computers, iPhone, iPad and Android. Made by Derek Yao.</p>
+      <nav><a href="/about/" tabindex="-1">About Little City</a> · <a href="/guide/" tabindex="-1">The almanac: every special building and how to get it</a></nav>
+    </main>
+    <div class="lc-loading" role="status" data-state="loading">
+      <svg viewBox="0 0 200 120" aria-hidden="true">
+        <path pathLength="1" style="--i:0" d="M6 98 C26 94 38 101 58 97 S92 92 112 98 S158 102 176 96 S190 97 195 99" />
+        <path pathLength="1" style="--i:1" d="M20 94 L21 62 L53 61 L52 93" />
+        <path pathLength="1" style="--i:2" d="M14 65 L37 38 L60 64" />
+        <path pathLength="1" style="--i:3" d="M32 94 L33 79 L42 78 L42 93" />
+        <path pathLength="1" style="--i:4" d="M122 95 L130 36 L152 37 L159 93" />
+        <path pathLength="1" style="--i:5" d="M127 50 L156 51 M125 72 L155 73" />
+        <path pathLength="1" style="--i:6" d="M127 36 L130 24 L152 24 L152 36 M131 24 L141 12 L151 24" />
+        <path pathLength="1" style="--i:7" d="M168 22 L180 15 M172 30 L186 29 M170 38 L181 44" />
+        <path pathLength="1" style="--i:8" d="M70 108 C80 105 88 110 99 107 M104 112 C112 109 118 113 128 110" />
+      </svg>
+      <p class="lc-loading-line">Drawing your town…</p>
+    </div>
+    <script>
+      // The loading line in the player's language, before the game's code arrives. Picks the language the
+      // way src/i18n pickLang() does (?lang=, the menu's choice, the browser's languages); keep the two in step.
+      var lcWords = (function () {
+        var words = {
+          zh: ['正在画你的小镇…', '这个浏览器画不出小镇。请刷新页面，或者换个浏览器试试。', 'zh-Hans'],
+          es: ['Dibujando tu pueblo…', 'Este navegador no pudo dibujar el pueblo. Prueba a recargar, o usa otro navegador.', 'es'],
+          fr: ['On dessine ta ville…', 'Ce navigateur n’a pas pu dessiner la ville. Recharge la page, ou essaie un autre navigateur.', 'fr'],
+          pt: ['Desenhando sua cidade…', 'Este navegador não conseguiu desenhar a cidade. Tente recarregar ou use outro navegador.', 'pt'],
+          ja: ['町をかいています…', 'このブラウザでは町をかけませんでした。再読み込みするか、別のブラウザで試してください。', 'ja'],
+          ko: ['마을을 그리는 중…', '이 브라우저에서는 마을을 그릴 수 없어요. 새로고침하거나 다른 브라우저로 열어 보세요.', 'ko'],
+          de: ['Deine Stadt wird gezeichnet…', 'Dieser Browser konnte die Stadt nicht zeichnen. Lade die Seite neu oder versuch einen anderen Browser.', 'de'],
+          tr: ['Kasaban çiziliyor…', 'Bu tarayıcı kasabayı çizemedi. Sayfayı yenile ya da başka bir tarayıcı dene.', 'tr'],
+        };
+        var tags = [];
+        try { tags.push(new URLSearchParams(location.search).get('lang') || '', localStorage.getItem('little-city.lang') || ''); } catch (e) {}
+        tags = tags.concat(navigator.languages || [navigator.language || ''], location.pathname.split('/')[1] || '');
+        for (var i = 0; i < tags.length; i++) {
+          var base = String(tags[i]).toLowerCase().split(/[-_]/)[0];
+          if (base === 'en') return null;
+          if (words[base]) return words[base];
+        }
+        return null;
+      })();
+      if (lcWords) {
+        document.querySelector('.lc-loading-line').textContent = lcWords[0];
+        document.documentElement.lang = lcWords[2];
+      }
+    </script>
+    <script>
+      // A start that fails says so. Only while the loader is still waiting; a later error leaves the town alone.
+      function lcFailed(e) {
+        // A script that never arrived fires on its element; a runtime error fires on window and must be ours.
+        var t = e.target;
+        if (t !== window && !(t && t.tagName === 'SCRIPT')) return;
+        if (t === window && (!e.filename || e.filename.indexOf(location.origin + '/') !== 0)) return;
+        var l = document.querySelector('.lc-loading');
+        if (!l || l.getAttribute('data-state') !== 'loading') return;
+        l.setAttribute('data-state', 'failed');
+        l.querySelector('.lc-loading-line').textContent = window.lcWords ? lcWords[1] : "This browser couldn't draw the town. Try reloading, or another browser.";
+      }
+      window.addEventListener('error', lcFailed, true);
+    </script>
+  </body>
+</html>

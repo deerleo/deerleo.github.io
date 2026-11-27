@@ -1,5 +1,249 @@
 [
  {
+  "slug": "starry-nightrider",
+  "title": "Starry Nightrider",
+  "subtitle": "Claude Fable 5.2 作品镜像",
+  "url": "/apps/starry-nightrider/",
+  "thumb": "/assets/showcase/thumbs/starry-nightrider.jpg",
+  "category": "镜像游戏",
+  "tags": [
+   "开放世界",
+   "艺术风格",
+   "本周热门",
+   "Fable 5.2"
+  ],
+  "desc": "梵高骑着车驶进自己的《星月夜》：旋转星云与起伏麦田全部由着色器实时绘制，本周全球最热 Fable 作品。",
+  "credit": "原作者 ebbyamir",
+  "shot": true
+ },
+ {
+  "slug": "uno-com-escada",
+  "title": "Uno com Escada",
+  "subtitle": "Claude Fable 5.2 作品镜像",
+  "url": "/apps/uno-com-escada/",
+  "thumb": "/assets/showcase/thumbs/uno-com-escada.jpg",
+  "category": "镜像游戏",
+  "tags": [
+   "赛车",
+   "物理搞笑",
+   "本周热门",
+   "Fable 5.2"
+  ],
+  "desc": "开一辆 1996 款菲亚特 Uno、车顶绑着梯子上赛道：603KB 单文件无引擎无贴图，车、树、天空与引擎声全由代码生成。",
+  "credit": "原作者 ViktorKav",
+  "shot": true
+ },
+ {
+  "slug": "castle-valley",
+  "title": "omw — Castle Valley",
+  "subtitle": "Claude Fable 5.2 作品镜像",
+  "url": "/apps/castle-valley/",
+  "thumb": "/assets/showcase/thumbs/castle-valley.jpg",
+  "category": "镜像游戏",
+  "tags": [
+   "油画风",
+   "3D 世界",
+   "本周热门",
+   "Fable 5.2"
+  ],
+  "desc": "omw：油画笔触的城堡山谷，一张像素画原贴被重建成可游玩的 three.js 开放世界。",
+  "credit": "原作者 __morse",
+  "shot": true
+ },
+ {
+  "slug": "tennis",
+  "title": "Tennis",
+  "subtitle": "Claude Fable 5.2 作品镜像",
+  "url": "/apps/tennis/",
+  "thumb": "/assets/showcase/thumbs/tennis.jpg",
+  "category": "镜像游戏",
+  "tags": [
+   "体育竞技",
+   "复古",
+   "本周热门",
+   "Fable 5.2"
+  ],
+  "desc": "photonstorm 的「随便做个游戏」——看似 Pong 复古网球，实则手感、镜头与电视频道彩蛋全藏乾坤。",
+  "credit": "原作者 photonstorm",
+  "shot": true
+ },
+ {
+  "slug": "brushwild",
+  "title": "Brushwild",
+  "subtitle": "Claude Fable 5.2 作品镜像",
+  "url": "/apps/brushwild/",
+  "thumb": "/assets/showcase/thumbs/brushwild.jpg",
+  "category": "镜像游戏",
+  "tags": [
+   "开放世界",
+   "RPG",
+   "程序化生成",
+   "本周热门",
+   "Fable 5.2"
+  ],
+  "desc": "彩色铅笔+钢笔 shader 手绘的程序化开放世界 RPG：三职业、技能树、战利品、城镇与地牢，单文件约 300KB。",
+  "credit": "原作者 kevin_t_ngo",
+  "shot": true
+ },
+ {
+  "slug": "cinderwatch",
+  "title": "Cinderwatch",
+  "subtitle": "Claude Fable 5.2 作品镜像",
+  "url": "/apps/cinderwatch/",
+  "thumb": "/assets/showcase/thumbs/cinderwatch.jpg",
+  "category": "镜像游戏",
+  "tags": [
+   "塔防",
+   "策略",
+   "本周热门",
+   "Fable 5.2"
+  ],
+  "desc": "3D 等距塔防单文件游戏：内置 AI 指挥官可以替你布防，看它怎么排兵布阵。",
+  "credit": "原作者 kevin_t_ngo",
+  "shot": true
+ },
+ {
+  "slug": "gta-shenzhen",
+  "title": "GTA Shenzhen",
+  "subtitle": "Claude Fable 5.2 作品镜像",
+  "url": "/apps/gta-shenzhen/",
+  "thumb": "/assets/showcase/thumbs/gta-shenzhen.jpg",
+  "category": "镜像游戏",
+  "tags": [
+   "开放世界",
+   "城市模拟",
+   "3D 中国城市",
+   "本周热门",
+   "Fable 5.2"
+  ],
+  "desc": "用 OpenStreetMap 数据生成的深圳全城 3D：83,182 栋楼、62,088 条路，可飞行、落地开车、搜地点、夜里放城市灯光秀。",
+  "credit": "原作者 KinGao476942",
+  "shot": true
+ },
+ {
+  "slug": "mist-locked-mountain-gate",
+  "title": "雾锁山门",
+  "subtitle": "Claude Fable 5.2 作品镜像",
+  "url": "/apps/mist-locked-mountain-gate/",
+  "thumb": "/assets/showcase/thumbs/mist-locked-mountain-gate.jpg",
+  "category": "镜像游戏",
+  "tags": [
+   "仙侠",
+   "3D 动作",
+   "国风",
+   "本周热门",
+   "Fable 5.2"
+  ],
+  "desc": "歸藏的仙侠 3D 动作：模型、场景、招式与配音全由 AI 按 guizang-game-skill 流程生成，国内热度极高。",
+  "credit": "原作者 歸藏（Guizang, op7418）",
+  "shot": true
+ },
+ {
+  "slug": "lanternfall",
+  "title": "LANTERNFALL",
+  "subtitle": "Claude Fable 5.2 作品镜像",
+  "url": "/apps/lanternfall/",
+  "thumb": "/assets/showcase/thumbs/lanternfall.jpg",
+  "category": "镜像游戏",
+  "tags": [
+   "动作",
+   "像素粒子",
+   "本周热门",
+   "Fable 5.2"
+  ],
+  "desc": "灯笼主题动作游戏，动画、模型、音乐全部由 Fable 生成——重点看敌人死亡的粒子效果。",
+  "credit": "原作者 loktar00",
+  "shot": true
+ },
+ {
+  "slug": "little-city",
+  "title": "Little City",
+  "subtitle": "Claude Fable 5.2 作品镜像",
+  "url": "/apps/little-city/",
+  "thumb": "/assets/showcase/thumbs/little-city.jpg",
+  "category": "镜像游戏",
+  "tags": [
+   "城市营造",
+   "手绘风",
+   "治愈",
+   "本周热门",
+   "Fable 5.2"
+  ],
+  "desc": "Townscaper 风格的手绘城市营造：摆几块积木，看它长成一座会呼吸的小镇。",
+  "credit": "原作者 sprezzyyy",
+  "shot": true
+ },
+ {
+  "slug": "papertrails",
+  "title": "Papertrails",
+  "subtitle": "Claude Fable 5.2 作品镜像",
+  "url": "/apps/papertrails/",
+  "thumb": "/assets/showcase/thumbs/papertrails.jpg",
+  "category": "互动实验",
+  "tags": [
+   "立体书",
+   "手绘风",
+   "治愈",
+   "本周热门",
+   "Fable 5.2"
+  ],
+  "desc": "无尽立体纸艺世界：树木、房屋与山丘像立体书一样从地面折起，一路穿越沙漠、雪原与森林。",
+  "credit": "原作者 xikhar",
+  "shot": true
+ },
+ {
+  "slug": "room-at-dawn",
+  "title": "Room at Dawn",
+  "subtitle": "Claude Fable 5.2 作品镜像",
+  "url": "/apps/room-at-dawn/",
+  "thumb": "/assets/showcase/thumbs/room-at-dawn.jpg",
+  "category": "互动实验",
+  "tags": [
+   "3D 世界",
+   "写实场景",
+   "本周热门",
+   "Fable 5.2"
+  ],
+  "desc": "纯代码绘制的写实卧室：three.js 无预置模型无贴图，晨光氛围极佳的 3D 场景。",
+  "credit": "原作者 LexnLin",
+  "shot": true
+ },
+ {
+  "slug": "red-clay-chase",
+  "title": "Red Clay Chase",
+  "subtitle": "Claude Fable 5.2 作品镜像",
+  "url": "/apps/red-clay-chase/",
+  "thumb": "/assets/showcase/thumbs/red-clay-chase.jpg",
+  "category": "镜像游戏",
+  "tags": [
+   "驾驶",
+   "追逐",
+   "本周热门",
+   "Fable 5.2"
+  ],
+  "desc": "红土路上的 GTA 式警车追逐：无引擎零资产，作者称 Fable 花了 2.5 小时与 115 美元生成。",
+  "credit": "原作者 noclipepe",
+  "shot": true
+ },
+ {
+  "slug": "light-and-debris",
+  "title": "Light & Debris",
+  "subtitle": "Claude Fable 5.2 作品镜像",
+  "url": "/apps/light-and-debris/",
+  "thumb": "/assets/showcase/thumbs/light-and-debris.jpg",
+  "category": "互动实验",
+  "tags": [
+   "WebGPU",
+   "交互装置",
+   "物理模拟",
+   "本周热门",
+   "Fable 5.2"
+  ],
+  "desc": "用光推动 10 万+ 碎片：位置、速度与旋转全部在 WebGPU compute shader 里计算，物理轻盈的交互装置。",
+  "credit": "原作者 Nkondo_funtech",
+  "shot": true
+ },
+ {
   "slug": "volt",
   "title": "VoltLab",
   "subtitle": "电路实验室",

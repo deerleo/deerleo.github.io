@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+    <meta name="color-scheme" content="dark" />
+    <title>Starry Nightrider</title>
+    <meta name="description" content="Ride a bicycle through Van Gogh’s The Starry Night: collect the orbs, carry them to the steeple, and post your score." />
+    <link rel="canonical" href="https://starrynightrider.com/" />
+    <meta name="theme-color" content="#0b1a5c" />
+    <!-- what a link to the game looks like when it is shared -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Starry Nightrider" />
+    <meta property="og:title" content="Starry Nightrider" />
+    <meta property="og:description" content="Ride a bicycle through Van Gogh’s The Starry Night: collect the orbs, carry them to the steeple, and post your score." />
+    <meta property="og:url" content="https://starrynightrider.com/" />
+    <meta property="og:image" content="https://starrynightrider.com/og-painting.jpg" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="The swirling sky, cypress and village of The Starry Night, brought to life as a town you can ride through." />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Starry Nightrider" />
+    <meta name="twitter:description" content="Ride a bicycle through Van Gogh’s The Starry Night: collect the orbs, carry them to the steeple, and post your score." />
+    <meta name="twitter:image" content="https://starrynightrider.com/og-painting.jpg" />
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%230b1a5c'/%3E%3Ccircle cx='40' cy='24' r='15' fill='%23ffd94a'/%3E%3Ccircle cx='33' cy='21' r='13' fill='%230b1a5c'/%3E%3Cpath d='M6 46c10-10 18 6 28-2s14-6 24 2' stroke='%237fb6ff' stroke-width='5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E" />
+    <script type="module" crossorigin src="assets/index-CQrjeIkV.js"></script>
+    <link rel="modulepreload" crossorigin href="assets/three.core-DAbgpcjl.js">
+    <link rel="modulepreload" crossorigin href="assets/kit-Cxemqfuf.js">
+    <link rel="modulepreload" crossorigin href="assets/hails-DeolUH4Z.js">
+    <link rel="stylesheet" crossorigin href="assets/index-DRUnmMVr.css">
+  </head>
+  <body>
+    <canvas id="gl"></canvas>
+
+    <!-- the gallery: a dark wall with the live painting hanging on it -->
+    <div id="gallery">
+      <div id="wall"></div>
+      <div id="frame-shadow"></div>
+      <div id="frame"></div>
+      <div id="frame-lip"></div>
+      <div id="plaque">
+        <h1>Starry Nightrider</h1>
+        <p class="sub">after Vincent van Gogh &middot; <em>The Starry Night</em>, 1889</p>
+        <button id="enter" type="button">Step into the painting</button>
+        <button id="enter-vr" class="hidden" type="button">Ride in VR</button>
+        <button id="open-board" type="button">Leaderboard</button>
+        <p id="lifetime" class="hidden"></p>
+      </div>
+      <a id="handle" href="https://x.com/ebbyamir" target="_blank" rel="noopener">@ebbyamir</a>
+    </div>
+
+    <div id="hud" class="hidden">
+      <div id="stars"><span class="glyph">✦</span><span id="star-count">0</span><span id="mult"></span></div>
+      <div id="bank"><span id="bank-count">0</span> delivered</div>
+      <div id="hyper"><div id="hyper-fill"></div></div>
+      <div id="trick"><span id="trick-name"></span><span id="trick-points"></span></div>
+      <div id="brief">
+        <p class="lead">Collect as many orbs as you can<br />and carry them into the steeple.</p>
+      </div>
+      <div id="finish">
+        <p><strong id="finish-score">0</strong> delivered. Finished for the night?</p>
+        <div class="row">
+          <button id="finish-yes" type="button">Finish Game</button>
+          <button id="finish-no" type="button">Continue riding</button>
+        </div>
+        <p class="keys for-keys"><kbd>Enter</kbd> to finish</p>
+      </div>
+      <div id="riders"><span class="dot"></span><span id="riders-count">1</span><span id="riders-label">rider in the painting</span><span id="riders-best"></span></div>
+      <div id="guide">
+        <span id="guide-arrow">↑</span>
+        <span id="guide-label">The Steeple</span>
+        <span id="guide-dist"></span>
+      </div>
+      <div id="hint">
+        <!-- the keys, where they lie on the keyboard -->
+        <div class="kb-row kb-top">
+          <kbd data-code="KeyW"><b>W</b><i>pedal</i></kbd>
+          <kbd data-code="KeyE"><b>E</b><i>trick</i></kbd>
+          <kbd data-code="KeyR"><b>R</b><i>talk</i></kbd>
+          <kbd data-code="KeyT"><b>T</b><i>theater</i></kbd>
+        </div>
+        <div class="kb-row kb-home">
+          <kbd data-code="KeyA"><b>A</b><i>left</i></kbd>
+          <kbd data-code="KeyS"><b>S</b><i>brake</i></kbd>
+          <kbd data-code="KeyD"><b>D</b><i>right</i></kbd>
+          <kbd data-code="KeyF"><b>F</b><i>walk</i></kbd>
+          <kbd data-code="Enter" class="enter"><b>Enter</b><i>chat</i></kbd>
+        </div>
+        <div class="kb-row kb-space">
+          <kbd data-code="Space" class="space"><b>Space</b><i>leap &nbsp;·&nbsp; tap ×3 to fly</i></kbd>
+        </div>
+      </div>
+      <div id="pad">
+        <div id="stick"><div id="stick-knob"></div></div>
+        <!-- how the stick is used, shown on a phone's first rides: a ghost of it, worked by an unseen thumb -->
+        <div id="stick-demo" aria-hidden="true"><div class="ring"><div class="knob"></div></div></div>
+        <button id="pad-jump" type="button">Leap</button>
+      </div>
+      <div id="corner">
+        <button id="btn-chat" type="button" title="Say something to the riders nearby (Enter)">✎</button>
+        <button id="btn-theater" type="button" title="Theater mode: hide the game and just ride (T)">☾</button>
+        <button id="btn-walk" type="button" title="Get off and walk, or back on the bicycle (F)">⇅</button>
+        <button id="btn-sound" type="button" title="Sound (M)">♪</button>
+        <button id="btn-gallery" type="button" title="Back to the gallery (Esc)">▢</button>
+      </div>
+      <!-- lines said by the riders nearby, each over whoever said it; and the box a line is typed in -->
+      <div id="bubbles"></div>
+      <!-- beside one of the townsfolk: who can be spoken to -->
+      <button id="talk-tip" type="button"><kbd>R</kbd><span id="talk-who">talk</span></button>
+      <form id="chat" autocomplete="off">
+        <input id="chat-input" name="line" maxlength="90" spellcheck="false" autocapitalize="sentences" enterkeyhint="send" placeholder="Say something to the riders nearby…" />
+      </form>
+      <div id="map"></div>
+      <div id="toast"></div>
+    </div>
+
+    <!-- the leaderboard: the score just ridden, a field for an X handle, the table -->
+    <div id="board" class="hidden">
+      <div class="card">
+        <h2 id="board-title">Leaderboard</h2>
+        <div id="board-you">
+          <p class="score">Your score <strong id="board-score">0</strong></p>
+          <form id="board-form" autocomplete="off">
+            <label for="board-handle">@</label>
+            <input id="board-handle" name="handle" maxlength="16" spellcheck="false" autocapitalize="off" autocorrect="off" placeholder="your X handle" />
+            <button id="board-post" type="submit">Post score</button>
+          </form>
+        </div>
+        <p id="board-msg"></p>
+        <ol id="board-list"></ol>
+        <p id="board-empty" class="hidden">Nobody has posted a score yet. Be the first.</p>
+        <p id="board-count"></p>
+        <div class="row">
+          <button id="board-again" type="button">Ride again</button>
+          <button id="board-back" type="button">Close</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- another canvas (see src/portals/): hung on a wall of its own, with its plaque; then the game played in it, and how it went -->
+    <div id="portal" class="hidden">
+      <div id="p-card">
+        <div id="p-wall"></div>
+        <div id="p-shadow"></div>
+        <div id="p-frame"></div>
+        <div id="p-lip"></div>
+        <div id="p-plaque">
+          <h2 id="p-title"></h2>
+          <p class="sub" id="p-sub"></p>
+          <p class="how" id="p-how"></p>
+          <div class="row">
+            <button id="p-play" type="button">Play</button>
+            <button id="p-back" type="button">Back to the town</button>
+          </div>
+          <p class="best" id="p-best"></p>
+        </div>
+      </div>
+      <div id="p-hud">
+        <div id="p-score"><span class="glyph">✦</span><span id="p-points">0</span><span id="p-lives"></span></div>
+        <div id="p-clock"></div>
+        <div id="p-note"></div>
+        <div id="p-custom"></div>
+        <div id="p-labels"></div>
+        <button id="p-leave" type="button" title="Back to the town (Esc)">▢</button>
+      </div>
+      <div id="p-result">
+        <div class="card">
+          <h2 id="p-r-title"></h2>
+          <p class="score"><strong id="p-r-score">0</strong></p>
+          <p id="p-r-lines"></p>
+          <p id="p-r-best"></p>
+          <p id="p-r-reward"></p>
+          <div class="row">
+            <button id="p-again" type="button">Play again</button>
+            <button id="p-done" type="button">Back to the town</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="loading"><div class="pulse"></div><span>mixing the paint…</span></div>
+    <div id="fatal" class="hidden"></div>
+
+  </body>
+</html>

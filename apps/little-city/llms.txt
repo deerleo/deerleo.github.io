@@ -1,0 +1,16 @@
+# Little City
+
+> A hand-drawn city builder in your browser, made by Derek Yao: a town diorama builder. Place a few blocks, watch them turn into a town, then watch it come to life. Free at https://littlecity.io.
+
+Little City is a small town-building game drawn in ink and pencil, something like a snow globe you build yourself. It runs in any web browser, on a computer, iPhone, iPad or Android phone.
+
+- What each block becomes depends on where you put it: a house beside a tall tower becomes a chapel, a house opening onto a square becomes a shop, four blocks stacked by the sea become a lighthouse, a path becomes a street with lamps and benches. There are over 80 special buildings and events to find.
+- The town lives: the miller carries flour to the bakery and the baker takes bread to the stall, boats go out for fish, ships come in to the quay, washing goes up on the lines. Some days there's a market day, a wedding with a procession, a beach day, picnics, a snow day or a harvest supper. The seasons turn, and day turns to dusk and night.
+- "Grow a town" grows a whole town on a new island by itself: a harbour town, marble city, castle town, market town, river town, farming village, hill town or garden town.
+- Towns save themselves in the browser and can be shared as a link or a postcard.
+
+## Pages
+
+- [Play Little City](https://littlecity.io/): the game
+- [About Little City](https://littlecity.io/about/): what it is, with the trailer
+- [The guide](https://littlecity.io/guide/): every special building and event, and how to get it

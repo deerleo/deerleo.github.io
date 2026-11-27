@@ -1,0 +1,43 @@
+<!doctype html>
+<!--
+  GTA Shenzhen — by KinGao476942（https://gtashenzhen.com），created with Claude Fable 5.2.
+  Original work by KinGao476942. Mirrored on milulab.com for learning and demo.
+-->
+
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="icon" href="data:," />
+  <title>GTA Shenzhen</title>
+  <style>html,body{background:#6fa3e0;height:100%;margin:0;font-family:PingFang SC,Microsoft YaHei,Noto Sans CJK SC,sans-serif;overflow:hidden}#app{position:fixed;inset:0}#app canvas{display:block}.hud{color:#fff;text-shadow:0 1px 3px #000000b3;pointer-events:none;-webkit-user-select:none;user-select:none;position:fixed}#title{letter-spacing:1px;font-size:22px;font-weight:800;top:14px;left:18px}#title small{opacity:.85;letter-spacing:0;font-size:12px;font-weight:400;display:block}#help{background:#00000052;border-radius:6px;padding:8px 12px;font-size:13px;line-height:1.65;bottom:14px;left:18px}#help b{color:#ffd760}#status{text-align:right;font-variant-numeric:tabular-nums;background:#00000052;border-radius:6px;padding:6px 10px;font-size:13px;line-height:1.6;top:14px;right:18px}#mode{color:#ffd760;font-size:16px;font-weight:700}#minimap{pointer-events:none;background:#555;border:3px solid #ffffffd9;border-radius:50%;width:220px;height:220px;position:fixed;bottom:34px;right:18px;overflow:hidden;box-shadow:0 2px 10px #0006}#minimap canvas{width:100%;height:100%}#credit{opacity:.9;font-size:11px;bottom:8px;right:18px}#near{background:#00000047;border-radius:14px;padding:4px 12px;font-size:15px;display:none;top:64px;left:50%;transform:translate(-50%)}#loading{color:#fff;z-index:10;background:linear-gradient(#2f6fce,#a9c9ee);flex-direction:column;justify-content:center;align-items:center;font-size:20px;display:flex;position:fixed;inset:0}#loading .bar{background:#ffffff4d;border-radius:3px;width:260px;height:6px;margin-top:14px;overflow:hidden}#loading .bar i{background:#ffd760;width:0;height:100%;transition:width .2s;display:block}#clickhint{background:#0006;border-radius:8px;padding:10px 18px;font-size:18px;top:50%;left:50%;transform:translate(-50%,-50%)}body.nohud .hud:not(#credit),body.nohud #minimap{display:none!important}#search{z-index:20;color:#fff;background:#0e121ceb;border:1px solid #ffffff40;border-radius:12px;width:min(520px,86vw);padding:12px;display:none;position:fixed;top:22%;left:50%;transform:translate(-50%);box-shadow:0 10px 40px #00000080}#search h4{opacity:.8;margin:0 0 8px;font-size:13px;font-weight:400}#searchin{box-sizing:border-box;width:100%;font:inherit;color:#fff;background:#ffffff14;border:1px solid #ffffff4d;border-radius:8px;outline:none;padding:10px 12px;font-size:18px}#searchin:focus{border-color:#ffd760}#searchlist{max-height:50vh;margin-top:8px;overflow:auto}.sr{cursor:pointer;border-radius:7px;justify-content:space-between;align-items:baseline;gap:12px;padding:8px 10px;font-size:15px;display:flex}.sr small{opacity:.7;white-space:nowrap;font-variant-numeric:tabular-nums}.sr.on,.sr:hover{background:#ffd76038}.sr.none{opacity:.6;cursor:default}#searchclear{font:inherit;color:#ffd760;cursor:pointer;background:0 0;border:1px solid #ffffff4d;border-radius:7px;margin-top:8px;padding:6px 12px;font-size:13px}#target{color:#ffd760;white-space:nowrap;background:#00000073;border-radius:16px;padding:6px 16px;font-size:16px;font-weight:700;display:none;top:100px;left:50%;transform:translate(-50%)}#prompt.crash{background:#96140ac7;border-color:#ff6a4a;font-size:19px}#prompt.driving{top:140px;bottom:auto}#prompt{color:#fff;white-space:nowrap;background:#0000008c;border:1px solid #ffd76080;border-radius:18px;padding:8px 18px;font-size:17px;font-weight:700;display:none;bottom:28%;left:50%;transform:translate(-50%)}#prompt b{color:#ffd760;border:1px solid #ffd760;border-radius:4px;margin:0 2px;padding:0 6px}#target.arrived{color:#7dffb0}#marklabel{white-space:nowrap;background:#0000008c;border:1px solid #ffd760;border-radius:12px;padding:3px 10px;font-size:14px;font-weight:700;display:none;transform:translate(-50%,-130%)}#markarrow{filter:drop-shadow(0 0 4px #000);border-top:13px solid #0000;border-bottom:13px solid #0000;border-left:26px solid #ffd760;width:0;height:0;display:none}#fpbtn{z-index:6;font:inherit;color:#ffd760;cursor:pointer;background:#0a0e18b8;border:1px solid #ffd760cc;border-radius:20px;padding:9px 18px;font-size:15px;font-weight:700;display:none;position:fixed;top:140px;left:50%;transform:translate(-50%)}#fpbtn:hover{background:#282c1ed9}body.nohud #fpbtn{display:none!important}#visor{pointer-events:none;z-index:3;opacity:0;background:radial-gradient(at 30% 12%,#ffffff12,#0000 38%),radial-gradient(#0000 62%,#ffc8780f 100%);border-radius:47%/50%;transition:opacity .35s;display:none;position:fixed;inset:-3vh -2vw;box-shadow:inset 0 0 0 5px #deb2588c,inset 0 0 0 9px #3c2c1059,inset 0 0 150px 60px #0000009e,0 0 0 100vmax #08080af0}#cross{background:#fffc;border-radius:50%;width:6px;height:6px;margin:-3px 0 0 -3px;top:50%;left:50%;box-shadow:0 0 2px #000}</style>
+  <script type="module" crossorigin src="assets/index-BQNgYKyh.js"></script>
+</head>
+<body>
+  <div id="app"></div>
+  <div id="loading"><div>正在加载深圳…</div><div id="loadver" style="font-size:11px;margin-top:4px;opacity:.55">v0.5.0</div><div class="bar"><i id="loadbar"></i></div><div id="loadmsg" style="font-size:13px;margin-top:8px;opacity:.85"></div></div>
+  <div class="hud" id="title">GTA Shenzhen<small>真实 OSM 路网与楼块 · 路线 D 第 5 轮 · v0.5.0</small></div>
+  <div class="hud" id="status"><div id="mode">飞行</div><div id="coord"></div><div id="fps"></div></div>
+  <div class="hud" id="near"></div>
+  <div id="visor"></div>
+  <button id="fpbtn" type="button">🧑‍🚀 切到宇航员第一人称（C）</button>
+  <div class="hud" id="cross"></div>
+  <div class="hud" id="target"></div>
+  <div class="hud" id="prompt"></div>
+  <div class="hud" id="marklabel"></div>
+  <div class="hud" id="markarrow"></div>
+  <div id="search"><h4>搜索地点（只标点，不传送）· 回车选中 · Esc 关闭</h4><input id="searchin" type="text" placeholder="输入地点，例如：创维半导体大厦、腾讯大厦、京基100" autocomplete="off" spellcheck="false" /><div id="searchlist"></div><button id="searchclear" type="button">清除标记</button></div>
+  <div class="hud" id="clickhint">点击画面开始（锁定鼠标）</div>
+  <div class="hud" id="help">
+    <b>F</b> 搜索地点并标点　<b>V</b> 飞行 / 走路切换　<b>WASD</b> 移动　<b>鼠标</b> 转向　<b>Shift</b> 加速<br/>
+    飞行：<b>Space/E</b> 上升　<b>Ctrl/Q</b> 下降　<b>N</b> 穿墙开关<br/>
+    走路（镜头在角色身后，撞楼会停）：<b>Space</b> 跳　<b>Esc</b> 释放鼠标　<b>H</b> 隐藏界面<br/>
+    载具：走到路边的汽车 / 摩托车旁按 <b>E</b> 上车，再按 <b>E</b> 下车（先停稳）　<b>W</b> 油门　<b>S</b> 刹车 / 倒车　<b>A D</b> 转向　<b>Shift</b> 加速　<b>Space</b> 手刹　<b>鼠标</b> 转镜头　连续被撞两次会被甩出车外，倒地后按 <b>W</b> / <b>E</b> 起身<br/>
+    <b>T</b> 白天 / 夜景　<b>G</b> 召唤宇航员（头顶出光后从天降落，背对你站定）/ 再按收回<br/>
+    落地后直接操控他：<b>鼠标</b> 绕着他转镜头（可转到正面）　<b>按住 B</b> 回头看他的脸　<b>WASD</b> 按镜头方向走（身体转向走的方向）　<b>Shift</b> 跑　<b>Space/E</b> 起飞　<b>Ctrl/Q</b> 下降　<b>V</b> 起飞 / 降落　<b>C</b> 第一人称 / 身后视角<br/>
+    <b>鼠标左键</b> 发射光球：前两发各点亮一栋，第三发起每一发都掀起冲击波、连锁引爆全城灯光秀（白天发射会自动入夜）
+  </div>
+  <div id="minimap"><canvas id="mm" width="440" height="440"></canvas></div>
+  <div class="hud" id="credit">v0.5.0 · © OpenStreetMap contributors</div>
+</body>
+</html>
