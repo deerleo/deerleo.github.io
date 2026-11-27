@@ -3,6 +3,7 @@ title: "95万字家底被扒，扒出来的其实是产品"
 description: "Claude Fable 5.2 上线约两小时，完整系统提示词就被 Pliny 甩上了 GitHub：953,659 字符、7,832 行，官网公开版只有它的三十分之一。我把这份文件逐行拆完，发现真正值得看的不是猎奇，而是一件事——AI 产品力到底藏在哪里。"
 tags: [Anthropic, 系统提示词, Agent, AI安全]
 series: "哟哟鹿鸣"
+podcast: /assets/audio/fable-52-prompt-leak.mp3
 ---
 
 ![越狱研究者的深夜桌面：屏幕上是无尽滚动的提示词文本，手边摊着两部长篇小说厚的巨书（AI 生成示意图）](/assets/images/2026-11-15-fable-52-prompt-leak/final_01_leak.jpg)
